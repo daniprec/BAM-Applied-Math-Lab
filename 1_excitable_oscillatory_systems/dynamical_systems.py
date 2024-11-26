@@ -2,6 +2,7 @@ from typing import Any, List, Tuple
 
 import numpy as np
 from scipy.integrate import solve_ivp
+from scipy.optimize import fsolve
 
 
 def simulate(
@@ -102,3 +103,30 @@ def update_simulation(
     ani.event_source.start()
     ani._args = (y, line)
     ani.event_source.start()
+
+
+def compute_fixed_points(equations: callable) -> np.ndarray:
+    """
+    Computes the fixed points of the FitzHugh-Nagumo model for a given external current.
+
+    Parameters
+    ----------
+    i_ext : float
+        External stimulus current.
+
+    Returns
+    -------
+    fixed_points : ndarray
+        Array of fixed points [v*, w*].
+    """
+
+    # Initial guesses for fixed points
+    guesses = [(-1.0, -1.0), (0.0, 0.0), (1.0, 1.0)]
+    fixed_points = []
+    for guess in guesses:
+        fixed_point, info, ier, mesg = fsolve(equations, guess, full_output=True)
+        if ier == 1:
+            # Check for duplicates
+            if not any(np.allclose(fixed_point, fp, atol=1e-5) for fp in fixed_points):
+                fixed_points.append(fixed_point)
+    return np.array(fixed_points)
