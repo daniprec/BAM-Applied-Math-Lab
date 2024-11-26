@@ -6,7 +6,15 @@ import numpy as np
 from dynamical_systems import animate, simulate, update_simulation
 
 
-def fitzhugh_nagumo(t: float, y: np.ndarray, i_ext: float) -> List[float]:
+def fitzhugh_nagumo(
+    t: float,
+    y: np.ndarray,
+    i_ext: float,
+    a: float = 0.7,
+    b: float = 0.8,
+    tau: float = 12.5,
+    r: float = 0.1,
+) -> List[float]:
     """
     Defines the FitzHugh-Nagumo model equations.
 
@@ -18,6 +26,14 @@ def fitzhugh_nagumo(t: float, y: np.ndarray, i_ext: float) -> List[float]:
         Array containing the variables [v, w] at time t.
     i_ext : float
         External stimulus current.
+    a : float
+        Recovery time constant.
+    b : float
+        Recovery time constant.
+    tau : float
+        Recovery time scale.
+    r : float
+        Recovery time scale.
 
     Returns
     -------
@@ -25,8 +41,8 @@ def fitzhugh_nagumo(t: float, y: np.ndarray, i_ext: float) -> List[float]:
         Derivatives [dv/dt, dw/dt] at time t.
     """
     v, w = y
-    dvdt = v - (v**3) / 3 - w + i_ext
-    dwdt = 0.08 * (v + 0.7 - 0.8 * w)
+    dvdt = v - (v**3) / 3 - w + r * i_ext
+    dwdt = (v + a - b * w) / tau
     return [dvdt, dwdt]
 
 
