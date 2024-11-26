@@ -1,5 +1,3 @@
-# dynamical_systems.py
-
 from typing import Any, List, Tuple
 
 import numpy as np

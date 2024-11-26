@@ -1,5 +1,3 @@
-# morris_lecar_interactive.py
-
 from typing import List, Tuple
 
 import matplotlib.animation as animation
