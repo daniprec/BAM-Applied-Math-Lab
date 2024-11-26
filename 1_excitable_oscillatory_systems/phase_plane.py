@@ -1,7 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from fitzhugh_nagumo import fitzhugh_nagumo
-from morris_lecar import morris_lecar
 from scipy.optimize import fsolve
 
 
@@ -48,8 +46,8 @@ def plot_phase_plane(equations: callable, i_ext: float) -> None:
     None
     """
     # Create a grid of points
-    v = np.linspace(-2, 2, 20)
-    w = np.linspace(-2, 2, 20)
+    v = np.linspace(-3, 3, 20)
+    w = np.linspace(-3, 3, 20)
     V, W = np.meshgrid(v, w)
 
     # Compute derivatives
@@ -59,7 +57,6 @@ def plot_phase_plane(equations: callable, i_ext: float) -> None:
     v_nullcline, _ = equations(0, [V, 0], i_ext)
 
     # Plot vector field
-    plt.figure(figsize=(8, 6))
     plt.quiver(V, W, dv, dw, color="gray", alpha=0.5)
 
     # Plot nullclines
@@ -91,29 +88,26 @@ def plot_phase_plane(equations: callable, i_ext: float) -> None:
         plt.plot(fp[0], fp[1], "ko", markersize=8)
         plt.text(fp[0] + 0.1, fp[1] + 0.1, f"({fp[0]:.2f}, {fp[1]:.2f})")
 
+
+def main(i_ext: float = 0.5) -> None:
+    """
+    Main function to perform phase plane analysis.
+    """
+
+    plt.figure(figsize=(8, 6))
+
+    # External stimulus current
+    # TODO: Define the FitzHugh-Nagumo model equations
+    plot_phase_plane(equations, i_ext)
+
     plt.xlabel("Membrane Potential (v)")
     plt.ylabel("Recovery Variable (w)")
     plt.title("Phase Plane Analysis of FitzHugh-Nagumo Model")
     plt.legend(["v nullcline", "w nullcline", "Fixed Points"])
-    plt.xlim(-2, 2)
-    plt.ylim(-2, 2)
+    plt.xlim(-3, 3)
+    plt.ylim(-3, 3)
     plt.grid(True)
     plt.show()
-
-
-def main(equations: str = "fitzhugh_nagumo", i_ext: float = 0.5) -> None:
-    """
-    Main function to perform phase plane analysis.
-    """
-    if ("fitz" in equations) or ("nag" in equations):
-        equations = fitzhugh_nagumo
-    elif ("morris" in equations) or ("lecar" in equations):
-        equations = morris_lecar
-    else:
-        raise ValueError("Invalid model choice.")
-
-    # External stimulus current
-    plot_phase_plane(equations, i_ext)
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
 from dynamical_systems import animate, simulate, update_simulation
+from phase_plane import plot_phase_plane
 
 
 def fitzhugh_nagumo(
@@ -61,6 +62,8 @@ def main() -> None:
 
     # Set up the figure and axis
     fig, ax = plt.subplots(figsize=(6, 6))
+    plot_phase_plane(fitzhugh_nagumo, i_ext)
+
     ax.set_xlabel("Membrane Potential (v)")
     ax.set_ylabel("Recovery Variable (w)")
     ax.set_title("Interactive FitzHugh-Nagumo Model")
