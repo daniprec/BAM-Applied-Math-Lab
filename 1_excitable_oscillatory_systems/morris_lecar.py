@@ -56,10 +56,6 @@ def morris_lecar(t: float, y: np.ndarray, i_ext: float) -> List[float]:
 def main() -> None:
     """
     Main function to run the interactive Morris-Lecar model simulation.
-
-    Returns
-    -------
-    None
     """
     # Parameters
     i_ext: float = 40.0  # External current (μA/cm²)

@@ -33,10 +33,6 @@ def fitzhugh_nagumo(t: float, y: np.ndarray, i_ext: float) -> List[float]:
 def main() -> None:
     """
     Main function to run the interactive FitzHugh-Nagumo model simulation.
-
-    Returns
-    -------
-    None
     """
     # Parameters
     i_ext: float = 0.5  # External stimulus
