@@ -27,13 +27,20 @@ def plot_phase_plane(
     # Compute derivatives
     dv, dw = equations(0, [V, W], i_ext)
 
-    # Compute nullclines
-    v_nullcline, _ = equations(0, [V, 0], i_ext)
-
     # Plot vector field
     plt.quiver(V, W, dv, dw, color="gray", alpha=0.5)
 
+    # Create a finer grid of points
+    v = np.linspace(limits[0], limits[2], 100)
+    w = np.linspace(limits[1], limits[3], 100)
+    V, W = np.meshgrid(v, w)
+
+    # Compute nullclines
+    v_nullcline, _ = equations(0, [V, 0], i_ext)
+    _, w_nullcline = equations(0, [V, W], i_ext)
+
     # Plot nullclines
+    # TODO: Understand this, see plots online
     plt.contour(
         V,
         W,
@@ -46,7 +53,7 @@ def plot_phase_plane(
     plt.contour(
         V,
         W,
-        dw,
+        w_nullcline,
         levels=[0],
         colors="b",
         linestyles="-.",
