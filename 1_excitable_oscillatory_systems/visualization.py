@@ -79,7 +79,7 @@ def update_simulation(
 
 
 def plot_phase_plane(
-    equations: Callable,
+    system_func: Callable,
     limits: Tuple[float, float, float, float] = (-3.0, -3.0, 3.0, 3.0),
     **kwargs: Any,
 ) -> None:
@@ -88,7 +88,7 @@ def plot_phase_plane(
 
     Parameters
     ----------
-    equations : Callable
+    system_func : Callable
         Function that defines the model equations.
     limits : tuple of float, optional
         Tuple containing the x and y limits (x_min, y_min, x_max, y_max).
@@ -105,13 +105,13 @@ def plot_phase_plane(
     v_grid, w_grid = np.meshgrid(v_values, w_values)
 
     # Compute derivatives
-    dvdt, dwdt = equations(0.0, [v_grid, w_grid], **kwargs)
+    dvdt, dwdt = system_func(0.0, [v_grid, w_grid], **kwargs)
 
     # Plot vector field
     plt.quiver(v_grid, w_grid, dvdt, dwdt, color="gray", alpha=0.5)
 
     # Compute nullclines
-    nullclines = compute_nullclines(equations, t=0.0, limits=limits, **kwargs)
+    nullclines = compute_nullclines(system_func, t=0.0, limits=limits, **kwargs)
     v_nullcline = nullclines[0]
     w_nullcline = nullclines[1]
 
@@ -120,7 +120,7 @@ def plot_phase_plane(
     plt.scatter(w_nullcline[0], w_nullcline[1], c="r", s=1, label="dw/dt = 0 Nullcline")
 
     # Compute and plot fixed points
-    fixed_points = compute_fixed_points(equations, t=0.0, **kwargs)
+    fixed_points = compute_fixed_points(system_func, t=0.0, **kwargs)
     for fp in fixed_points:
         plt.plot(fp[0], fp[1], "ko", markersize=8)
         plt.text(fp[0] + 0.1, fp[1] + 0.1, f"({fp[0]:.2f}, {fp[1]:.2f})")
@@ -135,7 +135,7 @@ def plot_phase_plane(
 
 
 def run_interactive_plot(
-    equations: Callable,
+    system_func: Callable,
     t_end: float = 100.0,
     num_points: int = 1000,
     v0: float = 0.0,
@@ -148,7 +148,7 @@ def run_interactive_plot(
 
     Parameters
     ----------
-    equations : Callable
+    system_func : Callable
         Function that defines the model equations.
     t_span : float, optional
         End time for the simulation (default is 100.0).
@@ -172,11 +172,11 @@ def run_interactive_plot(
     y0: List[float] = [v0, w0]  # Initial conditions [v0, w0]
 
     # Initial simulation
-    y = simulate(equations, y0, t_span, t_eval, **kwargs)
+    y = simulate(system_func, y0, t_span, t_eval, **kwargs)
 
     # Set up the figure and axis
     fig, ax = plt.subplots(figsize=(8, 6))
-    plot_phase_plane(equations, limits=limits, **kwargs)
+    plot_phase_plane(system_func, limits=limits, **kwargs)
 
     # Initialize the line object
     (line,) = ax.plot([], [], lw=2)
@@ -190,7 +190,7 @@ def run_interactive_plot(
     fig.canvas.mpl_connect(
         "button_press_event",
         lambda event: update_simulation(
-            event, equations, t_span, t_eval, line, ani, **kwargs
+            event, system_func, t_span, t_eval, line, ani, **kwargs
         ),
     )
 

@@ -1,33 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from dynamical_systems import simulate
 from fitzhugh_nagumo import fitzhugh_nagumo
-from scipy.integrate import solve_ivp
-
-
-def simulate_system(
-    i_ext: float, y0: list, t_span: tuple, t_eval: np.ndarray
-) -> np.ndarray:
-    """
-    Simulates the FitzHugh-Nagumo model for a given external current.
-
-    Parameters
-    ----------
-    i_ext : float
-        External stimulus current.
-    y0 : list
-        Initial conditions.
-    t_span : tuple
-        Time span for the simulation.
-    t_eval : ndarray
-        Time points to evaluate the solution.
-
-    Returns
-    -------
-    y : ndarray
-        Solution array.
-    """
-    sol = solve_ivp(fitzhugh_nagumo, t_span, y0, args=(i_ext,), t_eval=t_eval)
-    return sol.y
 
 
 def plot_bifurcation() -> None:
@@ -47,7 +21,13 @@ def plot_bifurcation() -> None:
     t_eval = np.linspace(*t_span, 2000)
 
     for i_ext in i_ext_values:
-        y = simulate_system(i_ext, y0, t_span, t_eval)
+        y = simulate(
+            fitzhugh_nagumo,
+            y0,
+            t_span,
+            t_eval,
+            i_ext=i_ext,
+        )
         # Ignore initial transient by taking the last half of the data
         v = y[0][-1000:]
         max_v.append(np.max(v))

@@ -10,7 +10,6 @@ def simulate(
     y0: List[float],
     t_span: Tuple[float, float],
     t_eval: np.ndarray,
-    *args: Any,
     **kwargs: Any,
 ) -> np.ndarray:
     """
@@ -26,8 +25,6 @@ def simulate(
         Tuple containing the start and end times (t0, tf).
     t_eval : ndarray
         Time points at which to store the computed solutions.
-    *args
-        Additional arguments to pass to the system function.
     **kwargs
         Additional keyword arguments to pass to the system function.
 
@@ -36,12 +33,16 @@ def simulate(
     y : ndarray
         Array of solution values at t_eval.
     """
-    sol = solve_ivp(system_func, t_span, y0, t_eval=t_eval, args=args, **kwargs)
+
+    def func(t: float, y: np.ndarray) -> np.ndarray:
+        return system_func(t, y, **kwargs)
+
+    sol = solve_ivp(func, t_span, y0, t_eval=t_eval)
     return sol.y
 
 
 def compute_fixed_points(
-    equations: Callable,
+    system_func: Callable,
     t: float = 0.0,
     **kwargs: Any,
 ) -> np.ndarray:
@@ -50,7 +51,7 @@ def compute_fixed_points(
 
     Parameters
     ----------
-    equations : Callable
+    system_func : Callable
         Function defining the system of ODEs.
     t : float, optional
         Time variable (default is 0.0).
@@ -64,7 +65,7 @@ def compute_fixed_points(
     """
 
     def func(y: np.ndarray) -> np.ndarray:
-        return equations(t, y, **kwargs)
+        return system_func(t, y, **kwargs)
 
     # Initial guesses for fixed points
     guesses = [(-1.0, -1.0), (0.0, 0.0), (1.0, 1.0)]
@@ -108,7 +109,7 @@ def extract_nullcline(
 
 
 def compute_nullclines(
-    equations: Callable,
+    system_func: Callable,
     t: float = 0.0,
     limits: Tuple[float, float, float, float] = (-3.0, -3.0, 3.0, 3.0),
     num_points: int = 1000,
@@ -119,7 +120,7 @@ def compute_nullclines(
 
     Parameters
     ----------
-    equations : Callable
+    system_func : Callable
         Function defining the system of ODEs.
     t : float, optional
         Time variable (default is 0.0).
@@ -152,7 +153,7 @@ def compute_nullclines(
 
     # Evaluate the derivatives at each point
     for idx, (xi, yi) in enumerate(zip(x_flat, y_flat)):
-        dydt = equations(t, [xi, yi], **kwargs)
+        dydt = system_func(t, [xi, yi], **kwargs)
         dx_dt[idx] = dydt[0]
         dy_dt[idx] = dydt[1]
 
