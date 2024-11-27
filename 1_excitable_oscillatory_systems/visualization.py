@@ -3,7 +3,7 @@ from typing import Any, List, Tuple
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
-from dynamical_systems import compute_fixed_points, simulate
+from dynamical_systems import compute_fixed_points, compute_nullclines, simulate
 
 
 def animate(i: int, y: np.ndarray, line: Any) -> Tuple[Any]:
@@ -75,7 +75,10 @@ def update_simulation(
 
 
 def plot_phase_plane(
-    equations: callable, i_ext: float = 0.5, limits: tuple[float] = (-3, -3, 3, 3)
+    equations: callable,
+    i_ext: float = 0.5,
+    limits: tuple[float] = (-3, -3, 3, 3),
+    kwargs: dict = None,
 ) -> None:
     """
     Plots the phase plane of any excitable-oscillatory model.
@@ -87,6 +90,8 @@ def plot_phase_plane(
     i_ext : float
         External stimulus current.
     """
+    kwargs = kwargs if isinstance(kwargs, dict) else {}
+
     # Create a grid of points
     v = np.linspace(limits[0], limits[2], 20)
     w = np.linspace(limits[1], limits[3], 20)
@@ -98,39 +103,18 @@ def plot_phase_plane(
     # Plot vector field
     plt.quiver(V, W, dv, dw, color="gray", alpha=0.5)
 
-    # Create a finer grid of points
-    v = np.linspace(limits[0], limits[2], 100)
-    w = np.linspace(limits[1], limits[3], 100)
-    V, W = np.meshgrid(v, w)
-
     # Compute nullclines
-    v_nullcline, _ = equations(0, [V, 0], i_ext)
-    _, w_nullcline = equations(0, [V, W], i_ext)
+    v_nullcline, w_nullcline = compute_nullclines(
+        equations, t=0, i_ext=i_ext, limits=limits, kwargs=kwargs
+    )
 
     # Plot nullclines
-    # TODO: Understand this, see plots online
-    plt.contour(
-        V,
-        W,
-        v_nullcline - W,
-        levels=[0],
-        colors="r",
-        linestyles="--",
-        linewidths=2,
-    )
-    plt.contour(
-        V,
-        W,
-        w_nullcline,
-        levels=[0],
-        colors="b",
-        linestyles="-.",
-        linewidths=2,
-    )
+    plt.scatter(v_nullcline[0], v_nullcline[1], c="b", s=1, label="v nullcline")
+    plt.scatter(w_nullcline[0], w_nullcline[1], c="r", s=1, label="w nullcline")
 
     # This is a nonlinear equation; we'll use numerical methods to find fixed points.
     # Compute and plot fixed points
-    fixed_points = compute_fixed_points(lambda y: equations(0, y, i_ext))
+    fixed_points = compute_fixed_points(equations, t=0, i_ext=i_ext, kwargs=kwargs)
     for fp in fixed_points:
         plt.plot(fp[0], fp[1], "ko", markersize=8)
         plt.text(fp[0] + 0.1, fp[1] + 0.1, f"({fp[0]:.2f}, {fp[1]:.2f})")
@@ -138,7 +122,7 @@ def plot_phase_plane(
     plt.xlabel("Membrane Potential (v)")
     plt.ylabel("Recovery Variable (w)")
     plt.title("Phase Plane Analysis")
-    plt.legend(["v nullcline", "w nullcline", "Fixed Points"])
+    plt.legend()
     plt.xlim(limits[0], limits[2])
     plt.ylim(limits[1], limits[3])
     plt.grid(True)
