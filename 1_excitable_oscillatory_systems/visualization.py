@@ -244,8 +244,14 @@ def run_interactive_plot(
     # Initial simulation
     y = simulate(system_func, y0, t_span, t_eval, **kwargs)
 
+    # Determine the number of subplots
+    if param_name and param_values is not None:
+        size = 2
+    else:
+        size = 1
+
     # Set up the figure with subplots
-    fig, (ax_phase, ax_bifurcation) = plt.subplots(1, 2, figsize=(16, 6))
+    fig, (ax_phase, ax_bifurcation) = plt.subplots(1, size, figsize=(8 * size, 6))
 
     # Plot phase plane
     plot_phase_plane(system_func, limits=limits, ax=ax_phase, **kwargs)
