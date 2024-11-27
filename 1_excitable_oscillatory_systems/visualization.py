@@ -1,4 +1,4 @@
-from typing import Any, Callable, List, Tuple
+from typing import Any, Callable, List, Optional, Tuple
 
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
@@ -81,6 +81,7 @@ def update_simulation(
 def plot_phase_plane(
     system_func: Callable,
     limits: Tuple[float, float, float, float] = (-3.0, -3.0, 3.0, 3.0),
+    ax: Optional[plt.Axes] = None,
     **kwargs: Any,
 ) -> None:
     """
@@ -92,6 +93,8 @@ def plot_phase_plane(
         Function that defines the model equations.
     limits : tuple of float, optional
         Tuple containing the x and y limits (x_min, y_min, x_max, y_max).
+    ax : matplotlib.axes.Axes, optional
+        Axes object to plot on. If None, uses current axes.
     **kwargs
         Additional keyword arguments to pass to the system function.
 
@@ -99,6 +102,9 @@ def plot_phase_plane(
     -------
     None
     """
+    if ax is None:
+        ax = plt.gca()
+
     # Create a grid of points
     v_values = np.linspace(limits[0], limits[2], 20)
     w_values = np.linspace(limits[1], limits[3], 20)
@@ -108,7 +114,7 @@ def plot_phase_plane(
     dvdt, dwdt = system_func(0.0, [v_grid, w_grid], **kwargs)
 
     # Plot vector field
-    plt.quiver(v_grid, w_grid, dvdt, dwdt, color="gray", alpha=0.5)
+    ax.quiver(v_grid, w_grid, dvdt, dwdt, color="gray", alpha=0.5)
 
     # Compute nullclines
     nullclines = compute_nullclines(system_func, t=0.0, limits=limits, **kwargs)
@@ -116,22 +122,80 @@ def plot_phase_plane(
     w_nullcline = nullclines[1]
 
     # Plot nullclines
-    plt.scatter(v_nullcline[0], v_nullcline[1], c="b", s=1, label="dv/dt = 0 Nullcline")
-    plt.scatter(w_nullcline[0], w_nullcline[1], c="r", s=1, label="dw/dt = 0 Nullcline")
+    ax.scatter(v_nullcline[0], v_nullcline[1], c="b", s=1, label="dv/dt = 0 Nullcline")
+    ax.scatter(w_nullcline[0], w_nullcline[1], c="r", s=1, label="dw/dt = 0 Nullcline")
 
     # Compute and plot fixed points
     fixed_points = compute_fixed_points(system_func, t=0.0, **kwargs)
     for fp in fixed_points:
-        plt.plot(fp[0], fp[1], "ko", markersize=8)
-        plt.text(fp[0] + 0.1, fp[1] + 0.1, f"({fp[0]:.2f}, {fp[1]:.2f})")
+        ax.plot(fp[0], fp[1], "ko", markersize=8)
+        ax.text(fp[0] + 0.1, fp[1] + 0.1, f"({fp[0]:.2f}, {fp[1]:.2f})")
 
-    plt.xlabel("Membrane Potential (v)")
-    plt.ylabel("Recovery Variable (w)")
-    plt.title("Phase Plane Analysis")
-    plt.legend()
-    plt.xlim(limits[0], limits[2])
-    plt.ylim(limits[1], limits[3])
-    plt.grid(True)
+    ax.set_xlabel("Membrane Potential (v)")
+    ax.set_ylabel("Recovery Variable (w)")
+    ax.set_title("Phase Plane Analysis")
+    ax.legend()
+    ax.set_xlim(limits[0], limits[2])
+    ax.set_ylim(limits[1], limits[3])
+    ax.grid(True)
+
+
+def plot_bifurcation(
+    system_func: Callable,
+    param_name: str,
+    param_values: np.ndarray,
+    t_span: Tuple[float, float],
+    t_eval: np.ndarray,
+    y0: List[float],
+    ax: Optional[plt.Axes] = None,
+    **kwargs: Any,
+) -> None:
+    """
+    Plots the bifurcation diagram by varying a specified parameter.
+
+    Parameters
+    ----------
+    system_func : Callable
+        Function that defines the model equations.
+    param_name : str
+        Name of the parameter to vary.
+    param_values : ndarray
+        Array of parameter values.
+    t_span : tuple of float
+        Tuple containing the start and end times (t0, tf).
+    t_eval : ndarray
+        Time points at which to store the computed solutions.
+    y0 : list of float
+        Initial conditions.
+    ax : matplotlib.axes.Axes, optional
+        Axes object to plot on. If None, uses current axes.
+    **kwargs
+        Additional keyword arguments to pass to the system function.
+
+    Returns
+    -------
+    None
+    """
+    if ax is None:
+        ax = plt.gca()
+
+    max_v = []
+    min_v = []
+
+    for param_value in param_values:
+        kwargs[param_name] = param_value
+        y = simulate(system_func, y0, t_span, t_eval, **kwargs)
+        v = y[0][-int(len(t_eval) / 2) :]  # Last half of data
+        max_v.append(np.max(v))
+        min_v.append(np.min(v))
+
+    ax.plot(param_values, max_v, "r", label="Max v")
+    ax.plot(param_values, min_v, "b", label="Min v")
+    ax.set_xlabel(param_name)
+    ax.set_ylabel("Membrane Potential v")
+    ax.set_title("Bifurcation Diagram")
+    ax.legend()
+    ax.grid(True)
 
 
 def run_interactive_plot(
@@ -141,6 +205,8 @@ def run_interactive_plot(
     v0: float = 0.0,
     w0: float = 0.0,
     limits: Tuple[float, float, float, float] = (-3.0, -3.0, 3.0, 3.0),
+    param_name: Optional[str] = None,
+    param_values: Optional[np.ndarray] = None,
     **kwargs: Any,
 ) -> None:
     """
@@ -150,7 +216,7 @@ def run_interactive_plot(
     ----------
     system_func : Callable
         Function that defines the model equations.
-    t_span : float, optional
+    t_end : float, optional
         End time for the simulation (default is 100.0).
     num_points : int, optional
         Number of time points to evaluate (default is 1000).
@@ -160,6 +226,10 @@ def run_interactive_plot(
         Initial value of the second variable (default is 0.0).
     limits : tuple of float, optional
         Tuple containing the x and y limits (x_min, y_min, x_max, y_max).
+    param_name : str, optional
+        Name of the parameter to vary in bifurcation diagram.
+    param_values : ndarray, optional
+        Array of parameter values for bifurcation diagram.
     **kwargs
         Additional keyword arguments to pass to the system function.
 
@@ -167,19 +237,34 @@ def run_interactive_plot(
     -------
     None
     """
-    t_span: Tuple[float, float] = (0.0, t_end)  # Time span [t0, tf]
-    t_eval: np.ndarray = np.linspace(*t_span, num_points)  # Time points to evaluate
-    y0: List[float] = [v0, w0]  # Initial conditions [v0, w0]
+    t_span: Tuple[float, float] = (0.0, t_end)
+    t_eval: np.ndarray = np.linspace(*t_span, num_points)
+    y0: List[float] = [v0, w0]
 
     # Initial simulation
     y = simulate(system_func, y0, t_span, t_eval, **kwargs)
 
-    # Set up the figure and axis
-    fig, ax = plt.subplots(figsize=(8, 6))
-    plot_phase_plane(system_func, limits=limits, **kwargs)
+    # Set up the figure with subplots
+    fig, (ax_phase, ax_bifurcation) = plt.subplots(1, 2, figsize=(16, 6))
 
-    # Initialize the line object
-    (line,) = ax.plot([], [], lw=2)
+    # Plot phase plane
+    plot_phase_plane(system_func, limits=limits, ax=ax_phase, **kwargs)
+
+    # Plot bifurcation diagram if parameters are provided
+    if param_name and param_values is not None:
+        plot_bifurcation(
+            system_func,
+            param_name=param_name,
+            param_values=param_values,
+            t_span=t_span,
+            t_eval=t_eval,
+            y0=y0,
+            ax=ax_bifurcation,
+            **kwargs,
+        )
+
+    # Initialize the line object for animation on phase plane
+    (line,) = ax_phase.plot([], [], lw=2)
 
     # Create the animation
     ani = animation.FuncAnimation(

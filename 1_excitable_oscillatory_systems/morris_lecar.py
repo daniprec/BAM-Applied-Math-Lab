@@ -92,6 +92,8 @@ def main(
         v0=-60.0,
         w0=0.0,
         limits=(-60.0, 0.0, 80.0, 1.0),
+        param_name="i_ext",
+        param_values=np.linspace(0, 80, 100),
     )
 
 
