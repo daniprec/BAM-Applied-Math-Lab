@@ -58,6 +58,8 @@ def main(
         v0=0,
         w0=0,
         limits=(-3, -3, 3, 3),
+        param_name="i_ext",
+        param_values=np.linspace(0, 2, 100),
     )
 
 
