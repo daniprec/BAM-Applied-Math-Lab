@@ -7,7 +7,7 @@ from visualization import run_interactive_plot
 def morris_lecar(
     t: float,
     y: np.ndarray,
-    i_ext: float,
+    i_ext: float = 40.0,
     c: float = 20.0,
     g_ca: float = 4.0,
     g_k: float = 8.0,
@@ -79,18 +79,16 @@ def morris_lecar(
 
 
 def main(
-    i_ext: float = 40.0,
-    t_span: float = 200,
-    t_eval: float = 2000,
+    t_end: float = 200.0,
+    num_points: int = 1000,
 ):
     """
     Main function to run the interactive Morris-Lecar model simulation.
     """
     run_interactive_plot(
         morris_lecar,
-        i_ext=i_ext,
-        t_span=t_span,
-        t_eval=t_eval,
+        t_end=t_end,
+        num_points=num_points,
         v0=-60.0,
         w0=0.0,
         limits=(-60.0, 0.0, 80.0, 1.0),

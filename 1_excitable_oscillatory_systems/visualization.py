@@ -1,12 +1,15 @@
-from typing import Any, List, Tuple
+from typing import Any, Callable, List, Tuple
 
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
 from dynamical_systems import compute_fixed_points, compute_nullclines, simulate
+from matplotlib.animation import FuncAnimation
+from matplotlib.backend_bases import MouseEvent
+from matplotlib.lines import Line2D
 
 
-def animate(i: int, y: np.ndarray, line: Any) -> Tuple[Any]:
+def animate(i: int, y: np.ndarray, line: Line2D) -> Tuple[Line2D]:
     """
     Updates the line object for each frame in the animation.
 
@@ -29,13 +32,14 @@ def animate(i: int, y: np.ndarray, line: Any) -> Tuple[Any]:
 
 
 def update_simulation(
-    event: Any,
-    system_func: Any,
+    event: MouseEvent,
+    system_func: Callable,
     t_span: Tuple[float, float],
     t_eval: np.ndarray,
-    line: Any,
-    ani: Any,
-    *args,
+    line: Line2D,
+    ani: FuncAnimation,
+    *args: Any,
+    **kwargs: Any,
 ) -> None:
     """
     Updates the simulation with new initial conditions from a mouse click.
@@ -44,7 +48,7 @@ def update_simulation(
     ----------
     event : MouseEvent
         Matplotlib mouse event.
-    system_func : callable
+    system_func : Callable
         Function defining the system of ODEs.
     t_span : tuple of float
         Tuple containing the start and end times (t0, tf).
@@ -56,6 +60,8 @@ def update_simulation(
         Animation object to update.
     *args
         Additional arguments to pass to the system function.
+    **kwargs
+        Additional keyword arguments to pass to the system function.
 
     Returns
     -------
@@ -64,57 +70,57 @@ def update_simulation(
     y0 = [event.xdata, event.ydata]
     if None in y0:
         return
-    y = simulate(system_func, y0, t_span, t_eval, *args)
+    y = simulate(system_func, y0, t_span, t_eval, *args, **kwargs)
     ani.event_source.stop()
     ani.new_frame_seq()
     ani.frame_seq = ani.new_frame_seq()
     ani._args = (y, line)
     ani.event_source.start()
-    ani._args = (y, line)
-    ani.event_source.start()
 
 
 def plot_phase_plane(
-    equations: callable,
-    i_ext: float = 0.5,
-    limits: tuple[float] = (-3, -3, 3, 3),
-    kwargs: dict = None,
+    equations: Callable,
+    limits: Tuple[float, float, float, float] = (-3.0, -3.0, 3.0, 3.0),
+    **kwargs: Any,
 ) -> None:
     """
     Plots the phase plane of any excitable-oscillatory model.
 
     Parameters
     ----------
-    equations : callable
+    equations : Callable
         Function that defines the model equations.
-    i_ext : float
-        External stimulus current.
-    """
-    kwargs = kwargs if isinstance(kwargs, dict) else {}
+    limits : tuple of float, optional
+        Tuple containing the x and y limits (x_min, y_min, x_max, y_max).
+    **kwargs
+        Additional keyword arguments to pass to the system function.
 
+    Returns
+    -------
+    None
+    """
     # Create a grid of points
-    v = np.linspace(limits[0], limits[2], 20)
-    w = np.linspace(limits[1], limits[3], 20)
-    V, W = np.meshgrid(v, w)
+    v_values = np.linspace(limits[0], limits[2], 20)
+    w_values = np.linspace(limits[1], limits[3], 20)
+    v_grid, w_grid = np.meshgrid(v_values, w_values)
 
     # Compute derivatives
-    dv, dw = equations(0, [V, W], i_ext)
+    dvdt, dwdt = equations(0.0, [v_grid, w_grid], **kwargs)
 
     # Plot vector field
-    plt.quiver(V, W, dv, dw, color="gray", alpha=0.5)
+    plt.quiver(v_grid, w_grid, dvdt, dwdt, color="gray", alpha=0.5)
 
     # Compute nullclines
-    v_nullcline, w_nullcline = compute_nullclines(
-        equations, t=0, i_ext=i_ext, limits=limits, kwargs=kwargs
-    )
+    nullclines = compute_nullclines(equations, t=0.0, limits=limits, **kwargs)
+    v_nullcline = nullclines[0]
+    w_nullcline = nullclines[1]
 
     # Plot nullclines
-    plt.scatter(v_nullcline[0], v_nullcline[1], c="b", s=1, label="v nullcline")
-    plt.scatter(w_nullcline[0], w_nullcline[1], c="r", s=1, label="w nullcline")
+    plt.scatter(v_nullcline[0], v_nullcline[1], c="b", s=1, label="dv/dt = 0 Nullcline")
+    plt.scatter(w_nullcline[0], w_nullcline[1], c="r", s=1, label="dw/dt = 0 Nullcline")
 
-    # This is a nonlinear equation; we'll use numerical methods to find fixed points.
     # Compute and plot fixed points
-    fixed_points = compute_fixed_points(equations, t=0, i_ext=i_ext, kwargs=kwargs)
+    fixed_points = compute_fixed_points(equations, t=0.0, **kwargs)
     for fp in fixed_points:
         plt.plot(fp[0], fp[1], "ko", markersize=8)
         plt.text(fp[0] + 0.1, fp[1] + 0.1, f"({fp[0]:.2f}, {fp[1]:.2f})")
@@ -129,27 +135,48 @@ def plot_phase_plane(
 
 
 def run_interactive_plot(
-    equations: callable,
-    i_ext: float = 0.5,
-    t_span: float = 100,
-    t_eval: float = 1000,
+    equations: Callable,
+    t_end: float = 100.0,
+    num_points: int = 1000,
     v0: float = 0.0,
     w0: float = 0.0,
-    limits: tuple[float] = (-3, -3, 3, 3),
+    limits: Tuple[float, float, float, float] = (-3.0, -3.0, 3.0, 3.0),
+    **kwargs: Any,
 ) -> None:
     """
-    Main function to run the interactive model simulation.
+    Runs an interactive simulation of a dynamical system with the ability to update initial conditions.
+
+    Parameters
+    ----------
+    equations : Callable
+        Function that defines the model equations.
+    t_span : float, optional
+        End time for the simulation (default is 100.0).
+    num_points : int, optional
+        Number of time points to evaluate (default is 1000).
+    v0 : float, optional
+        Initial value of the first variable (default is 0.0).
+    w0 : float, optional
+        Initial value of the second variable (default is 0.0).
+    limits : tuple of float, optional
+        Tuple containing the x and y limits (x_min, y_min, x_max, y_max).
+    **kwargs
+        Additional keyword arguments to pass to the system function.
+
+    Returns
+    -------
+    None
     """
-    t_span: Tuple[float, float] = (0.0, t_span)
-    t_eval: np.ndarray = np.linspace(*t_span, t_eval)
+    t_span: Tuple[float, float] = (0.0, t_end)  # Time span [t0, tf]
+    t_eval: np.ndarray = np.linspace(*t_span, num_points)  # Time points to evaluate
     y0: List[float] = [v0, w0]  # Initial conditions [v0, w0]
 
     # Initial simulation
-    y = simulate(equations, y0, t_span, t_eval, i_ext)
+    y = simulate(equations, y0, t_span, t_eval, **kwargs)
 
     # Set up the figure and axis
     fig, ax = plt.subplots(figsize=(8, 6))
-    plot_phase_plane(equations, i_ext=i_ext, limits=limits)
+    plot_phase_plane(equations, limits=limits, **kwargs)
 
     # Initialize the line object
     (line,) = ax.plot([], [], lw=2)
@@ -163,7 +190,7 @@ def run_interactive_plot(
     fig.canvas.mpl_connect(
         "button_press_event",
         lambda event: update_simulation(
-            event, equations, t_span, t_eval, line, ani, i_ext
+            event, equations, t_span, t_eval, line, ani, **kwargs
         ),
     )
 

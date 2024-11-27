@@ -7,7 +7,7 @@ from visualization import run_interactive_plot
 def fitzhugh_nagumo(
     t: float,
     y: np.ndarray,
-    i_ext: float,
+    i_ext: float = 0.5,
     a: float = 0.7,
     b: float = 0.8,
     tau: float = 12.5,
@@ -45,18 +45,16 @@ def fitzhugh_nagumo(
 
 
 def main(
-    i_ext: float = 0.5,
-    t_span: float = 100,
-    t_eval: float = 1000,
+    t_end: float = 100.0,
+    num_points: int = 1000,
 ):
     """
     Main function to run the interactive FitzHugh-Nagumo model simulation.
     """
     run_interactive_plot(
         fitzhugh_nagumo,
-        i_ext=i_ext,
-        t_span=t_span,
-        t_eval=t_eval,
+        t_end=t_end,
+        num_points=num_points,
         v0=0,
         w0=0,
         limits=(-3, -3, 3, 3),
