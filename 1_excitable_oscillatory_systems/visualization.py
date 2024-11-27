@@ -1,9 +1,77 @@
-from typing import List, Tuple
+from typing import Any, List, Tuple
 
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
-from dynamical_systems import animate, compute_fixed_points, simulate, update_simulation
+from dynamical_systems import compute_fixed_points, simulate
+
+
+def animate(i: int, y: np.ndarray, line: Any) -> Tuple[Any]:
+    """
+    Updates the line object for each frame in the animation.
+
+    Parameters
+    ----------
+    i : int
+        Frame index.
+    y : ndarray
+        Array of solution values.
+    line : Line2D
+        Line object to update.
+
+    Returns
+    -------
+    line : tuple of Line2D
+        Updated line object.
+    """
+    line.set_data(y[0][:i], y[1][:i])
+    return (line,)
+
+
+def update_simulation(
+    event: Any,
+    system_func: Any,
+    t_span: Tuple[float, float],
+    t_eval: np.ndarray,
+    line: Any,
+    ani: Any,
+    *args,
+) -> None:
+    """
+    Updates the simulation with new initial conditions from a mouse click.
+
+    Parameters
+    ----------
+    event : MouseEvent
+        Matplotlib mouse event.
+    system_func : callable
+        Function defining the system of ODEs.
+    t_span : tuple of float
+        Tuple containing the start and end times (t0, tf).
+    t_eval : ndarray
+        Time points at which to store the computed solutions.
+    line : Line2D
+        Line object to update.
+    ani : FuncAnimation
+        Animation object to update.
+    *args
+        Additional arguments to pass to the system function.
+
+    Returns
+    -------
+    None
+    """
+    y0 = [event.xdata, event.ydata]
+    if None in y0:
+        return
+    y = simulate(system_func, y0, t_span, t_eval, *args)
+    ani.event_source.stop()
+    ani.new_frame_seq()
+    ani.frame_seq = ani.new_frame_seq()
+    ani._args = (y, line)
+    ani.event_source.start()
+    ani._args = (y, line)
+    ani.event_source.start()
 
 
 def plot_phase_plane(
@@ -69,7 +137,7 @@ def plot_phase_plane(
 
     plt.xlabel("Membrane Potential (v)")
     plt.ylabel("Recovery Variable (w)")
-    plt.title("Phase Plane Analysis of FitzHugh-Nagumo Model")
+    plt.title("Phase Plane Analysis")
     plt.legend(["v nullcline", "w nullcline", "Fixed Points"])
     plt.xlim(limits[0], limits[2])
     plt.ylim(limits[1], limits[3])
@@ -86,7 +154,7 @@ def run_interactive_plot(
     limits: tuple[float] = (-3, -3, 3, 3),
 ) -> None:
     """
-    Main function to run the interactive FitzHugh-Nagumo model simulation.
+    Main function to run the interactive model simulation.
     """
     t_span: Tuple[float, float] = (0.0, t_span)
     t_eval: np.ndarray = np.linspace(*t_span, t_eval)
