@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Any, List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -6,14 +6,16 @@ import toml
 from matplotlib import animation
 
 
-def initialize_grid(n: int, perturb: bool = True) -> Tuple[np.ndarray, np.ndarray]:
+def initialize_grid(
+    grid_size: int, perturb: bool = True
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Initializes the concentration grids for u and v.
 
     Parameters
     ----------
-    n : int
-        Size of the grid (n x n).
+    grid_size : int
+        Length of the grid border (square grid).
     perturb : bool, optional
         Whether to add an initial perturbation.
 
@@ -24,13 +26,13 @@ def initialize_grid(n: int, perturb: bool = True) -> Tuple[np.ndarray, np.ndarra
     v : ndarray
         Concentration grid for v.
     """
-    u = np.ones((n, n))
-    v = np.zeros((n, n))
+    u = np.ones((grid_size, grid_size))
+    v = np.zeros((grid_size, grid_size))
 
     # Add a small perturbation in the center
     if perturb:
         r = 20  # Radius of perturbation
-        center = n // 2
+        center = grid_size // 2
         u[center - r : center + r, center - r : center + r] = 0.50
         v[center - r : center + r, center - r : center + r] = 0.25
 
@@ -60,7 +62,15 @@ def laplacian(z: np.ndarray) -> np.ndarray:
     )
 
 
-def update(u: np.ndarray, v: np.ndarray, params: dict) -> Tuple[np.ndarray, np.ndarray]:
+def update(
+    u: np.ndarray,
+    v: np.ndarray,
+    du: float = 0.16,
+    dv: float = 0.08,
+    f: float = 0.060,
+    k: float = 0.062,
+    dt: float = 1.0,
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Updates the concentration grids for u and v.
 
@@ -70,8 +80,16 @@ def update(u: np.ndarray, v: np.ndarray, params: dict) -> Tuple[np.ndarray, np.n
         Current concentration grid for u.
     v : ndarray
         Current concentration grid for v.
-    params : dict
-        Dictionary containing model parameters.
+    du : float, optional
+        Diffusion rate for u.
+    dv : float, optional
+        Diffusion rate for v.
+    f : float, optional
+        Feed rate for u.
+    k : float, optional
+        Kill rate for v.
+    dt : float, optional
+        Time step for the simulation.
 
     Returns
     -------
@@ -80,13 +98,6 @@ def update(u: np.ndarray, v: np.ndarray, params: dict) -> Tuple[np.ndarray, np.n
     v_new : ndarray
         Updated concentration grid for v.
     """
-    du, dv, f, k, dt = (
-        params["du"],
-        params["dv"],
-        params["f"],
-        params["k"],
-        params["dt"],
-    )
 
     lu = laplacian(u)
     lv = laplacian(v)
@@ -112,29 +123,29 @@ def update(u: np.ndarray, v: np.ndarray, params: dict) -> Tuple[np.ndarray, np.n
     return u_new, v_new
 
 
-def run_simulation(n: int, steps: int, params: dict) -> List[np.ndarray]:
+def run_simulation(grid_size: int, steps: int, **kwargs: Any) -> List[np.ndarray]:
     """
     Runs the Gray-Scott simulation.
 
     Parameters
     ----------
-    n : int
-        Size of the grid (n x n).
+    grid_size : int
+        Length of the grid border (square grid).
     steps : int
         Number of time steps to simulate.
-    params : dict
-        Dictionary containing model parameters.
+    **kwargs : Any
+        Additional keyword arguments for the simulation.
 
     Returns
     -------
     frames : list of ndarray
         List of concentration grids for visualization.
     """
-    u, v = initialize_grid(n)
+    u, v = initialize_grid(grid_size)
 
     frames = []
     for i in range(steps):
-        u, v = update(u, v, params)
+        u, v = update(u, v, **kwargs)
         if i % 10 == 0:
             frames.append(v.copy())
     return frames
@@ -161,33 +172,20 @@ def animate_simulation(frames: List[np.ndarray]) -> None:
         return [im]
 
     ani = animation.FuncAnimation(
-        fig, update_frame, frames=len(frames), interval=50, blit=True
+        fig, update_frame, frames=len(frames), interval=10, blit=True
     )
     plt.axis("off")
     plt.show()
 
 
-def main(config: str = "config.toml"):
+def main(config: str = "config.toml", key: str = "gray-scott"):
     """
     Main function to run the Gray-Scott simulation.
     """
     # Read parameters from config file
-    dict_config = toml.load(config)["gray-scott"]
+    dict_config: dict = toml.load(config)[key]
 
-    n = dict_config.get("grid_size", 256)
-    steps = dict_config.get("steps", 10000)
-    params = dict_config.get(
-        "params",
-        {
-            "du": 0.16,
-            "dv": 0.08,
-            "f": 0.060,
-            "k": 0.062,
-            "dt": 1.0,
-        },
-    )
-
-    frames = run_simulation(n, steps, params)
+    frames = run_simulation(**dict_config)
     animate_simulation(frames)
 
 

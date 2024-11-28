@@ -45,26 +45,15 @@ def fitzhugh_nagumo(
     return [dvdt, dwdt]
 
 
-def main(
-    t_end: float = 100.0,
-    num_points: int = 1000,
-    config: str = "config.toml",
-):
+def main(config: str = "config.toml", key: str = "fitzhugh-nagumo"):
     """
     Main function to run the interactive FitzHugh-Nagumo model simulation.
     """
     # Load config file
-    dict_config: dict = toml.load(config)["fitzhugh-nagumo"]
-    params = dict_config.pop("params")
+    dict_config: dict = toml.load(config)[key]
 
     # Run interactive plot
-    run_interactive_plot(
-        fitzhugh_nagumo,
-        t_end=t_end,
-        num_points=num_points,
-        **dict_config,
-        **params,
-    )
+    run_interactive_plot(fitzhugh_nagumo, **dict_config)
 
 
 if __name__ == "__main__":
