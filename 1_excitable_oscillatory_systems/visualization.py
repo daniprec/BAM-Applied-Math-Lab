@@ -102,6 +102,7 @@ def plot_phase_plane(
     -------
     None
     """
+    # Set up the axes if not provided
     if ax is None:
         ax = plt.gca()
 
@@ -130,14 +131,6 @@ def plot_phase_plane(
     for fp in fixed_points:
         ax.plot(fp[0], fp[1], "ko", markersize=8)
         ax.text(fp[0] + 0.1, fp[1] + 0.1, f"({fp[0]:.2f}, {fp[1]:.2f})")
-
-    ax.set_xlabel("Membrane Potential (v)")
-    ax.set_ylabel("Recovery Variable (w)")
-    ax.set_title("Phase Plane Analysis")
-    ax.legend()
-    ax.set_xlim(limits[0], limits[2])
-    ax.set_ylim(limits[1], limits[3])
-    ax.grid(True)
 
 
 def plot_bifurcation(
@@ -255,6 +248,14 @@ def run_interactive_plot(
 
     # Plot phase plane
     plot_phase_plane(system_func, limits=limits, ax=ax_phase, **kwargs)
+    # Set up the plot parameters
+    ax_phase.set_xlabel("Membrane Potential (v)")
+    ax_phase.set_ylabel("Recovery Variable (w)")
+    ax_phase.set_title("Phase Plane Analysis")
+    ax_phase.legend()
+    ax_phase.set_xlim(limits[0], limits[2])
+    ax_phase.set_ylim(limits[1], limits[3])
+    ax_phase.grid(True)
 
     # Plot bifurcation diagram if parameters are provided
     if param_name and param_values is not None:

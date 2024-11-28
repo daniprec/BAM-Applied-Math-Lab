@@ -37,6 +37,7 @@ def simulate(
     def func(t: float, y: np.ndarray) -> np.ndarray:
         return system_func(t, y, **kwargs)
 
+    # Solve an initial value problem for a system of ODEs
     sol = solve_ivp(func, t_span, y0, t_eval=t_eval)
     return sol.y
 
@@ -71,7 +72,10 @@ def compute_fixed_points(
     guesses = [(-1.0, -1.0), (0.0, 0.0), (1.0, 1.0)]
     fixed_points = []
     for guess in guesses:
+        # Find the roots of the (non-linear) equations defined by func(x) = 0
+        # given a starting estimate (guess)
         fixed_point, info, ier, mesg = fsolve(func, guess, full_output=True)
+        # ier: An integer flag. Set to 1 if a solution was found
         if ier == 1:
             # Check for duplicates
             if not any(np.allclose(fixed_point, fp, atol=1e-5) for fp in fixed_points):
@@ -79,11 +83,12 @@ def compute_fixed_points(
     return np.array(fixed_points)
 
 
-def extract_nullcline(
+def _extract_nullcline(
     x: np.ndarray, y: np.ndarray, f: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Extracts nullcline points where the function crosses zero.
+    This is a helper function for compute_nullclines().
 
     Parameters
     ----------
@@ -140,29 +145,18 @@ def compute_nullclines(
     """
     x_min, y_min, x_max, y_max = limits
 
+    # Create a grid of points
     x_values = np.linspace(x_min, x_max, num_points)
     y_values = np.linspace(y_min, y_max, num_points)
-
     x_grid, y_grid = np.meshgrid(x_values, y_values)
 
-    # Flatten the arrays to compute derivatives at each point
-    x_flat = x_grid.flatten()
-    y_flat = y_grid.flatten()
-    dx_dt = np.zeros_like(x_flat)
-    dy_dt = np.zeros_like(y_flat)
-
     # Evaluate the derivatives at each point
-    for idx, (xi, yi) in enumerate(zip(x_flat, y_flat)):
-        dydt = system_func(t, [xi, yi], **kwargs)
-        dx_dt[idx] = dydt[0]
-        dy_dt[idx] = dydt[1]
-
-    # Reshape to the grid shape
-    dx_dt_grid = dx_dt.reshape(x_grid.shape)
-    dy_dt_grid = dy_dt.reshape(y_grid.shape)
+    dx_dt: np.ndarray
+    dy_dt: np.ndarray
+    dx_dt, dy_dt = system_func(t, [x_grid, y_grid], **kwargs)
 
     # Extract nullcline data
-    x_nc_x, x_nc_y = extract_nullcline(x_grid, y_grid, dx_dt_grid)
-    y_nc_x, y_nc_y = extract_nullcline(x_grid, y_grid, dy_dt_grid)
+    x_nc_x, x_nc_y = _extract_nullcline(x_grid, y_grid, dx_dt)
+    y_nc_x, y_nc_y = _extract_nullcline(x_grid, y_grid, dy_dt)
 
     return [(x_nc_x, x_nc_y), (y_nc_x, y_nc_y)]
