@@ -80,7 +80,7 @@ def morris_lecar(
 
 
 def main(
-    t_end: float = 100.0,
+    t_end: float = 200.0,
     num_points: int = 1000,
     config: str = "1_excitable_oscillatory_systems/config.toml",
 ):
