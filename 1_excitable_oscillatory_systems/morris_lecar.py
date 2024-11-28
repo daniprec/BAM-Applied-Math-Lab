@@ -82,20 +82,22 @@ def morris_lecar(
 def main(
     t_end: float = 200.0,
     num_points: int = 1000,
-    config: str = "1_excitable_oscillatory_systems/config.toml",
+    config: str = "config.toml",
 ):
     """
     Main function to run the interactive FitzHugh-Nagumo model simulation.
     """
     # Load config file
-    config = toml.load(config)["morris-lecar"]
+    dict_config: dict = toml.load(config)["morris-lecar"]
+    params = dict_config.pop("params")
 
     # Run interactive plot
     run_interactive_plot(
         morris_lecar,
         t_end=t_end,
         num_points=num_points,
-        **config,
+        **dict_config,
+        **params,
     )
 
 

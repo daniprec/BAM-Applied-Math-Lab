@@ -48,20 +48,22 @@ def fitzhugh_nagumo(
 def main(
     t_end: float = 100.0,
     num_points: int = 1000,
-    config: str = "1_excitable_oscillatory_systems/config.toml",
+    config: str = "config.toml",
 ):
     """
     Main function to run the interactive FitzHugh-Nagumo model simulation.
     """
     # Load config file
-    config = toml.load(config)["fitzhugh-nagumo"]
+    dict_config: dict = toml.load(config)["fitzhugh-nagumo"]
+    params = dict_config.pop("params")
 
     # Run interactive plot
     run_interactive_plot(
         fitzhugh_nagumo,
         t_end=t_end,
         num_points=num_points,
-        **config,
+        **dict_config,
+        **params,
     )
 
 
