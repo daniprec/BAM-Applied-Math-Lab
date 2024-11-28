@@ -1,6 +1,7 @@
 from typing import List
 
 import numpy as np
+import toml
 from visualization import run_interactive_plot
 
 
@@ -79,21 +80,22 @@ def morris_lecar(
 
 
 def main(
-    t_end: float = 200.0,
+    t_end: float = 100.0,
     num_points: int = 1000,
+    config: str = "1_excitable_oscillatory_systems/config.toml",
 ):
     """
-    Main function to run the interactive Morris-Lecar model simulation.
+    Main function to run the interactive FitzHugh-Nagumo model simulation.
     """
+    # Load config file
+    config = toml.load(config)["morris-lecar"]
+
+    # Run interactive plot
     run_interactive_plot(
         morris_lecar,
         t_end=t_end,
         num_points=num_points,
-        v0=-60.0,
-        w0=0.0,
-        limits=(-60.0, 0.0, 80.0, 1.0),
-        param_name="i_ext",
-        param_values=np.linspace(0, 80, 100),
+        **config,
     )
 
 

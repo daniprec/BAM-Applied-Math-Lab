@@ -136,7 +136,7 @@ def plot_phase_plane(
 def plot_bifurcation(
     system_func: Callable,
     param_name: str,
-    param_values: np.ndarray,
+    param_limits: Tuple[float, float],
     t_span: Tuple[float, float],
     t_eval: np.ndarray,
     y0: List[float],
@@ -175,6 +175,7 @@ def plot_bifurcation(
     max_v = []
     min_v = []
 
+    param_values = np.linspace(*param_limits, 100)
     for param_value in param_values:
         kwargs[param_name] = param_value
         y = simulate(system_func, y0, t_span, t_eval, **kwargs)
@@ -199,7 +200,7 @@ def run_interactive_plot(
     w0: float = 0.0,
     limits: Tuple[float, float, float, float] = (-3.0, -3.0, 3.0, 3.0),
     param_name: Optional[str] = None,
-    param_values: Optional[np.ndarray] = None,
+    param_limits: Tuple[float, float] = (0.0, 2.0),
     **kwargs: Any,
 ) -> None:
     """
@@ -238,7 +239,7 @@ def run_interactive_plot(
     y = simulate(system_func, y0, t_span, t_eval, **kwargs)
 
     # Determine the number of subplots
-    if param_name and param_values is not None:
+    if param_name and param_limits is not None:
         size = 2
     else:
         size = 1
@@ -258,11 +259,11 @@ def run_interactive_plot(
     ax_phase.grid(True)
 
     # Plot bifurcation diagram if parameters are provided
-    if param_name and param_values is not None:
+    if param_name and param_limits is not None:
         plot_bifurcation(
             system_func,
             param_name=param_name,
-            param_values=param_values,
+            param_limits=param_limits,
             t_span=t_span,
             t_eval=t_eval,
             y0=y0,

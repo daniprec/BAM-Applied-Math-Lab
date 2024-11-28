@@ -1,6 +1,7 @@
 from typing import List
 
 import numpy as np
+import toml
 from visualization import run_interactive_plot
 
 
@@ -47,19 +48,20 @@ def fitzhugh_nagumo(
 def main(
     t_end: float = 100.0,
     num_points: int = 1000,
+    config: str = "1_excitable_oscillatory_systems/config.toml",
 ):
     """
     Main function to run the interactive FitzHugh-Nagumo model simulation.
     """
+    # Load config file
+    config = toml.load(config)["fitzhugh-nagumo"]
+
+    # Run interactive plot
     run_interactive_plot(
         fitzhugh_nagumo,
         t_end=t_end,
         num_points=num_points,
-        v0=0,
-        w0=0,
-        limits=(-3, -3, 3, 3),
-        param_name="i_ext",
-        param_values=np.linspace(0, 2, 100),
+        **config,
     )
 
 
