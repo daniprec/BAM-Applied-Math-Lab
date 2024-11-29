@@ -1,5 +1,3 @@
-# gray_scott_simulation.py
-
 from typing import Any
 
 import matplotlib.pyplot as plt
