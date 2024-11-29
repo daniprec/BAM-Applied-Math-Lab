@@ -15,7 +15,13 @@ def fitzhugh_nagumo(
     r: float = 0.1,
 ) -> List[float]:
     """
-    Defines the FitzHugh-Nagumo model equations.
+    Defines the FitzHugh-Nagumo (FHN) model equations.
+    The FHN model describes a prototype of an excitable system (e.g., a neuron).
+    It is an example of a relaxation oscillator because, if the external
+    stimulus i_ext exceeds a certain threshold value, the system will exhibit a
+    characteristic excursion in phase space, before the variables v and w
+    relax back to their rest values.
+    https://en.wikipedia.org/wiki/FitzHugh%E2%80%93Nagumo_model
 
     Parameters
     ----------

@@ -24,13 +24,21 @@ def morris_lecar(
 ) -> List[float]:
     """
     Defines the Morris-Lecar model equations.
+    The Morris-Lecar model is a biological neuron model developed by
+    Catherine Morris and Harold Lecar to reproduce the variety of oscillatory
+    behavior in relation to Ca++ and K+ conductance in the muscle fiber of the
+    giant barnacle. Morris-Lecar neurons exhibit both class I and class II
+    neuron excitability.
+    https://en.wikipedia.org/wiki/Morris%E2%80%93Lecar_model
 
     Parameters
     ----------
     t : float
         Time variable.
     y : ndarray
-        Array containing the variables [v, w] at time t.
+        Array containing the variables [v, n] at time t.
+        v = membrane potential
+        n = recovery variable: the probability that the K+ channel is conducting
     i_ext : float
         External current.
     c : float, optional
@@ -63,20 +71,20 @@ def morris_lecar(
     dydt : list of float
         Derivatives [dv/dt, dw/dt] at time t.
     """
-    v, w = y
+    v, n = y
 
     # Steady-state functions
     m_inf = 0.5 * (1 + np.tanh((v - v1) / v2))
-    w_inf = 0.5 * (1 + np.tanh((v - v3) / v4))
+    n_inf = 0.5 * (1 + np.tanh((v - v3) / v4))
     tau_w = 1 / (phi * np.cosh((v - v3) / (2 * v4)))
 
     # Differential equations
     dvdt = (
-        i_ext - g_l * (v - v_l) - g_ca * m_inf * (v - v_ca) - g_k * w * (v - v_k)
+        i_ext - g_l * (v - v_l) - g_ca * m_inf * (v - v_ca) - g_k * n * (v - v_k)
     ) / c
-    dwdt = (w_inf - w) / tau_w
+    dndt = (n_inf - n) / tau_w
 
-    return [dvdt, dwdt]
+    return [dvdt, dndt]
 
 
 def main(config: str = "config.toml", key: str = "morris-lecar"):
