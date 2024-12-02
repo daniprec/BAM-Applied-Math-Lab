@@ -41,11 +41,13 @@ def initialize_oscillators(
     return theta, omega
 
 
-def kuramoto_equation(
+def kuramoto_ode(
     theta: np.ndarray, omega: np.ndarray, coupling_strength: float, dt: float = 0.01
 ) -> np.ndarray:
     """
-    Computes the time derivative of the phase for each oscillator using the Kuramoto model.
+    Computes the time derivative of the phase for each oscillator in the
+    Kuramoto model. Solves the ordinary differential equation (ODE) using
+    Euler's method (first-order approximation).
 
     Reference: https://en.wikipedia.org/wiki/Kuramoto_model
 
@@ -64,6 +66,7 @@ def kuramoto_equation(
     np.ndarray
         Time derivative of the phase for each oscillator.
     """
+    # Solve the ODE using Euler's method (first-order approximation)
     dtheta = omega + coupling_strength * np.sin(theta - theta[:, None]).mean(axis=1)
     theta = theta + dtheta * dt
     # Keep theta within [0, 2 pi]
@@ -131,7 +134,7 @@ def animate_simulation(
         nonlocal theta, order_param, num_oscillators
 
         # Update phases using Euler's method
-        theta = kuramoto_equation(theta, omega, coupling_strength, dt=dt)
+        theta = kuramoto_ode(theta, omega, coupling_strength, dt=dt)
 
         # Update scatter plot
         x = np.cos(theta)
