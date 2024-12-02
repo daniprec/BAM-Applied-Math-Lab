@@ -37,7 +37,9 @@ def initialize_grid(grid_size: int, perturb: bool = True) -> np.ndarray:
 
 def laplacian(uv: np.ndarray) -> np.ndarray:
     """
-    Compute the Laplacian of the u and v fields.
+    Compute the Laplacian of the u and v fields using a 5-point finite
+    difference scheme: considering each point and its immediate neighbors in
+    the up, down, left, and right directions.
 
     Parameters
     ----------
@@ -67,7 +69,9 @@ def update(
     dt: float = 1.0,
 ):
     """
-    Update the u and v fields using the Gray-Scott model.
+    Update the u and v fields using the Gray-Scott model with explicit Euler
+    time integration, where the fields are updated based on their current values
+    and the calculated derivatives.
 
     Parameters
     ----------
