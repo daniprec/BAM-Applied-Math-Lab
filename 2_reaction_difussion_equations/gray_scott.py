@@ -84,11 +84,13 @@ def laplacian(uv: np.ndarray) -> np.ndarray:
         3D array with shape (grid_size, grid_size, 2) containing the Laplacian
         of u and v.
     """
-    lap = -4 * uv
-    lap += np.roll(uv, shift=1, axis=0)
-    lap += np.roll(uv, shift=-1, axis=0)
-    lap += np.roll(uv, shift=1, axis=1)
-    lap += np.roll(uv, shift=-1, axis=1)
+    lap = (
+        -4 * uv
+        + np.roll(uv, shift=1, axis=0)
+        + np.roll(uv, shift=-1, axis=0)
+        + np.roll(uv, shift=1, axis=1)
+        + np.roll(uv, shift=-1, axis=1)
+    )
     return lap
 
 
@@ -142,7 +144,7 @@ def update(
     uv[:, -1] = uv[:, -2]
 
 
-def animate_simulation(grid_size: int, **kwargs: Any):
+def animate_simulation(grid_size: int, speed: int = 1, **kwargs: Any):
     """
     Animate the Gray-Scott model simulation.
 
@@ -150,15 +152,19 @@ def animate_simulation(grid_size: int, **kwargs: Any):
     ----------
     grid_size : int
         Size of the grid.
+    speed : int, optional
+        Speed of the simulation, default is 1.
     """
     uv = initialize_grid(grid_size, perturb=True)
 
     fig, ax = plt.subplots(figsize=(6, 6))
     im = ax.imshow(uv[:, :, 1], cmap="inferno", interpolation="bilinear")
     plt.axis("off")
+    # Calculate the number of frames to skip
+    nframes = max(1, int(50 * speed))
 
     def update_frame(_):
-        for _ in range(50):
+        for _ in range(nframes):
             update(uv, **kwargs)
         im.set_array(uv[:, :, 1])
         return [im]
@@ -184,7 +190,7 @@ def animate_simulation(grid_size: int, **kwargs: Any):
 
     fig.canvas.mpl_connect("button_press_event", on_click)
 
-    ani = animation.FuncAnimation(fig, update_frame, interval=100, blit=True)
+    ani = animation.FuncAnimation(fig, update_frame, interval=0, blit=True)
     plt.show()
 
 
