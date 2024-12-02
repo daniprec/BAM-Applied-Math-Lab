@@ -83,36 +83,6 @@ def compute_fixed_points(
     return np.array(fixed_points)
 
 
-def _extract_nullcline(
-    x: np.ndarray, y: np.ndarray, f: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Extracts nullcline points where the function crosses zero.
-    This is a helper function for compute_nullclines().
-
-    Parameters
-    ----------
-    x : ndarray
-        Array of x values.
-    y : ndarray
-        Array of y values.
-    f : ndarray
-        Array of function values corresponding to (x, y).
-
-    Returns
-    -------
-    x_nc : ndarray
-        Array of x values where f crosses zero.
-    y_nc : ndarray
-        Array of y values where f crosses zero.
-    """
-    # Find where f changes sign (zero crossings)
-    zero_crossings = np.where(np.diff(np.sign(f), axis=0))
-    x_nc = x[zero_crossings]
-    y_nc = y[zero_crossings]
-    return x_nc, y_nc
-
-
 def compute_nullclines(
     system_func: Callable,
     t: float = 0.0,
@@ -155,8 +125,13 @@ def compute_nullclines(
     dy_dt: np.ndarray
     dx_dt, dy_dt = system_func(t, [x_grid, y_grid], **kwargs)
 
-    # Extract nullcline data
-    x_nc_x, x_nc_y = _extract_nullcline(x_grid, y_grid, dx_dt)
-    y_nc_x, y_nc_y = _extract_nullcline(x_grid, y_grid, dy_dt)
+    # Extract nullcline data - Find where dx_dt changes sign (zero crossings)
+    zero_crossings = np.where(np.diff(np.sign(dx_dt), axis=0))
+    x_nc_x = x_grid[zero_crossings]
+    x_nc_y = y_grid[zero_crossings]
+    # Extract nullcline data - Find where dy_dt changes sign (zero crossings)
+    zero_crossings = np.where(np.diff(np.sign(dy_dt), axis=1))
+    y_nc_x = x_grid[zero_crossings]
+    y_nc_y = y_grid[zero_crossings]
 
     return [(x_nc_x, x_nc_y), (y_nc_x, y_nc_y)]
