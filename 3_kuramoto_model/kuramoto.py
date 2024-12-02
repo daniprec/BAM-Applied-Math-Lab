@@ -161,7 +161,7 @@ def animate_simulation(
             coupling_strength = max(0.0, coupling_strength)
 
         # Force the canvas to redraw to update the title
-        ax.set_title(f"Kuramoto Model Synchronization (K = {coupling_strength:.1f})")
+        ax.set_title(f"Kuramoto Model (K = {coupling_strength:.1f})")
         fig.canvas.draw_idle()
 
     # Connect the mouse events
