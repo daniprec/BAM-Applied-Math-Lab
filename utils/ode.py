@@ -5,15 +5,15 @@ from scipy.integrate import solve_ivp
 from scipy.optimize import fsolve
 
 
-def simulate(
+def solve_ode_euler(
     system_func: Callable,
     y0: List[float],
-    t_span: Tuple[float, float],
     t_eval: np.ndarray,
     **kwargs: Any,
 ) -> np.ndarray:
     """
     Performs the numerical integration of the ODEs.
+    The function uses the Runge-Kutta method.
 
     Parameters
     ----------
@@ -38,7 +38,48 @@ def simulate(
         return system_func(t, y, **kwargs)
 
     # Solve an initial value problem for a system of ODEs
-    sol = solve_ivp(func, t_span, y0, t_eval=t_eval)
+    ls_y = [y0.copy()]
+    for t in t_eval[1:]:
+        y0 = y0 + func(t, y0) * (t_eval[1] - t_eval[0])
+        ls_y.append(y0.copy())
+    return np.array(ls_y).T
+
+
+def solve_ode_rk(
+    system_func: Callable,
+    y0: List[float],
+    t_eval: np.ndarray,
+    **kwargs: Any,
+) -> np.ndarray:
+    """
+    Performs the numerical integration of the ODEs.
+    The function uses the Runge-Kutta method.
+
+    Parameters
+    ----------
+    system_func : Callable
+        Function defining the system of ODEs.
+    y0 : list of float
+        Initial conditions.
+    t_span : tuple of float
+        Tuple containing the start and end times (t0, tf).
+    t_eval : ndarray
+        Time points at which to store the computed solutions.
+    **kwargs
+        Additional keyword arguments to pass to the system function.
+
+    Returns
+    -------
+    y : ndarray
+        Array of solution values at t_eval.
+    """
+
+    def func(t: float, y: np.ndarray) -> np.ndarray:
+        return system_func(t, y, **kwargs)
+
+    t_span = (t_eval[0], t_eval[-1])
+    # Solve an initial value problem for a system of ODEs
+    sol = solve_ivp(func, t_span, y0, t_eval=t_eval, method="RK45")
     return sol.y
 
 
@@ -48,7 +89,7 @@ def compute_fixed_points(
     **kwargs: Any,
 ) -> np.ndarray:
     """
-    Computes the fixed points of a 2D dynamical system for a given external current.
+    Computes the fixed points of a 2D dynamical system.
 
     Parameters
     ----------

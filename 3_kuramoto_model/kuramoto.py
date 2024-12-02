@@ -1,10 +1,16 @@
+import sys
 from typing import Any, Dict, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import toml
 from matplotlib import animation
-from scipy.integrate import solve_ivp
+
+# Add the path to the sys module
+# (allowing the import of the utils module)
+sys.path.append(".")
+
+from utils.ode import solve_ode_euler, solve_ode_rk
 
 
 def initialize_oscillators(
@@ -100,8 +106,13 @@ def solve_kuramoto_ode_euler(
         Updated phases of the oscillators.
     """
     # Solve the ODE system using Euler's method
-    dtheta = kuramoto_ode(0, theta, omega, coupling_strength)
-    theta = theta + dtheta * dt
+    theta = solve_ode_euler(
+        kuramoto_ode,
+        theta,
+        t_eval=[0, dt],
+        omega=omega,
+        coupling_strength=coupling_strength,
+    )[:, -1]
     # Keep theta within [0, 2 * pi]
     theta = np.mod(theta, 2 * np.pi)
     return theta
@@ -131,17 +142,14 @@ def solve_kuramoto_ode_rk(
     np.ndarray
         Updated phases of the oscillators.
     """
-    # Solve the ODE system using the Runge-Kutta method
-    sol = solve_ivp(
+    # Solve the ODE system using Runge-Kutta
+    theta = solve_ode_rk(
         kuramoto_ode,
-        (0, dt),
         theta,
-        args=(omega, coupling_strength),
-        t_eval=[dt],
-        method="RK45",
-    )
-    # Update theta
-    theta = sol.y[:, -1]
+        t_eval=[0, dt],
+        omega=omega,
+        coupling_strength=coupling_strength,
+    )[:, -1]
     # Keep theta within [0, 2 * pi]
     theta = np.mod(theta, 2 * np.pi)
     return theta
