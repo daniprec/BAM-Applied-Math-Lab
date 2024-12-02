@@ -9,28 +9,6 @@ from matplotlib.backend_bases import MouseEvent
 from matplotlib.lines import Line2D
 
 
-def animate(i: int, y: np.ndarray, line: Line2D) -> Tuple[Line2D]:
-    """
-    Updates the line object for each frame in the animation.
-
-    Parameters
-    ----------
-    i : int
-        Frame index.
-    y : ndarray
-        Array of solution values.
-    line : Line2D
-        Line object to update.
-
-    Returns
-    -------
-    line : tuple of Line2D
-        Updated line object.
-    """
-    line.set_data(y[0][:i], y[1][:i])
-    return (line,)
-
-
 def update_simulation(
     event: MouseEvent,
     system_func: Callable,
@@ -40,7 +18,7 @@ def update_simulation(
     ani: FuncAnimation,
     *args: Any,
     **kwargs: Any,
-) -> None:
+):
     """
     Updates the simulation with new initial conditions from a mouse click.
 
@@ -62,10 +40,6 @@ def update_simulation(
         Additional arguments to pass to the system function.
     **kwargs
         Additional keyword arguments to pass to the system function.
-
-    Returns
-    -------
-    None
     """
     y0 = [event.xdata, event.ydata]
     if None in y0:
@@ -83,7 +57,7 @@ def plot_phase_plane(
     limits: Tuple[float, float, float, float] = (-3.0, -3.0, 3.0, 3.0),
     ax: Optional[plt.Axes] = None,
     **kwargs: Any,
-) -> None:
+):
     """
     Plots the phase plane of any excitable-oscillatory model.
 
@@ -97,10 +71,6 @@ def plot_phase_plane(
         Axes object to plot on. If None, uses current axes.
     **kwargs
         Additional keyword arguments to pass to the system function.
-
-    Returns
-    -------
-    None
     """
     # Set up the axes if not provided
     if ax is None:
@@ -142,7 +112,7 @@ def plot_bifurcation(
     y0: List[float],
     ax: Optional[plt.Axes] = None,
     **kwargs: Any,
-) -> None:
+):
     """
     Plots the bifurcation diagram by varying a specified parameter.
 
@@ -164,10 +134,6 @@ def plot_bifurcation(
         Axes object to plot on. If None, uses current axes.
     **kwargs
         Additional keyword arguments to pass to the system function.
-
-    Returns
-    -------
-    None
     """
     if ax is None:
         ax = plt.gca()
@@ -202,7 +168,7 @@ def run_interactive_plot(
     param_name: Optional[str] = None,
     param_limits: Tuple[float, float] = (0.0, 2.0),
     **kwargs: Any,
-) -> None:
+):
     """
     Runs an interactive simulation of a dynamical system with the ability to update initial conditions.
 
@@ -226,10 +192,6 @@ def run_interactive_plot(
         Array of parameter values for bifurcation diagram.
     **kwargs
         Additional keyword arguments to pass to the system function.
-
-    Returns
-    -------
-    None
     """
     t_span: Tuple[float, float] = (0.0, t_end)
     t_eval: np.ndarray = np.linspace(*t_span, num_points)
@@ -273,6 +235,13 @@ def run_interactive_plot(
 
     # Initialize the line object for animation on phase plane
     (line,) = ax_phase.plot([], [], lw=2)
+
+    def animate(i: int, y: np.ndarray, line: Line2D) -> Tuple[Line2D]:
+        """
+        Animation function to update the line object.
+        """
+        line.set_data(y[0][:i], y[1][:i])
+        return (line,)
 
     # Create the animation
     ani = animation.FuncAnimation(
