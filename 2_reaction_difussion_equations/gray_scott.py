@@ -1,9 +1,42 @@
-from typing import Any
+from typing import Any, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import toml
 from matplotlib import animation
+
+
+def add_perturbation(
+    uv: np.ndarray,
+    center: Tuple[float],
+    r: int = 1,
+    u: float = 0.5,
+    v: float = 0.25,
+):
+    """
+    Add a perturbation to the center of the grid.
+
+    Parameters
+    ----------
+    uv : np.ndarray
+        3D array with shape (grid_size, grid_size, 2) containing the values of
+        u and v.
+    r : int, optional
+        Radius of the perturbation.
+    u : float, optional
+        Value of u in the perturbation, default is 0.5.
+    v : float, optional
+        Value of v in the perturbation, default is 0.25.
+
+    Returns
+    -------
+    np.ndarray
+        3D array with shape (grid_size, grid_size, 2) containing the values of
+        u and v with the perturbation added.
+    """
+    x, y = center
+    uv[y - r : y + r, x - r : x + r, 0] = u
+    uv[y - r : y + r, x - r : x + r, 1] = v
 
 
 def initialize_grid(grid_size: int, perturb: bool = True) -> np.ndarray:
@@ -27,10 +60,9 @@ def initialize_grid(grid_size: int, perturb: bool = True) -> np.ndarray:
     uv[:, :, 0] = 1.0  # Initialize u to 1.0, v to 0.0
 
     if perturb:
-        r = 1  # Radius of perturbation
+        grid_size = uv.shape[0]
         center = grid_size // 2
-        uv[center - r : center + r, center - r : center + r, 0] = 0.50  # u
-        uv[center - r : center + r, center - r : center + r, 1] = 0.25  # v
+        add_perturbation(uv, (center, center), r=1)
 
     return uv
 
@@ -138,7 +170,6 @@ def animate_simulation(grid_size: int, **kwargs: Any):
             return
         x = int(event.xdata)
         y = int(event.ydata)
-        r = 3  # Radius of the perturbation
 
         # Left click?
         if event.button == 1:
@@ -149,13 +180,7 @@ def animate_simulation(grid_size: int, **kwargs: Any):
             u_new = 1.0
             v_new = 0.0
 
-        y_min = max(y - r, 0)
-        y_max = min(y + r, grid_size)
-        x_min = max(x - r, 0)
-        x_max = min(x + r, grid_size)
-
-        uv[y_min:y_max, x_min:x_max, 0] = u_new
-        uv[y_min:y_max, x_min:x_max, 1] = v_new
+        add_perturbation(uv, (x, y), r=3, u=u_new, v=v_new)
 
     fig.canvas.mpl_connect("button_press_event", on_click)
 
