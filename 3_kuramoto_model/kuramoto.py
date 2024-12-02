@@ -26,16 +26,49 @@ def initialize_oscillators(
     omega : ndarray
         Natural frequencies of the oscillators.
     """
+    # Assign a random initial phase to each oscillator
+    # (position in the unit circle)
     theta = np.random.uniform(0, 2 * np.pi, num_oscillators)
 
+    # Assign a random natural frequency to each oscillator (angular velocity)
     if distribution == "uniform":
         omega = np.random.uniform(-1.0, 1.0, num_oscillators)
     elif distribution == "normal":
-        omega = np.random.normal(0.0, 0.5, num_oscillators)
+        omega = np.random.normal(0.5, 0.5, num_oscillators)
     else:
         raise ValueError("Distribution must be 'uniform' or 'normal'.")
 
     return theta, omega
+
+
+def kuramoto_equation(
+    theta: np.ndarray, omega: np.ndarray, coupling_strength: float, dt: float = 0.01
+) -> np.ndarray:
+    """
+    Computes the time derivative of the phase for each oscillator using the Kuramoto model.
+
+    Reference: https://en.wikipedia.org/wiki/Kuramoto_model
+
+
+    Parameters
+    ----------
+    theta : np.ndarray
+        Phases of the oscillators.
+    omega : np.ndarray
+        Natural frequencies of the oscillators.
+    coupling_strength : float
+        Coupling strength (K), which determines the strength of synchronization.
+
+    Returns
+    -------
+    np.ndarray
+        Time derivative of the phase for each oscillator.
+    """
+    dtheta = omega + coupling_strength * np.sin(theta - theta[:, None]).mean(axis=1)
+    theta = theta + dtheta * dt
+    # Keep theta within [0, 2 pi]
+    theta = np.mod(theta, 2 * np.pi)
+    return theta
 
 
 def animate_simulation(
@@ -55,30 +88,23 @@ def animate_simulation(
     num_oscillators : int
         Number of oscillators (N).
     coupling_strength : float
-        Coupling strength (K).
+        Coupling strength (K), which determines the strength of synchronization.
     dt : float
         Time step.
     distribution : str, optional
         Distribution of natural frequencies ('uniform' or 'normal').
-
-    Returns
-    -------
-    None
     """
-    # Initialize oscillators
+    # Initialize oscillators (phase and natural frequency)
     theta, omega = initialize_oscillators(num_oscillators, distribution)
-
-    # Designate the controlled oscillator (index 0)
-    controlled_idx = 0
 
     # Initialize order parameter
     order_param = np.mean(np.exp(1j * theta))
 
     # Animate results
     fig, ax = plt.subplots(figsize=(6, 6))
-    ax.set_title("Kuramoto Model Synchronization with Interactive Control")
-    ax.set_xlabel("Cos(θ)")
-    ax.set_ylabel("Sin(θ)")
+    ax.set_title(f"Kuramoto Model Synchronization (K = {coupling_strength:.1f})")
+    ax.set_xlabel("Cos(theta)")
+    ax.set_ylabel("Sin(theta)")
     ax.set_xlim(-1.1, 1.1)
     ax.set_ylim(-1.1, 1.1)
     ax.set_aspect("equal")
@@ -89,58 +115,23 @@ def animate_simulation(
     ax.add_artist(circle)
 
     # Initialize scatter plot for oscillators
-    scatter = ax.scatter([], [], s=50, color="blue")
-
-    # Highlight the controlled oscillator
-    (controlled_point,) = ax.plot([], [], "ro", markersize=8)
+    scatter = ax.scatter([], [], s=50, color="blue", alpha=0.5)
 
     # Initialize line for the phase centroid (order parameter)
     (centroid_line,) = ax.plot([], [], color="red", linewidth=2)
-
-    # Time variable
-    t = 0.0
-
-    # Mouse position variable
-    mouse_theta = None  # Phase corresponding to mouse position
-
-    # Flag to check if mouse is within axes
-    mouse_in_axes = False
+    (centroid_point,) = ax.plot([], [], "ro", markersize=8)
 
     def init():
         scatter.set_offsets(np.empty((0, 2)))
-        controlled_point.set_data([], [])
         centroid_line.set_data([], [])
-        return scatter, controlled_point, centroid_line
+        centroid_point.set_data([], [])
+        return scatter, centroid_line, centroid_point
 
     def update(frame):
-        nonlocal theta, t, order_param, mouse_theta, mouse_in_axes, num_oscillators
+        nonlocal theta, order_param, num_oscillators
 
         # Update phases using Euler's method
-        # Exclude the controlled oscillator if mouse is in axes
-        for i in range(num_oscillators):
-            if i == controlled_idx and mouse_in_axes:
-                continue  # Skip updating controlled oscillator
-            coupling = (coupling_strength / num_oscillators) * np.sum(
-                np.sin(theta[i] - theta)
-            )
-            theta[i] += (omega[i] + coupling) * dt
-
-        # Keep theta within [0, 2π]
-        theta = np.mod(theta, 2 * np.pi)
-
-        # Update controlled oscillator phase if mouse is in axes
-        if mouse_in_axes and mouse_theta is not None:
-            theta[controlled_idx] = mouse_theta
-        else:
-            # Update controlled oscillator normally
-            coupling = (coupling_strength / num_oscillators) * np.sum(
-                np.sin(theta[controlled_idx] - theta)
-            )
-            theta[controlled_idx] += (omega[controlled_idx] + coupling) * dt
-            theta[controlled_idx] = np.mod(theta[controlled_idx], 2 * np.pi)
-
-        # Compute order parameter
-        order_param = np.mean(np.exp(1j * theta))
+        theta = kuramoto_equation(theta, omega, coupling_strength, dt=dt)
 
         # Update scatter plot
         x = np.cos(theta)
@@ -148,66 +139,32 @@ def animate_simulation(
         data = np.vstack((x, y)).T
         scatter.set_offsets(data)
 
-        # Update controlled oscillator point
-        controlled_x = np.cos(theta[controlled_idx])
-        controlled_y = np.sin(theta[controlled_idx])
-        controlled_point.set_data(controlled_x, controlled_y)
-
+        # Compute order parameter
+        order_param = np.mean(np.exp(1j * theta))
         # Update centroid line
         centroid_line.set_data([0, np.real(order_param)], [0, np.imag(order_param)])
+        centroid_point.set_data(np.real(order_param), np.imag(order_param))
 
-        # Update time
-        t += dt
-
-        return scatter, controlled_point, centroid_line
-
-    def on_mouse_move(event):
-        nonlocal mouse_theta, mouse_in_axes
-        if event.inaxes == ax:
-            mouse_in_axes = True
-            # Calculate angle based on mouse position
-            dx = event.xdata
-            dy = event.ydata
-            angle = np.arctan2(dy, dx)
-            mouse_theta = np.mod(angle, 2 * np.pi)
-        else:
-            mouse_in_axes = False
-            mouse_theta = None
+        return scatter, centroid_line, centroid_point
 
     def on_click(event):
-        nonlocal theta, omega, num_oscillators
+        nonlocal theta, omega, coupling_strength
         if event.inaxes != ax:
             return
         if event.button == 1:
-            # Left click: Add an oscillator
-            new_theta = np.random.uniform(0, 2 * np.pi)
-            if distribution == "uniform":
-                new_omega = np.random.uniform(-1.0, 1.0)
-            elif distribution == "normal":
-                new_omega = np.random.normal(0.0, 0.5)
-            else:
-                raise ValueError("Distribution must be 'uniform' or 'normal'.")
-            # Append to theta and omega
-            theta = np.append(theta, new_theta)
-            omega = np.append(omega, new_omega)
-            num_oscillators += 1
+            # Left click: Increase the coupling strength
+            coupling_strength += 0.1
+
         elif event.button == 3:
-            # Right click: Remove a random oscillator (excluding controlled oscillator)
-            if num_oscillators <= 1:
-                return  # Can't remove any more oscillators
-            # Get indices excluding the controlled oscillator
-            indices = np.arange(num_oscillators)
-            indices = indices[indices != controlled_idx]
-            # Choose a random oscillator to remove
-            remove_idx = np.random.choice(indices)
-            # Remove from theta and omega
-            theta = np.delete(theta, remove_idx)
-            omega = np.delete(omega, remove_idx)
-            num_oscillators -= 1
-            # No need to adjust controlled_idx since it's at index 0
+            # Right click: Decrease the coupling strength
+            coupling_strength -= 0.1
+            coupling_strength = max(0.0, coupling_strength)
+
+        # Force the canvas to redraw to update the title
+        ax.set_title(f"Kuramoto Model Synchronization (K = {coupling_strength:.1f})")
+        fig.canvas.draw_idle()
 
     # Connect the mouse events
-    fig.canvas.mpl_connect("motion_notify_event", on_mouse_move)
     fig.canvas.mpl_connect("button_press_event", on_click)
 
     ani = animation.FuncAnimation(fig, update, init_func=init, blit=True, interval=50)
