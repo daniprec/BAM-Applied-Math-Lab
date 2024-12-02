@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import toml
 from matplotlib import animation
+from scipy.integrate import solve_ivp
 
 
 def initialize_oscillators(
@@ -42,18 +43,19 @@ def initialize_oscillators(
 
 
 def kuramoto_ode(
-    theta: np.ndarray, omega: np.ndarray, coupling_strength: float, dt: float = 0.01
+    t: float, theta: np.ndarray, omega: np.ndarray, coupling_strength: float
 ) -> np.ndarray:
     """
     Computes the time derivative of the phase for each oscillator in the
-    Kuramoto model. Solves the ordinary differential equation (ODE) using
-    Euler's method (first-order approximation).
+    Kuramoto model.
 
     Reference: https://en.wikipedia.org/wiki/Kuramoto_model
 
 
     Parameters
     ----------
+    t : float
+        Time (not used in the Kuramoto model).
     theta : np.ndarray
         Phases of the oscillators.
     omega : np.ndarray
@@ -66,10 +68,81 @@ def kuramoto_ode(
     np.ndarray
         Time derivative of the phase for each oscillator.
     """
-    # Solve the ODE using Euler's method (first-order approximation)
-    dtheta = omega + coupling_strength * np.sin(theta - theta[:, None]).mean(axis=1)
+    # Compute the pairwise differences between phases
+    theta_diff = theta[:, None] - theta
+    # Average over all oscillators
+    coupling_term = coupling_strength * np.mean(np.sin(theta_diff), axis=1)
+    # Compute the time derivative
+    dtheta_dt = omega + coupling_term
+    return dtheta_dt
+
+
+def solve_kuramoto_ode_euler(
+    theta: np.ndarray, omega: np.ndarray, coupling_strength: float, dt: float
+) -> np.ndarray:
+    """
+    Solves the Kuramoto model using Euler's method (first-order ODE).
+
+    Parameters
+    ----------
+    theta : np.ndarray
+        Phases of the oscillators.
+    omega : np.ndarray
+        Natural frequencies of the oscillators.
+    coupling_strength : float
+        Coupling strength (K), which determines the strength of synchronization.
+    dt : float
+        Time step.
+
+    Returns
+    -------
+    np.ndarray
+        Updated phases of the oscillators.
+    """
+    # Solve the ODE system using Euler's method
+    dtheta = kuramoto_ode(0, theta, omega, coupling_strength)
     theta = theta + dtheta * dt
-    # Keep theta within [0, 2 pi]
+    # Keep theta within [0, 2 * pi]
+    theta = np.mod(theta, 2 * np.pi)
+    return theta
+
+
+def solve_kuramoto_ode_rk(
+    theta: np.ndarray, omega: np.ndarray, coupling_strength: float, dt: float
+) -> np.ndarray:
+    """
+    Solves the Kuramoto model using the Runge-Kutta method (RK45).
+    This function numerically integrates a system of ordinary differential
+    equations given an initial value.
+
+    Parameters
+    ----------
+    theta : np.ndarray
+        Phases of the oscillators.
+    omega : np.ndarray
+        Natural frequencies of the oscillators.
+    coupling_strength : float
+        Coupling strength (K), which determines the strength of synchronization.
+    dt : float
+        Time step.
+
+    Returns
+    -------
+    np.ndarray
+        Updated phases of the oscillators.
+    """
+    # Solve the ODE system using the Runge-Kutta method
+    sol = solve_ivp(
+        kuramoto_ode,
+        (0, dt),
+        theta,
+        args=(omega, coupling_strength),
+        t_eval=[dt],
+        method="RK45",
+    )
+    # Update theta
+    theta = sol.y[:, -1]
+    # Keep theta within [0, 2 * pi]
     theta = np.mod(theta, 2 * np.pi)
     return theta
 
@@ -79,6 +152,7 @@ def animate_simulation(
     coupling_strength: float,
     dt: float,
     distribution: str = "uniform",
+    solver: str = "euler",
 ):
     """
     Animates the Kuramoto model simulation on the unit circle with the phase centroid.
@@ -102,6 +176,14 @@ def animate_simulation(
 
     # Initialize order parameter
     order_param = np.mean(np.exp(1j * theta))
+
+    # Pick a solver
+    if "eu" in solver.lower():
+        solve_kuramoto: callable = solve_kuramoto_ode_euler
+    elif "rk" in solver.lower():
+        solve_kuramoto: callable = solve_kuramoto_ode_rk
+    else:
+        raise ValueError("Solver must be 'euler' or 'rk'.")
 
     # Animate results
     fig, ax = plt.subplots(figsize=(6, 6))
@@ -134,7 +216,7 @@ def animate_simulation(
         nonlocal theta, order_param, num_oscillators
 
         # Update phases using Euler's method
-        theta = kuramoto_ode(theta, omega, coupling_strength, dt=dt)
+        theta = solve_kuramoto(theta, omega, coupling_strength, dt=dt)
 
         # Update scatter plot
         x = np.cos(theta)
