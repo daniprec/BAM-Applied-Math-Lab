@@ -7,6 +7,22 @@ from matplotlib import animation
 
 
 def initialize_grid(grid_size: int, perturb: bool = True) -> np.ndarray:
+    """
+    Initialize the grid with a perturbation in the center.
+
+    Parameters
+    ----------
+    grid_size : int
+        Size of the grid.
+    perturb : bool, optional
+        If True, perturb the center of the grid.
+
+    Returns
+    -------
+    ndarray
+        3D array with shape (grid_size, grid_size, 2) containing the initial
+        values of u and v.
+    """
     uv = np.zeros((grid_size, grid_size, 2), dtype=np.float32)
     uv[:, :, 0] = 1.0  # Initialize u to 1.0, v to 0.0
 
@@ -20,6 +36,20 @@ def initialize_grid(grid_size: int, perturb: bool = True) -> np.ndarray:
 
 
 def laplacian(uv: np.ndarray) -> np.ndarray:
+    """
+    Compute the Laplacian of the u and v fields.
+
+    Parameters
+    ----------
+    uv : np.ndarray
+        3D array with shape (grid_size, grid_size, 2) containing the values of
+        u and v.
+    Returns
+    -------
+    np.ndarray
+        3D array with shape (grid_size, grid_size, 2) containing the Laplacian
+        of u and v.
+    """
     lap = -4 * uv
     lap += np.roll(uv, shift=1, axis=0)
     lap += np.roll(uv, shift=-1, axis=0)
@@ -35,7 +65,26 @@ def update(
     f: float = 0.060,
     k: float = 0.062,
     dt: float = 1.0,
-) -> None:
+):
+    """
+    Update the u and v fields using the Gray-Scott model.
+
+    Parameters
+    ----------
+    uv : np.ndarray
+        3D array with shape (grid_size, grid_size, 2) containing the values of
+        u and v.
+    du : float, optional
+        Du parameter, default is 0.16.
+    dv : float, optional
+        Dv parameter, default is 0.08.
+    f : float, optional
+        F parameter, default is 0.060.
+    k : float, optional
+        K parameter, default is 0.062.
+    dt : float, optional
+        Time step, default is 1.0.
+    """
     u = uv[:, :, 0]
     v = uv[:, :, 1]
 
@@ -57,7 +106,15 @@ def update(
     uv[:, -1] = uv[:, -2]
 
 
-def animate_simulation(grid_size: int, **kwargs: Any) -> None:
+def animate_simulation(grid_size: int, **kwargs: Any):
+    """
+    Animate the Gray-Scott model simulation.
+
+    Parameters
+    ----------
+    grid_size : int
+        Size of the grid.
+    """
     uv = initialize_grid(grid_size, perturb=True)
 
     fig, ax = plt.subplots(figsize=(6, 6))
@@ -103,6 +160,16 @@ def animate_simulation(grid_size: int, **kwargs: Any) -> None:
 
 
 def main(config: str = "config.toml", key: str = "gray-scott"):
+    """
+    Main function to run the interactive Gray-Scott model simulation.
+
+    Parameters
+    ----------
+    config : str, optional
+        Path to the configuration file.
+    key : str, optional
+        Key in the configuration file.
+    """
     dict_config: dict = toml.load(config)[key]
     animate_simulation(**dict_config)
 
