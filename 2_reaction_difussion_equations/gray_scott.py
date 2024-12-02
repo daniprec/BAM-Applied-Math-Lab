@@ -38,6 +38,8 @@ def add_perturbation(
     uv[y - r : y + r, x - r : x + r, 0] = u
     uv[y - r : y + r, x - r : x + r, 1] = v
 
+    # No return value, uv is modified in place
+
 
 def initialize_grid(grid_size: int, perturb: bool = True) -> np.ndarray:
     """
@@ -60,6 +62,7 @@ def initialize_grid(grid_size: int, perturb: bool = True) -> np.ndarray:
     uv[:, :, 0] = 1.0  # Initialize u to 1.0, v to 0.0
 
     if perturb:
+        # Add a perturbation in the center
         grid_size = uv.shape[0]
         center = grid_size // 2
         add_perturbation(uv, (center, center), r=1)
@@ -72,6 +75,8 @@ def laplacian(uv: np.ndarray) -> np.ndarray:
     Compute the Laplacian of the u and v fields using a 5-point finite
     difference scheme: considering each point and its immediate neighbors in
     the up, down, left, and right directions.
+
+    Reference: https://en.wikipedia.org/wiki/Five-point_stencil
 
     Parameters
     ----------
@@ -96,10 +101,11 @@ def laplacian(uv: np.ndarray) -> np.ndarray:
 
 def laplacian_9pt(uv: np.ndarray) -> np.ndarray:
     """
-    Compute the Laplacian of the u and v fields using a 9-point finite difference scheme.
+    Compute the Laplacian of the u and v fields using a 9-point finite
+    difference scheme (Patra-Karttunen), considering each point and its
+    immediate neighbors, including diagonals.
 
-    The Laplacian is calculated using vectorized NumPy operations with a 9-point stencil,
-    considering each point and its immediate neighbors, including diagonals.
+    Reference: https://en.wikipedia.org/wiki/Nine-point_stencil
 
     Parameters
     ----------
@@ -111,7 +117,7 @@ def laplacian_9pt(uv: np.ndarray) -> np.ndarray:
     np.ndarray
         3D array with shape (grid_size, grid_size, 2) containing the Laplacian of u and v.
     """
-    # Weights for the 9-point stencil
+    # Weights for the 9-point stencil (Patra-Karttunen)
     center_weight = -20 / 6
     neighbor_weight = 4 / 6
     diagonal_weight = 1 / 6
@@ -151,25 +157,29 @@ def update(
     time integration, where the fields are updated based on their current values
     and the calculated derivatives.
 
+    Reference: https://itp.uni-frankfurt.de/~gros/StudentProjects/Projects_2020/projekt_schulz_kaefer/
+
     Parameters
     ----------
     uv : np.ndarray
         3D array with shape (grid_size, grid_size, 2) containing the values of
         u and v.
     du : float, optional
-        Du parameter, default is 0.16.
+        Diffusion rate of u, default is 0.16.
     dv : float, optional
-        Dv parameter, default is 0.08.
+        Diffusion rate of v, default is 0.08.
     f : float, optional
-        F parameter, default is 0.060.
+        Feed rate (at which u is fed into the system), default is 0.060.
     k : float, optional
-        K parameter, default is 0.062.
+        Kill rate (at which v is removed from the system), default is 0.062.
     dt : float, optional
         Time step, default is 1.0.
     """
+    # Extract the matrices for substances u and v
     u = uv[:, :, 0]
     v = uv[:, :, 1]
 
+    # Compute the Laplacian of u and v
     if stencil == 5:
         lap = laplacian(uv)
     elif stencil == 9:
@@ -180,9 +190,10 @@ def update(
     lu = lap[:, :, 0]
     lv = lap[:, :, 1]
 
+    # Gray-Scott equations with explicit Euler time integration
     uvv = u * v * v
-    du_dt = du * lu - uvv + f * (1 - u)
-    dv_dt = dv * lv + uvv - (f + k) * v
+    du_dt = -uvv + f * (1 - u) + du * lu
+    dv_dt = uvv - (f + k) * v + dv * lv
 
     uv[:, :, 0] += du_dt * dt
     uv[:, :, 1] += dv_dt * dt
@@ -192,6 +203,8 @@ def update(
     uv[-1, :] = uv[-2, :]
     uv[:, 0] = uv[:, 1]
     uv[:, -1] = uv[:, -2]
+
+    # No return value, uv is modified in place
 
 
 def animate_simulation(grid_size: int, speed: int = 1, **kwargs: Any):
