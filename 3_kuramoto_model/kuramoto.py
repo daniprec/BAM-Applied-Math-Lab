@@ -102,7 +102,7 @@ def animate_simulation(
 
     # Animate results
     fig, ax = plt.subplots(figsize=(6, 6))
-    ax.set_title(f"Kuramoto Model Synchronization (K = {coupling_strength:.1f})")
+    ax.set_title(f"Kuramoto Model (K = {coupling_strength:.1f})")
     ax.set_xlabel("Cos(theta)")
     ax.set_ylabel("Sin(theta)")
     ax.set_xlim(-1.1, 1.1)
