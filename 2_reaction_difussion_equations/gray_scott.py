@@ -84,13 +84,56 @@ def laplacian(uv: np.ndarray) -> np.ndarray:
         3D array with shape (grid_size, grid_size, 2) containing the Laplacian
         of u and v.
     """
-    lap = (
-        -4 * uv
-        + np.roll(uv, shift=1, axis=0)
-        + np.roll(uv, shift=-1, axis=0)
-        + np.roll(uv, shift=1, axis=1)
-        + np.roll(uv, shift=-1, axis=1)
-    )
+    lap = -4 * uv
+
+    # Immediate neighbors (up, down, left, right)
+    lap += np.roll(uv, shift=1, axis=0)  # up
+    lap += np.roll(uv, shift=-1, axis=0)  # down
+    lap += np.roll(uv, shift=1, axis=1)  # left
+    lap += np.roll(uv, shift=-1, axis=1)  # right
+    return lap
+
+
+def laplacian_9pt(uv: np.ndarray) -> np.ndarray:
+    """
+    Compute the Laplacian of the u and v fields using a 9-point finite difference scheme.
+
+    The Laplacian is calculated using vectorized NumPy operations with a 9-point stencil,
+    considering each point and its immediate neighbors, including diagonals.
+
+    Parameters
+    ----------
+    uv : np.ndarray
+        3D array with shape (grid_size, grid_size, 2) containing the values of u and v.
+
+    Returns
+    -------
+    np.ndarray
+        3D array with shape (grid_size, grid_size, 2) containing the Laplacian of u and v.
+    """
+    # Weights for the 9-point stencil
+    center_weight = -20 / 6
+    neighbor_weight = 4 / 6
+    diagonal_weight = 1 / 6
+
+    lap = center_weight * uv
+
+    # Shifted arrays for immediate neighbors
+    up = np.roll(uv, shift=1, axis=0)
+    down = np.roll(uv, shift=-1, axis=0)
+
+    # Immediate neighbors (up, down, left, right)
+    lap += neighbor_weight * up  # up
+    lap += neighbor_weight * down  # down
+    lap += neighbor_weight * np.roll(uv, shift=1, axis=1)  # left
+    lap += neighbor_weight * np.roll(uv, shift=-1, axis=1)  # right
+
+    # Diagonal neighbors
+    lap += diagonal_weight * np.roll(up, shift=1, axis=1)  # up-left
+    lap += diagonal_weight * np.roll(up, shift=-1, axis=1)  # up-right
+    lap += diagonal_weight * np.roll(down, shift=1, axis=1)  # down-left
+    lap += diagonal_weight * np.roll(down, shift=-1, axis=1)  # down-right
+
     return lap
 
 
@@ -101,6 +144,7 @@ def update(
     f: float = 0.060,
     k: float = 0.062,
     dt: float = 1.0,
+    stencil: int = 5,
 ):
     """
     Update the u and v fields using the Gray-Scott model with explicit Euler
@@ -126,7 +170,13 @@ def update(
     u = uv[:, :, 0]
     v = uv[:, :, 1]
 
-    lap = laplacian(uv)
+    if stencil == 5:
+        lap = laplacian(uv)
+    elif stencil == 9:
+        lap = laplacian_9pt(uv)
+    else:
+        raise ValueError("Not a valid stencil size. Use 5 or 9.")
+
     lu = lap[:, :, 0]
     lv = lap[:, :, 1]
 
