@@ -109,9 +109,6 @@ def animate_simulation(
     # Initialize oscillators (phase and natural frequency)
     theta, omega = initialize_oscillators(num_oscillators, distribution)
 
-    # Initialize order parameter
-    order_param = np.mean(np.exp(1j * theta))
-
     # Animate results
     fig, ax = plt.subplots(figsize=(6, 6))
     ax.set_title(f"Kuramoto Model (K = {coupling_strength:.1f})")
@@ -140,7 +137,7 @@ def animate_simulation(
         return scatter, centroid_line, centroid_point
 
     def update(frame):
-        nonlocal theta, order_param, num_oscillators
+        nonlocal theta, coupling_strength
 
         # Solve the ODE system
         theta = solve_ode(
@@ -168,16 +165,16 @@ def animate_simulation(
         return scatter, centroid_line, centroid_point
 
     def on_click(event):
-        nonlocal theta, omega, coupling_strength
+        nonlocal theta, coupling_strength
         if event.inaxes != ax:
             return
         if event.button == 1:
             # Left click: Increase the coupling strength
-            coupling_strength += 0.1
+            coupling_strength += 1
 
         elif event.button == 3:
             # Right click: Decrease the coupling strength
-            coupling_strength -= 0.1
+            coupling_strength -= 1
             coupling_strength = max(0.0, coupling_strength)
 
         # Force the canvas to redraw to update the title

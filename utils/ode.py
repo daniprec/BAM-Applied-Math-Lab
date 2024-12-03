@@ -56,8 +56,8 @@ def solve_ode_euler(
 
     # Solve an initial value problem for a system of ODEs
     ls_y = [y0.copy()]
-    for t in t_eval[1:]:
-        y0 = y0 + func(t, y0) * (t_eval[1] - t_eval[0])
+    for idx in range(1, len(t_eval)):
+        y0 = y0 + func(t_eval[idx], y0) * (t_eval[idx] - t_eval[idx - 1])
         ls_y.append(y0.copy())
     return np.stack(ls_y, axis=-1)
 
