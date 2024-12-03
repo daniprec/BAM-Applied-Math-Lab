@@ -74,10 +74,12 @@ def kuramoto_ode(
     np.ndarray
         Time derivative of the phase for each oscillator.
     """
+    # Keep theta within [0, 2 * pi]
+    theta = np.mod(theta, 2 * np.pi)
     # Compute the pairwise differences between phases
     theta_diff = theta[:, None] - theta
     # Average over all oscillators
-    coupling_term = coupling_strength * np.mean(np.sin(theta_diff), axis=1)
+    coupling_term = coupling_strength * np.mean(np.sin(theta_diff), axis=0)
     # Compute the time derivative
     dtheta_dt = omega + coupling_term
     return dtheta_dt
@@ -170,11 +172,11 @@ def animate_simulation(
             return
         if event.button == 1:
             # Left click: Increase the coupling strength
-            coupling_strength += 1
+            coupling_strength += 0.1
 
         elif event.button == 3:
             # Right click: Decrease the coupling strength
-            coupling_strength -= 1
+            coupling_strength -= 0.1
             coupling_strength = max(0.0, coupling_strength)
 
         # Force the canvas to redraw to update the title
