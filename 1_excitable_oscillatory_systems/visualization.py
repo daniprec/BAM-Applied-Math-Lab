@@ -12,22 +12,15 @@ from matplotlib.lines import Line2D
 # (allowing the import of the utils module)
 sys.path.append(".")
 
-from utils.ode import (
-    compute_fixed_points,
-    compute_nullclines,
-    solve_ode_euler,
-    solve_ode_rk,
-)
+from utils.ode import compute_fixed_points, compute_nullclines, solve_ode
 
 
 def update_simulation(
     event: MouseEvent,
     system_func: Callable,
-    t_eval: np.ndarray,
     line: Line2D,
     ani: FuncAnimation,
     *args: Any,
-    solver: str = "rk",
     **kwargs: Any,
 ):
     """
@@ -39,29 +32,19 @@ def update_simulation(
         Matplotlib mouse event.
     system_func : Callable
         Function defining the system of ODEs.
-    t_eval : ndarray
-        Time points at which to store the computed solutions.
     line : Line2D
         Line object to update.
     ani : FuncAnimation
         Animation object to update.
     *args
         Additional arguments to pass to the system function.
-    solver : str, optional
-        Type of solver to use (default is "rk").
-
     **kwargs
         Additional keyword arguments to pass to the system function.
     """
     y0 = [event.xdata, event.ydata]
     if None in y0:
         return
-    if "eu" in solver.lower():
-        y = solve_ode_euler(system_func, y0, t_eval, *args, **kwargs)
-    elif "rk" in solver.lower():
-        y = solve_ode_rk(system_func, y0, t_eval, *args, **kwargs)
-    else:
-        raise ValueError("Invalid solver. Choose 'euler' or 'rk'.")
+    y = solve_ode(system_func, y0, *args, **kwargs)
     ani.event_source.stop()
     ani.new_frame_seq()
     ani.frame_seq = ani.new_frame_seq()
@@ -73,6 +56,9 @@ def plot_phase_plane(
     system_func: Callable,
     limits: Tuple[float, float, float, float] = (-3.0, -3.0, 3.0, 3.0),
     ax: Optional[plt.Axes] = None,
+    t_step: float = 0.0,
+    t_show: float = 0.0,
+    solver: str = "rk",
     **kwargs: Any,
 ):
     """
@@ -124,7 +110,6 @@ def plot_bifurcation(
     system_func: Callable,
     param_name: str,
     param_limits: Tuple[float, float],
-    t_eval: np.ndarray,
     y0: List[float],
     ax: Optional[plt.Axes] = None,
     **kwargs: Any,
@@ -140,10 +125,6 @@ def plot_bifurcation(
         Name of the parameter to vary.
     param_values : ndarray
         Array of parameter values.
-    t_span : tuple of float
-        Tuple containing the start and end times (t0, tf).
-    t_eval : ndarray
-        Time points at which to store the computed solutions.
     y0 : list of float
         Initial conditions.
     ax : matplotlib.axes.Axes, optional
@@ -160,8 +141,8 @@ def plot_bifurcation(
     param_values = np.linspace(*param_limits, 100)
     for param_value in param_values:
         kwargs[param_name] = param_value
-        y = solve_ode_rk(system_func, y0, t_eval, **kwargs)
-        v = y[0][-int(len(t_eval) / 2) :]  # Last half of data
+        y = solve_ode(system_func, y0, **kwargs)
+        v = y[0, -int(y.shape[-1] / 2) :]  # Last half of data
         max_v.append(np.max(v))
         min_v.append(np.min(v))
 
@@ -176,8 +157,6 @@ def plot_bifurcation(
 
 def run_interactive_plot(
     system_func: Callable,
-    t_end: float = 100.0,
-    num_points: int = 1000,
     v0: float = 0.0,
     w0: float = 0.0,
     limits: Tuple[float, float, float, float] = (-3.0, -3.0, 3.0, 3.0),
@@ -192,10 +171,6 @@ def run_interactive_plot(
     ----------
     system_func : Callable
         Function that defines the model equations.
-    t_end : float, optional
-        End time for the simulation (default is 100.0).
-    num_points : int, optional
-        Number of time points to evaluate (default is 1000).
     v0 : float, optional
         Initial value of the first variable (default is 0.0).
     w0 : float, optional
@@ -209,18 +184,10 @@ def run_interactive_plot(
     **kwargs
         Additional keyword arguments to pass to the system function.
     """
-    t_eval: np.ndarray = np.linspace(0, t_end, num_points)
     y0: List[float] = [v0, w0]
 
-    solver = kwargs.pop("solver", "rk")
-
     # Initial simulation
-    if "eu" in solver.lower():
-        y = solve_ode_euler(system_func, y0, t_eval, **kwargs)
-    elif "rk" in solver.lower():
-        y = solve_ode_rk(system_func, y0, t_eval, **kwargs)
-    else:
-        raise ValueError("Invalid solver. Choose 'euler' or 'rk'.")
+    y = solve_ode(system_func, y0, **kwargs)
 
     # Determine the number of subplots
     if param_name and param_limits is not None:
@@ -248,7 +215,6 @@ def run_interactive_plot(
             system_func,
             param_name=param_name,
             param_limits=param_limits,
-            t_eval=t_eval,
             y0=y0,
             ax=ax_bifurcation,
             **kwargs,
@@ -265,16 +231,12 @@ def run_interactive_plot(
         return (line,)
 
     # Create the animation
-    ani = animation.FuncAnimation(
-        fig, animate, frames=len(t_eval), fargs=(y, line), interval=20, blit=True
-    )
+    ani = animation.FuncAnimation(fig, animate, fargs=(y, line), interval=20, blit=True)
 
     # Connect the click event to the update function
     fig.canvas.mpl_connect(
         "button_press_event",
-        lambda event: update_simulation(
-            event, system_func, t_eval, line, ani, **kwargs
-        ),
+        lambda event: update_simulation(event, system_func, line, ani, **kwargs),
     )
 
     # Show the interactive plot

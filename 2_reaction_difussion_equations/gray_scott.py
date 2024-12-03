@@ -10,7 +10,7 @@ from matplotlib import animation
 # (allowing the import of the utils module)
 sys.path.append(".")
 
-from utils.ode import laplacian, laplacian_9pt, solve_ode_euler
+from utils.ode import laplacian, laplacian_9pt, solve_ode
 
 
 def add_perturbation(
@@ -141,13 +141,6 @@ def gray_scott_ode(
     return duv_dt
 
 
-def update(
-    uv: np.ndarray, t_end: float = 50.0, dt: float = 1.0, **kwargs
-) -> np.ndarray:
-    t_eval = np.arange(0.0, t_end, dt)
-    return solve_ode_euler(gray_scott_ode, uv, t_eval, **kwargs)[-1]
-
-
 def animate_simulation(grid_size: int, **kwargs: Any):
     """
     Animate the Gray-Scott model simulation.
@@ -167,7 +160,7 @@ def animate_simulation(grid_size: int, **kwargs: Any):
 
     def update_frame(_):
         nonlocal uv
-        uv = update(uv, **kwargs)
+        uv = solve_ode(gray_scott_ode, uv, **kwargs)[..., -1]
         im.set_array(uv[:, :, 1])
         return [im]
 

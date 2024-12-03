@@ -10,7 +10,7 @@ from matplotlib import animation
 # (allowing the import of the utils module)
 sys.path.append(".")
 
-from utils.ode import solve_ode_euler, solve_ode_rk
+from utils.ode import solve_ode
 
 
 def initialize_oscillators(
@@ -49,7 +49,7 @@ def initialize_oscillators(
 
 
 def kuramoto_ode(
-    t: float, theta: np.ndarray, omega: np.ndarray, coupling_strength: float
+    t: float, theta: np.ndarray, omega: np.ndarray = 1, coupling_strength: float = 1.0
 ) -> np.ndarray:
     """
     Computes the time derivative of the phase for each oscillator in the
@@ -83,84 +83,11 @@ def kuramoto_ode(
     return dtheta_dt
 
 
-def solve_kuramoto_ode_euler(
-    theta: np.ndarray, omega: np.ndarray, coupling_strength: float, dt: float
-) -> np.ndarray:
-    """
-    Solves the Kuramoto model using Euler's method (first-order ODE).
-
-    Parameters
-    ----------
-    theta : np.ndarray
-        Phases of the oscillators.
-    omega : np.ndarray
-        Natural frequencies of the oscillators.
-    coupling_strength : float
-        Coupling strength (K), which determines the strength of synchronization.
-    dt : float
-        Time step.
-
-    Returns
-    -------
-    np.ndarray
-        Updated phases of the oscillators.
-    """
-    # Solve the ODE system using Euler's method
-    theta = solve_ode_euler(
-        kuramoto_ode,
-        theta,
-        t_eval=[0, dt],
-        omega=omega,
-        coupling_strength=coupling_strength,
-    )[:, -1]
-    # Keep theta within [0, 2 * pi]
-    theta = np.mod(theta, 2 * np.pi)
-    return theta
-
-
-def solve_kuramoto_ode_rk(
-    theta: np.ndarray, omega: np.ndarray, coupling_strength: float, dt: float
-) -> np.ndarray:
-    """
-    Solves the Kuramoto model using the Runge-Kutta method (RK45).
-    This function numerically integrates a system of ordinary differential
-    equations given an initial value.
-
-    Parameters
-    ----------
-    theta : np.ndarray
-        Phases of the oscillators.
-    omega : np.ndarray
-        Natural frequencies of the oscillators.
-    coupling_strength : float
-        Coupling strength (K), which determines the strength of synchronization.
-    dt : float
-        Time step.
-
-    Returns
-    -------
-    np.ndarray
-        Updated phases of the oscillators.
-    """
-    # Solve the ODE system using Runge-Kutta
-    theta = solve_ode_rk(
-        kuramoto_ode,
-        theta,
-        t_eval=[0, dt],
-        omega=omega,
-        coupling_strength=coupling_strength,
-    )[:, -1]
-    # Keep theta within [0, 2 * pi]
-    theta = np.mod(theta, 2 * np.pi)
-    return theta
-
-
 def animate_simulation(
     num_oscillators: int,
-    coupling_strength: float,
-    dt: float,
     distribution: str = "uniform",
-    solver: str = "euler",
+    coupling_strength: float = 1.0,
+    **kwargs: Any,
 ):
     """
     Animates the Kuramoto model simulation on the unit circle with the phase centroid.
@@ -184,14 +111,6 @@ def animate_simulation(
 
     # Initialize order parameter
     order_param = np.mean(np.exp(1j * theta))
-
-    # Pick a solver
-    if "eu" in solver.lower():
-        solve_kuramoto: callable = solve_kuramoto_ode_euler
-    elif "rk" in solver.lower():
-        solve_kuramoto: callable = solve_kuramoto_ode_rk
-    else:
-        raise ValueError("Solver must be 'euler' or 'rk'.")
 
     # Animate results
     fig, ax = plt.subplots(figsize=(6, 6))
@@ -223,8 +142,16 @@ def animate_simulation(
     def update(frame):
         nonlocal theta, order_param, num_oscillators
 
-        # Update phases using Euler's method
-        theta = solve_kuramoto(theta, omega, coupling_strength, dt=dt)
+        # Solve the ODE system
+        theta = solve_ode(
+            kuramoto_ode,
+            theta,
+            omega=omega,
+            coupling_strength=coupling_strength,
+            **kwargs,
+        )[..., -1]
+        # Keep theta within [0, 2 * pi]
+        theta = np.mod(theta, 2 * np.pi)
 
         # Update scatter plot
         x = np.cos(theta)
@@ -236,7 +163,7 @@ def animate_simulation(
         order_param = np.mean(np.exp(1j * theta))
         # Update centroid line
         centroid_line.set_data([0, np.real(order_param)], [0, np.imag(order_param)])
-        centroid_point.set_data(np.real(order_param), np.imag(order_param))
+        centroid_point.set_data([np.real(order_param)], [np.imag(order_param)])
 
         return scatter, centroid_line, centroid_point
 

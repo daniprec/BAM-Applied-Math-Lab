@@ -5,6 +5,23 @@ from scipy.integrate import solve_ivp
 from scipy.optimize import fsolve
 
 
+def solve_ode(
+    system_func: Callable,
+    y0: List[float],
+    t_step: float = 1.0,
+    t_show: float = 50.0,
+    solver: str = "rk",
+    **kwargs: Any,
+) -> np.ndarray:
+    t_eval = np.arange(0, t_show + t_step, t_step)
+    if "eu" in solver.lower():
+        return solve_ode_euler(system_func, y0, t_eval, **kwargs)
+    elif "rk" in solver.lower():
+        return solve_ode_rk(system_func, y0, t_eval, **kwargs)
+    else:
+        raise ValueError(f"Invalid solver: {solver}")
+
+
 def solve_ode_euler(
     system_func: Callable,
     y0: List[float],
@@ -42,7 +59,7 @@ def solve_ode_euler(
     for t in t_eval[1:]:
         y0 = y0 + func(t, y0) * (t_eval[1] - t_eval[0])
         ls_y.append(y0.copy())
-    return np.array(ls_y)
+    return np.stack(ls_y, axis=-1)
 
 
 def solve_ode_rk(
