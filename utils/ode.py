@@ -7,7 +7,7 @@ from scipy.optimize import fsolve
 
 def solve_ode(
     system_func: Callable,
-    y0: List[float],
+    y0: np.ndarray,
     t_step: float = 1.0,
     t_show: float = 50.0,
     solver: str = "rk",
@@ -24,7 +24,7 @@ def solve_ode(
 
 def solve_ode_euler(
     system_func: Callable,
-    y0: List[float],
+    y0: np.ndarray,
     t_eval: np.ndarray,
     **kwargs: Any,
 ) -> np.ndarray:
@@ -64,7 +64,7 @@ def solve_ode_euler(
 
 def solve_ode_rk(
     system_func: Callable,
-    y0: List[float],
+    y0: np.ndarray,
     t_eval: np.ndarray,
     **kwargs: Any,
 ) -> np.ndarray:
