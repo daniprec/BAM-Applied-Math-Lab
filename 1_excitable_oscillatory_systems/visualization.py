@@ -12,7 +12,12 @@ from matplotlib.lines import Line2D
 # (allowing the import of the utils module)
 sys.path.append(".")
 
-from utils.ode import compute_fixed_points, compute_nullclines, solve_ode_rk
+from utils.ode import (
+    compute_fixed_points,
+    compute_nullclines,
+    solve_ode_euler,
+    solve_ode_rk,
+)
 
 
 def update_simulation(
@@ -22,6 +27,7 @@ def update_simulation(
     line: Line2D,
     ani: FuncAnimation,
     *args: Any,
+    solver: str = "rk",
     **kwargs: Any,
 ):
     """
@@ -41,13 +47,21 @@ def update_simulation(
         Animation object to update.
     *args
         Additional arguments to pass to the system function.
+    solver : str, optional
+        Type of solver to use (default is "rk").
+
     **kwargs
         Additional keyword arguments to pass to the system function.
     """
     y0 = [event.xdata, event.ydata]
     if None in y0:
         return
-    y = solve_ode_rk(system_func, y0, t_eval, *args, **kwargs)
+    if "eu" in solver.lower():
+        y = solve_ode_euler(system_func, y0, t_eval, *args, **kwargs)
+    elif "rk" in solver.lower():
+        y = solve_ode_rk(system_func, y0, t_eval, *args, **kwargs)
+    else:
+        raise ValueError("Invalid solver. Choose 'euler' or 'rk'.")
     ani.event_source.stop()
     ani.new_frame_seq()
     ani.frame_seq = ani.new_frame_seq()
@@ -198,8 +212,15 @@ def run_interactive_plot(
     t_eval: np.ndarray = np.linspace(0, t_end, num_points)
     y0: List[float] = [v0, w0]
 
+    solver = kwargs.pop("solver", "rk")
+
     # Initial simulation
-    y = solve_ode_rk(system_func, y0, t_eval, **kwargs)
+    if "eu" in solver.lower():
+        y = solve_ode_euler(system_func, y0, t_eval, **kwargs)
+    elif "rk" in solver.lower():
+        y = solve_ode_rk(system_func, y0, t_eval, **kwargs)
+    else:
+        raise ValueError("Invalid solver. Choose 'euler' or 'rk'.")
 
     # Determine the number of subplots
     if param_name and param_limits is not None:

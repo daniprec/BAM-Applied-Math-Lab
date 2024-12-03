@@ -1,5 +1,3 @@
-from typing import List
-
 import numpy as np
 import toml
 from visualization import run_interactive_plot
@@ -21,7 +19,7 @@ def morris_lecar(
     v3: float = 2.0,
     v4: float = 30.0,
     phi: float = 0.04,
-) -> List[float]:
+) -> np.ndarray:
     """
     Defines the Morris-Lecar model equations.
     The Morris-Lecar model is a biological neuron model developed by
@@ -68,7 +66,7 @@ def morris_lecar(
 
     Returns
     -------
-    dydt : list of float
+    np.ndarray
         Derivatives [dv/dt, dw/dt] at time t.
     """
     v, n = y
@@ -84,7 +82,7 @@ def morris_lecar(
     ) / c
     dndt = (n_inf - n) / tau_w
 
-    return [dvdt, dndt]
+    return np.array([dvdt, dndt])
 
 
 def main(config: str = "config.toml", key: str = "morris-lecar"):

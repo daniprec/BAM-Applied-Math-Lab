@@ -1,9 +1,16 @@
+import sys
 from typing import Any, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import toml
 from matplotlib import animation
+
+# Add the path to the sys module
+# (allowing the import of the utils module)
+sys.path.append(".")
+
+from utils.ode import laplacian, laplacian_9pt, solve_ode_euler
 
 
 def add_perturbation(
@@ -70,88 +77,15 @@ def initialize_grid(grid_size: int, perturb: bool = True) -> np.ndarray:
     return uv
 
 
-def laplacian(uv: np.ndarray) -> np.ndarray:
-    """
-    Compute the Laplacian of the u and v fields using a 5-point finite
-    difference scheme: considering each point and its immediate neighbors in
-    the up, down, left, and right directions.
-
-    Reference: https://en.wikipedia.org/wiki/Five-point_stencil
-
-    Parameters
-    ----------
-    uv : np.ndarray
-        3D array with shape (grid_size, grid_size, 2) containing the values of
-        u and v.
-    Returns
-    -------
-    np.ndarray
-        3D array with shape (grid_size, grid_size, 2) containing the Laplacian
-        of u and v.
-    """
-    lap = -4 * uv
-
-    # Immediate neighbors (up, down, left, right)
-    lap += np.roll(uv, shift=1, axis=0)  # up
-    lap += np.roll(uv, shift=-1, axis=0)  # down
-    lap += np.roll(uv, shift=1, axis=1)  # left
-    lap += np.roll(uv, shift=-1, axis=1)  # right
-    return lap
-
-
-def laplacian_9pt(uv: np.ndarray) -> np.ndarray:
-    """
-    Compute the Laplacian of the u and v fields using a 9-point finite
-    difference scheme (Patra-Karttunen), considering each point and its
-    immediate neighbors, including diagonals.
-
-    Reference: https://en.wikipedia.org/wiki/Nine-point_stencil
-
-    Parameters
-    ----------
-    uv : np.ndarray
-        3D array with shape (grid_size, grid_size, 2) containing the values of u and v.
-
-    Returns
-    -------
-    np.ndarray
-        3D array with shape (grid_size, grid_size, 2) containing the Laplacian of u and v.
-    """
-    # Weights for the 9-point stencil (Patra-Karttunen)
-    center_weight = -20 / 6
-    neighbor_weight = 4 / 6
-    diagonal_weight = 1 / 6
-
-    lap = center_weight * uv
-
-    # Shifted arrays for immediate neighbors
-    up = np.roll(uv, shift=1, axis=0)
-    down = np.roll(uv, shift=-1, axis=0)
-
-    # Immediate neighbors (up, down, left, right)
-    lap += neighbor_weight * up  # up
-    lap += neighbor_weight * down  # down
-    lap += neighbor_weight * np.roll(uv, shift=1, axis=1)  # left
-    lap += neighbor_weight * np.roll(uv, shift=-1, axis=1)  # right
-
-    # Diagonal neighbors
-    lap += diagonal_weight * np.roll(up, shift=1, axis=1)  # up-left
-    lap += diagonal_weight * np.roll(up, shift=-1, axis=1)  # up-right
-    lap += diagonal_weight * np.roll(down, shift=1, axis=1)  # down-left
-    lap += diagonal_weight * np.roll(down, shift=-1, axis=1)  # down-right
-
-    return lap
-
-
-def update(
+def gray_scott_ode(
+    t: float,
     uv: np.ndarray,
     du: float = 0.16,
     dv: float = 0.08,
     f: float = 0.060,
     k: float = 0.062,
-    dt: float = 1.0,
     stencil: int = 5,
-):
+) -> np.ndarray:
     """
     Update the u and v fields using the Gray-Scott model with explicit Euler
     time integration, where the fields are updated based on their current values
@@ -172,9 +106,8 @@ def update(
         Feed rate (at which u is fed into the system), default is 0.060.
     k : float, optional
         Kill rate (at which v is removed from the system), default is 0.062.
-    dt : float, optional
-        Time step, default is 1.0.
     """
+
     # Extract the matrices for substances u and v
     u = uv[:, :, 0]
     v = uv[:, :, 1]
@@ -185,8 +118,9 @@ def update(
     elif stencil == 9:
         lap = laplacian_9pt(uv)
     else:
-        raise ValueError("Not a valid stencil size. Use 5 or 9.")
+        raise ValueError("Invalid stencil value. Use 5 or 9.")
 
+    # Extract the Laplacian matrices for u and v
     lu = lap[:, :, 0]
     lv = lap[:, :, 1]
 
@@ -195,19 +129,26 @@ def update(
     du_dt = -uvv + f * (1 - u) + du * lu
     dv_dt = uvv - (f + k) * v + dv * lv
 
-    uv[:, :, 0] += du_dt * dt
-    uv[:, :, 1] += dv_dt * dt
+    # Stack the derivatives into a single array (N x N x 2)
+    duv_dt = np.stack((du_dt, dv_dt), axis=-1)
 
     # Enforce boundary conditions (Neumann)
-    uv[0, :] = uv[1, :]
-    uv[-1, :] = uv[-2, :]
-    uv[:, 0] = uv[:, 1]
-    uv[:, -1] = uv[:, -2]
+    duv_dt[0, :] = 0.0
+    duv_dt[-1, :] = 0.0
+    duv_dt[:, 0] = 0.0
+    duv_dt[:, -1] = 0.0
 
-    # No return value, uv is modified in place
+    return duv_dt
 
 
-def animate_simulation(grid_size: int, speed: int = 1, **kwargs: Any):
+def update(
+    uv: np.ndarray, t_end: float = 50.0, dt: float = 1.0, **kwargs
+) -> np.ndarray:
+    t_eval = np.arange(0.0, t_end, dt)
+    return solve_ode_euler(gray_scott_ode, uv, t_eval, **kwargs)[-1]
+
+
+def animate_simulation(grid_size: int, **kwargs: Any):
     """
     Animate the Gray-Scott model simulation.
 
@@ -223,12 +164,10 @@ def animate_simulation(grid_size: int, speed: int = 1, **kwargs: Any):
     fig, ax = plt.subplots(figsize=(6, 6))
     im = ax.imshow(uv[:, :, 1], cmap="inferno", interpolation="bilinear")
     plt.axis("off")
-    # Calculate the number of frames to skip
-    nframes = max(1, int(50 * speed))
 
     def update_frame(_):
-        for _ in range(nframes):
-            update(uv, **kwargs)
+        nonlocal uv
+        uv = update(uv, **kwargs)
         im.set_array(uv[:, :, 1])
         return [im]
 

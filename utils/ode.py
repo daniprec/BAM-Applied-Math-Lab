@@ -42,7 +42,7 @@ def solve_ode_euler(
     for t in t_eval[1:]:
         y0 = y0 + func(t, y0) * (t_eval[1] - t_eval[0])
         ls_y.append(y0.copy())
-    return np.array(ls_y).T
+    return np.array(ls_y)
 
 
 def solve_ode_rk(
@@ -176,3 +176,76 @@ def compute_nullclines(
     y_nc_y = y_grid[zero_crossings]
 
     return [(x_nc_x, x_nc_y), (y_nc_x, y_nc_y)]
+
+
+def laplacian(uv: np.ndarray) -> np.ndarray:
+    """
+    Compute the Laplacian of the u and v fields using a 5-point finite
+    difference scheme: considering each point and its immediate neighbors in
+    the up, down, left, and right directions.
+
+    Reference: https://en.wikipedia.org/wiki/Five-point_stencil
+
+    Parameters
+    ----------
+    uv : np.ndarray
+        3D array with shape (grid_size, grid_size, 2) containing the values of
+        u and v.
+    Returns
+    -------
+    np.ndarray
+        3D array with shape (grid_size, grid_size, 2) containing the Laplacian
+        of u and v.
+    """
+    lap = -4 * uv
+
+    # Immediate neighbors (up, down, left, right)
+    lap += np.roll(uv, shift=1, axis=0)  # up
+    lap += np.roll(uv, shift=-1, axis=0)  # down
+    lap += np.roll(uv, shift=1, axis=1)  # left
+    lap += np.roll(uv, shift=-1, axis=1)  # right
+    return lap
+
+
+def laplacian_9pt(uv: np.ndarray) -> np.ndarray:
+    """
+    Compute the Laplacian of the u and v fields using a 9-point finite
+    difference scheme (Patra-Karttunen), considering each point and its
+    immediate neighbors, including diagonals.
+
+    Reference: https://en.wikipedia.org/wiki/Nine-point_stencil
+
+    Parameters
+    ----------
+    uv : np.ndarray
+        3D array with shape (grid_size, grid_size, 2) containing the values of u and v.
+
+    Returns
+    -------
+    np.ndarray
+        3D array with shape (grid_size, grid_size, 2) containing the Laplacian of u and v.
+    """
+    # Weights for the 9-point stencil (Patra-Karttunen)
+    center_weight = -20 / 6
+    neighbor_weight = 4 / 6
+    diagonal_weight = 1 / 6
+
+    lap = center_weight * uv
+
+    # Shifted arrays for immediate neighbors
+    up = np.roll(uv, shift=1, axis=0)
+    down = np.roll(uv, shift=-1, axis=0)
+
+    # Immediate neighbors (up, down, left, right)
+    lap += neighbor_weight * up  # up
+    lap += neighbor_weight * down  # down
+    lap += neighbor_weight * np.roll(uv, shift=1, axis=1)  # left
+    lap += neighbor_weight * np.roll(uv, shift=-1, axis=1)  # right
+
+    # Diagonal neighbors
+    lap += diagonal_weight * np.roll(up, shift=1, axis=1)  # up-left
+    lap += diagonal_weight * np.roll(up, shift=-1, axis=1)  # up-right
+    lap += diagonal_weight * np.roll(down, shift=1, axis=1)  # down-left
+    lap += diagonal_weight * np.roll(down, shift=-1, axis=1)  # down-right
+
+    return lap

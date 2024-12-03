@@ -1,5 +1,3 @@
-from typing import List
-
 import numpy as np
 import toml
 from visualization import run_interactive_plot
@@ -13,7 +11,7 @@ def fitzhugh_nagumo(
     b: float = 0.8,
     tau: float = 12.5,
     r: float = 0.1,
-) -> List[float]:
+) -> np.ndarray:
     """
     Defines the FitzHugh-Nagumo (FHN) model equations.
     The FHN model describes a prototype of an excitable system (e.g., a neuron).
@@ -42,13 +40,13 @@ def fitzhugh_nagumo(
 
     Returns
     -------
-    dydt : list of float
+    np.ndarray
         Derivatives [dv/dt, dw/dt] at time t.
     """
     v, w = y
     dvdt = v - (v**3) / 3 - w + r * i_ext
     dwdt = (v + a - b * w) / tau
-    return [dvdt, dwdt]
+    return np.array([dvdt, dwdt])
 
 
 def main(config: str = "config.toml", key: str = "fitzhugh-nagumo"):
