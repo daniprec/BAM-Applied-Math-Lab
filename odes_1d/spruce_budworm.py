@@ -43,21 +43,25 @@ def plot_solution(solution: Any) -> None:
     plt.plot(solution.t, solution.y[0])
     plt.xlabel("Time")
     plt.ylabel("Budworm Population")
-    plt.title("Spruce Budworm Population Dynamics")
+    plt.title("Spruce-Budworm Population Dynamics")
     plt.grid()
     plt.show()
 
 
-def main() -> None:
-    """Main function to run the spruce budworm simulation."""
-    # Parameters
-    r = 0.1  # intrinsic growth rate
-    k = 100  # carrying capacity
-    b = 0.1  # predation rate
+def main(r=0.1, k=100, b=0.1, n0=10) -> None:
+    """Main function to run the Spruce-Budworm simulation.
 
-    # Initial condition
-    n0 = 10
-
+    Parameters
+    ----------
+    r : float, optional
+        Intrinsic growth rate, by default 0.1.
+    k : float, optional
+        Carrying capacity, by default 100.
+    b : float, optional
+        Predation rate, by default 0.1.
+    n0 : int, optional
+        Initial budworm population, by default 10.
+    """
     # Time span
     t_span = (0, 200)
     t_eval = np.linspace(t_span[0], t_span[1], 1000)

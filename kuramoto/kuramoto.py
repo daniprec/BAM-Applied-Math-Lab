@@ -10,7 +10,7 @@ from matplotlib import animation
 # (allowing the import of the utils module)
 sys.path.append(".")
 
-from utils.ode import solve_ode
+from odes_2d.solver import solve_ode
 
 
 def initialize_oscillators(

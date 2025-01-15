@@ -1,4 +1,3 @@
-import sys
 from typing import Any, Callable, List, Optional, Tuple
 
 import matplotlib.animation as animation
@@ -7,12 +6,7 @@ import numpy as np
 from matplotlib.animation import FuncAnimation
 from matplotlib.backend_bases import MouseEvent
 from matplotlib.lines import Line2D
-
-# Add the path to the sys module
-# (allowing the import of the utils module)
-sys.path.append(".")
-
-from utils.ode import compute_fixed_points, compute_nullclines, solve_ode
+from solver import compute_fixed_points, compute_nullclines, solve_ode
 
 
 def update_simulation(

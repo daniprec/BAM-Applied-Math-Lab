@@ -10,7 +10,7 @@ from matplotlib import animation
 # (allowing the import of the utils module)
 sys.path.append(".")
 
-from utils.ode import laplacian, laplacian_9pt, solve_ode
+from odes_2d.solver import laplacian, laplacian_9pt, solve_ode
 
 
 def add_perturbation(
