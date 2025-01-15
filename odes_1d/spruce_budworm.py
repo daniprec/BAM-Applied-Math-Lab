@@ -19,7 +19,7 @@ def spruce_budworm(
     r : float, optional
         Intrinsic growth rate, by default 0.1.
     k : float, optional
-        Carrying capacity, by default 100.
+        Carrying capacity of the forest, by default 100.
     b : float, optional
         Predation rate, by default 0.1.
 
@@ -56,7 +56,7 @@ def main(r=0.1, k=100, b=0.1, n0=10) -> None:
     r : float, optional
         Intrinsic growth rate, by default 0.1.
     k : float, optional
-        Carrying capacity, by default 100.
+        Carrying capacity of the forest, by default 100.
     b : float, optional
         Predation rate, by default 0.1.
     n0 : int, optional
