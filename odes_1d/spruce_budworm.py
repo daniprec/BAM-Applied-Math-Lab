@@ -43,13 +43,13 @@ def plot_solution(solution: Any) -> None:
     plt.plot(solution.t, solution.y[0])
     plt.xlabel("Time")
     plt.ylabel("Budworm Population")
-    plt.title("Spruce-Budworm Population Dynamics")
+    plt.title("Spruce budworm Population Dynamics")
     plt.grid()
     plt.show()
 
 
 def main(r=0.1, k=100, b=0.1, n0=10) -> None:
-    """Main function to run the Spruce-Budworm simulation.
+    """Main function to run the spruce budworm simulation.
 
     Parameters
     ----------
