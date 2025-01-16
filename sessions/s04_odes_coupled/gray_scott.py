@@ -8,9 +8,9 @@ from matplotlib import animation
 
 # Add the path to the sys module
 # (allowing the import of the utils module)
-sys.path.append("./sessions")
+sys.path.append(".")
 
-from s02_odes_2d.solver import laplacian, laplacian_9pt, solve_ode
+from sessions.s02_odes_2d.solver import laplacian, laplacian_9pt, solve_ode
 
 
 def add_perturbation(
