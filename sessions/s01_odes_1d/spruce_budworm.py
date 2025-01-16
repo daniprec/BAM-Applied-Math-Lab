@@ -69,7 +69,14 @@ def main(r=0.1, k=100, b=0.1, n0=10) -> None:
     t_eval = np.linspace(0, 200, 1000)
 
     # Solve the ODE
-    solution = solve_ivp(spruce_budworm, t_span, [n0], args=(r, k, b), t_eval=t_eval)
+    solution = solve_ivp(
+        spruce_budworm,
+        t_span,
+        [n0],
+        args=(r, k, b),
+        t_eval=t_eval,
+        method="RK45",
+    )
 
     # Plot the results
     plot_spruce_budworm(solution)

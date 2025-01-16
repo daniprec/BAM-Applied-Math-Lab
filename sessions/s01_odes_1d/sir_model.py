@@ -78,7 +78,14 @@ def main(beta=0.3, gamma=0.1, s0=0.99, i0=0.01, r0=0.0) -> None:
     y0 = [s0, i0, r0]
 
     # Solve the ODE
-    solution = solve_ivp(sir_model, t_span, y0, args=(beta, gamma), t_eval=t_eval)
+    solution = solve_ivp(
+        sir_model,
+        t_span,
+        y0,
+        args=(beta, gamma),
+        t_eval=t_eval,
+        method="RK45",
+    )
 
     # Plot the results
     plot_sir_model(solution)
