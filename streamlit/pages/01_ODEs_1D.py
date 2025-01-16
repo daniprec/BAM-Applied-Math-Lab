@@ -12,8 +12,12 @@ sys.path.append(".")
 from sessions.s01_odes_1d.sir_model import plot_sir_model, sir_model
 from sessions.s01_odes_1d.spruce_budworm import plot_spruce_budworm, spruce_budworm
 
-# Open a tab
+# Open one tab per model
 ls_tabs = st.tabs(["SIR Model", "Spruce Budworm"])
+
+# ---------------------------------#
+
+# SIR Model
 
 with ls_tabs[0]:
     col1, col2 = st.columns(2)
@@ -25,7 +29,7 @@ with ls_tabs[0]:
     with col2:
         i0 = st.slider("Initial infected population (i0)", 0.0, 1.0, 0.01)
         r0 = st.slider("Initial recovered population (r0)", 0.0, 1.0, 0.0)
-        s0 = max(1 - i0 - r0, 0)
+        s0 = max(1 - i0 - r0, 0)  # Initial susceptible population
 
     # Time span
     t_span = (0, 160)
@@ -39,6 +43,10 @@ with ls_tabs[0]:
     # Plot the results in Streamlit
     fig, ax = plot_sir_model(solution)
     st.pyplot(fig)
+
+# ---------------------------------#
+
+# Spruce Budworm
 
 with ls_tabs[1]:
     # Make two columns
@@ -62,3 +70,5 @@ with ls_tabs[1]:
     # Plot the results in Streamlit
     fig, ax = plot_spruce_budworm(solution)
     st.pyplot(fig)
+
+# ---------------------------------#
