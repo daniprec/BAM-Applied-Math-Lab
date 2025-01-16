@@ -40,12 +40,14 @@ def plot_solution(solution: Any) -> None:
     solution : Any
         Solution object returned by scipy.integrate.solve_ivp().
     """
+    fig, ax = plt.subplots()
     plt.plot(solution.t, solution.y[0])
     plt.xlabel("Time")
     plt.ylabel("Budworm Population")
     plt.title("Spruce budworm Population Dynamics")
     plt.grid()
     plt.show()
+    return fig, ax
 
 
 def main(r=0.1, k=100, b=0.1, n0=10) -> None:
