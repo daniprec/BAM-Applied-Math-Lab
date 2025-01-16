@@ -38,7 +38,7 @@ def plot_solution(solution: Any) -> None:
     Parameters
     ----------
     solution : Any
-        Solution object returned by solve_ivp.
+        Solution object returned by scipy.integrate.solve_ivp().
     """
     plt.plot(solution.t, solution.y[0])
     plt.xlabel("Time")
@@ -64,7 +64,7 @@ def main(r=0.1, k=100, b=0.1, n0=10) -> None:
     """
     # Time span
     t_span = (0, 200)
-    t_eval = np.linspace(t_span[0], t_span[1], 1000)
+    t_eval = np.linspace(0, 200, 1000)
 
     # Solve the ODE
     solution = solve_ivp(spruce_budworm, t_span, [n0], args=(r, k, b), t_eval=t_eval)
