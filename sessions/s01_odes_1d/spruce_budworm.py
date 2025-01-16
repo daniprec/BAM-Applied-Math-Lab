@@ -13,7 +13,7 @@ def spruce_budworm(
     Parameters
     ----------
     t : float
-        Time variable.
+        Time variable. Not used but required by scipy.integrate.solve_ivp().
     n : float
         Budworm population at time t.
     r : float, optional
