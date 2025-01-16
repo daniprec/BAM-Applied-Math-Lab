@@ -1,6 +1,13 @@
+import sys
+
 import numpy as np
 import toml
-from visualization import run_interactive_plot
+
+# Add the path to the sys module
+# (allowing the import of the utils module)
+sys.path.append(".")
+
+from sessions.s02_odes_2d.visualization import run_interactive_plot
 
 
 def morris_lecar(
