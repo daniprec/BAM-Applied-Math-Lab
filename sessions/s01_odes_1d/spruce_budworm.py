@@ -32,7 +32,7 @@ def spruce_budworm(
     return dndt
 
 
-def plot_solution(solution: Any) -> None:
+def plot_spruce_budworm(solution: Any) -> None:
     """Plot the solution of the spruce budworm ODE.
 
     Parameters
@@ -72,7 +72,7 @@ def main(r=0.1, k=100, b=0.1, n0=10) -> None:
     solution = solve_ivp(spruce_budworm, t_span, [n0], args=(r, k, b), t_eval=t_eval)
 
     # Plot the results
-    plot_solution(solution)
+    plot_spruce_budworm(solution)
 
 
 if __name__ == "__main__":
