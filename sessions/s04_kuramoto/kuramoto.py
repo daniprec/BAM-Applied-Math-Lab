@@ -8,9 +8,9 @@ from matplotlib import animation
 
 # Add the path to the sys module
 # (allowing the import of the utils module)
-sys.path.append(".")
+sys.path.append("./sessions")
 
-from odes_2d.solver import solve_ode
+from s02_odes_2d.solver import solve_ode
 
 
 def initialize_oscillators(
