@@ -1,5 +1,3 @@
-from typing import Any
-
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
@@ -26,11 +24,13 @@ def michaelis_menten(t: float, s: float, vmax: float = 1.0, km: float = 0.5) -> 
     float
         Rate of change of the substrate concentration.
     """
-    dsdt = -(vmax * s) / (km + s)
+    dsdt = (vmax * s) / (km + s)
     return dsdt
 
 
-def plot_solution(solution: Any) -> tuple[Figure, Axes]:
+def plot_michaelis_menten(
+    s0: float = 1, vmax: float = 1.0, km: float = 0.5, t_show: int = 2
+) -> tuple[Figure, Axes]:
     """Plot the solution of the Michaelis-Menten ODE.
 
     Parameters
@@ -38,37 +38,42 @@ def plot_solution(solution: Any) -> tuple[Figure, Axes]:
     solution : Any
         Solution object returned by scipy.integrate.solve_ivp
     """
-    fig, ax = plt.subplots()
-    plt.plot(solution.t, solution.y[0])
-    plt.ylabel("Substrate Concentration")
-    plt.title("Michaelis-Menten Kinetics")
-    plt.xlabel("Time")
-    plt.grid()
-    plt.show()
-    return fig, ax
-
-
-def main(vmax=1.0, km=0.5, s0=10) -> None:
-    """Main function to run the Michaelis-Menten simulation.
-
-    Parameters
-    ----------
-    vmax : float, optional
-        Maximum reaction rate, by default 1.0.
-    km : float, optional
-        Michaelis constant, by default 0.5.
-    s0 : float, optional
-        Initial substrate concentration, by default 10.
-    """
     # Time span
-    t_span = (0, 10)
-    t_eval = np.linspace(0, 10, 100)
+    t_span = (0, t_show)
+    t_eval = np.linspace(0, t_show, 1000)
 
     # Solve the ODE
-    solution = solve_ivp(michaelis_menten, t_span, [s0], args=(vmax, km), t_eval=t_eval)
+    solution = solve_ivp(
+        michaelis_menten,
+        t_span,
+        [s0],
+        args=(vmax, km),
+        t_eval=t_eval,
+        method="RK45",
+    )
 
-    # Plot the results
-    plot_solution(solution)
+    fig, axs = plt.subplots(2, 1)
+    axs[0].plot(solution.t, solution.y[0])
+    axs[0].set_ylabel("Substrate Concentration")
+    axs[0].set_xlabel("Time")
+    axs[0].grid()
+
+    s = np.linspace(0, max(solution.y[0]), 100)
+    v = michaelis_menten(0, s, vmax, km)
+    axs[1].plot(s, v)
+    axs[1].hlines(vmax / 2, 0, km, linestyles="--", colors="r")
+    axs[1].vlines(km, 0, vmax / 2, linestyles="--", colors="r")
+    axs[1].set_ylabel("Reaction Rate")
+    axs[1].set_xlabel("Substrate Concentration")
+    axs[1].grid()
+
+    return fig, axs
+
+
+def main() -> None:
+    """Main function to run the Michaelis-Menten simulation."""
+    plot_michaelis_menten()
+    plt.show()
 
 
 if __name__ == "__main__":

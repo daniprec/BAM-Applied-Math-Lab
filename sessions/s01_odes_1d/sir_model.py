@@ -1,5 +1,3 @@
-from typing import Any
-
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
@@ -35,29 +33,10 @@ def sir_model(
     return np.array([dsdt, didt, drdt])
 
 
-def plot_sir_model(solution: Any) -> tuple[Figure, Axes]:
+def plot_sir_model(
+    beta=0.3, gamma=0.1, s0=0.99, i0=0.01, r0=0.0, t_show: int = 160
+) -> tuple[Figure, Axes]:
     """Plot the solution of the SIR model ODE.
-
-    Parameters
-    ----------
-    solution : Any
-        Solution object returned by scipy.integrate.solve_ivp().
-    """
-    fig, ax = plt.subplots()
-    plt.plot(solution.t, solution.y[0], label="Susceptible")
-    plt.plot(solution.t, solution.y[1], label="Infected")
-    plt.plot(solution.t, solution.y[2], label="Recovered")
-    plt.xlabel("Time")
-    plt.ylabel("Population")
-    plt.title("SIR Model Disease Dynamics")
-    plt.legend()
-    plt.grid()
-    plt.show()
-    return fig, ax
-
-
-def main(beta=0.3, gamma=0.1, s0=0.99, i0=0.01, r0=0.0) -> None:
-    """Main function to run the SIR model simulation.
 
     Parameters
     ----------
@@ -73,8 +52,8 @@ def main(beta=0.3, gamma=0.1, s0=0.99, i0=0.01, r0=0.0) -> None:
         Initial recovered population, by default 0.0.
     """
     # Time span
-    t_span = (0, 160)
-    t_eval = np.linspace(0, 160, 1000)
+    t_span = (0, t_show)
+    t_eval = np.linspace(0, t_show, 1000)
 
     # Initial conditions
     y0 = [s0, i0, r0]
@@ -89,8 +68,23 @@ def main(beta=0.3, gamma=0.1, s0=0.99, i0=0.01, r0=0.0) -> None:
         method="RK45",
     )
 
-    # Plot the results
-    plot_sir_model(solution)
+    fig, ax = plt.subplots()
+    plt.plot(solution.t, solution.y[0], label="Susceptible")
+    plt.plot(solution.t, solution.y[1], label="Infected")
+    plt.plot(solution.t, solution.y[2], label="Recovered")
+    plt.xlabel("Time")
+    plt.ylabel("Population")
+    plt.title("SIR Model Disease Dynamics")
+    plt.legend()
+    plt.grid()
+
+    return fig, ax
+
+
+def main() -> None:
+    """Main function to run the SIR model simulation."""
+    plot_sir_model()
+    plt.show()
 
 
 if __name__ == "__main__":

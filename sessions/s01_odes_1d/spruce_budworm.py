@@ -1,5 +1,3 @@
-from typing import Any
-
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
@@ -34,26 +32,10 @@ def spruce_budworm(
     return dndt
 
 
-def plot_spruce_budworm(solution: Any) -> tuple[Figure, Axes]:
+def plot_spruce_budworm(
+    r: float = 0.1, k: int = 100, b: float = 0.1, n0: int = 10, t_show: float = 200
+) -> tuple[Figure, Axes]:
     """Plot the solution of the spruce budworm ODE.
-
-    Parameters
-    ----------
-    solution : Any
-        Solution object returned by scipy.integrate.solve_ivp().
-    """
-    fig, ax = plt.subplots()
-    plt.plot(solution.t, solution.y[0])
-    plt.xlabel("Time")
-    plt.ylabel("Budworm Population")
-    plt.title("Spruce budworm Population Dynamics")
-    plt.grid()
-    plt.show()
-    return fig, ax
-
-
-def main(r=0.1, k=100, b=0.1, n0=10) -> None:
-    """Main function to run the spruce budworm simulation.
 
     Parameters
     ----------
@@ -67,8 +49,8 @@ def main(r=0.1, k=100, b=0.1, n0=10) -> None:
         Initial budworm population, by default 10.
     """
     # Time span
-    t_span = (0, 200)
-    t_eval = np.linspace(0, 200, 1000)
+    t_span = (0, t_show)
+    t_eval = np.linspace(0, t_show, 1000)
 
     # Solve the ODE
     solution = solve_ivp(
@@ -80,8 +62,19 @@ def main(r=0.1, k=100, b=0.1, n0=10) -> None:
         method="RK45",
     )
 
-    # Plot the results
-    plot_spruce_budworm(solution)
+    fig, ax = plt.subplots()
+    plt.plot(solution.t, solution.y[0])
+    plt.xlabel("Time")
+    plt.ylabel("Budworm Population")
+    plt.title("Spruce budworm Population Dynamics")
+    plt.grid()
+    return fig, ax
+
+
+def main() -> None:
+    """Main function to run the spruce budworm simulation."""
+    plot_spruce_budworm()
+    plt.show()
 
 
 if __name__ == "__main__":
