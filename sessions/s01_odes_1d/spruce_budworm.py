@@ -2,6 +2,8 @@ from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from scipy.integrate import solve_ivp
 
 
@@ -32,7 +34,7 @@ def spruce_budworm(
     return dndt
 
 
-def plot_spruce_budworm(solution: Any) -> None:
+def plot_spruce_budworm(solution: Any) -> tuple[Figure, Axes]:
     """Plot the solution of the spruce budworm ODE.
 
     Parameters

@@ -2,6 +2,8 @@ from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from scipy.integrate import solve_ivp
 
 
@@ -33,7 +35,7 @@ def sir_model(
     return np.array([dsdt, didt, drdt])
 
 
-def plot_sir_model(solution: Any) -> None:
+def plot_sir_model(solution: Any) -> tuple[Figure, Axes]:
     """Plot the solution of the SIR model ODE.
 
     Parameters
