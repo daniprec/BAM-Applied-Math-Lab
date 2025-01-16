@@ -53,6 +53,9 @@ def plot_michaelis_menten(
     )
 
     fig, axs = plt.subplots(2, 1)
+    # Leave some vertical space (avoids xlabel overlap)
+    fig.tight_layout(pad=2.0, h_pad=2.0)
+
     axs[0].plot(solution.t, solution.y[0])
     axs[0].set_ylabel("Substrate Concentration")
     axs[0].set_xlabel("Time")
