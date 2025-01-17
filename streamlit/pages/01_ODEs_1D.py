@@ -55,18 +55,17 @@ with ls_tabs[1]:
 
     # Column 2 (right): Carrying capacity
     with col2:
-        k = st.slider("Carrying capacity (k)", 0, 200, 100)
+        k = st.slider("Carrying capacity (k)", 0.1, 10.0, 1.0)
 
-    # Plot the growth rate
-    fig, ax = plot_spruce_budworm_rate(r=r, k=k)
-    st.pyplot(fig)
+    # This placeholder will be used to display the growth rate plot
+    st_gr = st.empty()
 
     # Create three columns for additional controls
     col3, col4, col5 = st.columns(3)
 
     # Column 3 (left): Time evaluation
     with col3:
-        t_eval = st.slider("Time (years)", 1, 100, 50)
+        t_eval = st.slider("Time (years)", 1, 100, 10)
 
     # Column 4 (center): Button to evolve the population
     with col4:
@@ -76,28 +75,31 @@ with ls_tabs[1]:
     with col5:
         button_reset = st.button("Reset")
 
+    # This placeholder will be used to display the population plot
+    st_pop = st.empty()
+
     # Use Streamlit session state to store the data
     if ("sbw_x" not in st.session_state) or (button_reset):
-        st.session_state["sbw_x"] = np.array([10])
+        st.session_state["sbw_x"] = np.array([k / 10])
         st.session_state["sbw_t"] = np.array([0])
-        st.session_state["sbw_fig"] = None
 
-    # Initialize empty Streamlit figure
-    stfig = st.empty()
+    # Retrieve the data from the session state
+    t = st.session_state["sbw_t"]
+    x = st.session_state["sbw_x"]
 
     # If Go button is pressed, evolve the model and plot the results
     if button:
-        t = st.session_state["sbw_t"]
-        x = st.session_state["sbw_x"]
         t, x = evolve_spruce_budworm(t, x, r=r, k=k, t_eval=t_eval)
-        fig, ax = plot_spruce_budworm(t, x)
-        st.session_state["sbw_fig"] = fig
         st.session_state["sbw_t"] = t
         st.session_state["sbw_x"] = x
 
-    # Display the last figure, stored in the session state
-    if st.session_state["sbw_fig"] is not None:
-        stfig.pyplot(st.session_state["sbw_fig"])
+    # Plot the growth rate
+    fig_gr, ax_gr = plot_spruce_budworm_rate(x[-1], r=r, k=k)
+    st_gr.pyplot(fig_gr)
+
+    # Plot the population
+    fig_pop, ax_pop = plot_spruce_budworm(t, x)
+    st_pop.pyplot(fig_pop)
 
 # ---------------------------------#
 
