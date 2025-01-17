@@ -166,8 +166,25 @@ with ls_tabs[1]:
 
 # Michaelis-Menten
 with ls_tabs[2]:
+    # Text
+    st.markdown(
+        "The Michaelis-Menten equation describes the rate of an enzymatic reaction "
+        "as a function of the substrate concentration. It follows the equation:"
+    )
+    st.markdown("$$v = \\frac{v_{max} \\cdot s}{K_m + s}$$")
+    st.markdown(
+        "where $v$ is the reaction rate, $v_{max}$ is the maximum reaction rate, "
+        "$s$ is the substrate concentration, and $K_m$ is the Michaelis constant. "
+        "All quantities are adimensional."
+    )
+    st.markdown(
+        "Use the sliders below to change the initial substrate concentration, "
+        "maximum reaction rate, Michaelis constant, and the time interval to show the results."
+    )
+    st.markdown("---")
+
     # Create two columns for input sliders
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2, gap="medium")
 
     # Column 1: Initial substrate concentration and maximum reaction rate
     with col1:
@@ -178,10 +195,6 @@ with ls_tabs[2]:
     with col2:
         km = st.slider("Michaelis constant (km)", 0.0, 1.0, 0.5)
         t_show = st.slider("Time (seconds)", 1, 10, 2)
-
-    # Plot the results in Streamlit
-    fig, ax = plot_michaelis_menten(s0=s0, vmax=vmax, km=km, t_show=t_show)
-    st.pyplot(fig)
 
     # Plot the results in Streamlit
     fig, ax = plot_michaelis_menten(s0=s0, vmax=vmax, km=km, t_show=t_show)
