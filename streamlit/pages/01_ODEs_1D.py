@@ -46,6 +46,9 @@ with ls_tabs[0]:
 
 # Spruce Budworm
 with ls_tabs[1]:
+    # FIRST - STRUCTURE THE STREAMLIT PAGE
+    # ANY ELEMENT BOUND TO CHANGE IS DEFAULTED AS EMPTY
+
     # Text
     st.markdown("The spruce budworm change rate has been modeled by the following ODE:")
     st.markdown(
@@ -110,7 +113,10 @@ with ls_tabs[1]:
         "Chapter 3.7 from Strogatz, S. H. (2018). Nonlinear Dynamics and Chaos: With Applications to Physics, Biology, Chemistry, and Engineering. CRC Press."
     )
 
-    # Use Streamlit session state to store the data
+    # SECOND - RUN THE CHANGES
+    # BUTTON PRESSES, PLOTS, AND DATA STORAGE
+
+    # Use Streamlit session state to store the data (is like a dictionary)
     if ("sbw_x" not in st.session_state) or (button_reset):
         st.session_state["sbw_x"] = np.array([k / 10])
         st.session_state["sbw_t"] = np.array([0])
