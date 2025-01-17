@@ -46,6 +46,22 @@ with ls_tabs[0]:
 
 # Spruce Budworm
 with ls_tabs[1]:
+    # Text
+    st.markdown("The spruce budworm change rate has been modeled by the following ODE:")
+    st.markdown(
+        " $$\\frac{dx}{dt} = r \\cdot x \\cdot (1 - \\frac{x}{k}) - \\frac{x^2}{1 + x^2}$$"
+    )
+    st.markdown(
+        "where $x$ is the current budworm population, $r$ is the intrinsic growth rate "
+        "and $k$ is the carrying capacity of the forest. All quantities are adimensional."
+    )
+    st.markdown(
+        "The graph below shows the rate of change of the budworm population. "
+        "Red points indicate equilibrium points, while the green dashed line "
+        "indicates the current population."
+    )
+    st.markdown("---")
+
     # Create two columns for input sliders
     col1, col2 = st.columns(2)
 
@@ -60,8 +76,17 @@ with ls_tabs[1]:
     # This placeholder will be used to display the growth rate plot
     st_gr = st.empty()
 
+    # Text
+    st.markdown("---")
+    st.markdown(
+        "The graph below shows the evolution of the budworm population over time."
+        "Use the slider to set the time interval you allow the population to evolve."
+        "Hit 'Evolve' to run the simulation, or 'Reset' to start over."
+    )
+    st.markdown("---")
+
     # Create three columns for additional controls
-    col3, col4, col5 = st.columns(3)
+    col3, col4, col5 = st.columns([2, 1, 1], gap="large", vertical_alignment="bottom")
 
     # Column 3 (left): Time evaluation
     with col3:
@@ -69,7 +94,7 @@ with ls_tabs[1]:
 
     # Column 4 (center): Button to evolve the population
     with col4:
-        button = st.button("Go!")
+        button = st.button("Evolve")
 
     # Column 5 (right): Button to reset history
     with col5:
