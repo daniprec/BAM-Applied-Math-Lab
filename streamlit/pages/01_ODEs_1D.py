@@ -91,11 +91,11 @@ with ls_tabs[1]:
 
     # Column 1 (left): Intrinsic growth rate
     with col1:
-        r = st.slider("Intrinsic growth rate (r)", 0.0, 1.0, 0.1)
+        r = st.slider("Intrinsic growth rate (r)", 0.0, 1.0, 0.5)
 
     # Column 2 (right): Carrying capacity
     with col2:
-        k = st.slider("Carrying capacity (k)", 0.1, 10.0, 1.0)
+        k = st.slider("Carrying capacity (k)", 0.1, 10.0, 10.0)
 
     # This placeholder will be used to display the growth rate plot
     st_gr = st.empty()

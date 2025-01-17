@@ -5,7 +5,7 @@ from matplotlib.figure import Figure
 from scipy.integrate import solve_ivp
 
 
-def spruce_budworm(t: float, x: float, r: float = 0.1, k: float = 100) -> float:
+def spruce_budworm(t: float, x: float, r: float = 0.5, k: float = 10) -> float:
     """Model for the spruce budworm population dynamics.
 
     Reference: Chapter 3.7 from Strogatz, S. H. (2018).
@@ -18,9 +18,9 @@ def spruce_budworm(t: float, x: float, r: float = 0.1, k: float = 100) -> float:
     x : float
         Budworm population at time t (adimensional).
     r : float, optional
-        Intrinsic growth rate (adimensional), by default 0.1.
+        Intrinsic growth rate (adimensional), by default 0.5.
     k : float, optional
-        Carrying capacity of the forest (adimensional), by default 100.
+        Carrying capacity of the forest (adimensional), by default 10.
 
     Returns
     -------
@@ -32,18 +32,18 @@ def spruce_budworm(t: float, x: float, r: float = 0.1, k: float = 100) -> float:
 
 
 def plot_spruce_budworm_rate(
-    xt: int, r: float = 0.1, k: int = 100
+    xt: float, r: float = 0.5, k: float = 10
 ) -> tuple[Figure, Axes]:
     """Plot the rate of change of the spruce budworm ODE.
 
     Parameters
     ----------
-    xt: int
+    xt: float
         Budworm population at current t.
     r : float, optional
-        Intrinsic growth rate, by default 0.1.
+        Intrinsic growth rate, by default 0.5.
     k : float, optional
-        Carrying capacity of the forest, by default 100.
+        Carrying capacity of the forest, by default 10.
     """
     x = np.linspace(0, k, 1000)
     dxdt = spruce_budworm(0, x, r, k)
@@ -68,7 +68,7 @@ def plot_spruce_budworm_rate(
 
 
 def evolve_spruce_budworm(
-    t: np.ndarray, x: np.ndarray, r: float = 0.1, k: int = 100, t_eval: int = 50
+    t: np.ndarray, x: np.ndarray, r: float = 0.5, k: float = 10, t_eval: float = 50
 ) -> tuple[np.ndarray, np.ndarray]:
     """Evolve the spruce budworm ODE and append the new values to the arrays.
 
@@ -79,10 +79,10 @@ def evolve_spruce_budworm(
     x : np.ndarray
         Budworm population array.
     r : float, optional
-        Intrinsic growth rate, by default 0.1.
+        Intrinsic growth rate, by default 0.5.
     k : float, optional
-        Carrying capacity of the forest, by default 100.
-    t_eval : int, optional
+        Carrying capacity of the forest, by default 10.
+    t_eval : float, optional
         Time to evaluate the ODE, by default 50.
 
     Returns
