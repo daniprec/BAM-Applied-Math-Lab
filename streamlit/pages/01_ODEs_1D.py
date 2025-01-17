@@ -23,15 +23,24 @@ ls_tabs = st.tabs(["SIR Model", "Spruce Budworm", "Michaelis-Menten"])
 
 # SIR Model
 with ls_tabs[0]:
+    # Text
+    st.markdown(
+        "The SIR model is a simple mathematical model to describe the spread "
+        "of a disease in a population. Use the sliders below to change the "
+        "transmission and recovery rates, as well as the initial populations "
+        "and the time interval to show the results."
+    )
+    st.markdown("---")
+
     # Create two columns for input sliders
     col1, col2 = st.columns(2)
 
-    # Column 1: Transmission and recovery rates
+    # Column 1 (left): Transmission and recovery rates
     with col1:
         beta = st.slider("Transmission rate (beta)", 0.0, 1.0, 0.3)
         gamma = st.slider("Recovery rate (gamma)", 0.0, 1.0, 0.1)
 
-    # Column 2: Initial populations and time
+    # Column 2 (right): Initial populations and time
     with col2:
         i0 = st.slider("Initial infected population (i0)", 0.0, 1.0, 0.01)
         r0 = st.slider("Initial recovered population (r0)", 0.0, 1.0, 0.0)
@@ -55,8 +64,9 @@ with ls_tabs[1]:
         " $$\\frac{dx}{dt} = r \\cdot x \\cdot (1 - \\frac{x}{k}) - \\frac{x^2}{1 + x^2}$$"
     )
     st.markdown(
-        "where $x$ is the current budworm population, $r$ is the intrinsic growth rate "
-        "and $k$ is the carrying capacity of the forest. All quantities are adimensional."
+        "where $x$ is the current budworm population, $r$ is the intrinsic "
+        "growth rate and $k$ is the carrying capacity of the forest. "
+        "All quantities are adimensional."
     )
     st.markdown(
         "The graph below shows the rate of change of the budworm population. "
@@ -110,7 +120,9 @@ with ls_tabs[1]:
     st.markdown("---")
     st.markdown("## References")
     st.markdown(
-        "Chapter 3.7 from Strogatz, S. H. (2018). Nonlinear Dynamics and Chaos: With Applications to Physics, Biology, Chemistry, and Engineering. CRC Press."
+        "Chapter 3.7 from Strogatz, S. H. (2018). "
+        "Nonlinear Dynamics and Chaos: With Applications to Physics, Biology, "
+        "Chemistry, and Engineering. CRC Press."
     )
 
     # SECOND - RUN THE CHANGES
@@ -155,6 +167,10 @@ with ls_tabs[2]:
     with col2:
         km = st.slider("Michaelis constant (km)", 0.0, 1.0, 0.5)
         t_show = st.slider("Time (seconds)", 1, 10, 2)
+
+    # Plot the results in Streamlit
+    fig, ax = plot_michaelis_menten(s0=s0, vmax=vmax, km=km, t_show=t_show)
+    st.pyplot(fig)
 
     # Plot the results in Streamlit
     fig, ax = plot_michaelis_menten(s0=s0, vmax=vmax, km=km, t_show=t_show)
