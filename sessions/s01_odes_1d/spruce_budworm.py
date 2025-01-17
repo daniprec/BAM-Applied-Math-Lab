@@ -31,11 +31,15 @@ def spruce_budworm(t: float, x: float, r: float = 0.1, k: float = 100) -> float:
     return dxdt
 
 
-def plot_spruce_budworm_rate(r: float = 0.1, k: int = 100) -> tuple[Figure, Axes]:
+def plot_spruce_budworm_rate(
+    xt: int, r: float = 0.1, k: int = 100
+) -> tuple[Figure, Axes]:
     """Plot the rate of change of the spruce budworm ODE.
 
     Parameters
     ----------
+    xt: int
+        Budworm population at current t.
     r : float, optional
         Intrinsic growth rate, by default 0.1.
     k : float, optional
@@ -54,6 +58,8 @@ def plot_spruce_budworm_rate(r: float = 0.1, k: int = 100) -> tuple[Figure, Axes
         plt.scatter(xc, 0, color="red")
     # Plot horizontal line at y=0
     plt.axhline(0, color="red", lw=0.5)
+    # Mark the current population
+    plt.axvline(xt, color="green", lw=0.5, linestyle="--")
     plt.xlabel("Budworm Population")
     plt.ylabel("Rate of Change")
     plt.title("Spruce budworm Rate of Change")
