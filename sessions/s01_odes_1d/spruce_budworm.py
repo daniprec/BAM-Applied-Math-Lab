@@ -57,9 +57,9 @@ def plot_spruce_budworm_rate(
     for xc in x[sign_change]:
         plt.scatter(xc, 0, color="red")
     # Plot horizontal line at y=0
-    plt.axhline(0, color="red", lw=0.5)
+    plt.axhline(0, color="red", lw=1)
     # Mark the current population
-    plt.axvline(xt, color="green", lw=0.5, linestyle="--")
+    plt.axvline(xt, color="green", lw=1, linestyle="--")
     plt.xlabel("Budworm Population")
     plt.ylabel("Rate of Change")
     plt.title("Spruce budworm Rate of Change")
@@ -120,7 +120,7 @@ def plot_spruce_budworm(t: np.ndarray, x: np.ndarray) -> tuple[Figure, Axes]:
         Budworm population array.
     """
     fig, ax = plt.subplots(figsize=(8, 4))
-    plt.plot(t, x)
+    plt.plot(t, x, "green")
     plt.xlabel("Time")
     plt.ylabel("Budworm Population")
     plt.title("Spruce budworm Population Dynamics")

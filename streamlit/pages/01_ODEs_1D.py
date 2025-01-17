@@ -79,8 +79,9 @@ with ls_tabs[1]:
     # Text
     st.markdown("---")
     st.markdown(
-        "The graph below shows the evolution of the budworm population over time."
-        "Use the slider to set the time interval you allow the population to evolve."
+        "The graph below shows the evolution of the budworm population over time. "
+        "The initial population is always $k / 10$. "
+        "Use the slider to set the time interval you allow the population to evolve. "
         "Hit 'Evolve' to run the simulation, or 'Reset' to start over."
     )
     st.markdown("---")
@@ -90,7 +91,7 @@ with ls_tabs[1]:
 
     # Column 3 (left): Time evaluation
     with col3:
-        t_eval = st.slider("Time (years)", 1, 100, 10)
+        t_eval = st.slider("Time", 1, 100, 10)
 
     # Column 4 (center): Button to evolve the population
     with col4:
