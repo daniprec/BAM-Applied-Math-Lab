@@ -26,7 +26,18 @@ with ls_tabs[0]:
     # Text
     st.markdown(
         "The SIR model is a simple mathematical model to describe the spread "
-        "of a disease in a population. Use the sliders below to change the "
+        "of a disease in a population. It follows the following system of ODEs:"
+    )
+    st.markdown("$$\\frac{dS}{dt} = - \\beta \\cdot S \\cdot I$$")
+    st.markdown("$$\\frac{dI}{dt} = \\beta \\cdot S \\cdot I - \\gamma \\cdot I$$")
+    st.markdown("$$\\frac{dR}{dt} = \\gamma \\cdot I$$")
+    st.markdown(
+        "where $S$ is the susceptible population, $I$ is the infected population, "
+        "$R$ is the recovered population, $\\beta$ is the transmission rate, and $\\gamma$ "
+        "is the recovery rate. All quantities are adimensional."
+    )
+    st.markdown(
+        "Use the sliders below to change the "
         "transmission and recovery rates, as well as the initial populations "
         "and the time interval to show the results."
     )
