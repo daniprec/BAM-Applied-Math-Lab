@@ -1,6 +1,7 @@
 import streamlit as st
 
 st.markdown("# Applied Maths Lab")
+st.markdown("## Bachelor in Applied Mathematics - IE University")
 st.markdown(
     "Welcome to the Applied Maths Lab! This is a collection of interactive "
     "demos and simulations for various mathematical models. Use the left tabs "
@@ -21,6 +22,9 @@ st.markdown(
 st.markdown("---")
 
 st.markdown("## Resources")
+st.markdown(
+    "📚 [IE University - BAM](https://landings.ie.edu/bachland-uni-bachelor-in-applied-mathematics-cro)"
+)
 st.markdown(
     "👨‍💻 [GitHub (source code)](https://github.com/daniprec/BAM-Applied-Math-Lab)"
 )
