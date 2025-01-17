@@ -5,37 +5,34 @@ from matplotlib.figure import Figure
 from scipy.integrate import solve_ivp
 
 
-def spruce_budworm(
-    t: float, n: float, r: float = 0.1, k: float = 100, b: float = 0.1
-) -> float:
+def spruce_budworm(t: float, x: float, r: float = 0.1, k: float = 100) -> float:
     """Model for the spruce budworm population dynamics.
+
+    Reference: Chapter 3.7 from Strogatz, S. H. (2018).
+    Nonlinear Dynamics and Chaos: With Applications to Physics, Biology, Chemistry, and Engineering. CRC Press.
 
     Parameters
     ----------
     t : float
         Time variable. Not used but required by scipy.integrate.solve_ivp().
-    n : float
-        Budworm population at time t.
+    x : float
+        Budworm population at time t (adimensional).
     r : float, optional
-        Intrinsic growth rate, by default 0.1.
+        Intrinsic growth rate (adimensional), by default 0.1.
     k : float, optional
-        Carrying capacity of the forest, by default 100.
-    b : float, optional
-        Predation rate, by default 0.1.
+        Carrying capacity of the forest (adimensional), by default 100.
 
     Returns
     -------
     float
         Rate of change of the budworm population.
     """
-    dndt = r * n * (1 - n / k) - (b * n**2) / (1 + n**2)
-    return dndt
+    dxdt = r * x * (1 - x / k) - (x**2) / (1 + x**2)
+    return dxdt
 
 
-def plot_spruce_budworm(
-    r: float = 0.1, k: int = 100, b: float = 0.1, n0: int = 10, t_show: float = 200
-) -> tuple[Figure, Axes]:
-    """Plot the solution of the spruce budworm ODE.
+def plot_spruce_budworm_rate(r: float = 0.1, k: int = 100) -> tuple[Figure, Axes]:
+    """Plot the rate of change of the spruce budworm ODE.
 
     Parameters
     ----------
@@ -43,27 +40,81 @@ def plot_spruce_budworm(
         Intrinsic growth rate, by default 0.1.
     k : float, optional
         Carrying capacity of the forest, by default 100.
-    b : float, optional
-        Predation rate, by default 0.1.
-    n0 : int, optional
-        Initial budworm population, by default 10.
     """
-    # Time span
-    t_span = (0, t_show)
-    t_eval = np.linspace(0, t_show, 1000)
+    x = np.linspace(0, k, 1000)
+    dxdt = spruce_budworm(0, x, r, k)
+
+    # Mark when there is a change of sign (equilibrium points)
+    sign_change = np.where(np.diff(np.sign(dxdt)))[0]
+
+    fig, ax = plt.subplots(figsize=(8, 4))
+    plt.plot(x, dxdt)
+    # Mark the equilibrium points
+    for xc in x[sign_change]:
+        plt.scatter(xc, 0, color="red")
+    # Plot horizontal line at y=0
+    plt.axhline(0, color="red", lw=0.5)
+    plt.xlabel("Budworm Population")
+    plt.ylabel("Rate of Change")
+    plt.title("Spruce budworm Rate of Change")
+    plt.grid()
+    return fig, ax
+
+
+def evolve_spruce_budworm(
+    t: np.ndarray, x: np.ndarray, r: float = 0.1, k: int = 100, t_eval: int = 50
+) -> tuple[np.ndarray, np.ndarray]:
+    """Evolve the spruce budworm ODE and append the new values to the arrays.
+
+    Parameters
+    ----------
+    t : np.ndarray
+        Time array.
+    x : np.ndarray
+        Budworm population array.
+    r : float, optional
+        Intrinsic growth rate, by default 0.1.
+    k : float, optional
+        Carrying capacity of the forest, by default 100.
+    t_eval : int, optional
+        Time to evaluate the ODE, by default 50.
+
+    Returns
+    -------
+    tuple[np.ndarray, np.ndarray]
+        Time and budworm population arrays.
+    """
+    t_span = (t[-1], t[-1] + t_eval)
+    t_eval = np.linspace(t[-1], t[-1] + t_eval, 1000)
 
     # Solve the ODE
     solution = solve_ivp(
         spruce_budworm,
         t_span,
-        [n0],
-        args=(r, k, b),
+        [x[-1]],
+        args=(r, k),
         t_eval=t_eval,
         method="RK45",
     )
 
-    fig, ax = plt.subplots()
-    plt.plot(solution.t, solution.y[0])
+    t = np.concatenate((t, solution.t))
+    x = np.concatenate((x, solution.y[0]))
+    x = np.clip(x, a_min=0, a_max=None)
+    return t, x
+
+
+def plot_spruce_budworm(t: np.ndarray, x: np.ndarray) -> tuple[Figure, Axes]:
+    """Plot the solution of the spruce budworm ODE.
+
+    Parameters
+    ----------
+    t : np.ndarray
+        Time array.
+    x : np.ndarray
+        Budworm population array.
+    """
+    fig, ax = plt.subplots(figsize=(8, 4))
+    plt.plot(t, x)
     plt.xlabel("Time")
     plt.ylabel("Budworm Population")
     plt.title("Spruce budworm Population Dynamics")
