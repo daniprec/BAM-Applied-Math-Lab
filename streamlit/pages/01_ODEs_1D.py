@@ -104,6 +104,12 @@ with ls_tabs[1]:
     # This placeholder will be used to display the population plot
     st_pop = st.empty()
 
+    st.markdown("---")
+    st.markdown("## References")
+    st.markdown(
+        "Chapter 3.7 from Strogatz, S. H. (2018). Nonlinear Dynamics and Chaos: With Applications to Physics, Biology, Chemistry, and Engineering. CRC Press."
+    )
+
     # Use Streamlit session state to store the data
     if ("sbw_x" not in st.session_state) or (button_reset):
         st.session_state["sbw_x"] = np.array([k / 10])
