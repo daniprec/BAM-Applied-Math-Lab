@@ -44,7 +44,7 @@ with ls_tabs[0]:
     st.markdown("---")
 
     # Create two columns for input sliders
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2, gap="medium")
 
     # Column 1 (left): Transmission and recovery rates
     with col1:
