@@ -128,9 +128,15 @@ def plot_spruce_budworm(t: np.ndarray, x: np.ndarray) -> tuple[Figure, Axes]:
     return fig, ax
 
 
-def main() -> None:
+def main(r: float = 0.5, k: float = 10, t_eval: float = 50):
     """Main function to run the spruce budworm simulation."""
-    plot_spruce_budworm()
+    t = np.array([0])
+    x = np.array([k / 10])
+
+    for _ in range(5):
+        t, x = evolve_spruce_budworm(t, x, r=r, k=k, t_eval=t_eval)
+
+    plot_spruce_budworm(t, x)
     plt.show()
 
 
