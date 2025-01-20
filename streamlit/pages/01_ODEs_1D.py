@@ -81,8 +81,8 @@ with ls_tabs[1]:
     )
     st.markdown(
         "The graph below shows the rate of change of the budworm population. "
-        "Red points indicate equilibrium points, while the green dashed line "
-        "indicates the current population."
+        "Blue points indicate stable equilibrium points, red are unstable, "
+        "while the green dashed line indicates the current population."
     )
     st.markdown("---")
 
