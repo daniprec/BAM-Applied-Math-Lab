@@ -127,6 +127,8 @@ def plot_spruce_budworm(t: np.ndarray, x: np.ndarray) -> tuple[Figure, Axes]:
     """
     fig, ax = plt.subplots(figsize=(8, 4))
     plt.plot(t, x, "green")
+    # Set the Y lower limit to 0
+    plt.ylim(bottom=0)
     plt.xlabel("Time")
     plt.ylabel("Budworm Population")
     plt.title("Spruce budworm Population Dynamics")
