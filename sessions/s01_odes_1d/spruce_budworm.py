@@ -48,14 +48,20 @@ def plot_spruce_budworm_rate(
     x = np.linspace(0, k, 1000)
     dxdt = spruce_budworm(0, x, r, k)
 
-    # Mark when there is a change of sign (equilibrium points)
-    sign_change = np.where(np.diff(np.sign(dxdt)))[0]
+    # Find the zeros, and classify them as stable or unstable
+    mask_zerocross = np.diff(np.sign(dxdt)).astype(bool)
+    mask_stable = mask_zerocross & (dxdt[1:] < 0)
+    mask_unstable = mask_zerocross & (dxdt[1:] > 0)
+    is_stable = np.where(mask_stable)[0]
+    is_unstable = np.where(mask_unstable)[0]
 
     fig, ax = plt.subplots(figsize=(8, 4))
     plt.plot(x, dxdt)
     # Mark the equilibrium points
-    for xc in x[sign_change]:
+    for xc in x[is_unstable]:
         plt.scatter(xc, 0, color="red")
+    for xc in x[is_stable]:
+        plt.scatter(xc, 0, color="blue")
     # Plot horizontal line at y=0
     plt.axhline(0, color="red", lw=1)
     # Mark the current population
@@ -132,6 +138,9 @@ def main(r: float = 0.5, k: float = 10, t_eval: float = 50):
     """Main function to run the spruce budworm simulation."""
     t = np.array([0])
     x = np.array([k / 10])
+
+    plot_spruce_budworm_rate(x[-1], r=r, k=k)
+    plt.show()
 
     for _ in range(5):
         t, x = evolve_spruce_budworm(t, x, r=r, k=k, t_eval=t_eval)
