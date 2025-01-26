@@ -172,6 +172,9 @@ def run_interactive_plot(
     # BACKGROUND - NULLCLINES
     # ------------------------------------------------------------------------ #
 
+    # A nullcline is a curve in the phase plane where one of the variables is constant
+    # dy/dt = 0 nullcline: w = f(v)
+
     # Compute nullclines
     nullclines = compute_nullclines(system_func, t=0.0, limits=limits)
     v_nullcline = nullclines[0]
@@ -185,6 +188,7 @@ def run_interactive_plot(
     # BACKGROUND - FIXED POINT
     # ------------------------------------------------------------------------ #
 
+    # A fixed point is a point where the system is at equilibrium (dy/dt = 0)
     # To find the fixed point, we will use the fsolve function from scipy
     # fsolve expects a function with a single input (y)
     # Our function has two inputs (t, y), so we will create a new function
