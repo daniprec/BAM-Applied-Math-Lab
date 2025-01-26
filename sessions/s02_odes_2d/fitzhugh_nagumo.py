@@ -63,7 +63,7 @@ def compute_nullclines(
     num_points: int = 1000,
 ) -> List[Tuple[np.ndarray, np.ndarray]]:
     """
-    Computes the nullclines for a 2D dynamical system without plotting.
+    Computes the nullclines for a 2D dynamical system.
 
     Parameters
     ----------
@@ -107,43 +107,6 @@ def compute_nullclines(
     y_nc_y = y_grid[zero_crossings]
 
     return [(x_nc_x, x_nc_y), (y_nc_x, y_nc_y)]
-
-
-def compute_fixed_points(system_func: Callable, t: float = 0.0) -> np.ndarray:
-    """
-    Computes the fixed points of a 2D dynamical system.
-
-    Parameters
-    ----------
-    system_func : Callable
-        Function defining the system of ODEs.
-    t : float, optional
-        Time variable (default is 0.0).
-    **kwargs
-        Additional keyword arguments to pass to the system function.
-
-    Returns
-    -------
-    fixed_points : ndarray
-        Array of fixed points [x*, y*].
-    """
-
-    def func(y: np.ndarray) -> np.ndarray:
-        return system_func(t, y)
-
-    # Initial guesses for fixed points
-    guesses = [(-1.0, -1.0), (0.0, 0.0), (1.0, 1.0)]
-    fixed_points = []
-    for guess in guesses:
-        # Find the roots of the (non-linear) equations defined by func(x) = 0
-        # given a starting estimate (guess)
-        fixed_point, info, ier, mesg = fsolve(func, guess, full_output=True)
-        # ier: An integer flag. Set to 1 if a solution was found
-        if ier == 1:
-            # Check for duplicates
-            if not any(np.allclose(fixed_point, fp, atol=1e-5) for fp in fixed_points):
-                fixed_points.append(fixed_point)
-    return np.array(fixed_points)
 
 
 def run_interactive_plot(
@@ -206,7 +169,7 @@ def run_interactive_plot(
     ax.grid(True)
 
     # ------------------------------------------------------------------------ #
-    # BACKGROUND NULLCLINES
+    # BACKGROUND - NULLCLINES
     # ------------------------------------------------------------------------ #
 
     # Compute nullclines
@@ -219,14 +182,22 @@ def run_interactive_plot(
     ax.scatter(w_nullcline[0], w_nullcline[1], c="r", s=1, label="dw/dt = 0 Nullcline")
 
     # ------------------------------------------------------------------------ #
-    # BACKGROUND - FIXED POINTS
+    # BACKGROUND - FIXED POINT
     # ------------------------------------------------------------------------ #
 
-    # Compute and plot fixed points
-    fixed_points = compute_fixed_points(system_func, t=0.0)
-    for fp in fixed_points:
-        ax.plot(fp[0], fp[1], "ko", markersize=8)
-        ax.text(fp[0] + 0.1, fp[1] + 0.1, f"({fp[0]:.2f}, {fp[1]:.2f})")
+    # To find the fixed point, we will use the fsolve function from scipy
+    # fsolve expects a function with a single input (y)
+    # Our function has two inputs (t, y), so we will create a new function
+    # that only takes y as input and calls the original function with t=None
+    def func(y: np.ndarray) -> np.ndarray:
+        return system_func(None, y)
+
+    # Initial guesses for fixed points
+    x0 = (0.0, 0.0)
+    # Find the roots of the (non-linear) equations defined by func(x) = 0
+    fp = fsolve(func, x0)
+    ax.plot(fp[0], fp[1], "ko", markersize=8)
+    ax.text(fp[0] + 0.1, fp[1] + 0.1, f"({fp[0]:.2f}, {fp[1]:.2f})")
 
     # ------------------------------------------------------------------------ #
     # ANIMATION
