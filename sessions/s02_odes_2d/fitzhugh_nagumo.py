@@ -133,9 +133,6 @@ def run_interactive_plot(
     ls_args : list of any, optional
         Additional arguments to pass to the system function
     """
-    y0: List[float] = [v0, w0]
-    t_eval = np.arange(t_span[0], t_span[1] + t_step, t_step)
-
     # Create a canvas
     fig = plt.figure(figsize=(12, 6))
     ax: Axes = plt.axes()
@@ -143,10 +140,6 @@ def run_interactive_plot(
     # ------------------------------------------------------------------------ #
     # BACKGROUND - VECTOR FIELD
     # ------------------------------------------------------------------------ #
-
-    # Solve an initial value problem for a system of ODEs
-    sol = solve_ivp(system_func, t_span, y0, t_eval=t_eval, method="RK45")
-    y = sol.y
 
     # Plot phase plane -  Create a grid of points
     v_values = np.linspace(limits[0], limits[2], 20)
@@ -193,8 +186,8 @@ def run_interactive_plot(
     # fsolve expects a function with a single input (y)
     # Our function has two inputs (t, y), so we will create a new function
     # that only takes y as input and calls the original function with t=None
-    def func(y: np.ndarray) -> np.ndarray:
-        return system_func(None, y)
+    def func(x: np.ndarray) -> np.ndarray:
+        return system_func(None, x)
 
     # Initial guesses for fixed points
     x0 = (0.0, 0.0)
@@ -206,6 +199,12 @@ def run_interactive_plot(
     # ------------------------------------------------------------------------ #
     # ANIMATION
     # ------------------------------------------------------------------------ #
+
+    # Solve an initial value problem for a system of ODEs
+    y0: List[float] = [v0, w0]
+    t_eval = np.arange(t_span[0], t_span[1] + t_step, t_step)
+    sol = solve_ivp(system_func, t_span, y0, t_eval=t_eval, method="RK45")
+    y = sol.y
 
     # Initialize the line object for animation on phase plane
     (line,) = ax.plot([], [], lw=2)
@@ -220,21 +219,25 @@ def run_interactive_plot(
     # Create the animation
     ani = animation.FuncAnimation(fig, animate, fargs=(y, line), interval=20, blit=True)
 
+    # ------------------------------------------------------------------------ #
+    # INTERACTION
+    # ------------------------------------------------------------------------ #
+
     def update_simulation(event: MouseEvent):
+        # The initial condition is set to the mouse click position
         y0 = [event.xdata, event.ydata]
+        # If the mouse click is outside the limits, do nothing
         if None in y0:
             return
+        # Solve the ODEs with the new initial condition
         sol = solve_ivp(system_func, t_span, y0, t_eval=t_eval, method="RK45")
         y = sol.y
+        # Stop the current animation, reset the frame sequence, and start a new animation
         ani.event_source.stop()
         ani.new_frame_seq()
         ani.frame_seq = ani.new_frame_seq()
         ani._args = (y, line)
         ani.event_source.start()
-
-    # ------------------------------------------------------------------------ #
-    # INTERACTION
-    # ------------------------------------------------------------------------ #
 
     # Connect the click event to the update function
     fig.canvas.mpl_connect("button_press_event", update_simulation)
