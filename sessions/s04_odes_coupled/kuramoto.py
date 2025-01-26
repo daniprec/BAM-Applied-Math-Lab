@@ -1,16 +1,10 @@
-import sys
 from typing import Any, Dict, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import toml
 from matplotlib import animation
-
-# Add the path to the sys module
-# (allowing the import of the utils module)
-sys.path.append(".")
-
-from sessions.s02_odes_2d.solver import solve_ode
+from scipy.integrate import solve_ivp
 
 
 def initialize_oscillators(
@@ -89,7 +83,8 @@ def animate_simulation(
     num_oscillators: int,
     distribution: str = "uniform",
     coupling_strength: float = 1.0,
-    **kwargs: Any,
+    t_step: float = 0.01,
+    t_show: float = 10.0,
 ):
     """
     Animates the Kuramoto model simulation on the unit circle with the phase centroid.
@@ -110,6 +105,7 @@ def animate_simulation(
     """
     # Initialize oscillators (phase and natural frequency)
     theta, omega = initialize_oscillators(num_oscillators, distribution)
+    t_span = (0, t_show)
 
     # Animate results
     fig, ax = plt.subplots(figsize=(6, 6))
@@ -142,13 +138,13 @@ def animate_simulation(
         nonlocal theta, coupling_strength
 
         # Solve the ODE system
-        theta = solve_ode(
+        sol = solve_ivp(
             kuramoto_ode,
+            t_span,
             theta,
-            omega=omega,
-            coupling_strength=coupling_strength,
-            **kwargs,
-        )[..., -1]
+            args=(omega, coupling_strength),
+        )
+        theta = sol.y[..., -1]
         # Keep theta within [0, 2 * pi]
         theta = np.mod(theta, 2 * np.pi)
 
@@ -204,7 +200,13 @@ def main(config: str = "config.toml", key: str = "kuramoto"):
         Key in the configuration file.
     """
     dict_config: Dict[str, Any] = toml.load(config)[key]
-    animate_simulation(**dict_config)
+    animate_simulation(
+        num_oscillators=dict_config["num_oscillators"],
+        distribution=dict_config["distribution"],
+        coupling_strength=dict_config["coupling_strength"],
+        t_step=dict_config["t_step"],
+        t_show=dict_config["t_show"],
+    )
 
 
 if __name__ == "__main__":

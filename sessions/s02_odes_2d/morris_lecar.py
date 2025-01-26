@@ -1,13 +1,12 @@
 import sys
 
 import numpy as np
-import toml
 
 # Add the path to the sys module
 # (allowing the import of the utils module)
 sys.path.append(".")
 
-from sessions.s02_odes_2d.visualization import run_interactive_plot
+from sessions.s02_odes_2d.fitzhugh_nagumo import run_interactive_plot
 
 
 def morris_lecar(
@@ -92,15 +91,17 @@ def morris_lecar(
     return np.array([dvdt, dndt])
 
 
-def main(config: str = "config.toml", key: str = "morris-lecar"):
+def main():
     """
     Main function to run the interactive FitzHugh-Nagumo model simulation.
     """
-    # Load config file
-    dict_config: dict = toml.load(config)[key]
-
-    # Run interactive plot
-    run_interactive_plot(morris_lecar, **dict_config)
+    run_interactive_plot(
+        morris_lecar,
+        v0=-60.0,
+        w0=0.0,
+        t_eval=np.linspace(0, 200, 1000),
+        limits=[-60.0, 0.0, 80.0, 1.0],
+    )
 
 
 if __name__ == "__main__":
