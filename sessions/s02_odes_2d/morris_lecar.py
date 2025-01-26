@@ -99,7 +99,8 @@ def main():
         morris_lecar,
         v0=-60.0,
         w0=0.0,
-        t_eval=np.linspace(0, 200, 1000),
+        t_span=(0.0, 100.0),
+        t_step=0.1,
         limits=[-60.0, 0.0, 80.0, 1.0],
     )
 

@@ -150,7 +150,8 @@ def run_interactive_plot(
     system_func: Callable,
     v0: float = 0.0,
     w0: float = 0.0,
-    t_eval: np.ndarray = np.linspace(0, 100, 1000),
+    t_span: Tuple[float, float] = (0.0, 100.0),
+    t_step: float = 0.1,
     limits: Tuple[float, float, float, float] = (-3.0, -3.0, 3.0, 3.0),
 ):
     """
@@ -170,7 +171,7 @@ def run_interactive_plot(
         Additional arguments to pass to the system function
     """
     y0: List[float] = [v0, w0]
-    t_span = (t_eval[0], t_eval[-1])
+    t_eval = np.arange(t_span[0], t_span[1] + t_step, t_step)
 
     # Create a canvas
     fig = plt.figure(figsize=(12, 6))
