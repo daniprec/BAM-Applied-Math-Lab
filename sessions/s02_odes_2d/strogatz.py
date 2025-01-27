@@ -10,6 +10,34 @@ from scipy.integrate import solve_ivp
 from scipy.optimize import fsolve
 
 
+def strogatz(t: float, xy: np.ndarray, a: float = 10, b: float = 4) -> np.ndarray:
+    """
+    Defines model equations of Chlorine Dioxide-lodine-Malonic Acid Reaction.
+    Reference: Strogatz, chapter 8.3, Oscillating Chemical Reactions
+
+    Parameters
+    ----------
+    t : float
+        Time variable.
+    y : ndarray
+        Array containing the variables [v, w] at time t.
+    a : float
+        a > 0 depends on the empirical rate constants and on the concentrations
+        assumed for the slow reactants.
+    b : float
+        b > 0 (see a).
+
+    Returns
+    -------
+    np.ndarray
+        Derivatives [dx/dt, dy/dt] at time t.
+    """
+    x, y = xy
+    dx_dt = a - x - 4 * x * y / (1 + x**2)
+    dy_dt = b * x * (1 - y / (1 + x**2))
+    return np.array([dx_dt, dy_dt])
+
+
 def compute_nullclines(
     system_func: Callable,
     t: float = 0.0,
@@ -69,7 +97,7 @@ def run_interactive_plot(
     w0: float = 0.0,
     t_span: Tuple[float, float] = (0.0, 100.0),
     t_step: float = 0.1,
-    limits: Tuple[float, float, float, float] = (-3.0, -3.0, 3.0, 3.0),
+    limits: Tuple[float, float, float, float] = (0, 0, 5, 10),
 ):
     """
     Runs an interactive simulation of a dynamical system with the ability to update initial conditions.
