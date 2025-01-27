@@ -10,39 +10,41 @@ from scipy.integrate import solve_ivp
 from scipy.optimize import fsolve
 
 
-def cdima(t: float, xy: np.ndarray, a: float = 10, b: float = 6) -> np.ndarray:
+def van_der_pol(
+    t: float, y: np.ndarray, mu: float = 1.0
+) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Defines model equations of Chlorine Dioxide-lodine-Malonic Acid Reaction.
-    Reference: Strogatz, chapter 8.3, Oscillating Chemical Reactions
+    Van der Pol oscillator model.
+    Reference: Strogatz, chapter 7.5, Relaxation Oscillations
 
     Parameters
     ----------
     t : float
         Time variable.
     y : ndarray
-        Array containing the variables [v, w] at time t.
-    a : float
-        a > 0 depends on the empirical rate constants and on the concentrations
-        assumed for the slow reactants.
-    b : float
-        b > 0 (see a).
+        State variables [x, y].
+    mu : float, optional
+        Damping coefficient (default is 1.0).
 
     Returns
     -------
-    np.ndarray
-        Derivatives [dx/dt, dy/dt] at time t.
+    dx_dt : ndarray
+        Derivative of x with respect to time.
+    dy_dt : ndarray
+        Derivative of y with respect to time.
     """
-    x, y = xy
-    dx_dt = a - x - 4 * x * y / (1 + x**2)
-    dy_dt = b * x * (1 - y / (1 + x**2))
-    return np.array([dx_dt, dy_dt])
+    x, y = y
+    fx = x**3 / 3 - x
+    dx_dt = mu * (y - fx)
+    dy_dt = -x / mu
+    return dx_dt, dy_dt
 
 
 def compute_nullclines(
     system_func: Callable,
     args: List = None,
     t: float = 0.0,
-    limits: Tuple[float, float, float, float] = (0.1, 0, 5, 10),
+    limits: Tuple[float, float, float, float] = (-4, -4, 4, 4),
     num_points: int = 1000,
 ) -> List[Tuple[np.ndarray, np.ndarray]]:
     """
@@ -96,7 +98,7 @@ def run_interactive_plot(
     system_func: Callable,
     t_span: Tuple[float, float] = (0.0, 100.0),
     t_step: float = 0.01,
-    limits: Tuple[float, float, float, float] = (0.1, 0, 5, 10),
+    limits: Tuple[float, float, float, float] = (-4, -4, 4, 4),
 ):
     """
     Runs an interactive simulation of a dynamical system with the ability to update initial conditions.
@@ -115,7 +117,7 @@ def run_interactive_plot(
     # Initialize the systems with lists
     # We will use its mutable properties to update the initial conditions
     y0 = [0.0, 0.0]
-    args = [10, 6]
+    args = [10]
 
     t_eval = np.arange(t_span[0], t_span[1], t_step)
 
@@ -193,14 +195,10 @@ def run_interactive_plot(
     # Initialize the line object for animation on stability diagram
     (stab_dot,) = ax_stability.plot([], [], "ko", markersize=8)
 
-    ac = np.linspace(5, 15, 100)
-    bc = 3 * ac / 5 - 25 / ac
-    ax_stability.plot(ac, bc, "k--", label="Stability Boundary")
-
     ax_stability.set_title("Stability Diagram")
     ax_stability.set_xlabel("a")
     ax_stability.set_ylabel("b")
-    ax_stability.set_xlim(5, 15)
+    ax_stability.set_xlim(0, 10)
     ax_stability.set_ylim(0, 10)
 
     # ------------------------------------------------------------------------ #
@@ -232,7 +230,7 @@ def run_interactive_plot(
         fp_dot.set_data([fp[0]], [fp[1]])
         line_phase.set_data(y[0][:i], y[1][:i])
         line_xt.set_data(t_eval[: i + 1], y[0][: i + 1])
-        stab_dot.set_data([args[0]], [args[1]])
+        stab_dot.set_data([args[0]], [args[0]])
         return (line_phase, line_xnull, line_ynull, fp_dot, line_xt, stab_dot)
 
     # Create an animation object, which calls the animate function at each frame
@@ -259,7 +257,6 @@ def run_interactive_plot(
             y0[1] = event.ydata
         elif event.inaxes == ax_stability:
             args[0] = event.xdata
-            args[1] = event.ydata
         else:
             return
 
@@ -305,7 +302,7 @@ def main():
     Main function to run the interactive FitzHugh-Nagumo model simulation.
     """
     # Run interactive plot
-    run_interactive_plot(cdima)
+    run_interactive_plot(van_der_pol)
 
 
 if __name__ == "__main__":
