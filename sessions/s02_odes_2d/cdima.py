@@ -112,14 +112,25 @@ def run_interactive_plot(
     ls_args : list of any, optional
         Additional arguments to pass to the system function
     """
+
+    # Solve an initial value problem for a system of ODEs
+    t_eval = np.arange(t_span[0], t_span[1] + t_step, t_step)
+    sol = solve_ivp(system_func, t_span, y0, t_eval=t_eval, method="RK45")
+    y = sol.y
+
+    # ------------------------------------------------------------------------ #
+    # INITIALIZE PLOT
+    # ------------------------------------------------------------------------ #
+
     # Create a canvas
     fig, axs = plt.subplots(figsize=(10, 5), nrows=2, ncols=2)
+    plt.tight_layout()  # Avoid overlapping subplots
     ax_phase: Axes = axs[0, 0]  # Phase plane x vs y
     ax_xt: Axes = axs[0, 1]  # x vs t
     ax_stability: Axes = axs[1, 0]  # Stability diagram a vs b
 
     # ------------------------------------------------------------------------ #
-    # BACKGROUND - VECTOR FIELD
+    # PHASE PLANE - STATIC PARTS - VECTOR FIELD
     # ------------------------------------------------------------------------ #
 
     # Plot phase plane -  Create a grid of points
@@ -134,8 +145,8 @@ def run_interactive_plot(
     ax_phase.quiver(v_grid, w_grid, dvdt, dwdt, color="gray", alpha=0.5)
 
     # Set up the plot parameters
-    ax_phase.set_xlabel("Membrane Potential (v)")
-    ax_phase.set_ylabel("Recovery Variable (w)")
+    ax_phase.set_xlabel("x")
+    ax_phase.set_ylabel("y")
     ax_phase.set_title("Phase Plane Analysis")
     ax_phase.legend()
     ax_phase.set_xlim(limits[0], limits[2])
@@ -143,7 +154,7 @@ def run_interactive_plot(
     ax_phase.grid(True)
 
     # ------------------------------------------------------------------------ #
-    # BACKGROUND - NULLCLINES
+    # PHASE PLANE - STATIC PARTS - NULLCLINES
     # ------------------------------------------------------------------------ #
 
     # A nullcline is a curve in the phase plane where one of the variables is constant
@@ -163,7 +174,7 @@ def run_interactive_plot(
     )
 
     # ------------------------------------------------------------------------ #
-    # BACKGROUND - FIXED POINT
+    # PHASE PLANE - BACKGROUND - FIXED POINT
     # ------------------------------------------------------------------------ #
 
     # A fixed point is a point where the system is at equilibrium (dy/dt = 0)
@@ -182,46 +193,61 @@ def run_interactive_plot(
     ax_phase.text(fp[0] + 0.1, fp[1] + 0.1, f"({fp[0]:.2f}, {fp[1]:.2f})")
 
     # ------------------------------------------------------------------------ #
+    # X VS T - STATIC PARTS
+    # ------------------------------------------------------------------------ #
+
+    ax_xt.set_title("Time Series")
+    ax_xt.set_xlabel("Time (t)")
+    ax_xt.set_ylabel("y")
+    ax_xt.set_xlim(t_span)
+    ax_xt.set_ylim(limits[1], limits[3])
+
+    # ------------------------------------------------------------------------ #
     # ANIMATION
     # ------------------------------------------------------------------------ #
 
-    # Solve an initial value problem for a system of ODEs
-    t_eval = np.arange(t_span[0], t_span[1] + t_step, t_step)
-    sol = solve_ivp(system_func, t_span, y0, t_eval=t_eval, method="RK45")
-    y = sol.y
-
     # Initialize the line object for animation on phase plane
-    (line,) = ax_phase.plot([], [], lw=2)
+    (line_phase,) = ax_phase.plot([], [], lw=2)
 
-    def animate(i: int, y: np.ndarray, line: Line2D) -> Tuple[Line2D]:
+    # Initialize the line object for animation on x vs t
+    (line_xt,) = ax_xt.plot([], [], lw=2)
+
+    def animate(
+        i: int,
+        y: np.ndarray,
+        line_phase: Line2D,
+        line_xt: Line2D,
+    ) -> Tuple[Line2D]:
         """
         Animation function to update the line object.
         """
-        line.set_data(y[0][:i], y[1][:i])
-        return (line,)
+        line_phase.set_data(y[0][:i], y[1][:i])
+        line_xt.set_data(t_eval[: i + 1], y[1][: i + 1])
+        return (line_phase, line_xt)
 
     # Create the animation
-    ani = animation.FuncAnimation(fig, animate, fargs=(y, line), interval=1, blit=True)
+    ani = animation.FuncAnimation(
+        fig, animate, fargs=(y, line_phase, line_xt), interval=1, blit=True
+    )
 
     # ------------------------------------------------------------------------ #
-    # INTERACTION
+    # PHASE PLANE - INTERACTION
     # ------------------------------------------------------------------------ #
 
     def update_simulation(event: MouseEvent):
         # The initial condition is set to the mouse click position
         y0 = [event.xdata, event.ydata]
-        # If the mouse click is outside the limits, do nothing
-        if None in y0:
-            return
-        # Solve the ODEs with the new initial condition
-        sol = solve_ivp(system_func, t_span, y0, t_eval=t_eval, method="RK45")
-        y = sol.y
-        # Stop the current animation, reset the frame sequence, and start a new animation
-        ani.event_source.stop()
-        ani.new_frame_seq()
-        ani.frame_seq = ani.new_frame_seq()
-        ani._args = (y, line)
-        ani.event_source.start()
+        # The click only works if it is inside the phase plane
+        if event.inaxes == ax_phase:
+            # Solve the ODEs with the new initial condition
+            sol = solve_ivp(system_func, t_span, y0, t_eval=t_eval, method="RK45")
+            y = sol.y
+            # Stop the current animation, reset the frame sequence, and start a new animation
+            ani.event_source.stop()
+            ani.new_frame_seq()
+            ani.frame_seq = ani.new_frame_seq()
+            ani._args = (y, line_phase, line_xt)
+            ani.event_source.start()
 
     # Connect the click event to the update function
     fig.canvas.mpl_connect("button_press_event", update_simulation)
