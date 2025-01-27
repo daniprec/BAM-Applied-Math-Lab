@@ -40,6 +40,7 @@ def cdima(t: float, xy: np.ndarray, a: float = 10, b: float = 6) -> np.ndarray:
 
 def compute_nullclines(
     system_func: Callable,
+    args: List = None,
     t: float = 0.0,
     limits: Tuple[float, float, float, float] = (-3.0, -3.0, 3.0, 3.0),
     num_points: int = 1000,
@@ -77,7 +78,7 @@ def compute_nullclines(
     # Evaluate the derivatives at each point
     dx_dt: np.ndarray
     dy_dt: np.ndarray
-    dx_dt, dy_dt = system_func(t, [x_grid, y_grid])
+    dx_dt, dy_dt = system_func(t, [x_grid, y_grid], *args)
 
     # Extract nullcline data - Find where dx_dt changes sign (zero crossings)
     zero_crossings = np.where(np.diff(np.sign(dx_dt), axis=0))
@@ -93,7 +94,6 @@ def compute_nullclines(
 
 def run_interactive_plot(
     system_func: Callable,
-    y0: Tuple[float, float] = (0.0, 0.0),
     t_span: Tuple[float, float] = (0.0, 100.0),
     t_step: float = 0.01,
     limits: Tuple[float, float, float, float] = (0, 0, 5, 10),
@@ -105,17 +105,19 @@ def run_interactive_plot(
     ----------
     system_func : Callable
         Function that defines the model equations.
-    y0 : float, optional
-        Initial values of the variables (default is 0.0).
     limits : tuple of float, optional
         Tuple containing the x and y limits (x_min, y_min, x_max, y_max).
     ls_args : list of any, optional
         Additional arguments to pass to the system function
     """
+    # Initialize the systems with lists
+    # We will use its mutable properties to update the initial conditions
+    y0 = [0.0, 0.0]
+    args = [10, 6]
 
     # Solve an initial value problem for a system of ODEs
     t_eval = np.arange(t_span[0], t_span[1] + t_step, t_step)
-    sol = solve_ivp(system_func, t_span, y0, t_eval=t_eval, method="RK45")
+    sol = solve_ivp(system_func, t_span, y0, t_eval=t_eval, method="RK45", args=args)
     y = sol.y
 
     # ------------------------------------------------------------------------ #
@@ -139,7 +141,7 @@ def run_interactive_plot(
     v_grid, w_grid = np.meshgrid(v_values, w_values)
 
     # Compute derivatives
-    dvdt, dwdt = system_func(0.0, [v_grid, w_grid])
+    dvdt, dwdt = system_func(0.0, [v_grid, w_grid], *args)
 
     # Plot vector field
     ax_phase.quiver(v_grid, w_grid, dvdt, dwdt, color="gray", alpha=0.5)
@@ -161,7 +163,7 @@ def run_interactive_plot(
     # dy/dt = 0 nullcline: w = f(v)
 
     # Compute nullclines
-    nullclines = compute_nullclines(system_func, t=0.0, limits=limits)
+    nullclines = compute_nullclines(system_func, args=args, t=0.0, limits=limits)
     v_nullcline = nullclines[0]
     w_nullcline = nullclines[1]
 
@@ -183,7 +185,7 @@ def run_interactive_plot(
     # Our function has two inputs (t, y), so we will create a new function
     # that only takes y as input and calls the original function with t=None
     def func(x: np.ndarray) -> np.ndarray:
-        return system_func(None, x)
+        return system_func(None, x, *args)
 
     # Initial guesses for fixed points
     x0 = (0.0, 0.0)
@@ -235,19 +237,25 @@ def run_interactive_plot(
     # ------------------------------------------------------------------------ #
 
     def update_simulation(event: MouseEvent):
-        # The initial condition is set to the mouse click position
-        y0 = [event.xdata, event.ydata]
-        # The click only works if it is inside the phase plane
+        # The click only works if it is inside the phase plane or stability diagram
         if event.inaxes == ax_phase:
-            # Solve the ODEs with the new initial condition
-            sol = solve_ivp(system_func, t_span, y0, t_eval=t_eval, method="RK45")
-            y = sol.y
-            # Stop the current animation, reset the frame sequence, and start a new animation
-            ani.event_source.stop()
-            ani.new_frame_seq()
-            ani.frame_seq = ani.new_frame_seq()
-            ani._args = (y, line_phase, line_xt)
-            ani.event_source.start()
+            y0[0] = event.xdata
+            y0[1] = event.ydata
+        elif event.inaxes == ax_stability:
+            args[0] = event.xdata
+            args[1] = event.ydata
+
+        # Solve the ODEs with the new initial condition
+        sol = solve_ivp(
+            system_func, t_span, y0, t_eval=t_eval, method="RK45", args=args
+        )
+        y = sol.y
+        # Stop the current animation, reset the frame sequence, and start a new animation
+        ani.event_source.stop()
+        ani.new_frame_seq()
+        ani.frame_seq = ani.new_frame_seq()
+        ani._args = (y, line_phase, line_xt)
+        ani.event_source.start()
 
     # Connect the click event to the update function
     fig.canvas.mpl_connect("button_press_event", update_simulation)
