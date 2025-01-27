@@ -139,11 +139,11 @@ def run_interactive_plot(
     # We initialize them as empty lists (similar to what we do in Streamlit)
 
     # Initialize the line object for animation on phase plane
-    (line_phase,) = ax_phase.plot([], [], lw=2)
+    (plot_linephase,) = ax_phase.plot([], [], lw=2)
 
     # A nullcline is a curve in the phase plane where one of the variables is constant
     # dy/dt = 0 nullcline: w = f(v)
-    (line_xnull,) = ax_phase.plot(
+    (plot_xnull,) = ax_phase.plot(
         [],
         [],
         linestyle="None",
@@ -152,7 +152,7 @@ def run_interactive_plot(
         color="blue",
         label="dx/dt = 0 Nullcline",
     )
-    (line_ynull,) = ax_phase.plot(
+    (plot_ynull,) = ax_phase.plot(
         [],
         [],
         linestyle="None",
@@ -163,7 +163,7 @@ def run_interactive_plot(
     )
 
     # A fixed point is a point where the system is at equilibrium (dy/dt = 0)
-    (fp_dot,) = ax_phase.plot([], [], "ko", markersize=8)
+    (plot_fixedpoint,) = ax_phase.plot([], [], "ko", markersize=8)
 
     # Set up the plot parameters
     ax_phase.set_xlabel("x")
@@ -178,7 +178,7 @@ def run_interactive_plot(
     # ------------------------------------------------------------------------ #
 
     # Initialize the line object for animation on x vs t
-    (line_xt,) = ax_xt.plot([], [], lw=2)
+    (plot_xt,) = ax_xt.plot([], [], lw=2)
 
     ax_xt.set_title("Time Series")
     ax_xt.set_xlabel("Time (t)")
@@ -191,7 +191,7 @@ def run_interactive_plot(
     # ------------------------------------------------------------------------ #
 
     # Initialize the line object for animation on stability diagram
-    (stab_dot,) = ax_stability.plot([], [], "ko", markersize=8)
+    (plot_stabpoint,) = ax_stability.plot([], [], "ko", markersize=8)
 
     ac = np.linspace(5, 15, 100)
     bc = 3 * ac / 5 - 25 / ac
@@ -227,13 +227,20 @@ def run_interactive_plot(
         if y is None:
             return ()
 
-        line_xnull.set_data(x_nullcline[0], x_nullcline[1])
-        line_ynull.set_data(y_nullcline[0], y_nullcline[1])
-        fp_dot.set_data([fp[0]], [fp[1]])
-        line_phase.set_data(y[0][:i], y[1][:i])
-        line_xt.set_data(t_eval[: i + 1], y[0][: i + 1])
-        stab_dot.set_data([args[0]], [args[1]])
-        return (line_phase, line_xnull, line_ynull, fp_dot, line_xt, stab_dot)
+        plot_xnull.set_data(x_nullcline[0], x_nullcline[1])
+        plot_ynull.set_data(y_nullcline[0], y_nullcline[1])
+        plot_fixedpoint.set_data([fp[0]], [fp[1]])
+        plot_linephase.set_data(y[0][:i], y[1][:i])
+        plot_xt.set_data(t_eval[: i + 1], y[0][: i + 1])
+        plot_stabpoint.set_data([args[0]], [args[1]])
+        return (
+            plot_linephase,
+            plot_xnull,
+            plot_ynull,
+            plot_fixedpoint,
+            plot_xt,
+            plot_stabpoint,
+        )
 
     # Create an animation object, which calls the animate function at each frame
     ani = animation.FuncAnimation(
