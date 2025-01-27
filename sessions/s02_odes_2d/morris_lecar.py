@@ -6,7 +6,7 @@ import numpy as np
 # (allowing the import of the utils module)
 sys.path.append(".")
 
-from sessions.s02_odes_2d.fitzhugh_nagumo import run_interactive_plot
+from sessions.s02_odes_2d.strogatz import run_interactive_plot
 
 
 def morris_lecar(
