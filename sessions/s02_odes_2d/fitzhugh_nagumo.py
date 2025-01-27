@@ -6,14 +6,14 @@ import numpy as np
 # (allowing the import of the utils module)
 sys.path.append(".")
 
-from sessions.s02_odes_2d.strogatz import run_interactive_plot
+from sessions.s02_odes_2d.cdima import run_interactive_plot
 
 
 def fitzhugh_nagumo(
     t: float,
     y: np.ndarray,
     i_ext: float = 0.5,
-    a: float = 0.7,
+    a: float = 0.1,
     b: float = 0.8,
     tau: float = 12.5,
     r: float = 0.1,
