@@ -42,7 +42,7 @@ def compute_nullclines(
     system_func: Callable,
     args: List = None,
     t: float = 0.0,
-    limits: Tuple[float, float, float, float] = (-3.0, -3.0, 3.0, 3.0),
+    limits: Tuple[float, float, float, float] = (0.1, 0, 5, 10),
     num_points: int = 1000,
 ) -> List[Tuple[np.ndarray, np.ndarray]]:
     """
@@ -96,7 +96,7 @@ def run_interactive_plot(
     system_func: Callable,
     t_span: Tuple[float, float] = (0.0, 100.0),
     t_step: float = 0.01,
-    limits: Tuple[float, float, float, float] = (0, 0, 5, 10),
+    limits: Tuple[float, float, float, float] = (0.1, 0, 5, 10),
 ):
     """
     Runs an interactive simulation of a dynamical system with the ability to update initial conditions.
@@ -105,31 +105,38 @@ def run_interactive_plot(
     ----------
     system_func : Callable
         Function that defines the model equations.
+    t_span : tuple of float, optional
+        Tuple containing the initial and final time (default is (0.0, 100.0)).
+    t_step : float, optional
+        Time step for the simulation (default is 0.01).
     limits : tuple of float, optional
         Tuple containing the x and y limits (x_min, y_min, x_max, y_max).
-    ls_args : list of any, optional
-        Additional arguments to pass to the system function
     """
     # Initialize the systems with lists
     # We will use its mutable properties to update the initial conditions
-    t_eval = np.arange(t_span[0], t_span[1], t_step)
     y0 = [0.0, 0.0]
     args = [10, 6]
+
+    t_eval = np.arange(t_span[0], t_span[1], t_step)
 
     # ------------------------------------------------------------------------ #
     # INITIALIZE PLOT
     # ------------------------------------------------------------------------ #
 
     # Create a canvas
-    fig, axs = plt.subplots(figsize=(10, 5), nrows=2, ncols=2)
+    fig, axs = plt.subplots(figsize=(10, 8), nrows=2, ncols=2)
     plt.tight_layout()  # Avoid overlapping subplots
     ax_phase: Axes = axs[0, 0]  # Phase plane x vs y
     ax_xt: Axes = axs[0, 1]  # x vs t
     ax_stability: Axes = axs[1, 0]  # Stability diagram a vs b
+    axs[1, 1].axis("off")
 
     # ------------------------------------------------------------------------ #
-    # PHASE PLANE - STATIC PARTS - VECTOR FIELD
+    # PHASE PLANE
     # ------------------------------------------------------------------------ #
+
+    # Many of the lines we want to plot will be updated during the animation
+    # We initialize them as empty lists (similar to what we do in Streamlit)
 
     # Initialize the line object for animation on phase plane
     (line_phase,) = ax_phase.plot([], [], lw=2)
@@ -143,7 +150,7 @@ def run_interactive_plot(
         marker="o",
         markersize=3,
         color="blue",
-        label="dv/dt = 0 Nullcline",
+        label="dx/dt = 0 Nullcline",
     )
     (line_ynull,) = ax_phase.plot(
         [],
@@ -152,14 +159,10 @@ def run_interactive_plot(
         marker="o",
         markersize=3,
         color="red",
-        label="dw/dt = 0 Nullcline",
+        label="dy/dt = 0 Nullcline",
     )
 
     # A fixed point is a point where the system is at equilibrium (dy/dt = 0)
-    # To find the fixed point, we will use the fsolve function from scipy
-    # fsolve expects a function with a single input (y)
-    # Our function has two inputs (t, y), so we will create a new function
-    # that only takes y as input and calls the original function with t=None
     (fp_dot,) = ax_phase.plot([], [], "ko", markersize=8)
 
     # Set up the plot parameters
@@ -171,7 +174,7 @@ def run_interactive_plot(
     ax_phase.set_ylim(limits[1], limits[3])
 
     # ------------------------------------------------------------------------ #
-    # X VS T - STATIC PARTS
+    # X VS T
     # ------------------------------------------------------------------------ #
 
     # Initialize the line object for animation on x vs t
@@ -184,19 +187,28 @@ def run_interactive_plot(
     ax_xt.set_ylim(limits[1], limits[3])
 
     # ------------------------------------------------------------------------ #
-    # STABILITY DIAGRAM - STATIC PARTS
+    # STABILITY DIAGRAM
     # ------------------------------------------------------------------------ #
 
+    # Initialize the line object for animation on stability diagram
     (stab_dot,) = ax_stability.plot([], [], "ko", markersize=8)
+
+    ac = np.linspace(5, 15, 100)
+    bc = 3 * ac / 5 - 25 / ac
+    ax_stability.plot(ac, bc, "k--", label="Stability Boundary")
+
     ax_stability.set_title("Stability Diagram")
     ax_stability.set_xlabel("a")
     ax_stability.set_ylabel("b")
-    ax_stability.set_xlim(0, 20)
-    ax_stability.set_ylim(0, 20)
+    ax_stability.set_xlim(5, 15)
+    ax_stability.set_ylim(0, 10)
 
     # ------------------------------------------------------------------------ #
     # ANIMATION
     # ------------------------------------------------------------------------ #
+
+    # First we define the animation function
+    # This function will be called at each frame of the animation, updating the line objects
 
     def animate(
         i: int,
@@ -207,17 +219,23 @@ def run_interactive_plot(
     ) -> Tuple[Line2D]:
         """
         Animation function to update the line object.
+
+        Inputs are the frame index and the data to update the line object.
+
+        Output are the updated line objects.
         """
         if y is None:
-            return (line_phase, line_xt, stab_dot)
+            return ()
 
         line_xnull.set_data(x_nullcline[0], x_nullcline[1])
         line_ynull.set_data(y_nullcline[0], y_nullcline[1])
         fp_dot.set_data([fp[0]], [fp[1]])
         line_phase.set_data(y[0][:i], y[1][:i])
         line_xt.set_data(t_eval[: i + 1], y[1][: i + 1])
+        stab_dot.set_data([args[0]], [args[1]])
         return (line_phase, line_xnull, line_ynull, fp_dot, line_xt, stab_dot)
 
+    # Create an animation object, which calls the animate function at each frame
     ani = animation.FuncAnimation(
         fig,
         animate,
@@ -227,6 +245,13 @@ def run_interactive_plot(
     )
     ani.event_source.stop()
 
+    # ------------------------------------------------------------------------ #
+    # INTERACTION
+    # ------------------------------------------------------------------------ #
+
+    # Second, we define a function that will be called when the user clicks on the plot
+    # It will update the initial conditions and restart the animation
+
     def update_simulation(event: MouseEvent):
         # The click only works if it is inside the phase plane or stability diagram
         if event.inaxes == ax_phase:
@@ -235,13 +260,22 @@ def run_interactive_plot(
         elif event.inaxes == ax_stability:
             args[0] = event.xdata
             args[1] = event.ydata
+        else:
+            return
+
+        # Solve the ODEs with the new initial condition
+        sol = solve_ivp(
+            system_func, t_span, y0, t_eval=t_eval, method="RK45", args=args
+        )
+        y = sol.y
 
         # Compute nullclines
-        nullclines = compute_nullclines(system_func, args=args, t=0.0, limits=limits)
+        nullclines = compute_nullclines(
+            system_func, args=args, t=t_span[0], limits=limits
+        )
         x_nullcline = nullclines[0]
         y_nullcline = nullclines[1]
 
-        # A fixed point is a point where the system is at equilibrium (dy/dt = 0)
         # To find the fixed point, we will use the fsolve function from scipy
         # fsolve expects a function with a single input (y)
         # Our function has two inputs (t, y), so we will create a new function
@@ -252,11 +286,6 @@ def run_interactive_plot(
         # Find the roots of the (non-linear) equations defined by func(x) = 0
         fp = fsolve(func, y0)
 
-        # Solve the ODEs with the new initial condition
-        sol = solve_ivp(
-            system_func, t_span, y0, t_eval=t_eval, method="RK45", args=args
-        )
-        y = sol.y
         # Stop the current animation, reset the frame sequence, and start a new animation
         ani.event_source.stop()
         ani.new_frame_seq()
