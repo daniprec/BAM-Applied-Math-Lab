@@ -93,8 +93,7 @@ def compute_nullclines(
 
 def run_interactive_plot(
     system_func: Callable,
-    v0: float = 0.0,
-    w0: float = 0.0,
+    y0: Tuple[float, float] = (0.0, 0.0),
     t_span: Tuple[float, float] = (0.0, 100.0),
     t_step: float = 0.01,
     limits: Tuple[float, float, float, float] = (0, 0, 5, 10),
@@ -106,18 +105,18 @@ def run_interactive_plot(
     ----------
     system_func : Callable
         Function that defines the model equations.
-    v0 : float, optional
-        Initial value of the first variable (default is 0.0).
-    w0 : float, optional
-        Initial value of the second variable (default is 0.0).
+    y0 : float, optional
+        Initial values of the variables (default is 0.0).
     limits : tuple of float, optional
         Tuple containing the x and y limits (x_min, y_min, x_max, y_max).
     ls_args : list of any, optional
         Additional arguments to pass to the system function
     """
     # Create a canvas
-    fig = plt.figure(figsize=(12, 6))
-    ax: Axes = plt.axes()
+    fig, axs = plt.subplots(figsize=(10, 5), nrows=2, ncols=2)
+    ax_phase: Axes = axs[0, 0]  # Phase plane x vs y
+    ax_xt: Axes = axs[0, 1]  # x vs t
+    ax_stability: Axes = axs[1, 0]  # Stability diagram a vs b
 
     # ------------------------------------------------------------------------ #
     # BACKGROUND - VECTOR FIELD
@@ -132,16 +131,16 @@ def run_interactive_plot(
     dvdt, dwdt = system_func(0.0, [v_grid, w_grid])
 
     # Plot vector field
-    ax.quiver(v_grid, w_grid, dvdt, dwdt, color="gray", alpha=0.5)
+    ax_phase.quiver(v_grid, w_grid, dvdt, dwdt, color="gray", alpha=0.5)
 
     # Set up the plot parameters
-    ax.set_xlabel("Membrane Potential (v)")
-    ax.set_ylabel("Recovery Variable (w)")
-    ax.set_title("Phase Plane Analysis")
-    ax.legend()
-    ax.set_xlim(limits[0], limits[2])
-    ax.set_ylim(limits[1], limits[3])
-    ax.grid(True)
+    ax_phase.set_xlabel("Membrane Potential (v)")
+    ax_phase.set_ylabel("Recovery Variable (w)")
+    ax_phase.set_title("Phase Plane Analysis")
+    ax_phase.legend()
+    ax_phase.set_xlim(limits[0], limits[2])
+    ax_phase.set_ylim(limits[1], limits[3])
+    ax_phase.grid(True)
 
     # ------------------------------------------------------------------------ #
     # BACKGROUND - NULLCLINES
@@ -156,8 +155,12 @@ def run_interactive_plot(
     w_nullcline = nullclines[1]
 
     # Plot nullclines
-    ax.scatter(v_nullcline[0], v_nullcline[1], c="b", s=1, label="dv/dt = 0 Nullcline")
-    ax.scatter(w_nullcline[0], w_nullcline[1], c="r", s=1, label="dw/dt = 0 Nullcline")
+    ax_phase.scatter(
+        v_nullcline[0], v_nullcline[1], c="b", s=1, label="dv/dt = 0 Nullcline"
+    )
+    ax_phase.scatter(
+        w_nullcline[0], w_nullcline[1], c="r", s=1, label="dw/dt = 0 Nullcline"
+    )
 
     # ------------------------------------------------------------------------ #
     # BACKGROUND - FIXED POINT
@@ -175,21 +178,20 @@ def run_interactive_plot(
     x0 = (0.0, 0.0)
     # Find the roots of the (non-linear) equations defined by func(x) = 0
     fp = fsolve(func, x0)
-    ax.plot(fp[0], fp[1], "ko", markersize=8)
-    ax.text(fp[0] + 0.1, fp[1] + 0.1, f"({fp[0]:.2f}, {fp[1]:.2f})")
+    ax_phase.plot(fp[0], fp[1], "ko", markersize=8)
+    ax_phase.text(fp[0] + 0.1, fp[1] + 0.1, f"({fp[0]:.2f}, {fp[1]:.2f})")
 
     # ------------------------------------------------------------------------ #
     # ANIMATION
     # ------------------------------------------------------------------------ #
 
     # Solve an initial value problem for a system of ODEs
-    y0: List[float] = [v0, w0]
     t_eval = np.arange(t_span[0], t_span[1] + t_step, t_step)
     sol = solve_ivp(system_func, t_span, y0, t_eval=t_eval, method="RK45")
     y = sol.y
 
     # Initialize the line object for animation on phase plane
-    (line,) = ax.plot([], [], lw=2)
+    (line,) = ax_phase.plot([], [], lw=2)
 
     def animate(i: int, y: np.ndarray, line: Line2D) -> Tuple[Line2D]:
         """
@@ -233,7 +235,7 @@ def main():
     Main function to run the interactive FitzHugh-Nagumo model simulation.
     """
     # Run interactive plot
-    run_interactive_plot(strogatz)
+    run_interactive_plot(cdima)
 
 
 if __name__ == "__main__":
