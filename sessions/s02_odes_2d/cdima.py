@@ -112,13 +112,9 @@ def run_interactive_plot(
     """
     # Initialize the systems with lists
     # We will use its mutable properties to update the initial conditions
+    t_eval = np.arange(t_span[0], t_span[1], t_step)
     y0 = [0.0, 0.0]
     args = [10, 6]
-
-    # Solve an initial value problem for a system of ODEs
-    t_eval = np.arange(t_span[0], t_span[1] + t_step, t_step)
-    sol = solve_ivp(system_func, t_span, y0, t_eval=t_eval, method="RK45", args=args)
-    y = sol.y
 
     # ------------------------------------------------------------------------ #
     # INITIALIZE PLOT
@@ -135,16 +131,36 @@ def run_interactive_plot(
     # PHASE PLANE - STATIC PARTS - VECTOR FIELD
     # ------------------------------------------------------------------------ #
 
-    # Plot phase plane -  Create a grid of points
-    v_values = np.linspace(limits[0], limits[2], 20)
-    w_values = np.linspace(limits[1], limits[3], 20)
-    v_grid, w_grid = np.meshgrid(v_values, w_values)
+    # Initialize the line object for animation on phase plane
+    (line_phase,) = ax_phase.plot([], [], lw=2)
 
-    # Compute derivatives
-    dvdt, dwdt = system_func(0.0, [v_grid, w_grid], *args)
+    # A nullcline is a curve in the phase plane where one of the variables is constant
+    # dy/dt = 0 nullcline: w = f(v)
+    (line_xnull,) = ax_phase.plot(
+        [],
+        [],
+        linestyle="None",
+        marker="o",
+        markersize=3,
+        color="blue",
+        label="dv/dt = 0 Nullcline",
+    )
+    (line_ynull,) = ax_phase.plot(
+        [],
+        [],
+        linestyle="None",
+        marker="o",
+        markersize=3,
+        color="red",
+        label="dw/dt = 0 Nullcline",
+    )
 
-    # Plot vector field
-    ax_phase.quiver(v_grid, w_grid, dvdt, dwdt, color="gray", alpha=0.5)
+    # A fixed point is a point where the system is at equilibrium (dy/dt = 0)
+    # To find the fixed point, we will use the fsolve function from scipy
+    # fsolve expects a function with a single input (y)
+    # Our function has two inputs (t, y), so we will create a new function
+    # that only takes y as input and calls the original function with t=None
+    (fp_dot,) = ax_phase.plot([], [], "ko", markersize=8)
 
     # Set up the plot parameters
     ax_phase.set_xlabel("x")
@@ -153,50 +169,13 @@ def run_interactive_plot(
     ax_phase.legend()
     ax_phase.set_xlim(limits[0], limits[2])
     ax_phase.set_ylim(limits[1], limits[3])
-    ax_phase.grid(True)
-
-    # ------------------------------------------------------------------------ #
-    # PHASE PLANE - STATIC PARTS - NULLCLINES
-    # ------------------------------------------------------------------------ #
-
-    # A nullcline is a curve in the phase plane where one of the variables is constant
-    # dy/dt = 0 nullcline: w = f(v)
-
-    # Compute nullclines
-    nullclines = compute_nullclines(system_func, args=args, t=0.0, limits=limits)
-    v_nullcline = nullclines[0]
-    w_nullcline = nullclines[1]
-
-    # Plot nullclines
-    ax_phase.scatter(
-        v_nullcline[0], v_nullcline[1], c="b", s=1, label="dv/dt = 0 Nullcline"
-    )
-    ax_phase.scatter(
-        w_nullcline[0], w_nullcline[1], c="r", s=1, label="dw/dt = 0 Nullcline"
-    )
-
-    # ------------------------------------------------------------------------ #
-    # PHASE PLANE - BACKGROUND - FIXED POINT
-    # ------------------------------------------------------------------------ #
-
-    # A fixed point is a point where the system is at equilibrium (dy/dt = 0)
-    # To find the fixed point, we will use the fsolve function from scipy
-    # fsolve expects a function with a single input (y)
-    # Our function has two inputs (t, y), so we will create a new function
-    # that only takes y as input and calls the original function with t=None
-    def func(x: np.ndarray) -> np.ndarray:
-        return system_func(None, x, *args)
-
-    # Initial guesses for fixed points
-    x0 = (0.0, 0.0)
-    # Find the roots of the (non-linear) equations defined by func(x) = 0
-    fp = fsolve(func, x0)
-    ax_phase.plot(fp[0], fp[1], "ko", markersize=8)
-    ax_phase.text(fp[0] + 0.1, fp[1] + 0.1, f"({fp[0]:.2f}, {fp[1]:.2f})")
 
     # ------------------------------------------------------------------------ #
     # X VS T - STATIC PARTS
     # ------------------------------------------------------------------------ #
+
+    # Initialize the line object for animation on x vs t
+    (line_xt,) = ax_xt.plot([], [], lw=2)
 
     ax_xt.set_title("Time Series")
     ax_xt.set_xlabel("Time (t)")
@@ -205,36 +184,48 @@ def run_interactive_plot(
     ax_xt.set_ylim(limits[1], limits[3])
 
     # ------------------------------------------------------------------------ #
-    # ANIMATION
+    # STABILITY DIAGRAM - STATIC PARTS
     # ------------------------------------------------------------------------ #
 
-    # Initialize the line object for animation on phase plane
-    (line_phase,) = ax_phase.plot([], [], lw=2)
+    (stab_dot,) = ax_stability.plot([], [], "ko", markersize=8)
+    ax_stability.set_title("Stability Diagram")
+    ax_stability.set_xlabel("a")
+    ax_stability.set_ylabel("b")
+    ax_stability.set_xlim(0, 20)
+    ax_stability.set_ylim(0, 20)
 
-    # Initialize the line object for animation on x vs t
-    (line_xt,) = ax_xt.plot([], [], lw=2)
+    # ------------------------------------------------------------------------ #
+    # ANIMATION
+    # ------------------------------------------------------------------------ #
 
     def animate(
         i: int,
         y: np.ndarray,
-        line_phase: Line2D,
-        line_xt: Line2D,
+        x_nullcline: np.ndarray,
+        y_nullcline: np.ndarray,
+        fp: np.ndarray,
     ) -> Tuple[Line2D]:
         """
         Animation function to update the line object.
         """
+        if y is None:
+            return (line_phase, line_xt, stab_dot)
+
+        line_xnull.set_data(x_nullcline[0], x_nullcline[1])
+        line_ynull.set_data(y_nullcline[0], y_nullcline[1])
+        fp_dot.set_data([fp[0]], [fp[1]])
         line_phase.set_data(y[0][:i], y[1][:i])
         line_xt.set_data(t_eval[: i + 1], y[1][: i + 1])
-        return (line_phase, line_xt)
+        return (line_phase, line_xnull, line_ynull, fp_dot, line_xt, stab_dot)
 
-    # Create the animation
     ani = animation.FuncAnimation(
-        fig, animate, fargs=(y, line_phase, line_xt), interval=1, blit=True
+        fig,
+        animate,
+        fargs=(None, None, None, None),
+        interval=1,
+        blit=True,
     )
-
-    # ------------------------------------------------------------------------ #
-    # PHASE PLANE - INTERACTION
-    # ------------------------------------------------------------------------ #
+    ani.event_source.stop()
 
     def update_simulation(event: MouseEvent):
         # The click only works if it is inside the phase plane or stability diagram
@@ -245,6 +236,22 @@ def run_interactive_plot(
             args[0] = event.xdata
             args[1] = event.ydata
 
+        # Compute nullclines
+        nullclines = compute_nullclines(system_func, args=args, t=0.0, limits=limits)
+        x_nullcline = nullclines[0]
+        y_nullcline = nullclines[1]
+
+        # A fixed point is a point where the system is at equilibrium (dy/dt = 0)
+        # To find the fixed point, we will use the fsolve function from scipy
+        # fsolve expects a function with a single input (y)
+        # Our function has two inputs (t, y), so we will create a new function
+        # that only takes y as input and calls the original function with t=None
+        def func(x: np.ndarray) -> np.ndarray:
+            return system_func(None, x, *args)
+
+        # Find the roots of the (non-linear) equations defined by func(x) = 0
+        fp = fsolve(func, y0)
+
         # Solve the ODEs with the new initial condition
         sol = solve_ivp(
             system_func, t_span, y0, t_eval=t_eval, method="RK45", args=args
@@ -254,7 +261,7 @@ def run_interactive_plot(
         ani.event_source.stop()
         ani.new_frame_seq()
         ani.frame_seq = ani.new_frame_seq()
-        ani._args = (y, line_phase, line_xt)
+        ani._args = (y, x_nullcline, y_nullcline, fp)
         ani.event_source.start()
 
     # Connect the click event to the update function
