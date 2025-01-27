@@ -1,12 +1,6 @@
-import sys
-
 import numpy as np
 
-# Add the path to the sys module
-# (allowing the import of the utils module)
-sys.path.append(".")
-
-from sessions.s02_odes_2d.cdima import run_interactive_plot
+# TODO: Implement the animate model
 
 
 def morris_lecar(

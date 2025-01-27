@@ -117,7 +117,7 @@ def run_interactive_plot(
     # Initialize the systems with lists
     # We will use its mutable properties to update the initial conditions
     y0 = [0.0, 0.0]
-    args = [10]
+    args = [1.0]
 
     t_eval = np.arange(t_span[0], t_span[1], t_step)
 
@@ -193,7 +193,7 @@ def run_interactive_plot(
     # ------------------------------------------------------------------------ #
 
     # Initialize the line object for animation on stability diagram
-    (plot_stabpoint,) = ax_stability.plot([0, 0], [0, 1], color="red")
+    (plot_stabpoint,) = ax_stability.plot([], [], color="red")
 
     ax_stability.set_xlabel("mu")
     ax_stability.set_xlim(0, 10)
