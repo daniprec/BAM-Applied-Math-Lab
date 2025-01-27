@@ -126,7 +126,7 @@ def run_interactive_plot(
     # ------------------------------------------------------------------------ #
 
     # Create a canvas
-    fig, axs = plt.subplots(figsize=(10, 8), nrows=2, ncols=2)
+    fig, axs = plt.subplots(figsize=(10, 5), nrows=2, ncols=2, height_ratios=[5, 1])
     plt.tight_layout()  # Avoid overlapping subplots
     ax_phase: Axes = axs[0, 0]  # Phase plane x vs y
     ax_xt: Axes = axs[0, 1]  # x vs t
@@ -193,13 +193,11 @@ def run_interactive_plot(
     # ------------------------------------------------------------------------ #
 
     # Initialize the line object for animation on stability diagram
-    (plot_stabpoint,) = ax_stability.plot([], [], "ko", markersize=8)
+    (plot_stabpoint,) = ax_stability.plot([0, 0], [0, 1], color="red")
 
-    ax_stability.set_title("Stability Diagram")
-    ax_stability.set_xlabel("a")
-    ax_stability.set_ylabel("b")
+    ax_stability.set_xlabel("mu")
     ax_stability.set_xlim(0, 10)
-    ax_stability.set_ylim(0, 10)
+    ax_stability.set_ylim(0, 1)
 
     # ------------------------------------------------------------------------ #
     # ANIMATION
@@ -230,7 +228,7 @@ def run_interactive_plot(
         plot_fixedpoint.set_data([fp[0]], [fp[1]])
         plot_linephase.set_data(y[0][:i], y[1][:i])
         plot_xt.set_data(t_eval[: i + 1], y[0][: i + 1])
-        plot_stabpoint.set_data([args[0]], [args[0]])
+        plot_stabpoint.set_data([args[0], args[0]], [0, 1])
         return (
             plot_linephase,
             plot_xnull,
