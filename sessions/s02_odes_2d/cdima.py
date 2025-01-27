@@ -10,7 +10,7 @@ from scipy.integrate import solve_ivp
 from scipy.optimize import fsolve
 
 
-def strogatz(t: float, xy: np.ndarray, a: float = 10, b: float = 4) -> np.ndarray:
+def cdima(t: float, xy: np.ndarray, a: float = 10, b: float = 6) -> np.ndarray:
     """
     Defines model equations of Chlorine Dioxide-lodine-Malonic Acid Reaction.
     Reference: Strogatz, chapter 8.3, Oscillating Chemical Reactions
@@ -96,7 +96,7 @@ def run_interactive_plot(
     v0: float = 0.0,
     w0: float = 0.0,
     t_span: Tuple[float, float] = (0.0, 100.0),
-    t_step: float = 0.1,
+    t_step: float = 0.01,
     limits: Tuple[float, float, float, float] = (0, 0, 5, 10),
 ):
     """
@@ -199,7 +199,7 @@ def run_interactive_plot(
         return (line,)
 
     # Create the animation
-    ani = animation.FuncAnimation(fig, animate, fargs=(y, line), interval=20, blit=True)
+    ani = animation.FuncAnimation(fig, animate, fargs=(y, line), interval=1, blit=True)
 
     # ------------------------------------------------------------------------ #
     # INTERACTION
