@@ -305,7 +305,6 @@ def run_interactive_plot(
 
         # Stop the current animation, reset the frame sequence, and start a new animation
         ani.event_source.stop()
-        ani.new_frame_seq()
         ani.frame_seq = ani.new_frame_seq()
         ani._args = (y, x_nullcline, y_nullcline, fp)
         ani.event_source.start()
