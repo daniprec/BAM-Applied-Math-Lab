@@ -124,7 +124,7 @@ def run_interactive_plot(
     # ------------------------------------------------------------------------ #
 
     # Create a canvas
-    fig, axs = plt.subplots(figsize=(10, 8), nrows=2, ncols=2)
+    fig, axs = plt.subplots(figsize=(10, 6), nrows=2, ncols=2)
     plt.tight_layout()  # Avoid overlapping subplots
     ax_phase: Axes = axs[0, 0]  # Phase plane x vs y
     ax_xt: Axes = axs[0, 1]  # x vs t
