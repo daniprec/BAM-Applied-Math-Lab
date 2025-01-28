@@ -46,20 +46,21 @@ def compute_nullclines(
     num_points: int = 1000,
 ) -> List[Tuple[np.ndarray, np.ndarray]]:
     """
-    Computes the nullclines for a 2D dynamical system.
+    Computes the nullclines for a 2D dynamical system using a numerical
+    approximation, using a grid of points.
 
     Parameters
     ----------
     system_func : Callable
         Function defining the system of ODEs.
+    args : list, optional
+        List of additional arguments to pass to the system function.
     t : float, optional
         Time variable (default is 0.0).
     limits : tuple of float, optional
         Tuple containing the x and y limits (x_min, y_min, x_max, y_max).
     num_points : int, optional
         Number of points to use in each variable range (default is 1000).
-    **kwargs
-        Additional keyword arguments to pass to the system function.
 
     Returns
     -------
