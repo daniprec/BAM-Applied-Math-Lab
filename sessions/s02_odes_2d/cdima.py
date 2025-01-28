@@ -139,7 +139,7 @@ def run_interactive_plot(
     # We initialize them as empty lists (similar to what we do in Streamlit)
 
     # Initialize the line object for animation on phase plane
-    (plot_linephase,) = ax_phase.plot([], [], lw=2)
+    (plot_trajectory,) = ax_phase.plot([], [], lw=2)
 
     # A nullcline is a curve in the phase plane where one of the variables is constant
     # dy/dt = 0 nullcline: w = f(v)
@@ -230,11 +230,11 @@ def run_interactive_plot(
         plot_xnull.set_data(x_nullcline[0], x_nullcline[1])
         plot_ynull.set_data(y_nullcline[0], y_nullcline[1])
         plot_fixedpoint.set_data([fp[0]], [fp[1]])
-        plot_linephase.set_data(y[0][:i], y[1][:i])
+        plot_trajectory.set_data(y[0][:i], y[1][:i])
         plot_xt.set_data(t_eval[: i + 1], y[0][: i + 1])
         plot_stabpoint.set_data([args[0]], [args[1]])
         return (
-            plot_linephase,
+            plot_trajectory,
             plot_xnull,
             plot_ynull,
             plot_fixedpoint,
