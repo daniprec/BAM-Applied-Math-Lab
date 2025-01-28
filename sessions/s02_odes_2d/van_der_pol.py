@@ -285,7 +285,7 @@ def run_interactive_plot(
         def func(x: np.ndarray) -> np.ndarray:
             return system_func(None, x, *args)
 
-        # Find the roots of the (non-linear) equations defined by func(x) = 0
+        # Find the roots of the ODEs
         fp = fsolve(func, y0)
 
         # Stop the current animation, reset the frame sequence, and start a new animation

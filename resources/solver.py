@@ -130,7 +130,7 @@ def compute_fixed_points(
     guesses = [(-1.0, -1.0), (0.0, 0.0), (1.0, 1.0)]
     fixed_points = []
     for guess in guesses:
-        # Find the roots of the (non-linear) equations defined by func(x) = 0
+        # Find the roots of the ODEs
         # given a starting estimate (guess)
         fixed_point, info, ier, mesg = fsolve(func, guess, full_output=True)
         # ier: An integer flag. Set to 1 if a solution was found
