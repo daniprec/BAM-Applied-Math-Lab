@@ -17,7 +17,7 @@ from sessions.s02_odes_2d.cdima import compute_nullclines
 
 def fitzhugh_nagumo(
     t: float,
-    y: np.ndarray,
+    vw: np.ndarray,
     i_app: float = 0.5,
     gamma: float = 0.5,
     alpha: float = 0.1,
@@ -36,7 +36,7 @@ def fitzhugh_nagumo(
     ----------
     t : float
         Time variable.
-    y : ndarray
+    vw : ndarray
         Array containing the variables [v, w] at time t.
     i_app : float
         External stimulus current.
@@ -54,7 +54,7 @@ def fitzhugh_nagumo(
     np.ndarray
         Derivatives [dv/dt, dw/dt] at time t.
     """
-    v, w = y
+    v, w = vw
     fv = v * (1 - v) * (v - alpha)
     dvdt = (fv - w + i_app) / epsilon
     dwdt = v - gamma * w

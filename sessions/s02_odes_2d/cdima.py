@@ -19,8 +19,8 @@ def cdima(t: float, xy: np.ndarray, a: float = 10, b: float = 6) -> np.ndarray:
     ----------
     t : float
         Time variable.
-    y : ndarray
-        Array containing the variables [v, w] at time t.
+    xy : ndarray
+        Array containing the variables [x, y] at time t.
     a : float
         a > 0 depends on the empirical rate constants and on the concentrations
         assumed for the slow reactants.

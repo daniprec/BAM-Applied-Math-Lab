@@ -16,7 +16,7 @@ from sessions.s02_odes_2d.cdima import compute_nullclines
 
 
 def van_der_pol(
-    t: float, y: np.ndarray, mu: float = 1.0
+    t: float, xy: np.ndarray, mu: float = 1.0
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Van der Pol oscillator model.
@@ -26,23 +26,21 @@ def van_der_pol(
     ----------
     t : float
         Time variable.
-    y : ndarray
+    xy : ndarray
         State variables [x, y].
     mu : float, optional
         Damping coefficient (default is 1.0).
 
     Returns
     -------
-    dx_dt : ndarray
-        Derivative of x with respect to time.
-    dy_dt : ndarray
-        Derivative of y with respect to time.
+    np.ndarray
+        Derivatives [dx/dt, dy/dt] at time t.
     """
-    x, y = y
+    x, y = xy
     fx = x**3 / 3 - x
     dx_dt = mu * (y - fx)
     dy_dt = -x / mu
-    return dx_dt, dy_dt
+    return np.array([dx_dt, dy_dt])
 
 
 def run_interactive_plot(
@@ -261,5 +259,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
     main()
