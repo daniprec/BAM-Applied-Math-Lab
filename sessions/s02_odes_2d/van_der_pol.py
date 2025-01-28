@@ -1,4 +1,5 @@
-from typing import Callable, List, Tuple
+import sys
+from typing import Callable, Tuple
 
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
@@ -8,6 +9,10 @@ from matplotlib.backend_bases import MouseEvent
 from matplotlib.lines import Line2D
 from scipy.integrate import solve_ivp
 from scipy.optimize import fsolve
+
+# I will import the "compute_nullclines" from the script "cdima.py"
+sys.path.append(".")
+from sessions.s02_odes_2d.cdima import compute_nullclines
 
 
 def van_der_pol(
@@ -38,60 +43,6 @@ def van_der_pol(
     dx_dt = mu * (y - fx)
     dy_dt = -x / mu
     return dx_dt, dy_dt
-
-
-def compute_nullclines(
-    system_func: Callable,
-    args: List = None,
-    t: float = 0.0,
-    limits: Tuple[float, float, float, float] = (-4, -4, 4, 4),
-    num_points: int = 1000,
-) -> List[Tuple[np.ndarray, np.ndarray]]:
-    """
-    Computes the nullclines for a 2D dynamical system.
-
-    Parameters
-    ----------
-    system_func : Callable
-        Function defining the system of ODEs.
-    t : float, optional
-        Time variable (default is 0.0).
-    limits : tuple of float, optional
-        Tuple containing the x and y limits (x_min, y_min, x_max, y_max).
-    num_points : int, optional
-        Number of points to use in each variable range (default is 1000).
-    **kwargs
-        Additional keyword arguments to pass to the system function.
-
-    Returns
-    -------
-    nullclines : list of tuple of ndarray
-        List containing tuples of x and y coordinates of the nullclines:
-        - nullclines[0]: (x values, y values) where dx/dt = 0.
-        - nullclines[1]: (x values, y values) where dy/dt = 0.
-    """
-    x_min, y_min, x_max, y_max = limits
-
-    # Create a grid of points
-    x_values = np.linspace(x_min, x_max, num_points)
-    y_values = np.linspace(y_min, y_max, num_points)
-    x_grid, y_grid = np.meshgrid(x_values, y_values)
-
-    # Evaluate the derivatives at each point
-    dx_dt: np.ndarray
-    dy_dt: np.ndarray
-    dx_dt, dy_dt = system_func(t, [x_grid, y_grid], *args)
-
-    # Extract nullcline data - Find where dx_dt changes sign (zero crossings)
-    zero_crossings = np.where(np.diff(np.sign(dx_dt), axis=0))
-    x_nc_x = x_grid[zero_crossings]
-    x_nc_y = y_grid[zero_crossings]
-    # Extract nullcline data - Find where dy_dt changes sign (zero crossings)
-    zero_crossings = np.where(np.diff(np.sign(dy_dt), axis=1))
-    y_nc_x = x_grid[zero_crossings]
-    y_nc_y = y_grid[zero_crossings]
-
-    return [(x_nc_x, x_nc_y), (y_nc_x, y_nc_y)]
 
 
 def run_interactive_plot(
@@ -310,4 +261,5 @@ def main():
 
 
 if __name__ == "__main__":
+    main()
     main()
