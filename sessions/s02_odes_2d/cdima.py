@@ -130,7 +130,7 @@ def run_interactive_plot(
     ax_phase: Axes = axs[0, 0]  # Phase plane x vs y
     ax_xt: Axes = axs[0, 1]  # x vs t
     ax_stability: Axes = axs[1, 0]  # Stability diagram a vs b
-    axs[1, 1].axis("off")
+    axs[1, 1].axis("off")  # Bottom right subplot is empty
 
     # ------------------------------------------------------------------------ #
     # PHASE PLANE
