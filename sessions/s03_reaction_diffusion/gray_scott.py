@@ -134,12 +134,6 @@ def gray_scott_ode(
     # Stack the derivatives into a single array (N x N x 2)
     duv_dt = np.stack((du_dt, dv_dt), axis=-1)
 
-    # Enforce boundary conditions (Neumann)
-    duv_dt[0, :] = 0.0
-    duv_dt[-1, :] = 0.0
-    duv_dt[:, 0] = 0.0
-    duv_dt[:, -1] = 0.0
-
     return duv_dt
 
 
@@ -179,6 +173,12 @@ def solve_ode_euler(
     ls_y = [y0.copy()]
     for idx in range(1, len(t_eval)):
         y0 = y0 + func(t_eval[idx], y0) * (t_eval[idx] - t_eval[idx - 1])
+        # Neumann boundary conditions
+        # TODO: If clause with Dirichlet boundary conditions
+        y0[0, :] = y0[1, :]
+        y0[-1, :] = y0[-2, :]
+        y0[:, 0] = y0[:, 1]
+        y0[:, -1] = y0[:, -2]
         ls_y.append(y0.copy())
     return np.stack(ls_y, axis=-1)
 
