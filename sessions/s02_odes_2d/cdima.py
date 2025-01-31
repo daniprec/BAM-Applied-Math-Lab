@@ -13,7 +13,7 @@ from scipy.optimize import fsolve
 def cdima(t: float, xy: np.ndarray, a: float = 10, b: float = 6) -> np.ndarray:
     """
     Defines model equations of Chlorine Dioxide-lodine-Malonic Acid Reaction.
-    Reference: Strogatz, chapter 8.3, Oscillating Chemical Reactions
+    Reference: Strogatz, chapter 8.3, Oscillating Chemical Reactions. Great equation.
 
     Parameters
     ----------
