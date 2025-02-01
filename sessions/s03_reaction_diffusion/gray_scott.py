@@ -26,10 +26,10 @@ def laplacian(uv: np.ndarray) -> np.ndarray:
     lap = -4 * uv
 
     # Immediate neighbors (up, down, left, right)
-    lap += np.roll(uv, shift=1, axis=0)  # up
-    lap += np.roll(uv, shift=-1, axis=0)  # down
-    lap += np.roll(uv, shift=1, axis=1)  # left
-    lap += np.roll(uv, shift=-1, axis=1)  # right
+    lap += np.roll(uv, shift=1, axis=1)  # up
+    lap += np.roll(uv, shift=-1, axis=1)  # down
+    lap += np.roll(uv, shift=1, axis=2)  # left
+    lap += np.roll(uv, shift=-1, axis=2)  # right
     return lap
 
 
@@ -59,20 +59,20 @@ def laplacian_9pt(uv: np.ndarray) -> np.ndarray:
     lap = center_weight * uv
 
     # Shifted arrays for immediate neighbors
-    up = np.roll(uv, shift=1, axis=0)
-    down = np.roll(uv, shift=-1, axis=0)
+    up = np.roll(uv, shift=1, axis=1)
+    down = np.roll(uv, shift=-1, axis=1)
 
     # Immediate neighbors (up, down, left, right)
     lap += neighbor_weight * up  # up
     lap += neighbor_weight * down  # down
-    lap += neighbor_weight * np.roll(uv, shift=1, axis=1)  # left
-    lap += neighbor_weight * np.roll(uv, shift=-1, axis=1)  # right
+    lap += neighbor_weight * np.roll(uv, shift=1, axis=2)  # left
+    lap += neighbor_weight * np.roll(uv, shift=-1, axis=2)  # right
 
     # Diagonal neighbors
-    lap += diagonal_weight * np.roll(up, shift=1, axis=1)  # up-left
-    lap += diagonal_weight * np.roll(up, shift=-1, axis=1)  # up-right
-    lap += diagonal_weight * np.roll(down, shift=1, axis=1)  # down-left
-    lap += diagonal_weight * np.roll(down, shift=-1, axis=1)  # down-right
+    lap += diagonal_weight * np.roll(up, shift=1, axis=2)  # up-left
+    lap += diagonal_weight * np.roll(up, shift=-1, axis=2)  # up-right
+    lap += diagonal_weight * np.roll(down, shift=1, axis=2)  # down-left
+    lap += diagonal_weight * np.roll(down, shift=-1, axis=2)  # down-right
 
     return lap
 
@@ -111,8 +111,7 @@ def gray_scott_ode(
     """
 
     # Extract the matrices for substances u and v
-    u = uv[:, :, 0]
-    v = uv[:, :, 1]
+    u, v = uv
 
     # Compute the Laplacian of u and v
     if stencil == 5:
@@ -123,8 +122,7 @@ def gray_scott_ode(
         raise ValueError("Invalid stencil value. Use 5 or 9.")
 
     # Extract the Laplacian matrices for u and v
-    lu = lap[:, :, 0]
-    lv = lap[:, :, 1]
+    lu, lv = lap
 
     uv2 = u * v * v
 
@@ -132,7 +130,7 @@ def gray_scott_ode(
     du_dt = d1 * lu - uv2 + f * (1 - u)
     dv_dt = d2 * lv + uv2 - (f + k) * v
 
-    return np.stack([du_dt, dv_dt], axis=-1)
+    return np.array([du_dt, dv_dt])
 
 
 def animate_simulation(
@@ -159,11 +157,11 @@ def animate_simulation(
         Colormap to use for the plot, by default 'jet'.
     """
     # Initialize the u and v fields
-    uv = np.zeros((grid_size, grid_size, 2), dtype=np.float32)
-    uv[:, :, 0] = 1.0  # Initialize u to 1.0, v to 0.0
+    uv = np.zeros((2, grid_size, grid_size), dtype=np.float32)
+    uv[0] = 1.0  # Initialize u to 1.0, v to 0.0
 
     fig, ax = plt.subplots(figsize=(6, 6))
-    im = ax.imshow(uv[:, :, 1], cmap=cmap, interpolation="bilinear", vmin=0, vmax=0.4)
+    im = ax.imshow(uv[1], cmap=cmap, interpolation="bilinear", vmin=0, vmax=0.4)
     plt.axis("off")
 
     # ------------------------------------------------------------------------#
@@ -193,10 +191,10 @@ def animate_simulation(
             # Apply boundary conditions
             if boundary_conditions == "neumann":
                 # Neumann - zero flux boundary conditions
-                uv[0, :] = uv[1, :]
-                uv[-1, :] = uv[-2, :]
-                uv[:, 0] = uv[:, 1]
-                uv[:, -1] = uv[:, -2]
+                uv[:, 0, :] = uv[:, 1, :]
+                uv[:, -1, :] = uv[:, -2, :]
+                uv[:, :, 0] = uv[:, :, 1]
+                uv[:, :, -1] = uv[:, :, -2]
             elif boundary_conditions == "periodic":
                 # Periodic conditions are already implemented in the laplacian function
                 pass
@@ -205,7 +203,7 @@ def animate_simulation(
                     "Invalid boundary_conditions value. Use 'neumann' or 'periodic'."
                 )
 
-        im.set_array(uv[:, :, 1])
+        im.set_array(uv[1])
         return [im]
 
     ani = animation.FuncAnimation(fig, update_frame, interval=1, blit=True)
@@ -247,11 +245,11 @@ def animate_simulation(
         else:
             return
 
-        uv[y - r : y + r, x - r : x + r, 0] = u_new
-        uv[y - r : y + r, x - r : x + r, 1] = v_new
+        uv[0, y - r : y + r, x - r : x + r] = u_new
+        uv[1, y - r : y + r, x - r : x + r] = v_new
 
         # Update the displayed image
-        im.set_array(uv[:, :, 1])
+        im.set_array(uv[1])
 
     # Next, we want the user to be able to draw lines on the plot to add or remove sources of v
     # In order to do this, we need to define some mouse event handlers: on_click, on_release, on_motion
