@@ -138,7 +138,7 @@ def animate_simulation(
     grid_size: int = 250,
     dt: int = 1,
     boundary_conditions: str = "neumann",
-    anim_speed: int = 10,
+    anim_speed: int = 100,
     cmap: str = "jet",
 ):
     """
@@ -186,10 +186,9 @@ def animate_simulation(
                 )
 
         im.set_array(uv[:, :, 1])
-        print(uv[..., 1].max(), uv[..., 1].min())
         return [im]
 
-    def on_click(event, r: int = 3):
+    def on_click(event, r: int = 20):
         if event.inaxes != ax:
             return
         if event.xdata is None or event.ydata is None:
