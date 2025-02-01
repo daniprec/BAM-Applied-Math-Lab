@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import animation
+from matplotlib.backend_bases import KeyEvent, MouseEvent
 
 
 def laplacian(uv: np.ndarray) -> np.ndarray:
@@ -165,7 +166,11 @@ def animate_simulation(
     im = ax.imshow(uv[:, :, 1], cmap=cmap, interpolation="bilinear", vmin=0, vmax=0.4)
     plt.axis("off")
 
-    # Pause parameter - Will be toggled by pressing the space bar
+    # ------------------------------------------------------------------------#
+    # ANIMATION
+    # ------------------------------------------------------------------------#
+
+    # Pause parameter - Will be toggled by pressing the space bar (see on_keypress)
     pause = True
 
     def update_frame(_):
@@ -203,16 +208,26 @@ def animate_simulation(
         im.set_array(uv[:, :, 1])
         return [im]
 
-    def on_click(event, r: int = 20):
-        """This function is called when the user clicks on the plot.
-        It either adds a source of v or removes it, depending on the mouse button clicked.
+    ani = animation.FuncAnimation(fig, update_frame, interval=1, blit=True)
+
+    # ------------------------------------------------------------------------#
+    # INTERACTION
+    # ------------------------------------------------------------------------#
+
+    # We want the user to be able to add and remove sources of v by clicking on the plot
+    # The first function we define is update_uv, which will be called when the user clicks on the plot
+    # It will update the u and v fields based on the mouse position and the mouse button pressed
+    # Right click will remove the source of v, left click will add a source of v
+
+    def update_uv(event: MouseEvent, r: int = 3):
+        """Update the u and v fields based on the mouse position.
 
         Parameters
         ----------
         event
             The event object.
-        r : int, optional
-            Radius of the source, by default 20.
+        r : int
+            Radius of the source, by default 3.
         """
         if event.inaxes != ax:
             return
@@ -221,11 +236,11 @@ def animate_simulation(
         x = int(event.xdata)
         y = int(event.ydata)
 
-        # Left click?
+        # Left click? Add a source of v
         if event.button == 1:
             u_new = 0.50
             v_new = 0.50
-        # Right click?
+        # Right click? Remove the source of v
         elif event.button == 3:
             u_new = 1.0
             v_new = 0.0
@@ -238,24 +253,51 @@ def animate_simulation(
         # Update the displayed image
         im.set_array(uv[:, :, 1])
 
-    def on_keypress(event):
-        """This function is called when the user presses a key.
-        It pauses or resumes the simulation when the space bar is pressed.
+    # Next, we want the user to be able to draw lines on the plot to add or remove sources of v
+    # In order to do this, we need to define some mouse event handlers: on_click, on_release, on_motion
 
-        Parameters
-        ----------
-        event
-            The event object.
+    def on_click(event: MouseEvent):
+        """This function is called when the user clicks on the plot.
+        It initializes the drawing process."""
+        if event.inaxes != ax:
+            return
+        if event.xdata is None or event.ydata is None:
+            return
+        nonlocal drawing
+        drawing = True
+        update_uv(event)
+
+    def on_release(event: MouseEvent):
+        """This function is called when the user releases the mouse button.
+        It stops the drawing process."""
+        nonlocal drawing
+        drawing = False
+
+    def on_motion(event: MouseEvent):
+        """This function is called when the user moves the mouse.
+        It updates the u and v fields if the drawing process is active.
         """
+        if drawing:
+            update_uv(event)
+
+    drawing = False
+    fig.canvas.mpl_connect("button_press_event", on_click)
+    fig.canvas.mpl_connect("button_release_event", on_release)
+    fig.canvas.mpl_connect("motion_notify_event", on_motion)
+
+    # Finally, we want the user to be able to pause or resume the simulation by pressing the space bar
+    # In order to do this, we need a key press event handler: on_keypress
+
+    def on_keypress(event: KeyEvent):
+        """This function is called when the user presses a key.
+        It pauses or resumes the simulation when the space bar is pressed."""
         # Pressing the space bar pauses or resumes the simulation
         if event.key == " ":
             nonlocal pause
             pause ^= True
 
-    fig.canvas.mpl_connect("button_press_event", on_click)
     fig.canvas.mpl_connect("key_press_event", on_keypress)
 
-    ani = animation.FuncAnimation(fig, update_frame, interval=1, blit=True)
     plt.show()
 
 
