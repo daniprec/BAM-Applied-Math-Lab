@@ -165,7 +165,16 @@ def animate_simulation(
     im = ax.imshow(uv[:, :, 1], cmap=cmap, interpolation="bilinear", vmin=0, vmax=0.4)
     plt.axis("off")
 
+    # Pause parameter - Will be toggled by pressing the space bar
+    pause = False
+
     def update_frame(_):
+        # Access the pause variable from the outer scope
+        nonlocal pause
+        if pause:
+            return [im]
+
+        # Access the uv variable from the outer scope
         nonlocal uv
         for _ in range(anim_speed):
             # Solve an initial value problem for a system of ODEs via Euler's method
@@ -210,7 +219,17 @@ def animate_simulation(
         uv[y - r : y + r, x - r : x + r, 0] = u_new
         uv[y - r : y + r, x - r : x + r, 1] = v_new
 
+        # Update the displayed image
+        im.set_array(uv[:, :, 1])
+
+    def on_keypress(event):
+        # Pressing the space bar pauses or resumes the simulation
+        if event.key == " ":
+            nonlocal pause
+            pause ^= True
+
     fig.canvas.mpl_connect("button_press_event", on_click)
+    fig.canvas.mpl_connect("key_press_event", on_keypress)
 
     ani = animation.FuncAnimation(fig, update_frame, interval=1, blit=True)
     plt.show()
