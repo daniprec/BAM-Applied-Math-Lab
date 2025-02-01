@@ -47,10 +47,10 @@ def gierer_meinhardt_ode(
     lu, lv = lap
 
     # Compute the ODEs
-    fu = a - b * u + u**2 / (v)
-    gv = u**2 - v
-    du_dt = lu + gamma * fu  # d1 = 1
-    dv_dt = d * lv + gamma * gv  # d2 = d
+    f = a - b * u + u**2 / (v)
+    g = u**2 - v
+    du_dt = lu + gamma * f  # d1 = 1
+    dv_dt = d * lv + gamma * g  # d2 = d
     return np.array([du_dt, dv_dt])
 
 
