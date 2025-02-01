@@ -1,8 +1,7 @@
-from typing import Any, Callable, Tuple
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-import toml
 from matplotlib import animation
 
 
@@ -137,52 +136,6 @@ def gray_scott_ode(
     return duv_dt
 
 
-def solve_ode_euler(
-    system_func: Callable,
-    y0: np.ndarray,
-    t_eval: np.ndarray,
-    **kwargs: Any,
-) -> np.ndarray:
-    """
-    Performs the numerical integration of the ODEs.
-    The function uses the Runge-Kutta method.
-
-    Parameters
-    ----------
-    system_func : Callable
-        Function defining the system of ODEs.
-    y0 : list of float
-        Initial conditions.
-    t_span : tuple of float
-        Tuple containing the start and end times (t0, tf).
-    t_eval : ndarray
-        Time points at which to store the computed solutions.
-    **kwargs
-        Additional keyword arguments to pass to the system function.
-
-    Returns
-    -------
-    y : ndarray
-        Array of solution values at t_eval.
-    """
-
-    def func(t: float, y: np.ndarray) -> np.ndarray:
-        return system_func(t, y, **kwargs)
-
-    # Solve an initial value problem for a system of ODEs
-    ls_y = [y0.copy()]
-    for idx in range(1, len(t_eval)):
-        y0 = y0 + func(t_eval[idx], y0) * (t_eval[idx] - t_eval[idx - 1])
-        # Neumann boundary conditions
-        # TODO: If clause with Dirichlet boundary conditions
-        y0[0, :] = y0[1, :]
-        y0[-1, :] = y0[-2, :]
-        y0[:, 0] = y0[:, 1]
-        y0[:, -1] = y0[:, -2]
-        ls_y.append(y0.copy())
-    return np.stack(ls_y, axis=-1)
-
-
 def add_perturbation(
     uv: np.ndarray,
     center: Tuple[float],
@@ -247,7 +200,12 @@ def initialize_grid(grid_size: int, perturb: bool = True) -> np.ndarray:
     return uv
 
 
-def animate_simulation(grid_size: int, t_show: int = 1000, t_step: int = 1):
+def animate_simulation(
+    grid_size: int = 128,
+    dt: int = 1,
+    boundary_conditions: str = "neumann",
+    anim_speed: int = 10,
+):
     """
     Animate the Gray-Scott model simulation.
 
@@ -258,7 +216,6 @@ def animate_simulation(grid_size: int, t_show: int = 1000, t_step: int = 1):
     speed : int, optional
         Speed of the simulation, default is 1.
     """
-    t_eval = np.arange(0, t_show + t_step, t_step)
     uv = initialize_grid(grid_size, perturb=True)
 
     fig, ax = plt.subplots(figsize=(6, 6))
@@ -267,7 +224,24 @@ def animate_simulation(grid_size: int, t_show: int = 1000, t_step: int = 1):
 
     def update_frame(_):
         nonlocal uv
-        uv = solve_ode_euler(gray_scott_ode, uv, t_eval=t_eval)[..., -1]
+        for _ in range(anim_speed):
+            # Solve an initial value problem for a system of ODEs via Euler's method
+            uv = uv + gray_scott_ode(_, uv) * dt
+            # Apply boundary conditions
+            if boundary_conditions == "neumann":
+                # Neumann - zero flux boundary conditions
+                uv[0, :] = uv[1, :]
+                uv[-1, :] = uv[-2, :]
+                uv[:, 0] = uv[:, 1]
+                uv[:, -1] = uv[:, -2]
+            elif boundary_conditions == "periodic":
+                # Periodic conditions are already implemented in the laplacian function
+                pass
+            else:
+                raise ValueError(
+                    "Invalid boundary_conditions value. Use 'neumann' or 'periodic'."
+                )
+
         im.set_array(uv[:, :, 1])
         return [im]
 
@@ -292,11 +266,11 @@ def animate_simulation(grid_size: int, t_show: int = 1000, t_step: int = 1):
 
     fig.canvas.mpl_connect("button_press_event", on_click)
 
-    ani = animation.FuncAnimation(fig, update_frame, interval=0, blit=True)
+    ani = animation.FuncAnimation(fig, update_frame, interval=1, blit=True)
     plt.show()
 
 
-def main(config: str = "config.toml", key: str = "gray-scott"):
+def main():
     """
     Main function to run the interactive Gray-Scott model simulation.
 
@@ -307,12 +281,7 @@ def main(config: str = "config.toml", key: str = "gray-scott"):
     key : str, optional
         Key in the configuration file.
     """
-    dict_config: dict = toml.load(config)[key]
-    animate_simulation(
-        grid_size=dict_config["grid_size"],
-        t_show=dict_config["t_show"],
-        t_step=dict_config["t_step"],
-    )
+    animate_simulation()
 
 
 if __name__ == "__main__":
