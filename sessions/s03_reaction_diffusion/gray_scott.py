@@ -1,5 +1,3 @@
-from typing import Tuple
-
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import animation
@@ -81,10 +79,10 @@ def laplacian_9pt(uv: np.ndarray) -> np.ndarray:
 def gray_scott_ode(
     t: float,
     uv: np.ndarray,
-    du: float = 0.16,
-    dv: float = 0.08,
-    f: float = 0.060,
-    k: float = 0.062,
+    d1: float = 0.1,
+    d2: float = 0.05,
+    f: float = 0.040,
+    k: float = 0.060,
     stencil: int = 5,
 ) -> np.ndarray:
     """
@@ -99,14 +97,16 @@ def gray_scott_ode(
     uv : np.ndarray
         3D array with shape (grid_size, grid_size, 2) containing the values of
         u and v.
-    du : float, optional
-        Diffusion rate of u, default is 0.16.
-    dv : float, optional
-        Diffusion rate of v, default is 0.08.
+    d1 : float, optional
+        Diffusion rate of u, default is 0.1.
+    d2 : float, optional
+        Diffusion rate of v, default is 0.05.
     f : float, optional
-        Feed rate (at which u is fed into the system), default is 0.060.
+        Feed rate (at which u is fed into the system), default is 0.040.
     k : float, optional
-        Kill rate (at which v is removed from the system), default is 0.062.
+        Kill rate (at which v is removed from the system), default is 0.060.
+    stencil : int, optional
+        Stencil to use for the Laplacian computation. Use 5 or 9, default is 5.
     """
 
     # Extract the matrices for substances u and v
@@ -125,86 +125,21 @@ def gray_scott_ode(
     lu = lap[:, :, 0]
     lv = lap[:, :, 1]
 
-    # Gray-Scott equations with explicit Euler time integration
-    uvv = u * v * v
-    du_dt = -uvv + f * (1 - u) + du * lu
-    dv_dt = uvv - (f + k) * v + dv * lv
+    uv2 = u * v * v
 
-    # Stack the derivatives into a single array (N x N x 2)
-    duv_dt = np.stack((du_dt, dv_dt), axis=-1)
+    # Gray-Scott equations
+    du_dt = d1 * lu - uv2 + f * (1 - u)
+    dv_dt = d2 * lv + uv2 - (f + k) * v
 
-    return duv_dt
-
-
-def add_perturbation(
-    uv: np.ndarray,
-    center: Tuple[float],
-    r: int = 1,
-    u: float = 0.5,
-    v: float = 0.25,
-):
-    """
-    Add a perturbation to the center of the grid.
-
-    Parameters
-    ----------
-    uv : np.ndarray
-        3D array with shape (grid_size, grid_size, 2) containing the values of
-        u and v.
-    r : int, optional
-        Radius of the perturbation.
-    u : float, optional
-        Value of u in the perturbation, default is 0.5.
-    v : float, optional
-        Value of v in the perturbation, default is 0.25.
-
-    Returns
-    -------
-    np.ndarray
-        3D array with shape (grid_size, grid_size, 2) containing the values of
-        u and v with the perturbation added.
-    """
-    x, y = center
-    uv[y - r : y + r, x - r : x + r, 0] = u
-    uv[y - r : y + r, x - r : x + r, 1] = v
-
-    # No return value, uv is modified in place
-
-
-def initialize_grid(grid_size: int, perturb: bool = True) -> np.ndarray:
-    """
-    Initialize the grid with a perturbation in the center.
-
-    Parameters
-    ----------
-    grid_size : int
-        Size of the grid.
-    perturb : bool, optional
-        If True, perturb the center of the grid.
-
-    Returns
-    -------
-    ndarray
-        3D array with shape (grid_size, grid_size, 2) containing the initial
-        values of u and v.
-    """
-    uv = np.zeros((grid_size, grid_size, 2), dtype=np.float32)
-    uv[:, :, 0] = 1.0  # Initialize u to 1.0, v to 0.0
-
-    if perturb:
-        # Add a perturbation in the center
-        grid_size = uv.shape[0]
-        center = grid_size // 2
-        add_perturbation(uv, (center, center), r=1)
-
-    return uv
+    return np.stack([du_dt, dv_dt], axis=-1)
 
 
 def animate_simulation(
-    grid_size: int = 128,
+    grid_size: int = 250,
     dt: int = 1,
     boundary_conditions: str = "neumann",
     anim_speed: int = 10,
+    cmap: str = "jet",
 ):
     """
     Animate the Gray-Scott model simulation.
@@ -213,13 +148,21 @@ def animate_simulation(
     ----------
     grid_size : int
         Size of the grid.
-    speed : int, optional
-        Speed of the simulation, default is 1.
+    dt : int
+        Time step.
+    boundary_conditions : str
+        Boundary conditions to apply. Use 'neumann' or 'periodic'.
+    anim_speed : int
+        Animation speed. Number of iterations per frame.
+    cmap : str
+        Colormap to use for the plot, by default 'jet'.
     """
-    uv = initialize_grid(grid_size, perturb=True)
+    # Initialize the u and v fields
+    uv = np.zeros((grid_size, grid_size, 2), dtype=np.float32)
+    uv[:, :, 0] = 1.0  # Initialize u to 1.0, v to 0.0
 
     fig, ax = plt.subplots(figsize=(6, 6))
-    im = ax.imshow(uv[:, :, 1], cmap="inferno", interpolation="bilinear")
+    im = ax.imshow(uv[:, :, 1], cmap=cmap, interpolation="bilinear", vmin=0, vmax=0.4)
     plt.axis("off")
 
     def update_frame(_):
@@ -243,9 +186,10 @@ def animate_simulation(
                 )
 
         im.set_array(uv[:, :, 1])
+        print(uv[..., 1].max(), uv[..., 1].min())
         return [im]
 
-    def on_click(event):
+    def on_click(event, r: int = 3):
         if event.inaxes != ax:
             return
         if event.xdata is None or event.ydata is None:
@@ -256,13 +200,16 @@ def animate_simulation(
         # Left click?
         if event.button == 1:
             u_new = 0.50
-            v_new = 0.25
+            v_new = 0.50
         # Right click?
         elif event.button == 3:
             u_new = 1.0
             v_new = 0.0
+        else:
+            return
 
-        add_perturbation(uv, (x, y), r=3, u=u_new, v=v_new)
+        uv[y - r : y + r, x - r : x + r, 0] = u_new
+        uv[y - r : y + r, x - r : x + r, 1] = v_new
 
     fig.canvas.mpl_connect("button_press_event", on_click)
 
