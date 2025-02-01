@@ -90,7 +90,9 @@ def run_interactive_plot(
     # We initialize them as empty lists (similar to what we do in Streamlit)
 
     # Initialize the line object for animation on phase plane
-    (plot_trajectory,) = ax_phase.plot([], [], lw=2)
+    (plot_trajectory,) = ax_phase.plot([], [], "b", lw=2)
+    # A point will show the last position of the trajectory
+    (plot_trajpoint,) = ax_phase.plot([], [], "bo", markersize=8)
 
     # A nullcline is a curve in the phase plane where one of the variables is constant
     # dy/dt = 0 nullcline: w = f(v)
@@ -176,10 +178,12 @@ def run_interactive_plot(
         plot_ynull.set_data(y_nullcline[0], y_nullcline[1])
         plot_fixedpoint.set_data([fp[0]], [fp[1]])
         plot_trajectory.set_data(y[0][:i], y[1][:i])
+        plot_trajpoint.set_data([y[0][i]], [y[1][i]])
         plot_xt.set_data(t_eval[: i + 1], y[0][: i + 1])
         plot_stabpoint.set_data([args[0], args[0]], [0, 1])
         return (
             plot_trajectory,
+            plot_trajpoint,
             plot_xnull,
             plot_ynull,
             plot_fixedpoint,
@@ -192,6 +196,7 @@ def run_interactive_plot(
         fig,
         animate,
         fargs=(None, None, None, None),
+        frames=len(t_eval),
         interval=1,
         blit=True,
     )
