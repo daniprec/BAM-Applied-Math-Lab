@@ -166,9 +166,15 @@ def animate_simulation(
     plt.axis("off")
 
     # Pause parameter - Will be toggled by pressing the space bar
-    pause = False
+    pause = True
 
     def update_frame(_):
+        """This function is called by the animation module at each frame.
+        It updates the u and v fields based on the Gray-Scott model equations.
+        Returns the updated elements of the plot. This in combination with the
+        blit=True parameter in FuncAnimation will only update the changed elements
+        of the plot, making the animation faster.
+        """
         # Access the pause variable from the outer scope
         nonlocal pause
         if pause:
@@ -198,6 +204,16 @@ def animate_simulation(
         return [im]
 
     def on_click(event, r: int = 20):
+        """This function is called when the user clicks on the plot.
+        It either adds a source of v or removes it, depending on the mouse button clicked.
+
+        Parameters
+        ----------
+        event
+            The event object.
+        r : int, optional
+            Radius of the source, by default 20.
+        """
         if event.inaxes != ax:
             return
         if event.xdata is None or event.ydata is None:
@@ -223,6 +239,14 @@ def animate_simulation(
         im.set_array(uv[:, :, 1])
 
     def on_keypress(event):
+        """This function is called when the user presses a key.
+        It pauses or resumes the simulation when the space bar is pressed.
+
+        Parameters
+        ----------
+        event
+            The event object.
+        """
         # Pressing the space bar pauses or resumes the simulation
         if event.key == " ":
             nonlocal pause
@@ -235,19 +259,5 @@ def animate_simulation(
     plt.show()
 
 
-def main():
-    """
-    Main function to run the interactive Gray-Scott model simulation.
-
-    Parameters
-    ----------
-    config : str, optional
-        Path to the configuration file.
-    key : str, optional
-        Key in the configuration file.
-    """
-    animate_simulation()
-
-
 if __name__ == "__main__":
-    main()
+    animate_simulation()
