@@ -113,10 +113,15 @@ def animate_simulation(
     # Fix the random seed for reproducibility
     np.random.seed(seed)
 
+    # Compute the number of points in the 1D domain
+    lenx = int(length / dx)
+
     # Initialize the u and v fields
-    uv = 2 - np.random.uniform(0, 0.2, (2, int(length / dx))).astype(np.float64)
+    uv = np.ones((2, lenx))
+    # Add some random noise to the initial conditions
+    uv += np.random.normal(0, 1, (2, lenx)).astype(np.float64)
     # Initialize the x-axis
-    x = np.linspace(0, length, int(length / dx))
+    x = np.linspace(0, length, lenx)
 
     # ------------------------------------------------------------------------ #
     # INITIALIZE PLOT
@@ -221,8 +226,8 @@ def animate_simulation(
         else:
             return
 
-        # Add a small random noise to the initial conditions
-        uv += np.random.uniform(0, 0.2, (2, int(length / dx))).astype(np.float64)
+        # Add some random noise to the initial conditions
+        uv += np.random.normal(0, 1, (2, lenx)).astype(np.float64)
 
         # Stop the current animation, reset the frame sequence, and start a new animation
         ani.event_source.stop()
