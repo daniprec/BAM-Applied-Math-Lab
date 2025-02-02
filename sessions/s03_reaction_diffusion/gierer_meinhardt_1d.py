@@ -119,7 +119,7 @@ def animate_simulation(
     # Initialize the u and v fields
     uv = np.ones((2, lenx))
     # Add 1% amplitude additive noise, to break the symmetry
-    uv += 0.01 * np.random.randn(2, lenx)
+    uv += uv * np.random.randn(2, lenx) / 100
 
     # Initialize the x-axis
     x = np.linspace(0, length, lenx)
@@ -229,7 +229,7 @@ def animate_simulation(
             return
 
         # Add 1% amplitude additive noise, to break the symmetry
-        uv += 0.01 * np.random.randn(2, lenx)
+        uv += uv * np.random.randn(2, lenx) / 100
 
         # Stop the current animation, reset the frame sequence, and start a new animation
         ani.event_source.stop()
