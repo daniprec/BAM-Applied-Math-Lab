@@ -1,6 +1,8 @@
+import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import animation
+from matplotlib.axes import Axes
+from matplotlib.backend_bases import MouseEvent
 
 
 def gierer_meinhardt_ode(
@@ -56,6 +58,9 @@ def gierer_meinhardt_ode(
 
 def is_turing_instability(a: float = 0.40, b: float = 1.00, d: float = 30) -> bool:
     """Check if the conditions for Turing instability are met."""
+    # The Turing instability is checked in the fixed point
+    # f(u, v) = g(u, v) = 0
+    # By solving the system of equations, we find the fixed point in:
     u = (1 + a) / b
     v = u**2
     # Compute the necessary derivatives
@@ -76,12 +81,10 @@ def is_turing_instability(a: float = 0.40, b: float = 1.00, d: float = 30) -> bo
 
 def animate_simulation(
     gamma: float = 1,
-    a: float = 0.40,
     b: float = 1.00,
-    d: float = 20,
-    dx: float = 1,
-    dt: float = 0.01,
-    anim_speed: int = 10,
+    dx: float = 0.5,
+    dt: float = 0.001,
+    anim_speed: int = 100,
     length: int = 40,
     seed: int = 0,
     boundary_conditions: str = "neumann",
@@ -91,9 +94,9 @@ def animate_simulation(
     Parameters
     ----------
     dt : float, optional
-        Time step size, by default 0.01
+        Time step size, by default 0.001
     dx : float, optional
-        Spatial step size, by default 1
+        Spatial step size, by default 0.5
     anim_speed : int, optional
         Number of iterations per frame, by default 10
     length : int, optional
@@ -103,6 +106,10 @@ def animate_simulation(
     boundary_conditions : str, optional
         Boundary conditions to apply, by default "neumann"
     """
+    # Initialize some variables - Can be modified by the user
+    a = 0.40
+    d = 20
+
     # Fix the random seed for reproducibility
     np.random.seed(seed)
 
@@ -111,28 +118,69 @@ def animate_simulation(
     # Initialize the x-axis
     x = np.linspace(0, length, int(length / dx))
 
-    # Initialize the figure
-    fig, ax = plt.subplots()
-    ax.set_xlim(0, length)
-    ax.set_ylim(1.4, 3)
-    (line_v,) = ax.plot(x, uv[1])
-    ax.set_xlabel("x")
-    ax.set_ylabel("v(x)")
+    # ------------------------------------------------------------------------ #
+    # INITIALIZE PLOT
+    # ------------------------------------------------------------------------ #
 
-    print(is_turing_instability(a=a, b=b, d=d))
+    # Create a canvas
+    fig, axs = plt.subplots(figsize=(10, 5), nrows=1, ncols=2)
+    ax_ad: Axes = axs[0]  # a vs d
+    ax_uv: Axes = axs[1]  # U vs V
 
-    def update(frame: int):
-        # Access the uv variable from the outer scope
-        nonlocal uv
+    # ------------------------------------------------------------------------ #
+    # A-D PLANE
+    # ------------------------------------------------------------------------ #
+
+    # In this plane, we will plot the Turing instability conditions
+    # The function we designed can work with arrays, so we will create a
+    # meshgrid to compute the Turing instability in the entire plane
+    arr_a = np.linspace(0, 1, 1000)
+    arr_d = np.linspace(0, 100, 1000)
+    mesh_a, mesh_d = np.meshgrid(arr_a, arr_d)
+    mask_turing = is_turing_instability(mesh_a, b, mesh_d)
+
+    # The following matplotlib function will plot the Turing instability region
+    # We use a contour plot to show the region where the conditions are met
+    ax_ad.contourf(mesh_a, mesh_d, mask_turing, cmap="coolwarm", alpha=0.5)
+
+    # We also plot a point, that can be moved by the user
+    (plot_adpoint,) = ax_ad.plot([a], [d], color="black", marker="o")
+
+    ax_ad.set_xlabel("a")
+    ax_ad.set_ylabel("d")
+    ax_ad.set_title("Turing Instability")
+
+    # ------------------------------------------------------------------------ #
+    # U-V PLANE
+    # ------------------------------------------------------------------------ #
+
+    ax_uv.set_xlim(0, length)
+    ax_uv.set_ylim(0, 5)
+    (plot_vline,) = ax_uv.plot(x, uv[1])
+    ax_uv.set_xlabel("x")
+    ax_uv.set_ylabel("v(x)")
+
+    # ------------------------------------------------------------------------ #
+    # ANIMATION
+    # ------------------------------------------------------------------------ #
+
+    # This function will be called at each frame of the animation, updating the line objects
+
+    def animate(frame: int):
+        # Access the variables from the outer scope
+        nonlocal a, d, uv
 
         # Iterate the simulation as many times as the animation speed
         # We use the Euler's method to integrate the ODEs
         # We cannot use solve_ivp because we must impose the boundary conditions
         # at each iteration
         for _ in range(anim_speed):
-            uv = (
-                uv + gierer_meinhardt_ode(0, uv, gamma=gamma, a=a, b=b, d=d, dx=dx) * dt
-            )
+            dudt = gierer_meinhardt_ode(0, uv, gamma=gamma, a=a, b=b, d=d, dx=dx)
+            uv = uv + dudt * dt
+            # The simulation may explode if the time step is too large
+            # When this happens, we raise an error and stop the simulation
+            if np.isnan(uv).any():
+                raise ValueError("Simulation exploded. Reduce dt or increase dx.")
             # Apply boundary conditions
             if boundary_conditions == "neumann":
                 # Neumann - zero flux boundary conditions
@@ -146,13 +194,43 @@ def animate_simulation(
                     "Invalid boundary_conditions value. Use 'neumann' or 'periodic'."
                 )
         # Update the plot
-        line_v.set_ydata(uv[1])
-        return [line_v]
+        plot_vline.set_ydata(uv[1])
+        plot_adpoint.set_data([a], [d])
 
-    ani = animation.FuncAnimation(fig, update, interval=1, blit=True)
+        # The function must return an iterable with all the artists that have changed
+        return [plot_vline, plot_adpoint]
+
+    ani = animation.FuncAnimation(fig, animate, interval=1, blit=True)
+
+    # ------------------------------------------------------------------------ #
+    # INTERACTION
+    # ------------------------------------------------------------------------ #
+
+    # We define a function that will be called when the user clicks on the plot
+    # It will update the initial conditions and restart the animation
+
+    def update_simulation(event: MouseEvent):
+        # Access the a and d variables from the outer scope and modify them
+        nonlocal a, d
+
+        # The click only works if it is inside the phase plane or stability diagram
+        if event.inaxes == ax_ad:
+            a = event.xdata
+            d = event.ydata
+        else:
+            return
+
+        # Stop the current animation, reset the frame sequence, and start a new animation
+        ani.event_source.stop()
+        ani.frame_seq = ani.new_frame_seq()
+        ani.event_source.start()
+
+    # Connect the click event to the update function
+    fig.canvas.mpl_connect("button_press_event", update_simulation)
+
+    # Show the interactive plot
     plt.show()
 
 
 if __name__ == "__main__":
     animate_simulation()
-2
