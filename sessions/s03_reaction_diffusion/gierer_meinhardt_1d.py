@@ -153,7 +153,7 @@ def animate_simulation(
 
     ax_ad.set_xlabel("a")
     ax_ad.set_ylabel("d")
-    ax_ad.set_title("Turing's instability diagram")
+    ax_ad.set_title("Turing Space")
 
     # ------------------------------------------------------------------------ #
     # U-V PLANE
