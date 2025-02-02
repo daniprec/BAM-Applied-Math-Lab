@@ -118,8 +118,9 @@ def animate_simulation(
 
     # Initialize the u and v fields
     uv = np.ones((2, lenx))
-    # Add some random noise to the initial conditions
-    uv += np.random.normal(0, 1, (2, lenx)).astype(np.float64)
+    # Add 1% amplitude additive noise, to break the symmetry
+    uv += 0.01 * np.random.randn(2, lenx)
+
     # Initialize the x-axis
     x = np.linspace(0, length, lenx)
 
@@ -199,6 +200,7 @@ def animate_simulation(
                 raise ValueError(
                     "Invalid boundary_conditions value. Use 'neumann' or 'periodic'."
                 )
+
         # Update the plot
         plot_vline.set_ydata(uv[1])
         plot_adpoint.set_data([a], [d])
@@ -226,8 +228,8 @@ def animate_simulation(
         else:
             return
 
-        # Add some random noise to the initial conditions
-        uv += np.random.normal(0, 1, (2, lenx)).astype(np.float64)
+        # Add 1% amplitude additive noise, to break the symmetry
+        uv += 0.01 * np.random.randn(2, lenx)
 
         # Stop the current animation, reset the frame sequence, and start a new animation
         ani.event_source.stop()
