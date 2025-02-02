@@ -6,9 +6,9 @@ from matplotlib import animation
 def gierer_meinhardt_ode(
     t: float,
     uv: np.ndarray,
+    gamma: float = 1,
     a: float = 0.40,
     b: float = 1.00,
-    gamma: float = 1,
     d: float = 30,
     dx: float = 1,
 ) -> np.ndarray:
@@ -20,12 +20,12 @@ def gierer_meinhardt_ode(
         Time variable (not used in the function)
     uv : np.ndarray
         Array containing the concentrations of u and v
+    gamma : float
+        Reaction rate parameter, by default 1
     a : float
         Reaction rate parameter, by default 0.40
     b : float
         Reaction rate parameter, by default 1.00
-    gamma : float
-        Reaction rate parameter, by default 1
     d : float
         Diffusion rate parameter of v, by default 30
     dx : float
@@ -49,14 +49,38 @@ def gierer_meinhardt_ode(
     # Compute the ODEs
     f = a - b * u + u**2 / (v)
     g = u**2 - v
-    du_dt = lu + gamma * f  # d1 = 1
-    dv_dt = d * lv + gamma * g  # d2 = d
+    du_dt = lu + gamma * f  # D1 = 1
+    dv_dt = d * lv + gamma * g  # D2= d
     return np.array([du_dt, dv_dt])
 
 
+def is_turing_instability(a: float = 0.40, b: float = 1.00, d: float = 30) -> bool:
+    """Check if the conditions for Turing instability are met."""
+    u = (1 + a) / b
+    v = u**2
+    # Compute the necessary derivatives
+    fu = -b + 2 * u / v
+    fv = -(u**2) / v**2
+    gu = 2 * u
+    gv = -1
+    # Compute the determinant of the Jacobian
+    nabla = fu * gv - fv * gu
+    d1d2 = 2 * np.sqrt(d) * np.sqrt(nabla)
+    # Check the conditions
+    cond1 = (fu + gv) < 0  # Trace of the Jacobian
+    cond2 = nabla > 0  # Determinant of the Jacobian
+    cond3 = (gv + d * fu) > d1d2
+    cond4 = d1d2 > 0
+    return cond1 & cond2 & cond3 & cond4
+
+
 def animate_simulation(
-    dt: float = 0.01,
+    gamma: float = 1,
+    a: float = 0.40,
+    b: float = 1.00,
+    d: float = 20,
     dx: float = 1,
+    dt: float = 0.01,
     anim_speed: int = 10,
     length: int = 40,
     seed: int = 0,
@@ -95,13 +119,20 @@ def animate_simulation(
     ax.set_xlabel("x")
     ax.set_ylabel("v(x)")
 
+    print(is_turing_instability(a=a, b=b, d=d))
+
     def update(frame: int):
         # Access the uv variable from the outer scope
         nonlocal uv
 
         # Iterate the simulation as many times as the animation speed
+        # We use the Euler's method to integrate the ODEs
+        # We cannot use solve_ivp because we must impose the boundary conditions
+        # at each iteration
         for _ in range(anim_speed):
-            uv = uv + gierer_meinhardt_ode(0, uv, dx=dx) * dt
+            uv = (
+                uv + gierer_meinhardt_ode(0, uv, gamma=gamma, a=a, b=b, d=d, dx=dx) * dt
+            )
             # Apply boundary conditions
             if boundary_conditions == "neumann":
                 # Neumann - zero flux boundary conditions
