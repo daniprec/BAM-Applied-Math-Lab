@@ -159,6 +159,7 @@ def animate_simulation(
     (plot_vline,) = ax_uv.plot(x, uv[1])
     ax_uv.set_xlabel("x")
     ax_uv.set_ylabel("v(x)")
+    ax_uv.set_title("Gierer-Meinhardt Model (1D)")
 
     # ------------------------------------------------------------------------ #
     # ANIMATION
