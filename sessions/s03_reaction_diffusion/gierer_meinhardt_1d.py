@@ -212,7 +212,7 @@ def animate_simulation(
 
     def update_simulation(event: MouseEvent):
         # Access the a and d variables from the outer scope and modify them
-        nonlocal a, d
+        nonlocal a, d, uv
 
         # The click only works if it is inside the phase plane or stability diagram
         if event.inaxes == ax_ad:
@@ -220,6 +220,9 @@ def animate_simulation(
             d = event.ydata
         else:
             return
+
+        # Add a small random noise to the initial conditions
+        uv += np.random.uniform(0, 0.2, (2, int(length / dx))).astype(np.float64)
 
         # Stop the current animation, reset the frame sequence, and start a new animation
         ani.event_source.stop()
