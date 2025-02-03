@@ -102,8 +102,8 @@ def find_unstable_spatial_modes(
     b: float = 1.00,
     d: float = 30.0,
     gamma: float = 1.0,
-    length_x: float = 40.0,
-    length_y: float = 40.0,
+    length_x: float = 20.0,
+    length_y: float = 50.0,
     num_modes: int = 10,
     boundary_conditions: str = "neumann",
 ) -> np.ndarray:
@@ -118,8 +118,10 @@ def find_unstable_spatial_modes(
         Reaction parameter b.
     d : float
         Diffusion coefficient for v (D2).
-    length : float
-        1D domain length.
+    length_x : float
+        L1 domain length.
+    length_y : float
+        L2 domain length.
     num_modes : int
         Number of wavenumbers (modes) to sample in [0, num_modes].
     boundary_conditions : str
@@ -138,33 +140,43 @@ def find_unstable_spatial_modes(
     # For Neumann BC on [0,L], modes k_n = (n*pi)/L
     # We will check n=0,...,num_modes-1
     n_values = np.arange(num_modes)
-    max_eigs = np.zeros(num_modes)
+    max_eigs = np.zeros((num_modes, num_modes))
 
-    for n in n_values:
-        if boundary_conditions == "neumann":
-            # For a 1D domain of length L with Neumann boundaries,
-            # possible modes are k = n*pi/L, n = 0,1,2,...
-            lambda_n = -((n * np.pi / length_x) ** 2)
-        elif boundary_conditions == "periodic":
-            lambda_n = -(((n + 1) * np.pi / length_x) ** 2)
-        else:
-            raise ValueError(
-                "Invalid boundary_conditions value. Use 'neumann' or 'periodic'."
+    for x in n_values:
+        for y in n_values:
+            if boundary_conditions == "neumann":
+                # For a 1D domain of length L with Neumann boundaries,
+                # possible modes are k = n*pi/L, n = 0,1,2,...
+                lambda_x = -((x * np.pi / length_x) ** 2)
+                lambda_y = -((y * np.pi / length_y) ** 2)
+            elif boundary_conditions == "periodic":
+                lambda_x = -(((x + 1) * np.pi / length_x) ** 2)
+                lambda_y = -(((y + 1) * np.pi / length_y) ** 2)
+            else:
+                raise ValueError(
+                    "Invalid boundary_conditions value. Use 'neumann' or 'periodic'."
+                )
+            # Compute the eigenvalues of the Jacobian matrix
+            a_n = np.array(
+                [
+                    [gamma * fu + lambda_x + lambda_y, gamma * fv],
+                    [gamma * gu, gamma * gv + d * (lambda_x + lambda_y)],
+                ]
             )
-        # Compute the eigenvalues of the Jacobian matrix
-        a_n = np.array(
-            [
-                [gamma * fu + lambda_n, gamma * fv],
-                [gamma * gu, gamma * gv + d * lambda_n],
-            ]
-        )
-        sigma1, sigma2 = np.linalg.eigvals(a_n)
-        max_eigs[n] = max(sigma1, sigma2)
+            sigma1, sigma2 = np.linalg.eigvals(a_n)
+            # Discard complex part
+            sigma1, sigma2 = sigma1.real, sigma2.real
+            max_eigs[x, y] = max(sigma1, sigma2)
 
     # Sort indices from largest to smallest eigenvalue
-    sorted_indices = np.argsort(max_eigs)[::-1]
-    # Filter the modes that lead to Turing instability (positive eigenvalues)
-    unstable_modes = sorted_indices[max_eigs[sorted_indices] > 0]
+    sorted_indices = np.argsort(max_eigs.flatten())[::-1]
+    # Filter the positive eigenvalues
+    unstable_modes = sorted_indices[max_eigs.flatten()[sorted_indices] > 0]
+    # Turn the indices into tuples (x, y)
+    unstable_modes = [
+        (x, y) for x in unstable_modes // num_modes for y in unstable_modes % num_modes
+    ]
+
     return unstable_modes
 
 
@@ -174,8 +186,8 @@ def animate_simulation(
     dx: float = 1.0,
     dt: float = 0.001,
     anim_speed: int = 100,
-    length_x: int = 40,
-    length_y: int = 40,
+    length_x: int = 20,
+    length_y: int = 50,
     seed: int = 0,
     boundary_conditions: str = "neumann",
 ):
@@ -189,8 +201,10 @@ def animate_simulation(
         Spatial step size, by default 0.5
     anim_speed : int, optional
         Number of iterations per frame, by default 10
-    length : int, optional
-        Length of the 1D domain, by default 40
+    length_x : float
+        L1 domain length, by default 20
+    length_y : float
+        L2 domain length, by default 50
     seed : int, optional
         Random seed for reproducibility, by default 0
     boundary_conditions : str, optional
@@ -277,7 +291,7 @@ def animate_simulation(
 
     # This function will be called at each frame of the animation, updating the line objects
 
-    def animate(frame: int, unstable_modes: str):
+    def animate(frame: int, unstable_modes: list):
         # Access the variables from the outer scope
         nonlocal a, d, uv
 
@@ -315,7 +329,7 @@ def animate_simulation(
             plot_text2.set_text("")
         else:
             plot_text.set_text(f"Leading spatial mode: {unstable_modes[0]}")
-            ls_modes = ", ".join(map(str, unstable_modes[1:]))
+            ls_modes = ", ".join(map(str, unstable_modes[1:4]))
             plot_text2.set_text(f"Unstable modes: {ls_modes}")
 
         # The function must return an iterable with all the artists that have changed

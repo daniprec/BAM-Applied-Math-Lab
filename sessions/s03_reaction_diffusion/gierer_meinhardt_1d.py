@@ -101,7 +101,7 @@ def find_unstable_spatial_modes(
     length: float = 40.0,
     num_modes: int = 10,
     boundary_conditions: str = "neumann",
-) -> np.ndarray:
+) -> list[int]:
     """
     Find the leading spatial modes (wavenumbers) from linear stability analysis.
 
@@ -154,13 +154,15 @@ def find_unstable_spatial_modes(
             ]
         )
         sigma1, sigma2 = np.linalg.eigvals(a_n)
+        # Discard complex part
+        sigma1, sigma2 = sigma1.real, sigma2.real
         max_eigs[n] = max(sigma1, sigma2)
 
     # Sort indices from largest to smallest eigenvalue
     sorted_indices = np.argsort(max_eigs)[::-1]
     # Filter the modes that lead to Turing instability (positive eigenvalues)
     unstable_modes = sorted_indices[max_eigs[sorted_indices] > 0]
-    return unstable_modes
+    return unstable_modes.tolist()
 
 
 def animate_simulation(
@@ -275,7 +277,7 @@ def animate_simulation(
 
     # This function will be called at each frame of the animation, updating the line objects
 
-    def animate(frame: int, unstable_modes: str):
+    def animate(frame: int, unstable_modes: list[int]):
         # Access the variables from the outer scope
         nonlocal a, d, uv
 
@@ -311,7 +313,7 @@ def animate_simulation(
             plot_text2.set_text("")
         else:
             plot_text.set_text(f"Leading spatial mode: {unstable_modes[0]}")
-            ls_modes = ", ".join(map(str, unstable_modes[1:]))
+            ls_modes = ", ".join(map(str, unstable_modes[1:8]))
             plot_text2.set_text(f"Unstable modes: {ls_modes}")
 
         # The function must return an iterable with all the artists that have changed
