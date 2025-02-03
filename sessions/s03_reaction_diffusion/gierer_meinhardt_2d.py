@@ -254,6 +254,7 @@ def animate_simulation(
     # We also plot a point, that can be moved by the user
     (plot_adpoint,) = ax_ad.plot([a], [d], color="black", marker="o")
 
+    ax_ad.grid(True)
     ax_ad.set_xlabel("a")
     ax_ad.set_ylabel("d")
     ax_ad.set_title("Turing Space")
@@ -263,18 +264,25 @@ def animate_simulation(
     # ------------------------------------------------------------------------ #
 
     # Dynamic elements: line and text
-    im = ax_uv.imshow(uv[1], interpolation="bilinear", vmin=0, vmax=5)
+    im = ax_uv.imshow(
+        uv[1],
+        interpolation="bilinear",
+        vmin=0,
+        vmax=10,
+        origin="lower",
+        extent=[0, length_y, 0, length_x],
+    )
     # Initialize text objects to display the leading spatial modes
     plot_text = ax_uv.text(
         0.02 * length_x,
-        0.01 * length_y,
+        0.39 * length_y,
         "No Turing's instability",
         fontsize=12,
         verticalalignment="top",
     )
     plot_text2 = ax_uv.text(
         0.02 * length_x,
-        0.06 * length_y,
+        0.34 * length_y,
         "Click to change initial conditions",
         fontsize=12,
         verticalalignment="top",

@@ -238,6 +238,7 @@ def animate_simulation(
     # We also plot a point, that can be moved by the user
     (plot_adpoint,) = ax_ad.plot([a], [d], color="black", marker="o")
 
+    ax_ad.grid(True)
     ax_ad.set_xlabel("a")
     ax_ad.set_ylabel("d")
     ax_ad.set_title("Turing Space")
