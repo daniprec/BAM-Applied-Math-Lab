@@ -91,8 +91,7 @@ def is_turing_instability(a: float = 0.40, b: float = 1.00, d: float = 30) -> bo
     cond1 = (fu + gv) < 0  # Trace of the Jacobian
     cond2 = nabla > 0  # Determinant of the Jacobian
     cond3 = (gv + d * fu) > d1d2
-    cond4 = d1d2 > 0
-    return cond1 & cond2 & cond3 & cond4
+    return cond1 & cond2 & cond3
 
 
 def find_leading_spatial_modes(
@@ -101,7 +100,7 @@ def find_leading_spatial_modes(
     d: float = 30.0,
     gamma: float = 1.0,
     length: float = 40.0,
-    num_k: int = 100,
+    num_modes: int = 10,
 ) -> int:
     """
     Find the leading spatial modes (wavenumbers) from linear stability analysis.
@@ -116,8 +115,8 @@ def find_leading_spatial_modes(
         Diffusion coefficient for v (D2).
     length : float
         1D domain length.
-    num_k : int
-        Number of wavenumbers to sample in [0, k_max].
+    num_modes : int
+        Number of wavenumbers (modes) to sample in [0, num_modes].
 
     Returns
     -------
@@ -130,42 +129,31 @@ def find_leading_spatial_modes(
     fu, fv, gu, gv = giere_meinhardt_derivative(u_star, v_star, b)
 
     # For Neumann BC on [0,L], modes k_n = (n*pi)/L
-    # We will check n=0,...,num_k-1
-    n_values = np.arange(num_k)
-    max_eigs = np.zeros(num_k)
+    # We will check n=0,...,num_modes-1
+    n_values = np.arange(num_modes)
+    max_eigs = np.zeros(num_modes)
 
     for n in n_values:
         # For a 1D domain of length L with Neumann boundaries,
         # possible modes are k = n*pi/L, n = 0,1,2,...
-        k = n * np.pi / length
+        lambda_n = -((n * np.pi / length) ** 2)
+        # Dirichlet
+        # lambda_n = -(((n + 1) * np.pi / length) ** 2)
         # Compute the eigenvalues of the Jacobian matrix
-        trace = (gamma * fu - k**2) + (gamma * gv - d * k**2)
-        det = (gamma * fu - k**2) * (gamma * gv - d * k**2) - (gamma**2 * fv * gu)
-        # Quadratic formula for roots
-        disc = trace**2 - 4.0 * det
-        # If disc < 0, we still only need the real part => trace/2
-        # But let's do it explicitly:
-        if disc < 0:
-            # Real part of the roots is trace/2 if there's a negative discriminant
-            lambda1 = trace / 2.0
-            lambda2 = trace / 2.0
-        else:
-            sqrt_disc = np.sqrt(disc)
-            lambda1 = (trace + sqrt_disc) / 2.0
-            lambda2 = (trace - sqrt_disc) / 2.0
+        a_n = np.array(
+            [
+                [gamma * fu + lambda_n, gamma * fv],
+                [gamma * gu, gamma * gv + d * lambda_n],
+            ]
+        )
+        sigma1, sigma2 = np.linalg.eigvals(a_n)
+        max_eigs[n] = max(sigma1, sigma2)
 
-        max_eigs[n] = max(lambda1, lambda2)
-
-    # Find the n_star that yields the largest real part
-    n_star = np.argmax(max_eigs)
-    lambda_star = max_eigs[n_star]
-
-    if lambda_star < 0:
-        # No leading mode found
-        return 0
-    else:
-        # Return the spatial leading mode
-        return n_star
+    # Sort indices from largest to smallest eigenvalue
+    sorted_indices = np.argsort(max_eigs)[::-1]
+    # Filter the modes that lead to Turing instability (positive eigenvalues)
+    unstable_modes = sorted_indices[max_eigs[sorted_indices] > 0]
+    return unstable_modes
 
 
 def animate_simulation(
@@ -173,7 +161,7 @@ def animate_simulation(
     b: float = 1.00,
     dx: float = 0.5,
     dt: float = 0.001,
-    anim_speed: int = 100,
+    anim_speed: int = 1000,
     length: int = 40,
     seed: int = 0,
     boundary_conditions: str = "neumann",
@@ -259,6 +247,13 @@ def animate_simulation(
         fontsize=12,
         verticalalignment="top",
     )
+    plot_text2 = ax_uv.text(
+        0.02 * length,
+        4.7,
+        "Click to change initial conditions",
+        fontsize=12,
+        verticalalignment="top",
+    )
 
     # Static elements: Plot limits, title and labels
     ax_uv.set_xlim(0, length)
@@ -273,7 +268,7 @@ def animate_simulation(
 
     # This function will be called at each frame of the animation, updating the line objects
 
-    def animate(frame: int, spatial_mode: str):
+    def animate(frame: int, unstable_modes: str):
         # Access the variables from the outer scope
         nonlocal a, d, uv
 
@@ -304,15 +299,18 @@ def animate_simulation(
         # Update the plot
         plot_vline.set_ydata(uv[1])
         plot_adpoint.set_data([a], [d])
-        if spatial_mode != 0:
-            plot_text.set_text(f"Leading spatial mode: {spatial_mode}")
-        else:
+        if len(unstable_modes) == 0:
             plot_text.set_text("No Turing's instability")
+            plot_text2.set_text("")
+        else:
+            plot_text.set_text(f"Leading spatial mode: {unstable_modes[0]}")
+            ls_modes = ", ".join(map(str, unstable_modes[1:]))
+            plot_text2.set_text(f"Unstable modes: {ls_modes}")
 
         # The function must return an iterable with all the artists that have changed
-        return [plot_vline, plot_adpoint, plot_text]
+        return [plot_vline, plot_adpoint, plot_text, plot_text2]
 
-    ani = animation.FuncAnimation(fig, animate, fargs=(0,), interval=1, blit=True)
+    ani = animation.FuncAnimation(fig, animate, fargs=([],), interval=1, blit=True)
 
     # ------------------------------------------------------------------------ #
     # INTERACTION
@@ -337,14 +335,14 @@ def animate_simulation(
         # Add 1% amplitude additive noise, to break the symmetry
         uv += uv * np.random.randn(2, lenx) / 100
 
-        spatial_mode = find_leading_spatial_modes(
+        unstable_modes = find_leading_spatial_modes(
             a=a, b=b, d=d, gamma=gamma, length=length
         )
 
         # Stop the current animation, reset the frame sequence, and start a new animation
         ani.event_source.stop()
         ani.frame_seq = ani.new_frame_seq()
-        ani._args = (spatial_mode,)
+        ani._args = (unstable_modes,)
         ani.event_source.start()
 
     # Connect the click event to the update function
