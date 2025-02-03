@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
@@ -56,18 +58,32 @@ def gierer_meinhardt_ode(
     return np.array([du_dt, dv_dt])
 
 
-def is_turing_instability(a: float = 0.40, b: float = 1.00, d: float = 30) -> bool:
-    """Check if the conditions for Turing instability are met."""
-    # The Turing instability is checked in the fixed point
-    # f(u, v) = g(u, v) = 0
-    # By solving the system of equations, we find the fixed point in:
+def gierer_meinhardt_fixed_point(a: float = 0.40, b: float = 1.00) -> np.ndarray:
+    """Compute the fixed point of the Gierer-Meinhardt model."""
+    # The fixed point is given by f(u*, v*) = 0 and g(u*, v*) = 0
+    # We can solve this system of equations analytically
     u = (1 + a) / b
     v = u**2
-    # Compute the necessary derivatives
+    return np.array([u, v])
+
+
+def giere_meinhardt_derivative(
+    u: float, v: float, b: float = 1.00
+) -> Tuple[float, float, float, float]:
+    """Compute the derivatives of the Gierer-Meinhardt model."""
     fu = -b + 2 * u / v
     fv = -(u**2) / v**2
     gu = 2 * u
-    gv = -1
+    gv = -1.0
+    return fu, fv, gu, gv
+
+
+def is_turing_instability(a: float = 0.40, b: float = 1.00, d: float = 30) -> bool:
+    """Check if the conditions for Turing instability are met."""
+    # Compute the fixed point
+    u_star, v_star = gierer_meinhardt_fixed_point(a, b)
+    # Evaluate the derivatives at the fixed point
+    fu, fv, gu, gv = giere_meinhardt_derivative(u_star, v_star, b)
     # Compute the determinant of the Jacobian
     nabla = fu * gv - fv * gu
     d1d2 = 2 * np.sqrt(d) * np.sqrt(nabla)
@@ -77,6 +93,79 @@ def is_turing_instability(a: float = 0.40, b: float = 1.00, d: float = 30) -> bo
     cond3 = (gv + d * fu) > d1d2
     cond4 = d1d2 > 0
     return cond1 & cond2 & cond3 & cond4
+
+
+def find_leading_spatial_modes(
+    a: float = 0.40,
+    b: float = 1.00,
+    d: float = 30.0,
+    gamma: float = 1.0,
+    length: float = 40.0,
+    num_k: int = 100,
+) -> int:
+    """
+    Find the leading spatial modes (wavenumbers) from linear stability analysis.
+
+    Parameters
+    ----------
+    a : float
+        Reaction parameter a.
+    b : float
+        Reaction parameter b.
+    d : float
+        Diffusion coefficient for v (D2).
+    length : float
+        1D domain length.
+    num_k : int
+        Number of wavenumbers to sample in [0, k_max].
+
+    Returns
+    -------
+    int
+        Leading spatial mode (wavenumber) that leads to Turing instability
+    """
+    # Compute the fixed point
+    u_star, v_star = gierer_meinhardt_fixed_point(a, b)
+    # Evaluate the derivatives at the fixed point
+    fu, fv, gu, gv = giere_meinhardt_derivative(u_star, v_star, b)
+
+    # For Neumann BC on [0,L], modes k_n = (n*pi)/L
+    # We will check n=0,...,num_k-1
+    n_values = np.arange(num_k)
+    max_eigs = np.zeros(num_k)
+
+    for n in n_values:
+        # For a 1D domain of length L with Neumann boundaries,
+        # possible modes are k = n*pi/L, n = 0,1,2,...
+        k = n * np.pi / length
+        # Compute the eigenvalues of the Jacobian matrix
+        trace = (gamma * fu - k**2) + (gamma * gv - d * k**2)
+        det = (gamma * fu - k**2) * (gamma * gv - d * k**2) - (gamma**2 * fv * gu)
+        # Quadratic formula for roots
+        disc = trace**2 - 4.0 * det
+        # If disc < 0, we still only need the real part => trace/2
+        # But let's do it explicitly:
+        if disc < 0:
+            # Real part of the roots is trace/2 if there's a negative discriminant
+            lambda1 = trace / 2.0
+            lambda2 = trace / 2.0
+        else:
+            sqrt_disc = np.sqrt(disc)
+            lambda1 = (trace + sqrt_disc) / 2.0
+            lambda2 = (trace - sqrt_disc) / 2.0
+
+        max_eigs[n] = max(lambda1, lambda2)
+
+    # Find the n_star that yields the largest real part
+    n_star = np.argmax(max_eigs)
+    lambda_star = max_eigs[n_star]
+
+    if lambda_star < 0:
+        # No leading mode found
+        return 0
+    else:
+        # Return the spatial leading mode
+        return n_star
 
 
 def animate_simulation(
@@ -160,9 +249,20 @@ def animate_simulation(
     # U-V PLANE
     # ------------------------------------------------------------------------ #
 
+    # Dynamic elements: line and text
+    (plot_vline,) = ax_uv.plot(x, uv[1])
+    # Initialize text objects to display the leading spatial modes
+    plot_text = ax_uv.text(
+        0.02 * length,
+        4.95,
+        "No Turing's instability",
+        fontsize=12,
+        verticalalignment="top",
+    )
+
+    # Static elements: Plot limits, title and labels
     ax_uv.set_xlim(0, length)
     ax_uv.set_ylim(0, 5)
-    (plot_vline,) = ax_uv.plot(x, uv[1])
     ax_uv.set_xlabel("x")
     ax_uv.set_ylabel("v(x)")
     ax_uv.set_title("Gierer-Meinhardt Model (1D)")
@@ -173,7 +273,7 @@ def animate_simulation(
 
     # This function will be called at each frame of the animation, updating the line objects
 
-    def animate(frame: int):
+    def animate(frame: int, spatial_mode: str):
         # Access the variables from the outer scope
         nonlocal a, d, uv
 
@@ -204,11 +304,15 @@ def animate_simulation(
         # Update the plot
         plot_vline.set_ydata(uv[1])
         plot_adpoint.set_data([a], [d])
+        if spatial_mode != 0:
+            plot_text.set_text(f"Leading spatial mode: {spatial_mode}")
+        else:
+            plot_text.set_text("No Turing's instability")
 
         # The function must return an iterable with all the artists that have changed
-        return [plot_vline, plot_adpoint]
+        return [plot_vline, plot_adpoint, plot_text]
 
-    ani = animation.FuncAnimation(fig, animate, interval=1, blit=True)
+    ani = animation.FuncAnimation(fig, animate, fargs=(0,), interval=1, blit=True)
 
     # ------------------------------------------------------------------------ #
     # INTERACTION
@@ -231,9 +335,14 @@ def animate_simulation(
         # Add 1% amplitude additive noise, to break the symmetry
         uv += uv * np.random.randn(2, lenx) / 100
 
+        spatial_mode = find_leading_spatial_modes(
+            a=a, b=b, d=d, gamma=gamma, length=length
+        )
+
         # Stop the current animation, reset the frame sequence, and start a new animation
         ani.event_source.stop()
         ani.frame_seq = ani.new_frame_seq()
+        ani._args = (spatial_mode,)
         ani.event_source.start()
 
     # Connect the click event to the update function
