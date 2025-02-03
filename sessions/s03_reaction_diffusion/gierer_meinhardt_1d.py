@@ -86,11 +86,10 @@ def is_turing_instability(a: float = 0.40, b: float = 1.00, d: float = 30) -> bo
     fu, fv, gu, gv = giere_meinhardt_derivative(u_star, v_star, b)
     # Compute the determinant of the Jacobian
     nabla = fu * gv - fv * gu
-    d1d2 = 2 * np.sqrt(d) * np.sqrt(nabla)
     # Check the conditions
     cond1 = (fu + gv) < 0  # Trace of the Jacobian
     cond2 = nabla > 0  # Determinant of the Jacobian
-    cond3 = (gv + d * fu) > d1d2
+    cond3 = (gv + d * fu) > (2 * np.sqrt(d) * np.sqrt(nabla))
     return cond1 & cond2 & cond3
 
 
