@@ -93,7 +93,7 @@ def is_turing_instability(a: float = 0.40, b: float = 1.00, d: float = 30) -> bo
     return cond1 & cond2 & cond3
 
 
-def find_leading_spatial_modes(
+def find_unstable_spatial_modes(
     a: float = 0.40,
     b: float = 1.00,
     d: float = 30.0,
@@ -160,7 +160,7 @@ def animate_simulation(
     b: float = 1.00,
     dx: float = 0.5,
     dt: float = 0.001,
-    anim_speed: int = 1000,
+    anim_speed: int = 100,
     length: int = 40,
     seed: int = 0,
     boundary_conditions: str = "neumann",
@@ -334,7 +334,7 @@ def animate_simulation(
         # Add 1% amplitude additive noise, to break the symmetry
         uv += uv * np.random.randn(2, lenx) / 100
 
-        unstable_modes = find_leading_spatial_modes(
+        unstable_modes = find_unstable_spatial_modes(
             a=a, b=b, d=d, gamma=gamma, length=length
         )
 
