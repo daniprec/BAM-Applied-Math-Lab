@@ -100,7 +100,8 @@ def find_unstable_spatial_modes(
     gamma: float = 1.0,
     length: float = 40.0,
     num_modes: int = 10,
-) -> int:
+    boundary_conditions: str = "neumann",
+) -> np.ndarray:
     """
     Find the leading spatial modes (wavenumbers) from linear stability analysis.
 
@@ -116,11 +117,13 @@ def find_unstable_spatial_modes(
         1D domain length.
     num_modes : int
         Number of wavenumbers (modes) to sample in [0, num_modes].
+    boundary_conditions : str
+        Boundary conditions to apply. Either 'neumann' or 'periodic'.
 
     Returns
     -------
-    int
-        Leading spatial mode (wavenumber) that leads to Turing instability
+    np.ndarray
+        Array with the indices of the unstable modes, from largest to smallest.
     """
     # Compute the fixed point
     u_star, v_star = gierer_meinhardt_fixed_point(a, b)
@@ -133,11 +136,16 @@ def find_unstable_spatial_modes(
     max_eigs = np.zeros(num_modes)
 
     for n in n_values:
-        # For a 1D domain of length L with Neumann boundaries,
-        # possible modes are k = n*pi/L, n = 0,1,2,...
-        lambda_n = -((n * np.pi / length) ** 2)
-        # Dirichlet
-        # lambda_n = -(((n + 1) * np.pi / length) ** 2)
+        if boundary_conditions == "neumann":
+            # For a 1D domain of length L with Neumann boundaries,
+            # possible modes are k = n*pi/L, n = 0,1,2,...
+            lambda_n = -((n * np.pi / length) ** 2)
+        elif boundary_conditions == "periodic":
+            lambda_n = -(((n + 1) * np.pi / length) ** 2)
+        else:
+            raise ValueError(
+                "Invalid boundary_conditions value. Use 'neumann' or 'periodic'."
+            )
         # Compute the eigenvalues of the Jacobian matrix
         a_n = np.array(
             [
@@ -335,7 +343,12 @@ def animate_simulation(
         uv += uv * np.random.randn(2, lenx) / 100
 
         unstable_modes = find_unstable_spatial_modes(
-            a=a, b=b, d=d, gamma=gamma, length=length
+            a=a,
+            b=b,
+            d=d,
+            gamma=gamma,
+            length=length,
+            boundary_conditions=boundary_conditions,
         )
 
         # Stop the current animation, reset the frame sequence, and start a new animation
