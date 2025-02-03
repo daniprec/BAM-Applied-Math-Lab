@@ -332,6 +332,8 @@ def animate_simulation(
         else:
             return
 
+        # Reset to a constant line
+        uv = np.ones((2, lenx)) * uv.mean()
         # Add 1% amplitude additive noise, to break the symmetry
         uv += uv * np.random.randn(2, lenx) / 100
 
