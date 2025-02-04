@@ -263,7 +263,7 @@ def animate_simulation(
     # U-V PLANE
     # ------------------------------------------------------------------------ #
 
-    # Dynamic elements: line and text
+    # Dynamic elements: image and text
     im = ax_uv.imshow(
         uv[1],
         interpolation="bilinear",
