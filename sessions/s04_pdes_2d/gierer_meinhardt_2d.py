@@ -138,8 +138,8 @@ def find_unstable_spatial_modes(
     fu, fv, gu, gv = giere_meinhardt_derivative(u_star, v_star, b)
 
     # For Neumann BC on [0,L], modes k_n = (n*pi)/L
-    # We will check n=0,...,num_modes-1
-    n_values = np.arange(num_modes)
+    # We will check n=1,...,num_modes-1
+    n_values = np.arange(1, num_modes)
     max_eigs = np.zeros((num_modes, num_modes))
 
     for x in n_values:
