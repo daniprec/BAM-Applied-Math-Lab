@@ -16,7 +16,7 @@ def gierer_meinhardt_ode(
     d: float = 30,
     dx: float = 1,
 ) -> np.ndarray:
-    """ODEs for the Gierer-Meinhardt model in 1D
+    """PDEs for the Gierer-Meinhardt model in 1D
 
     Parameters
     ----------
