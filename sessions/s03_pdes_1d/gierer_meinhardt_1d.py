@@ -58,32 +58,24 @@ def gierer_meinhardt_pde(
     return np.array([du_dt, dv_dt])
 
 
-def gierer_meinhardt_fixed_point(a: float = 0.40, b: float = 1.00) -> np.ndarray:
-    """Compute the fixed point of the Gierer-Meinhardt model."""
-    # The fixed point is given by f(u*, v*) = 0 and g(u*, v*) = 0
-    # We can solve this system of equations analytically
-    u = (1 + a) / b
-    v = u**2
-    return np.array([u, v])
-
-
-def giere_meinhardt_derivative(
-    u: float, v: float, b: float = 1.00
+def giere_meinhardt_jacobian(
+    a: float = 0.4, b: float = 1.00
 ) -> Tuple[float, float, float, float]:
-    """Compute the derivatives of the Gierer-Meinhardt model."""
-    fu = -b + 2 * u / v
-    fv = -(u**2) / v**2
-    gu = 2 * u
+    """Compute the Jacobian of the Gierer-Meinhardt model."""
+    # Steps to compute the Jacobian:
+    # Find the fixed point of the system
+    # Compute the derivatives of the system at the fixed point
+    fu = 2 * b / (a + 1) - b
+    fv = -((b / (a + 1)) ** 2)
+    gu = 2 * (a + 1) / b
     gv = -1.0
     return fu, fv, gu, gv
 
 
 def is_turing_instability(a: float = 0.40, b: float = 1.00, d: float = 30) -> bool:
     """Check if the conditions for Turing instability are met."""
-    # Compute the fixed point
-    u_star, v_star = gierer_meinhardt_fixed_point(a, b)
-    # Evaluate the derivatives at the fixed point
-    fu, fv, gu, gv = giere_meinhardt_derivative(u_star, v_star, b)
+    # Evaluate the Jacobian at the fixed point
+    fu, fv, gu, gv = giere_meinhardt_jacobian(a, b)
     # Compute the determinant of the Jacobian
     nabla = fu * gv - fv * gu
     # Check the conditions
@@ -97,7 +89,6 @@ def find_unstable_spatial_modes(
     a: float = 0.40,
     b: float = 1.00,
     d: float = 30.0,
-    gamma: float = 1.0,
     length: float = 40.0,
     num_modes: int = 10,
     boundary_conditions: str = "neumann",
@@ -125,10 +116,9 @@ def find_unstable_spatial_modes(
     np.ndarray
         Array with the indices of the unstable modes, from largest to smallest.
     """
-    # Compute the fixed point
-    u_star, v_star = gierer_meinhardt_fixed_point(a, b)
-    # Evaluate the derivatives at the fixed point
-    fu, fv, gu, gv = giere_meinhardt_derivative(u_star, v_star, b)
+    # Compute the Jacobian matrix
+    fu, fv, gu, gv = giere_meinhardt_jacobian(a, b)
+    jac = np.array([[fu, fv], [gu, gv]])
 
     # For Neumann BC on [0,L], modes k_n = (n*pi)/L
     # We will check n=0,...,num_modes-1
@@ -139,20 +129,15 @@ def find_unstable_spatial_modes(
         if boundary_conditions == "neumann":
             # For a 1D domain of length L with Neumann boundaries,
             # possible modes are k = n*pi/L, n = 0,1,2,...
-            lambda_n = -((n * np.pi / length) ** 2)
+            lambda_n = (n * np.pi / length) ** 2
         elif boundary_conditions == "periodic":
-            lambda_n = -(((n + 1) * np.pi / length) ** 2)
+            lambda_n = ((n + 1) * np.pi / length) ** 2
         else:
             raise ValueError(
                 "Invalid boundary_conditions value. Use 'neumann' or 'periodic'."
             )
         # Compute the eigenvalues of the Jacobian matrix
-        a_n = np.array(
-            [
-                [gamma * fu + lambda_n, gamma * fv],
-                [gamma * gu, gamma * gv + d * lambda_n],
-            ]
-        )
+        a_n = jac - np.diag([lambda_n, d * lambda_n])
         sigma1, sigma2 = np.linalg.eigvals(a_n)
         # Discard complex part
         sigma1, sigma2 = sigma1.real, sigma2.real
@@ -349,7 +334,6 @@ def animate_simulation(
             a=a,
             b=b,
             d=d,
-            gamma=gamma,
             length=length,
             boundary_conditions=boundary_conditions,
         )
