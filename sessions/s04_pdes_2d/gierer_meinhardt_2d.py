@@ -16,7 +16,7 @@ def gierer_meinhardt_ode(
     d: float = 30,
     dx: float = 1,
 ) -> np.ndarray:
-    """PDEs for the Gierer-Meinhardt model in 1D
+    """PDEs for the Gierer-Meinhardt model in 2D
 
     Parameters
     ----------
@@ -267,8 +267,8 @@ def animate_simulation(
     im = ax_uv.imshow(
         uv[1],
         interpolation="bilinear",
-        vmin=0,
-        vmax=10,
+        # vmin=0,
+        # vmax=10,
         origin="lower",
         extent=[0, length_y, 0, length_x],
     )
@@ -331,6 +331,12 @@ def animate_simulation(
 
         # Update the displayed image
         im.set_array(uv[1])
+        # Redefine the color limits. We make sure that the maximum value is at least
+        # 0.1 to avoid noise in the image
+        vmin = uv[1].min()
+        vmax = uv[1].max()
+        im.set_clim(vmin=vmin, vmax=max(vmax, vmin + 0.1))
+        # Update the point in the a-d plane
         plot_adpoint.set_data([a], [d])
         if len(unstable_modes) == 0:
             plot_text.set_text("No Turing's instability")
