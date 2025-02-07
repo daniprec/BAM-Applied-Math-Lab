@@ -7,7 +7,7 @@ from matplotlib.axes import Axes
 from matplotlib.backend_bases import MouseEvent
 
 
-def gierer_meinhardt_ode(
+def gierer_meinhardt_pde(
     t: float,
     uv: np.ndarray,
     gamma: float = 1,
@@ -308,7 +308,7 @@ def animate_simulation(
         # We cannot use solve_ivp because we must impose the boundary conditions
         # at each iteration
         for _ in range(anim_speed):
-            dudt = gierer_meinhardt_ode(0, uv, gamma=gamma, a=a, b=b, d=d, dx=dx)
+            dudt = gierer_meinhardt_pde(0, uv, gamma=gamma, a=a, b=b, d=d, dx=dx)
             uv = uv + dudt * dt
             # The simulation may explode if the time step is too large
             # When this happens, we raise an error and stop the simulation

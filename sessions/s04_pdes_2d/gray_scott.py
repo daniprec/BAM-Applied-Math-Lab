@@ -77,7 +77,7 @@ def laplacian_9pt(uv: np.ndarray) -> np.ndarray:
     return lap
 
 
-def gray_scott_ode(
+def gray_scott_pde(
     t: float,
     uv: np.ndarray,
     d1: float = 0.1,
@@ -187,7 +187,7 @@ def animate_simulation(
         nonlocal uv
         for _ in range(anim_speed):
             # Solve an initial value problem for a system of ODEs via Euler's method
-            uv = uv + gray_scott_ode(_, uv) * dt
+            uv = uv + gray_scott_pde(_, uv) * dt
             # Apply boundary conditions
             if boundary_conditions == "neumann":
                 # Neumann - zero flux boundary conditions
