@@ -64,32 +64,39 @@ If the browser does not open automatically, you can manually open it by navigati
 
 ## SESSION 3 (LIVE IN-PERSON)
 
-- Reaction-diffusion equations and pattern formation.
+- Reaction-diffusion equations in 1D.
 - Using Python for numerical integration of reaction-diffusion equations, based on a finite differences scheme.
 - Creating animations to visualize pattern formation.
 - Exploring parameter space to observe different patterns.
 
 ## SESSION 4 (LIVE IN-PERSON)
 
+- Reaction-diffusion equations and pattern formation in 2D
+- Using Python for numerical integration of reaction-diffusion equations, based on a finite differences scheme.
+- Creating animations to visualize pattern formation.
+- Exploring parameter space to observe different patterns.
+
+## SESSION 5 (LIVE IN-PERSON)
+
 - Exploring synchronization with multiple coupled ODEs.
 - Implementing the Kuramoto model in Python.
 - Visualizing synchronization and analyzing the effects of coupling strength and initial conditions. This might include visual animations.
 
-## SESSION 5 (LIVE IN-PERSON)
+## SESSION 6 (LIVE IN-PERSON)
 
 - Studying flocking and collective motion.
 - Implementing the Vicsek model with Python.
 - Analyzing the impact of noise and agent density on collective motion.
 - More user interaction in Python: using the mouse as a predator to influence flock movements.
 
-## SESSION 6 (LIVE IN-PERSON)
+## SESSION 7 (LIVE IN-PERSON)
 
 - Introduction to the NetworkX library.
 - Creating and analyzing different network topologies (random, small-world, scale-free).
 - Visualizing network structures and properties.
 - Computing network metrics: degree distributions, node distance, centrality measures, clustering coefficient.
 
-## SESSION 7 (LIVE IN-PERSON)
+## SESSION 8 (LIVE IN-PERSON)
 
 - Modeling epidemic spreading on complex networks.
 - Introduction to compartmental models (SIS, SIR) on networks.
@@ -97,14 +104,14 @@ If the browser does not open automatically, you can manually open it by navigati
 - Simulating disease spread and visualizing the results.
 - Analyzing the influence of network structure on epidemic dynamics.
 
-## SESSION 8 (LIVE IN-PERSON)
+## SESSION 9 (LIVE IN-PERSON)
 
 - Introduction to cellular automata and Wolfram’s classification.
 - Implementing 1-D cellular automata rules in Python.
 - Visualizing the evolution of cellular automata patterns.
 - Exploring the effects of initial and boundary conditions.
 
-## SESSION 9 (LIVE IN-PERSON)
+## SESSION 10 (LIVE IN-PERSON)
 
 - Modeling stochastic cellular automata applied to traffic flow models.
 - Implementing the Nagel-Schreckenberg model in Python.
