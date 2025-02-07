@@ -156,6 +156,12 @@ def animate_simulation(
     cmap : str
         Colormap to use for the plot, by default 'jet'.
     """
+    # Initial parameters
+    d1 = 0.1
+    d2 = 0.05
+    f = 0.040
+    k = 0.060
+
     # Initialize the u and v fields
     uv = np.zeros((2, grid_size, grid_size), dtype=np.float32)
     uv[0] = 1.0  # Initialize u to 1.0, v to 0.0
@@ -178,16 +184,14 @@ def animate_simulation(
         blit=True parameter in FuncAnimation will only update the changed elements
         of the plot, making the animation faster.
         """
-        # Access the pause variable from the outer scope
-        nonlocal pause
+        # Access variables from the outer scope
+        nonlocal pause, uv, d1, d2, f, k
         if pause:
             return [im]
 
-        # Access the uv variable from the outer scope
-        nonlocal uv
         for _ in range(anim_speed):
             # Solve an initial value problem for a system of ODEs via Euler's method
-            uv = uv + gray_scott_pde(_, uv) * dt
+            uv = uv + gray_scott_pde(_, uv, d1=d1, d2=d2, f=f, k=k) * dt
             # Apply boundary conditions
             if boundary_conditions == "neumann":
                 # Neumann - zero flux boundary conditions
