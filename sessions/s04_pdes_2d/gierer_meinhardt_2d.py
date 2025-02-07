@@ -289,8 +289,8 @@ def animate_simulation(
     )
 
     # Static elements: Plot limits, title and labels
-    ax_uv.set_xlabel("x")
-    ax_uv.set_ylabel("y")
+    ax_uv.set_xlabel("y")
+    ax_uv.set_ylabel("x")
     ax_uv.set_title("Gierer-Meinhardt Model (2D)")
 
     # ------------------------------------------------------------------------ #
