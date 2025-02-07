@@ -129,7 +129,7 @@ def find_unstable_spatial_modes(
 
     # For Neumann BC on [0,L], modes k_n = (n*pi)/L
     # We will check n=0,...,num_modes-1
-    n_values = np.arange(num_modes)
+    n_values = np.arange(1, num_modes)
     max_eigs = np.zeros((num_modes, num_modes))
 
     for x in n_values:
@@ -153,15 +153,13 @@ def find_unstable_spatial_modes(
             sigma1, sigma2 = sigma1.real, sigma2.real
             max_eigs[x, y] = max(sigma1, sigma2)
 
-    # Sort indices from largest to smallest eigenvalue
-    sorted_indices = np.argsort(max_eigs.flatten())[::-1]
-    # Filter the positive eigenvalues
-    unstable_modes = sorted_indices[max_eigs.flatten()[sorted_indices] > 0]
-    # Turn the indices into tuples (x, y)
-    unstable_modes = [
-        (x, y) for x in unstable_modes // num_modes for y in unstable_modes % num_modes
-    ]
-
+    # Sort indices by the eigenvalues
+    idx, idy = np.unravel_index(np.argsort(max_eigs, axis=None), max_eigs.shape)
+    # Sort from largest to smallest and filter out the non-positive eigenvalues
+    num_positives = (max_eigs > 0).sum()
+    idx, idy = idx[-1:-num_positives:-1], idy[-1:-num_positives:-1]
+    # List the indices into list of tuples
+    unstable_modes = [(i, j) for i, j in zip(idx, idy)]
     return unstable_modes
 
 
