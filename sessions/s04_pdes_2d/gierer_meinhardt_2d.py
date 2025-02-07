@@ -333,9 +333,7 @@ def animate_simulation(
         im.set_array(uv[1])
         # Redefine the color limits. We make sure that the maximum value is at least
         # 0.1 to avoid noise in the image
-        vmin = uv[1].min()
-        vmax = uv[1].max()
-        im.set_clim(vmin=vmin, vmax=max(vmax, vmin + 0.1))
+        im.set_clim(vmin=uv[1].min(), vmax=uv[1].max() + 0.1)
         # Update the point in the a-d plane
         plot_adpoint.set_data([a], [d])
         if len(unstable_modes) == 0:
