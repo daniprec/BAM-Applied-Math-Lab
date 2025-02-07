@@ -147,7 +147,7 @@ def find_unstable_spatial_modes(
                     "Invalid boundary_conditions value. Use 'neumann' or 'periodic'."
                 )
             # Compute the eigenvalues of the Jacobian matrix
-            a_n = jac - np.diag([lambda_x, d * lambda_y])
+            a_n = jac - (lambda_x + lambda_y) * np.diag([1, d])
             sigma1, sigma2 = np.linalg.eigvals(a_n)
             # Discard complex part
             sigma1, sigma2 = sigma1.real, sigma2.real
