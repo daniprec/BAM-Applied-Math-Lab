@@ -182,8 +182,9 @@ def animate_simulation(
     # INITIALIZE THE PLOT
     # ------------------------------------------------------------------------#
 
-    # Initialize the u and v fields at 0.5 each
-    uv = np.ones((2, length, length), dtype=np.float32) / 2
+    # Initialize the (u, v) = (1, 0)
+    uv = np.ones((2, length, length), dtype=np.float32)
+    uv[1] = 0
 
     # Create figure with plot on the left (6x6) and sliders on the right (6x4)
     fig, axs = plt.subplots(
@@ -273,8 +274,8 @@ def animate_simulation(
     # Create the sliders, each in its own axes [min, max, initial]
     slider_d1 = Slider(ax_d1, "D1", 0.01, 0.2, valinit=d1, valstep=0.01)
     slider_d2 = Slider(ax_d2, "D2", 0.01, 0.2, valinit=d2, valstep=0.01)
-    slider_f = Slider(ax_f, "F", 0.01, 0.1, valinit=f, valstep=0.001)
-    slider_k = Slider(ax_k, "k", 0.01, 0.1, valinit=k, valstep=0.001)
+    slider_f = Slider(ax_f, "F", 0.01, 0.09, valinit=f, valstep=0.001)
+    slider_k = Slider(ax_k, "k", 0.04, 0.07, valinit=k, valstep=0.001)
     slider_bc = Slider(
         ax_bc, boundary_conditions.capitalize(), 0, 1, valinit=0, valstep=1
     )
@@ -327,11 +328,12 @@ def animate_simulation(
         x = int(event.xdata)
         y = int(event.ydata)
 
-        # Left click? Add a source of v
+        # Left click? Add a perturbation (u, v) = (0.5, 0.5)
+        # plus an additive noise of 10% that value
         if event.button == 1:
-            u_new = 0.00
-            v_new = 1.0
-        # Right click? Remove the source of u
+            u_new = 0.5 * (1 + 0.1 * np.random.randn())
+            v_new = 0.5 * (1 + 0.1 * np.random.randn())
+        # Right click? Reset to initial values (u, v) = (1, 0)
         elif event.button == 3:
             u_new = 1.0
             v_new = 0.0
