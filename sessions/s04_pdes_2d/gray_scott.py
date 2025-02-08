@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import animation
+from matplotlib.axes import Axes
 from matplotlib.backend_bases import KeyEvent, MouseEvent
+from matplotlib.widgets import Slider
 
 
 def laplacian(uv: np.ndarray) -> np.ndarray:
@@ -156,26 +158,43 @@ def animate_simulation(
     cmap : str
         Colormap to use for the plot, by default 'jet'.
     """
-    # Initial parameters
+    # ------------------------------------------------------------------------#
+    # PARAMETERS
+    # ------------------------------------------------------------------------#
+
+    # Initial parameters - Will be changed using the sliders
     d1 = 0.1
     d2 = 0.05
     f = 0.040
     k = 0.060
 
+    # Pause parameter - Will be toggled by pressing the space bar (see on_keypress)
+    pause = True
+
+    # Drawing parameter - Will be toggled by clicking on the plot (see on_click, on_release)
+    drawing = False
+
+    # ------------------------------------------------------------------------#
+    # INITIALIZE THE PLOT
+    # ------------------------------------------------------------------------#
+
     # Initialize the u and v fields
     uv = np.zeros((2, grid_size, grid_size), dtype=np.float32)
     uv[0] = 1.0  # Initialize u to 1.0, v to 0.0
 
-    fig, ax = plt.subplots(figsize=(6, 6))
-    im = ax.imshow(uv[1], cmap=cmap, interpolation="bilinear", vmin=0, vmax=0.4)
-    plt.axis("off")
+    # Create figure with plot on the left (6x6) and sliders on the right (6x4)
+    fig, axs = plt.subplots(
+        nrows=1, ncols=2, figsize=(10, 6), gridspec_kw={"width_ratios": [6, 4]}
+    )
+
+    # Initialize the v field image
+    ax_uv: Axes = axs[0]
+    ax_uv.axis("off")  # Turn off the axis (the grid and numbers)
+    im = ax_uv.imshow(uv[1], cmap=cmap, interpolation="bilinear", vmin=0, vmax=0.4)
 
     # ------------------------------------------------------------------------#
     # ANIMATION
     # ------------------------------------------------------------------------#
-
-    # Pause parameter - Will be toggled by pressing the space bar (see on_keypress)
-    pause = True
 
     def update_frame(_):
         """This function is called by the animation module at each frame.
@@ -208,12 +227,71 @@ def animate_simulation(
                 )
 
         im.set_array(uv[1])
-        return [im]
+        return [im]  # Elements to update (using blit=True)
 
+    # Create the animation
     ani = animation.FuncAnimation(fig, update_frame, interval=1, blit=True)
 
     # ------------------------------------------------------------------------#
-    # INTERACTION
+    # ANIMATION - PAUSE / RESUME
+    # ------------------------------------------------------------------------#
+
+    # We want the user to be able to pause or resume the simulation by pressing the space bar
+    # In order to do this, we need a key press event handler: on_keypress
+
+    def on_keypress(event: KeyEvent):
+        """This function is called when the user presses a key.
+        It pauses or resumes the simulation when the space bar is pressed."""
+        # Pressing the space bar pauses or resumes the simulation
+        if event.key == " ":
+            nonlocal pause
+            pause ^= True
+
+    fig.canvas.mpl_connect("key_press_event", on_keypress)
+
+    # ------------------------------------------------------------------------#
+    # SLIDERS
+    # ------------------------------------------------------------------------#
+
+    # The following sliders will allow the user to change the parameters of the Gray-Scott model
+
+    # Create the sliders axes
+    ax_sliders: Axes = axs[1]
+    ax_sliders.axis("off")  # Turn off the axis (the grid and numbers)
+
+    # Place the axes objects that will contain the sliders
+    # We define the location of each axes inside the right column of the figure
+    ax_d1 = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])  # [x0, y0, width, height]
+    ax_d2 = ax_sliders.inset_axes([0.0, 0.6, 0.8, 0.1])  # [x0, y0, width, height]
+    ax_f = ax_sliders.inset_axes([0.0, 0.4, 0.8, 0.1])  # [x0, y0, width, height]
+    ax_k = ax_sliders.inset_axes([0.0, 0.2, 0.8, 0.1])  # [x0, y0, width, height]
+
+    # Create the sliders, each in its own axes
+    slider_d1 = Slider(ax_d1, "D1", 0.01, 0.2, valinit=d1)  # [min, max, initial]
+    slider_d2 = Slider(ax_d2, "D2", 0.01, 0.1, valinit=d2)  # [min, max, initial]
+    slider_f = Slider(ax_f, "f", 0.01, 0.1, valinit=f)  # [min, max, initial]
+    slider_k = Slider(ax_k, "k", 0.01, 0.1, valinit=k)  # [min, max, initial]
+
+    # This function will be called when the user changes the sliders
+    def update_sliders(_):
+        # Acces the variables from the outer scope to update them
+        nonlocal d1, d2, f, k, pause
+        # Update the parameters according to the sliders values
+        d1 = slider_d1.val
+        d2 = slider_d2.val
+        f = slider_f.val
+        k = slider_k.val
+        # Pause the simulation when sliders are updated
+        pause = True
+
+    # Attach the update function to sliders
+    slider_d1.on_changed(update_sliders)
+    slider_d2.on_changed(update_sliders)
+    slider_f.on_changed(update_sliders)
+    slider_k.on_changed(update_sliders)
+
+    # ------------------------------------------------------------------------#
+    #  DRAW ON UV PLOT
     # ------------------------------------------------------------------------#
 
     # We want the user to be able to add and remove sources of v by clicking on the plot
@@ -231,7 +309,7 @@ def animate_simulation(
         r : int
             Radius of the source, by default 3.
         """
-        if event.inaxes != ax:
+        if event.inaxes != ax_uv:
             return
         if event.xdata is None or event.ydata is None:
             return
@@ -261,7 +339,7 @@ def animate_simulation(
     def on_click(event: MouseEvent):
         """This function is called when the user clicks on the plot.
         It initializes the drawing process."""
-        if event.inaxes != ax:
+        if event.inaxes != ax_uv:
             return
         if event.xdata is None or event.ydata is None:
             return
@@ -282,23 +360,13 @@ def animate_simulation(
         if drawing:
             update_uv(event)
 
-    drawing = False
     fig.canvas.mpl_connect("button_press_event", on_click)
     fig.canvas.mpl_connect("button_release_event", on_release)
     fig.canvas.mpl_connect("motion_notify_event", on_motion)
 
-    # Finally, we want the user to be able to pause or resume the simulation by pressing the space bar
-    # In order to do this, we need a key press event handler: on_keypress
-
-    def on_keypress(event: KeyEvent):
-        """This function is called when the user presses a key.
-        It pauses or resumes the simulation when the space bar is pressed."""
-        # Pressing the space bar pauses or resumes the simulation
-        if event.key == " ":
-            nonlocal pause
-            pause ^= True
-
-    fig.canvas.mpl_connect("key_press_event", on_keypress)
+    # ------------------------------------------------------------------------#
+    #  DISPLAY
+    # ------------------------------------------------------------------------#
 
     plt.show()
 
