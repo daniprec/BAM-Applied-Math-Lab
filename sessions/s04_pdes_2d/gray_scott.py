@@ -136,9 +136,9 @@ def gray_scott_pde(
 
 
 def animate_simulation(
-    grid_size: int = 250,
-    dt: int = 1,
-    boundary_conditions: str = "neumann",
+    n: int = 250,
+    dx: float = 1,
+    dt: float = 1,
     anim_speed: int = 100,
     cmap: str = "jet",
 ):
@@ -147,9 +147,11 @@ def animate_simulation(
 
     Parameters
     ----------
-    grid_size : int
-        Size of the grid.
-    dt : int
+    n : int
+        Number of grid points in one dimension, N.
+    dx : float
+        Spacing between grid points.
+    dt : float
         Time step.
     boundary_conditions : str
         Boundary conditions to apply. Use 'neumann' or 'periodic'.
@@ -161,15 +163,17 @@ def animate_simulation(
     # ------------------------------------------------------------------------#
     # PARAMETERS
     # ------------------------------------------------------------------------#
+    length = n * dx  # L
 
     # Initial parameters - Will be changed using the sliders
     d1 = 0.1
     d2 = 0.05
     f = 0.040
     k = 0.060
+    boundary_conditions = "periodic"
 
     # Pause parameter - Will be toggled by pressing the space bar (see on_keypress)
-    pause = True
+    pause = False
 
     # Drawing parameter - Will be toggled by clicking on the plot (see on_click, on_release)
     drawing = False
@@ -178,9 +182,8 @@ def animate_simulation(
     # INITIALIZE THE PLOT
     # ------------------------------------------------------------------------#
 
-    # Initialize the u and v fields
-    uv = np.zeros((2, grid_size, grid_size), dtype=np.float32)
-    uv[0] = 1.0  # Initialize u to 1.0, v to 0.0
+    # Initialize the u and v fields at 0.5 each
+    uv = np.ones((2, length, length), dtype=np.float32) / 2
 
     # Create figure with plot on the left (6x6) and sliders on the right (6x4)
     fig, axs = plt.subplots(
@@ -190,7 +193,7 @@ def animate_simulation(
     # Initialize the v field image
     ax_uv: Axes = axs[0]
     ax_uv.axis("off")  # Turn off the axis (the grid and numbers)
-    im = ax_uv.imshow(uv[1], cmap=cmap, interpolation="bilinear", vmin=0, vmax=0.4)
+    im = ax_uv.imshow(uv[1], cmap=cmap, interpolation="bilinear", vmin=0, vmax=1.0)
 
     # ------------------------------------------------------------------------#
     # ANIMATION
@@ -204,7 +207,7 @@ def animate_simulation(
         of the plot, making the animation faster.
         """
         # Access variables from the outer scope
-        nonlocal pause, uv, d1, d2, f, k
+        nonlocal pause, uv, d1, d2, f, k, boundary_conditions
         if pause:
             return [im]
 
@@ -265,22 +268,29 @@ def animate_simulation(
     ax_d2 = ax_sliders.inset_axes([0.0, 0.6, 0.8, 0.1])  # [x0, y0, width, height]
     ax_f = ax_sliders.inset_axes([0.0, 0.4, 0.8, 0.1])  # [x0, y0, width, height]
     ax_k = ax_sliders.inset_axes([0.0, 0.2, 0.8, 0.1])  # [x0, y0, width, height]
+    ax_bc = ax_sliders.inset_axes([0.3, 0.05, 0.2, 0.1])  # [x0, y0, width, height]
 
-    # Create the sliders, each in its own axes
-    slider_d1 = Slider(ax_d1, "D1", 0.01, 0.2, valinit=d1)  # [min, max, initial]
-    slider_d2 = Slider(ax_d2, "D2", 0.01, 0.1, valinit=d2)  # [min, max, initial]
-    slider_f = Slider(ax_f, "f", 0.01, 0.1, valinit=f)  # [min, max, initial]
-    slider_k = Slider(ax_k, "k", 0.01, 0.1, valinit=k)  # [min, max, initial]
+    # Create the sliders, each in its own axes [min, max, initial]
+    slider_d1 = Slider(ax_d1, "D1", 0.01, 0.2, valinit=d1, valstep=0.01)
+    slider_d2 = Slider(ax_d2, "D2", 0.01, 0.2, valinit=d2, valstep=0.01)
+    slider_f = Slider(ax_f, "F", 0.01, 0.1, valinit=f, valstep=0.001)
+    slider_k = Slider(ax_k, "k", 0.01, 0.1, valinit=k, valstep=0.001)
+    slider_bc = Slider(
+        ax_bc, boundary_conditions.capitalize(), 0, 1, valinit=0, valstep=1
+    )
 
     # This function will be called when the user changes the sliders
     def update_sliders(_):
         # Acces the variables from the outer scope to update them
-        nonlocal d1, d2, f, k, pause
+        nonlocal d1, d2, f, k, boundary_conditions, pause
         # Update the parameters according to the sliders values
         d1 = slider_d1.val
         d2 = slider_d2.val
         f = slider_f.val
         k = slider_k.val
+        boundary_conditions = "periodic" if slider_bc.val == 0 else "neumann"
+        # Change slider text
+        slider_bc.label.set_text(boundary_conditions.capitalize())
         # Pause the simulation when sliders are updated
         pause = True
 
@@ -289,6 +299,7 @@ def animate_simulation(
     slider_d2.on_changed(update_sliders)
     slider_f.on_changed(update_sliders)
     slider_k.on_changed(update_sliders)
+    slider_bc.on_changed(update_sliders)
 
     # ------------------------------------------------------------------------#
     #  DRAW ON UV PLOT
@@ -318,9 +329,9 @@ def animate_simulation(
 
         # Left click? Add a source of v
         if event.button == 1:
-            u_new = 0.50
-            v_new = 0.50
-        # Right click? Remove the source of v
+            u_new = 0.00
+            v_new = 1.0
+        # Right click? Remove the source of u
         elif event.button == 3:
             u_new = 1.0
             v_new = 0.0
