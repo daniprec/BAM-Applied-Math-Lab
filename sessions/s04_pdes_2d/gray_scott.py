@@ -138,7 +138,7 @@ def gray_scott_pde(
 def animate_simulation(
     n: int = 250,
     dx: float = 1,
-    dt: float = 1,
+    dt: float = 2,
     anim_speed: int = 100,
     cmap: str = "jet",
 ):
