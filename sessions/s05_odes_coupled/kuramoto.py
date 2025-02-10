@@ -82,9 +82,6 @@ def kuramoto_ode(
 def animate_simulation(distribution: str = "uniform", t_show: float = 1.0):
     """
     Animates the Kuramoto model simulation on the unit circle with the phase centroid.
-    The user can interactively control one oscillator using the mouse.
-    Left-click adds an oscillator.
-    Right-click removes a random oscillator (except the user's controlled oscillator).
 
     Parameters
     ----------
@@ -94,13 +91,19 @@ def animate_simulation(distribution: str = "uniform", t_show: float = 1.0):
     # ------------------------------------------------------------------------#
     # PARAMETERS
     # ------------------------------------------------------------------------#
-    coupling_strength = 1.0
+    coupling_strength = 1.0  # K
+    max_k = 3.0
     num_oscillators = 100
     max_oscillators = 500
 
     # Initialize oscillators (phase and natural frequency)
     theta, omega = initialize_oscillators(max_oscillators, distribution)
     t_span = (0, t_show)
+
+    # Order parameter (phase centroid)
+    ls_order_param = [0] * 500
+    ls_t = np.arange(0, 500) * t_show
+    dict_kr = {0: [0]}
 
     # ------------------------------------------------------------------------#
     # INITIALIZE THE PLOT
@@ -131,13 +134,32 @@ def animate_simulation(distribution: str = "uniform", t_show: float = 1.0):
     (centroid_line,) = ax_phase.plot([], [], color="red", linewidth=2)
     (centroid_point,) = ax_phase.plot([], [], "ro", markersize=8)
 
+    # Right plot: r vs t
+    ax_order_param: Axes = axs[1, 1]
+    ax_order_param.set_title("Order Parameter (r)")
+    ax_order_param.set_xlabel("Time")
+    ax_order_param.set_ylabel("r")
+    ax_order_param.set_ylim(0, 1)
+    ax_order_param.grid(True)
+    (line_order_param,) = ax_order_param.plot(ls_t, ls_order_param, color="red")
+
+    # Right plot: r vs K
+    ax_kr: Axes = axs[0, 1]
+    ax_kr.set_title("Order Parameter (r) vs Coupling Strength (K)")
+    ax_kr.set_xlabel("Coupling Strength (K)")
+    ax_kr.set_ylabel("r")
+    ax_kr.set_ylim(0, 1)
+    ax_kr.set_xlim(0, max_k)
+    ax_kr.grid(True)
+    (line_kr,) = ax_kr.plot([], [], color="red", marker="o", linestyle="--")
+
     # ------------------------------------------------------------------------#
     # ANIMATION
     # ------------------------------------------------------------------------#
 
     def update(frame):
         # Acces the variables from the outer scope to update them
-        nonlocal theta, coupling_strength, num_oscillators
+        nonlocal theta, coupling_strength, num_oscillators, dict_kr, ls_order_param
 
         # Solve the ODE system
         sol = solve_ivp(
@@ -150,20 +172,40 @@ def animate_simulation(distribution: str = "uniform", t_show: float = 1.0):
         # Keep theta within [0, 2 * pi]
         theta = np.mod(theta, 2 * np.pi)
 
-        # Update scatter plot
+        # Update scatter plot on the unit circle (left plot)
         x = np.cos(theta)
         y = np.sin(theta)
         data = np.vstack((x, y)).T
         # Take as many oscillators as chosen by the user
         scatter.set_offsets(data[:num_oscillators])
 
-        # Compute order parameter - taking only as many as user decides
+        # Compute order parameter - taking only as many oscillators as user decides
         order_param = np.mean(np.exp(1j * theta[:num_oscillators]))
         # Update centroid line
         centroid_line.set_data([0, np.real(order_param)], [0, np.imag(order_param)])
         centroid_point.set_data([np.real(order_param)], [np.imag(order_param)])
 
-        return scatter, centroid_line, centroid_point
+        # Update order parameter list - It will always contain the same amount of values
+        ls_order_param.append(np.abs(order_param))
+        ls_order_param.pop(0)
+        # Update order parameter plot
+        line_order_param.set_data(ls_t, ls_order_param)
+
+        # Update dictonary of K vs r
+        if coupling_strength not in dict_kr.keys():
+            dict_kr[coupling_strength] = [np.abs(order_param)]
+            # Sort the dictionary by the coupling strength
+            dict_kr = dict(sorted(dict_kr.items()))
+        else:
+            dict_kr[coupling_strength].append(np.abs(order_param))
+            # Store no more than 200 values per K to avoid memory issues
+            dict_kr[coupling_strength] = dict_kr[coupling_strength][-200:]
+
+        # Update K vs r plot by computing the mean of the r values for each K
+        ls_means = [np.mean(dict_kr[k]) for k in dict_kr.keys()]
+        line_kr.set_data(list(dict_kr.keys()), ls_means)
+
+        return scatter, centroid_line, centroid_point, line_order_param, line_kr
 
     ani = animation.FuncAnimation(fig, update, blit=True, interval=1)
 
@@ -181,9 +223,9 @@ def animate_simulation(distribution: str = "uniform", t_show: float = 1.0):
         ax_coupling,
         "Coupling Strength (K)",
         valmin=0.0,
-        valmax=10.0,
+        valmax=max_k,
         valinit=coupling_strength,
-        valstep=0.1,
+        valstep=0.05,
     )
 
     # Number of oscillators slider
@@ -192,7 +234,7 @@ def animate_simulation(distribution: str = "uniform", t_show: float = 1.0):
         ax_num_oscillators,
         "Number of Oscillators",
         valmin=1,
-        valmax=500,
+        valmax=max_oscillators,
         valinit=num_oscillators,
         valstep=1,
     )
