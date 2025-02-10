@@ -1,9 +1,9 @@
-from typing import Any, Dict, Tuple
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-import toml
 from matplotlib import animation
+from matplotlib.axes import Axes
 from scipy.integrate import solve_ivp
 
 
@@ -79,13 +79,7 @@ def kuramoto_ode(
     return dtheta_dt
 
 
-def animate_simulation(
-    num_oscillators: int,
-    distribution: str = "uniform",
-    coupling_strength: float = 1.0,
-    t_step: float = 0.01,
-    t_show: float = 10.0,
-):
+def animate_simulation(distribution: str = "uniform", t_show: float = 1.0):
     """
     Animates the Kuramoto model simulation on the unit circle with the phase centroid.
     The user can interactively control one oscillator using the mouse.
@@ -94,48 +88,56 @@ def animate_simulation(
 
     Parameters
     ----------
-    num_oscillators : int
-        Number of oscillators (N).
-    coupling_strength : float
-        Coupling strength (K), which determines the strength of synchronization.
-    dt : float
-        Time step.
     distribution : str, optional
         Distribution of natural frequencies ('uniform' or 'normal').
     """
+    # ------------------------------------------------------------------------#
+    # PARAMETERS
+    # ------------------------------------------------------------------------#
+    coupling_strength = 1.0
+    num_oscillators = 100
+    max_oscillators = 500
+
     # Initialize oscillators (phase and natural frequency)
-    theta, omega = initialize_oscillators(num_oscillators, distribution)
+    theta, omega = initialize_oscillators(max_oscillators, distribution)
     t_span = (0, t_show)
 
-    # Animate results
-    fig, ax = plt.subplots(figsize=(6, 6))
-    ax.set_title(f"Kuramoto Model (K = {coupling_strength:.1f})")
-    ax.set_xlabel("Cos(theta)")
-    ax.set_ylabel("Sin(theta)")
-    ax.set_xlim(-1.1, 1.1)
-    ax.set_ylim(-1.1, 1.1)
-    ax.set_aspect("equal")
-    ax.grid(True)
+    # ------------------------------------------------------------------------#
+    # INITIALIZE THE PLOT
+    # ------------------------------------------------------------------------#
+
+    # We will do a grid of three plots: one square on the right,
+    # and two rectangles on the left
+    fig, axs = plt.subplots(2, 2, figsize=(12, 6), height_ratios=[1, 0.2])
+
+    # Left plot: Phase space
+    ax_phase: Axes = axs[0, 0]
+    ax_phase.set_title("Kuramoto Model")
+    ax_phase.set_xlabel("Cos(theta)")
+    ax_phase.set_ylabel("Sin(theta)")
+    ax_phase.set_xlim(-1.1, 1.1)
+    ax_phase.set_ylim(-1.1, 1.1)
+    ax_phase.set_aspect("equal")
+    ax_phase.grid(True)
 
     # Draw unit circle
     circle = plt.Circle((0, 0), 1, color="lightgray", fill=False)
-    ax.add_artist(circle)
+    ax_phase.add_artist(circle)
 
     # Initialize scatter plot for oscillators
-    scatter = ax.scatter([], [], s=50, color="blue", alpha=0.5)
+    scatter = ax_phase.scatter([], [], s=50, color="blue", alpha=0.5)
 
     # Initialize line for the phase centroid (order parameter)
-    (centroid_line,) = ax.plot([], [], color="red", linewidth=2)
-    (centroid_point,) = ax.plot([], [], "ro", markersize=8)
+    (centroid_line,) = ax_phase.plot([], [], color="red", linewidth=2)
+    (centroid_point,) = ax_phase.plot([], [], "ro", markersize=8)
 
-    def init():
-        scatter.set_offsets(np.empty((0, 2)))
-        centroid_line.set_data([], [])
-        centroid_point.set_data([], [])
-        return scatter, centroid_line, centroid_point
+    # ------------------------------------------------------------------------#
+    # ANIMATION
+    # ------------------------------------------------------------------------#
 
     def update(frame):
-        nonlocal theta, coupling_strength
+        # Acces the variables from the outer scope to update them
+        nonlocal theta, coupling_strength, num_oscillators
 
         # Solve the ODE system
         sol = solve_ivp(
@@ -152,62 +154,67 @@ def animate_simulation(
         x = np.cos(theta)
         y = np.sin(theta)
         data = np.vstack((x, y)).T
-        scatter.set_offsets(data)
+        # Take as many oscillators as chosen by the user
+        scatter.set_offsets(data[:num_oscillators])
 
-        # Compute order parameter
-        order_param = np.mean(np.exp(1j * theta))
+        # Compute order parameter - taking only as many as user decides
+        order_param = np.mean(np.exp(1j * theta[:num_oscillators]))
         # Update centroid line
         centroid_line.set_data([0, np.real(order_param)], [0, np.imag(order_param)])
         centroid_point.set_data([np.real(order_param)], [np.imag(order_param)])
 
         return scatter, centroid_line, centroid_point
 
-    def on_click(event):
-        nonlocal theta, coupling_strength
-        if event.inaxes != ax:
-            return
-        if event.button == 1:
-            # Left click: Increase the coupling strength
-            coupling_strength += 0.1
+    ani = animation.FuncAnimation(fig, update, blit=True, interval=1)
 
-        elif event.button == 3:
-            # Right click: Decrease the coupling strength
-            coupling_strength -= 0.1
-            coupling_strength = max(0.0, coupling_strength)
+    # ------------------------------------------------------------------------#
+    # SLIDERS
+    # ------------------------------------------------------------------------#
 
-        # Force the canvas to redraw to update the title
-        ax.set_title(f"Kuramoto Model (K = {coupling_strength:.1f})")
-        fig.canvas.draw_idle()
+    # Create the sliders axes
+    ax_sliders: Axes = axs[1, 0]
+    ax_sliders.axis("off")  # Turn off the axis (the grid and numbers)
 
-    # Connect the mouse events
-    fig.canvas.mpl_connect("button_press_event", on_click)
+    # Coupling strength slider
+    ax_coupling = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])
+    slider_coupling = plt.Slider(
+        ax_coupling,
+        "Coupling Strength (K)",
+        valmin=0.0,
+        valmax=10.0,
+        valinit=coupling_strength,
+        valstep=0.1,
+    )
 
-    ani = animation.FuncAnimation(fig, update, init_func=init, blit=True, interval=50)
+    # Number of oscillators slider
+    ax_num_oscillators = ax_sliders.inset_axes([0.0, 0.6, 0.8, 0.1])
+    slider_num_oscillators = plt.Slider(
+        ax_num_oscillators,
+        "Number of Oscillators",
+        valmin=1,
+        valmax=500,
+        valinit=num_oscillators,
+        valstep=1,
+    )
+
+    def update_sliders(_):
+        # Acces the variables from the outer scope to update them
+        nonlocal coupling_strength, num_oscillators
+        # Update the parameters according to the sliders values
+        coupling_strength = slider_coupling.val
+        num_oscillators = int(slider_num_oscillators.val)
+
+    # Attach the update function to the sliders
+    slider_coupling.on_changed(update_sliders)
+    slider_num_oscillators.on_changed(update_sliders)
+
+    # ------------------------------------------------------------------------#
+    #  DISPLAY
+    # ------------------------------------------------------------------------#
 
     plt.tight_layout()
     plt.show()
 
 
-def main(config: str = "config.toml", key: str = "kuramoto"):
-    """
-    Main function to run the Kuramoto model simulation.
-
-    Parameters
-    ----------
-    config : str, optional
-        Path to the configuration file.
-    key : str, optional
-        Key in the configuration file.
-    """
-    dict_config: Dict[str, Any] = toml.load(config)[key]
-    animate_simulation(
-        num_oscillators=dict_config["num_oscillators"],
-        distribution=dict_config["distribution"],
-        coupling_strength=dict_config["coupling_strength"],
-        t_step=dict_config["t_step"],
-        t_show=dict_config["t_show"],
-    )
-
-
 if __name__ == "__main__":
-    main()
+    animate_simulation()
