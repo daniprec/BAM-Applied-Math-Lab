@@ -251,6 +251,7 @@ def animate_simulation(
             nonlocal pause
             pause ^= True
 
+    # Attach the key press event handler to the figure
     fig.canvas.mpl_connect("key_press_event", on_keypress)
 
     # ------------------------------------------------------------------------#
