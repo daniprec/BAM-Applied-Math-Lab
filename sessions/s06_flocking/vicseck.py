@@ -127,7 +127,7 @@ def plot_cells(state_vector: np.ndarray, d: float = 25):
     plt.draw()
 
 
-def animate(i: int, trajectory: np.ndarray, d: float):
+def update_animation(i: int, trajectory: np.ndarray, d: float):
     """
     Animation function for updating the plot.
 
@@ -183,7 +183,7 @@ def run_animation(
 
     fig, ax = plt.subplots()
     ani = animation.FuncAnimation(
-        fig, animate, frames=t, fargs=(trajectory, d), interval=50
+        fig, update_animation, frames=t, fargs=(trajectory, d), interval=50
     )
     plt.show()
 

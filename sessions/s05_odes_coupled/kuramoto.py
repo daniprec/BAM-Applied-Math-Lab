@@ -79,7 +79,7 @@ def kuramoto_ode(
     return dtheta_dt
 
 
-def animate_simulation(distribution: str = "uniform", t_show: float = 1.0):
+def run_simulation(distribution: str = "uniform", t_show: float = 1.0):
     """
     Animates the Kuramoto model simulation on the unit circle with the phase centroid.
 
@@ -259,4 +259,4 @@ def animate_simulation(distribution: str = "uniform", t_show: float = 1.0):
 
 
 if __name__ == "__main__":
-    animate_simulation()
+    run_simulation()

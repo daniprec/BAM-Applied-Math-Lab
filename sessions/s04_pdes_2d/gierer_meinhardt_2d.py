@@ -163,7 +163,7 @@ def find_unstable_spatial_modes(
     return unstable_modes
 
 
-def animate_simulation(
+def run_simulation(
     gamma: float = 1,
     b: float = 1.00,
     dx: float = 1.0,
@@ -282,7 +282,7 @@ def animate_simulation(
 
     # This function will be called at each frame of the animation, updating the line objects
 
-    def animate(frame: int, unstable_modes: list):
+    def update_animation(frame: int, unstable_modes: list):
         # Access the variables from the outer scope
         nonlocal a, d, uv
 
@@ -330,7 +330,9 @@ def animate_simulation(
         # The function must return an iterable with all the artists that have changed
         return [im, plot_adpoint, plot_text, plot_text2]
 
-    ani = animation.FuncAnimation(fig, animate, fargs=([],), interval=1, blit=True)
+    ani = animation.FuncAnimation(
+        fig, update_animation, fargs=([],), interval=1, blit=True
+    )
 
     # ------------------------------------------------------------------------ #
     # INTERACTION
@@ -378,4 +380,4 @@ def animate_simulation(
 
 
 if __name__ == "__main__":
-    animate_simulation()
+    run_simulation()

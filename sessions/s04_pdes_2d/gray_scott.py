@@ -135,7 +135,7 @@ def gray_scott_pde(
     return np.array([du_dt, dv_dt])
 
 
-def animate_simulation(
+def run_simulation(
     n: int = 250,
     dx: float = 1,
     dt: float = 2,
@@ -386,4 +386,4 @@ def animate_simulation(
 
 
 if __name__ == "__main__":
-    animate_simulation()
+    run_simulation()

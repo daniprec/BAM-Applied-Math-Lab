@@ -213,7 +213,7 @@ def run_interactive_plot(
     # First we define the animation function
     # This function will be called at each frame of the animation, updating the line objects
 
-    def animate(
+    def update_animation(
         i: int,
         y: np.ndarray,
         x_nullcline: np.ndarray,
@@ -250,7 +250,7 @@ def run_interactive_plot(
     # Create an animation object, which calls the animate function at each frame
     ani = animation.FuncAnimation(
         fig,
-        animate,
+        update_animation,
         fargs=(None, None, None, None),
         frames=len(t_eval),
         interval=1,
