@@ -27,7 +27,7 @@ def gierer_meinhardt_pde(
     b : float
         Reaction rate parameter, by default 1.00
     d : float
-        Diffusion rate parameter of v, by default 30
+        Diffusion rate parameter of v (D2), by default 30
 
     Returns
     -------
@@ -85,10 +85,10 @@ def run_simulation(
     # U-V PLANE
     # ------------------------------------------------------------------------ #
 
-    # Dynamic elements: image and text
+    # Dynamic elements: image
     im = ax_uv.imshow(
         uv[1],
-        interpolation="bilinear",
+        interpolation="bilinear",  # smooths the image
         origin="lower",
         extent=[0, length_y, 0, length_x],
     )
@@ -116,7 +116,7 @@ def run_simulation(
         # --- FILL HERE ---
 
         # Update the displayed image
-        im.set_array(uv[1])
+        im.set_array(uv[1])  # V component
         # Redefine the color limits. We make sure that the maximum value is at least
         # 0.1 to avoid noise in the image
         im.set_clim(vmin=uv[1].min(), vmax=uv[1].max() + 0.1)
