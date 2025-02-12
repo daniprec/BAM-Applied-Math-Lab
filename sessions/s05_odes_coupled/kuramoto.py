@@ -8,7 +8,7 @@ from scipy.integrate import solve_ivp
 
 
 def initialize_oscillators(
-    num_oscillators: int, distribution: str = "uniform"
+    num_oscillators: int, distribution: str = "normal"
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Initializes the phases and natural frequencies of the oscillators.
@@ -19,6 +19,7 @@ def initialize_oscillators(
         Number of oscillators.
     distribution : str, optional
         Distribution of natural frequencies ('uniform' or 'normal').
+        Kuramoto uses unimodal distributions, such as the normal distribution.
 
     Returns
     -------
@@ -35,7 +36,7 @@ def initialize_oscillators(
     if distribution == "uniform":
         omega = np.random.uniform(-1.0, 1.0, num_oscillators)
     elif distribution == "normal":
-        omega = np.random.normal(0.5, 0.5, num_oscillators)
+        omega = np.random.normal(0, 1, num_oscillators)
     else:
         raise ValueError("Distribution must be 'uniform' or 'normal'.")
 
