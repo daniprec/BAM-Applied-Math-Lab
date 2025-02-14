@@ -1,5 +1,3 @@
-from typing import Tuple
-
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import animation
@@ -7,104 +5,32 @@ from matplotlib.axes import Axes
 from scipy.integrate import solve_ivp
 
 
-def initialize_oscillators(
-    num_oscillators: int, distribution: str = "normal", sigma: float = 1.0
-) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Initializes the phases and natural frequencies of the oscillators.
+def initialize_oscillators(num_oscillators: int, sigma: float = 1.0):
+    # Assign a random initial phase to each
+    # oscillator (position in the unit circle)
+    theta = np.zeros(num_oscillators)  # replace this line!
 
-    Parameters
-    ----------
-    num_oscillators : int
-        Number of oscillators.
-    distribution : str, optional
-        Distribution of natural frequencies ('uniform' or 'normal').
-        Kuramoto uses unimodal distributions, such as the normal distribution.
-    sigma : float, optional
-        Standard deviation of the normal distribution, by default 1.0.
-
-    Returns
-    -------
-    theta : ndarray
-        Initial phases of the oscillators.
-    omega : ndarray
-        Natural frequencies of the oscillators.
-    """
-    # Assign a random initial phase to each oscillator
-    # (position in the unit circle)
-    theta = np.random.uniform(0, 2 * np.pi, num_oscillators)
-
-    # Assign a random natural frequency to each oscillator (angular velocity)
-    if distribution == "uniform":
-        omega = np.random.uniform(-1.0, 1.0, num_oscillators)
-    elif distribution == "normal":
-        omega = np.random.normal(0, sigma, num_oscillators)
-    else:
-        raise ValueError("Distribution must be 'uniform' or 'normal'.")
-
+    # Assign a random natural frequency to
+    # each oscillator (angular velocity)
+    omega = np.zeros(num_oscillators)  # replace this line!
     return theta, omega
 
 
-def kuramoto_ode_pairwise(
+def kuramoto_ode(
     t: float, theta: np.ndarray, omega: np.ndarray = 1, coupling_strength: float = 1.0
 ) -> np.ndarray:
-    """
-    Computes the time derivative of the phase for each oscillator in the
-    Kuramoto model. Uses the pairwise interactions: the coupling term is
-    the average of the sine of the pairwise differences between phases.
-
-    Reference: https://en.wikipedia.org/wiki/Kuramoto_model
-
-
-    Parameters
-    ----------
-    t : float
-        Time (not used in the Kuramoto model).
-    theta : np.ndarray
-        Phases of the oscillators.
-    omega : np.ndarray
-        Natural frequencies of the oscillators.
-    coupling_strength : float
-        Coupling strength (K), which determines the strength of synchronization.
-
-    Returns
-    -------
-    np.ndarray
-        Time derivative of the phase for each oscillator.
-    """
     # Keep theta within [0, 2 * pi]
     theta = np.mod(theta, 2 * np.pi)
-    # Compute the pairwise differences between phases
-    theta_diff = theta[:, None] - theta
-    # Average over all oscillators
-    coupling_term = coupling_strength * np.mean(np.sin(theta_diff), axis=0)
-    # Compute the time derivative
-    dtheta_dt = omega + coupling_term
+
+    # Your ODE goes here
+    dtheta_dt = np.ones_like(theta)  # replace this line!
+
     return dtheta_dt
 
 
 def kuramoto_order_parameter(theta: np.ndarray) -> tuple:
-    """
-    Computes the order parameter of the Kuramoto model.
-
-    Parameters
-    ----------
-    theta : np.ndarray
-        Phases of the oscillators.
-
-    Returns
-    -------
-    r : float
-        Order parameter (synchronization index).
-    phi : float
-        Phase of the order parameter.
-    rcosphi : float
-        Real part of the order parameter, r * cos(phi).
-    rsinphi : float
-        Imaginary part of the order parameter, r * sin(phi).
-    """
-    # Compute the order parameter as r * exp(i * phi)
-    order_param = np.mean(np.exp(1j * theta))
+    # Compute the order parameter, r * exp(i * phi)
+    order_param = np.ones_like(theta)  # replace this line!
     # The absolute value of the order parameter is the synchronization index
     r = np.abs(order_param)
     # The angle of the order parameter is the phase of the synchronization
@@ -116,49 +42,7 @@ def kuramoto_order_parameter(theta: np.ndarray) -> tuple:
     return r, phi, rcosphi, rsinphi
 
 
-def kuramoto_ode_meanfield(
-    t: float, theta: np.ndarray, omega: np.ndarray = 1, coupling_strength: float = 1.0
-) -> np.ndarray:
-    """
-    Computes the time derivative of the phase for each oscillator in the
-    Kuramoto model. Uses the mean-field approximation: the coupling term is
-    the sine of the difference between the phase centroid and
-    the phase of each oscillator.
-
-    Reference: https://en.wikipedia.org/wiki/Kuramoto_model
-
-
-    Parameters
-    ----------
-    t : float
-        Time (not used in the Kuramoto model).
-    theta : np.ndarray
-        Phases of the oscillators.
-    omega : np.ndarray
-        Natural frequencies of the oscillators.
-    coupling_strength : float
-        Coupling strength (K), which determines the strength of synchronization.
-
-    Returns
-    -------
-    np.ndarray
-        Time derivative of the phase for each oscillator.
-    """
-    # Keep theta within [0, 2 * pi]
-    theta = np.mod(theta, 2 * np.pi)
-    # Compute the order parameter
-    r, phi, _, _ = kuramoto_order_parameter(theta)
-    # Compute the coupling term
-    coupling_term = coupling_strength * r * np.sin(phi - theta)
-    # Compute the time derivative
-    dtheta_dt = omega + coupling_term
-    return dtheta_dt
-
-
 def run_simulation():
-    """
-    Animates the Kuramoto model simulation on the unit circle with the phase centroid.
-    """
     # ------------------------------------------------------------------------#
     # PARAMETERS
     # ------------------------------------------------------------------------#
@@ -236,7 +120,7 @@ def run_simulation():
 
         # Solve the ODE system
         sol = solve_ivp(
-            kuramoto_ode_pairwise,
+            kuramoto_ode,
             t_span,
             theta,
             args=(omega, coupling_strength),
@@ -249,6 +133,7 @@ def run_simulation():
         x = np.cos(theta)
         y = np.sin(theta)
         data = np.vstack((x, y)).T
+        # Take as many oscillators as chosen by the user
         scatter.set_offsets(data)
 
         # Compute the order parameter

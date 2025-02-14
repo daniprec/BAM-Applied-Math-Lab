@@ -34,7 +34,7 @@ def kuramoto_ode(
 coupling_strength = 1.0  # K
 num_oscillators = 100
 sigma = 1.0
-dt = 0.01
+dt = 1.0
 
 # Initialize oscillators
 # (phase and natural frequency)
