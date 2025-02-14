@@ -8,7 +8,7 @@ from scipy.integrate import solve_ivp
 
 
 def initialize_oscillators(
-    num_oscillators: int, distribution: str = "normal"
+    num_oscillators: int, distribution: str = "normal", sigma: float = 1.0
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Initializes the phases and natural frequencies of the oscillators.
@@ -20,6 +20,8 @@ def initialize_oscillators(
     distribution : str, optional
         Distribution of natural frequencies ('uniform' or 'normal').
         Kuramoto uses unimodal distributions, such as the normal distribution.
+    sigma : float, optional
+        Standard deviation of the normal distribution, by default 1.0.
 
     Returns
     -------
@@ -36,7 +38,7 @@ def initialize_oscillators(
     if distribution == "uniform":
         omega = np.random.uniform(-1.0, 1.0, num_oscillators)
     elif distribution == "normal":
-        omega = np.random.normal(0, 1, num_oscillators)
+        omega = np.random.normal(0, sigma, num_oscillators)
     else:
         raise ValueError("Distribution must be 'uniform' or 'normal'.")
 
@@ -153,7 +155,7 @@ def kuramoto_ode_meanfield(
     return dtheta_dt
 
 
-def run_simulation(distribution: str = "uniform", t_show: float = 1.0):
+def run_simulation(distribution: str = "normal", t_show: float = 1.0):
     """
     Animates the Kuramoto model simulation on the unit circle with the phase centroid.
 
@@ -169,9 +171,10 @@ def run_simulation(distribution: str = "uniform", t_show: float = 1.0):
     max_k = 3.0
     num_oscillators = 100
     max_oscillators = 500
+    sigma = 1.0
 
     # Initialize oscillators (phase and natural frequency)
-    theta, omega = initialize_oscillators(max_oscillators, distribution)
+    theta, omega = initialize_oscillators(max_oscillators, distribution, sigma=sigma)
     t_span = (0, t_show)
 
     # Order parameter (phase centroid)
@@ -293,7 +296,7 @@ def run_simulation(distribution: str = "uniform", t_show: float = 1.0):
     ax_sliders.axis("off")  # Turn off the axis (the grid and numbers)
 
     # Coupling strength slider
-    ax_coupling = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])
+    ax_coupling = ax_sliders.inset_axes([0.0, 0.4, 0.8, 0.1])
     slider_coupling = plt.Slider(
         ax_coupling,
         "Coupling Strength (K)",
@@ -314,16 +317,33 @@ def run_simulation(distribution: str = "uniform", t_show: float = 1.0):
         valstep=1,
     )
 
+    # Sigmas slider
+    ax_sigma = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])
+    slider_sigma = plt.Slider(
+        ax_sigma,
+        "Sigma",
+        valmin=0.1,
+        valmax=2.0,
+        valinit=sigma,
+        valstep=0.1,
+    )
+
     def update_sliders(_):
         # Acces the variables from the outer scope to update them
-        nonlocal coupling_strength, num_oscillators
+        nonlocal coupling_strength, num_oscillators, sigma, theta, omega
         # Update the parameters according to the sliders values
         coupling_strength = slider_coupling.val
         num_oscillators = int(slider_num_oscillators.val)
+        sigma = slider_sigma.val
+        # Reinitalize the oscillators
+        theta, omega = initialize_oscillators(
+            max_oscillators, distribution, sigma=sigma
+        )
 
     # Attach the update function to the sliders
     slider_coupling.on_changed(update_sliders)
     slider_num_oscillators.on_changed(update_sliders)
+    slider_sigma.on_changed(update_sliders)
 
     # ------------------------------------------------------------------------#
     #  DISPLAY
