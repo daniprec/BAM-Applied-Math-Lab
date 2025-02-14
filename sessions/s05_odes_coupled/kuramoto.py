@@ -149,7 +149,7 @@ def kuramoto_ode_meanfield(
     # Compute the coupling term
     coupling_term = coupling_strength * r * np.sin(phi - theta)
     # Compute the time derivative
-    dtheta_dt = omega + coupling_strength
+    dtheta_dt = omega + coupling_term
     return dtheta_dt
 
 
