@@ -30,7 +30,7 @@ def kuramoto_ode(
 
 def kuramoto_order_parameter(theta: np.ndarray) -> tuple:
     # Compute the order parameter, r * exp(i * phi)
-    order_param = np.ones_like(theta)  # replace this line!
+    order_param = 0  # replace this line!
     # The absolute value of the order parameter is the synchronization index
     r = np.abs(order_param)
     # The angle of the order parameter is the phase of the synchronization
