@@ -43,12 +43,13 @@ def initialize_oscillators(
     return theta, omega
 
 
-def kuramoto_ode(
+def kuramoto_ode_pairwise(
     t: float, theta: np.ndarray, omega: np.ndarray = 1, coupling_strength: float = 1.0
 ) -> np.ndarray:
     """
     Computes the time derivative of the phase for each oscillator in the
-    Kuramoto model.
+    Kuramoto model. Uses the pairwise interactions: the coupling term is
+    the average of the sine of the pairwise differences between phases.
 
     Reference: https://en.wikipedia.org/wiki/Kuramoto_model
 
@@ -77,6 +78,78 @@ def kuramoto_ode(
     coupling_term = coupling_strength * np.mean(np.sin(theta_diff), axis=0)
     # Compute the time derivative
     dtheta_dt = omega + coupling_term
+    return dtheta_dt
+
+
+def kuramoto_order_parameter(theta: np.ndarray) -> float:
+    """
+    Computes the order parameter of the Kuramoto model.
+
+    Parameters
+    ----------
+    theta : np.ndarray
+        Phases of the oscillators.
+
+    Returns
+    -------
+    r : float
+        Order parameter (synchronization index).
+    phi : float
+        Phase of the order parameter.
+    rcosphi : float
+        Real part of the order parameter, r * cos(phi).
+    rsinphi : float
+        Imaginary part of the order parameter, r * sin(phi).
+    """
+    # Compute the order parameter as r * exp(i * phi)
+    order_param = np.mean(np.exp(1j * theta))
+    # The absolute value of the order parameter is the synchronization index
+    r = np.abs(order_param)
+    # The angle of the order parameter is the phase of the synchronization
+    phi = np.angle(order_param)
+    # The real part of the order parameter is r * cos(phi)
+    rcosphi = np.real(order_param)
+    # The imaginary part of the order parameter is r * sin(phi)
+    rsinphi = np.imag(order_param)
+    return r, phi, rcosphi, rsinphi
+
+
+def kuramoto_ode_meanfield(
+    t: float, theta: np.ndarray, omega: np.ndarray = 1, coupling_strength: float = 1.0
+) -> np.ndarray:
+    """
+    Computes the time derivative of the phase for each oscillator in the
+    Kuramoto model. Uses the mean-field approximation: the coupling term is
+    the sine of the difference between the phase centroid and
+    the phase of each oscillator.
+
+    Reference: https://en.wikipedia.org/wiki/Kuramoto_model
+
+
+    Parameters
+    ----------
+    t : float
+        Time (not used in the Kuramoto model).
+    theta : np.ndarray
+        Phases of the oscillators.
+    omega : np.ndarray
+        Natural frequencies of the oscillators.
+    coupling_strength : float
+        Coupling strength (K), which determines the strength of synchronization.
+
+    Returns
+    -------
+    np.ndarray
+        Time derivative of the phase for each oscillator.
+    """
+    # Keep theta within [0, 2 * pi]
+    theta = np.mod(theta, 2 * np.pi)
+    # Compute the order parameter
+    r, phi, _, _ = kuramoto_order_parameter(theta)
+    # Compute the coupling term
+    coupling_term = coupling_strength * r * np.sin(phi - theta)
+    # Compute the time derivative
+    dtheta_dt = omega + coupling_strength
     return dtheta_dt
 
 
@@ -164,7 +237,7 @@ def run_simulation(distribution: str = "uniform", t_show: float = 1.0):
 
         # Solve the ODE system
         sol = solve_ivp(
-            kuramoto_ode,
+            kuramoto_ode_pairwise,
             t_span,
             theta,
             args=(omega, coupling_strength),
@@ -180,25 +253,26 @@ def run_simulation(distribution: str = "uniform", t_show: float = 1.0):
         # Take as many oscillators as chosen by the user
         scatter.set_offsets(data[:num_oscillators])
 
-        # Compute order parameter - taking only as many oscillators as user decides
-        order_param = np.mean(np.exp(1j * theta[:num_oscillators]))
+        # Compute the order parameter
+        r, phi, rcosphi, rsinphi = kuramoto_order_parameter(theta[:num_oscillators])
+
         # Update centroid line
-        centroid_line.set_data([0, np.real(order_param)], [0, np.imag(order_param)])
-        centroid_point.set_data([np.real(order_param)], [np.imag(order_param)])
+        centroid_line.set_data([0, rcosphi], [0, rsinphi])
+        centroid_point.set_data([rcosphi], [rsinphi])
 
         # Update order parameter list - It will always contain the same amount of values
-        ls_order_param.append(np.abs(order_param))
+        ls_order_param.append(r)
         ls_order_param.pop(0)
         # Update order parameter plot
         line_order_param.set_data(ls_t, ls_order_param)
 
         # Update dictonary of K vs r
         if coupling_strength not in dict_kr.keys():
-            dict_kr[coupling_strength] = [np.abs(order_param)]
+            dict_kr[coupling_strength] = [r]
             # Sort the dictionary by the coupling strength
             dict_kr = dict(sorted(dict_kr.items()))
         else:
-            dict_kr[coupling_strength].append(np.abs(order_param))
+            dict_kr[coupling_strength].append(r)
             # Store no more than 200 values per K to avoid memory issues
             dict_kr[coupling_strength] = dict_kr[coupling_strength][-200:]
 
