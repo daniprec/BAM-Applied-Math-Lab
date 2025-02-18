@@ -122,8 +122,6 @@ def run_animation(
         Time step, default is 1 (standard convention).
     r : float, optional
         Interaction radius, default is 1 (standard convention).
-    niter : int, optional
-        Number of iterations per frame, default is 3.
     """
     # Initialize parameters (will be changed with sliders)
     eta = 0.1
