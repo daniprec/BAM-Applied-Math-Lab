@@ -77,6 +77,7 @@ def update(frame: int):
         theta,
         args=(omega, coupling_strength),
     )
+    # Solution are a 2D array with shape (N, T)
     theta = sol.y[..., -1]
 
     # Keep theta within [0, 2 * pi]

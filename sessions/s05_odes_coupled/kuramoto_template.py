@@ -125,6 +125,7 @@ def run_simulation():
             theta,
             args=(omega, coupling_strength),
         )
+        # Solution are a 2D array with shape (N, T)
         theta = sol.y[..., -1]
         # Keep theta within [0, 2 * pi]
         theta = np.mod(theta, 2 * np.pi)
