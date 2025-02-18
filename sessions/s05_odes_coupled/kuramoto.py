@@ -104,7 +104,7 @@ def kuramoto_order_parameter(theta: np.ndarray) -> tuple:
         Imaginary part of the order parameter, r * sin(phi).
     """
     # Compute the order parameter as r * exp(i * phi)
-    order_param = np.mean(np.exp(1j * theta))
+    order_param = np.mean(np.exp(1j * theta), axis=0)
     # The absolute value of the order parameter is the synchronization index
     r = np.abs(order_param)
     # The angle of the order parameter is the phase of the synchronization
@@ -163,7 +163,7 @@ def run_simulation():
     # PARAMETERS
     # ------------------------------------------------------------------------#
     coupling_strength = 1.0  # K
-    max_k = 3.0  # Maximum K allowed in the slider
+    max_k = 5.0  # Maximum K allowed in the slider
     num_oscillators = 100  # Number of oscillators
     max_oscillators = 500  # Maximum number of oscillators allowed in the slider
     sigma = 1.0  # Standard deviation of the natural frequencies
