@@ -127,8 +127,15 @@ def draw_kuramoto_diagram(
     # Plot the order parameter as a function of time
     fig, ax = plt.subplots()
     ax.plot(ls_k, r_theoretical, label="Theoretical", color="blue")
-    ax.fill_between(ls_k, ls_r_q10, ls_r_q90, alpha=0.6, color="orange")
-    ax.plot(ls_k, ls_r_q50, label="Empirical", color="red")
+    # Plot the empirical order parameter as points with error bars
+    ax.errorbar(
+        ls_k,
+        ls_r_q50,
+        yerr=[ls_r_q50 - ls_r_q10, ls_r_q90 - ls_r_q50],
+        fmt="o",
+        label="Empirical",
+        color="red",
+    )
     ax.set_xlabel("Coupling strength (K)")
     ax.set_ylabel("Order parameter (r)")
     ax.set_title("Kuramoto model")
