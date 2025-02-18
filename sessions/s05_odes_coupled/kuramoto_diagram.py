@@ -39,7 +39,7 @@ def kuramoto_critical_coupling(k: np.ndarray, sigma: float = 1.0) -> np.ndarray:
     kc = 2.0 / (g0 * np.pi)
     # Theoretical order parameter
     r = np.zeros_like(k)
-    r[k >= kc] = np.sqrt(1 - (kc / k[k >= kc]))
+    r[k >= kc] = np.sqrt(1 - (kc / k[k > kc]))
     return r
 
 
