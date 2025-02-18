@@ -90,7 +90,7 @@ def kuramoto_order_parameter(theta: np.ndarray) -> tuple:
     Parameters
     ----------
     theta : np.ndarray
-        Phases of the oscillators, in radians.
+        Phases of the oscillators, in radians. Shape is (N, T).
 
     Returns
     -------

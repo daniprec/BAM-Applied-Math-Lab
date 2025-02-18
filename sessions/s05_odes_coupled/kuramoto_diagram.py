@@ -9,7 +9,7 @@ sys.path.append(".")
 
 from sessions.s05_odes_coupled.kuramoto import (
     initialize_oscillators,
-    kuramoto_ode_meanfield,
+    kuramoto_ode_pairwise,
     kuramoto_order_parameter,
 )
 
@@ -44,12 +44,13 @@ def kuramoto_critical_coupling(k: np.ndarray, sigma: float = 1.0) -> np.ndarray:
 
 
 def draw_kuramoto_diagram(
-    num_oscillators: int = 1000,
+    num_oscillators: int = 100,
     sigma: float = 1.0,
     dt: float = 0.01,
-    t_end: float = 10.0,
+    t_end: float = 500.0,
     kmin: float = 0.0,
     kmax: float = 5.0,
+    knum: int = 50,
 ):
     """
     Draw the Kuramoto diagram, showing the order parameter as a function
@@ -59,26 +60,28 @@ def draw_kuramoto_diagram(
     Parameters
     ----------
     num_oscillators : int, optional
-        Number of oscillators, default is 1000.
+        Number of oscillators, default is 100.
     sigma : float, optional
         Standard deviation of the Gaussian distribution of the
         natural frequencies, default is 0.01.
     dt : float, optional
         Time step for the numerical integration, default is 0.01.
     t_end : float, optional
-        End time for the numerical integration, default is 10.0.
+        End time for the numerical integration, default is 500.0.
     kmin : float, optional
         Minimum coupling strength, default is 0.0.
     kmax : float, optional
         Maximum coupling strength, default is 5.0.
+    knum : int, optional
+        Number of coupling strengths, default is 50.
     """
     # Time span and time points relevant for the numerical integration
     t_span = (0, t_end)
     t_eval = np.arange(0, t_end, dt)
-    # We will take the last 25% of the time points to compute the order parameter
+    # We will take the last X% of the time points to compute the order parameter
     idx_end = int(len(t_eval) * 0.25)
     # Initialize the coupling strength and the empirical order parameter lists
-    ls_k = np.linspace(kmin, kmax, 100)
+    ls_k = np.linspace(kmin, kmax, knum)
     ls_r_q10 = []
     ls_r_q50 = []
     ls_r_q90 = []
@@ -90,7 +93,7 @@ def draw_kuramoto_diagram(
     for coupling_strength in ls_k:
         theta, omega = initialize_oscillators(num_oscillators, sigma=sigma)
         sol = solve_ivp(
-            kuramoto_ode_meanfield,
+            kuramoto_ode_pairwise,
             t_span,
             theta,
             t_eval=t_eval,
@@ -103,10 +106,12 @@ def draw_kuramoto_diagram(
         # Compute the order parameter
         r, phi, rcosphi, rsinphi = kuramoto_order_parameter(theta)
 
-        # Append the mean order parameter of the last 25% of the time points
+        # Append the mean order parameter of the last X% of the time points
         ls_r_q10.append(np.quantile(r[-idx_end:], 0.1))
         ls_r_q50.append(np.quantile(r[-idx_end:], 0.5))
         ls_r_q90.append(np.quantile(r[-idx_end:], 0.9))
+
+        print(f"K = {coupling_strength:.2f}, r = {ls_r_q50[-1]:.2f}")
 
     # Plot the order parameter as a function of time
     fig, ax = plt.subplots()
