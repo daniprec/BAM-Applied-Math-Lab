@@ -90,7 +90,7 @@ def kuramoto_order_parameter(theta: np.ndarray) -> tuple:
     Parameters
     ----------
     theta : np.ndarray
-        Phases of the oscillators.
+        Phases of the oscillators, in radians.
 
     Returns
     -------
@@ -117,7 +117,10 @@ def kuramoto_order_parameter(theta: np.ndarray) -> tuple:
 
 
 def kuramoto_ode_meanfield(
-    t: float, theta: np.ndarray, omega: np.ndarray = 1, coupling_strength: float = 1.0
+    t: float,
+    theta: np.ndarray,
+    omega: np.ndarray = None,
+    coupling_strength: float = 1.0,
 ) -> np.ndarray:
     """
     Computes the time derivative of the phase for each oscillator in the
@@ -133,7 +136,7 @@ def kuramoto_ode_meanfield(
     t : float
         Time (not used in the Kuramoto model).
     theta : np.ndarray
-        Phases of the oscillators.
+        Phases of the oscillators, in radians.
     omega : np.ndarray
         Natural frequencies of the oscillators.
     coupling_strength : float
@@ -144,6 +147,9 @@ def kuramoto_ode_meanfield(
     np.ndarray
         Time derivative of the phase for each oscillator.
     """
+    # Ensure omega is an array and matches the shape of theta
+    if omega is None:
+        omega = np.ones_like(theta)
     # Keep theta within [0, 2 * pi]
     theta = np.mod(theta, 2 * np.pi)
     # Compute the order parameter

@@ -34,13 +34,12 @@ def kuramoto_critical_coupling(k: np.ndarray, sigma: float = 1.0) -> np.ndarray:
     """
     # The probability density function g(omega) is given by the Gaussian
     # distribution, and thus g(0) is
-    g0 = 1 / (2 * np.pi * sigma**2) ** (1 / 2)
+    g0 = 1 / ((2 * np.pi * (sigma**2)) ** (1 / 2))
     # Critical coupling strength
     kc = 2.0 / (g0 * np.pi)
     # Theoretical order parameter
     r = np.zeros_like(k)
-    r[k < kc] = 0
-    r[k >= kc] = np.sqrt(1 - kc / k[k >= kc])
+    r[k >= kc] = np.sqrt(1 - (kc / k[k >= kc]))
     return r
 
 
@@ -48,7 +47,7 @@ def draw_kuramoto_diagram(
     num_oscillators: int = 1000,
     sigma: float = 1.0,
     dt: float = 0.01,
-    t_end: float = 100.0,
+    t_end: float = 10.0,
     kmin: float = 0.0,
     kmax: float = 5.0,
 ):
@@ -76,11 +75,13 @@ def draw_kuramoto_diagram(
     # Time span and time points relevant for the numerical integration
     t_span = (0, t_end)
     t_eval = np.arange(0, t_end, dt)
-    # We will take the last 10% of the time points to compute the order parameter
-    idx_end = int(t_end / dt / 10)
+    # We will take the last 25% of the time points to compute the order parameter
+    idx_end = int(len(t_eval) * 0.25)
     # Initialize the coupling strength and the empirical order parameter lists
     ls_k = np.linspace(kmin, kmax, 100)
-    ls_r = []
+    ls_r_q10 = []
+    ls_r_q50 = []
+    ls_r_q90 = []
 
     # Theoretical order parameter
     r_theoretical = kuramoto_critical_coupling(ls_k, sigma=sigma)
@@ -101,13 +102,17 @@ def draw_kuramoto_diagram(
 
         # Compute the order parameter
         r, phi, rcosphi, rsinphi = kuramoto_order_parameter(theta)
-        # Append the mean order parameter of the last 10% of the time points
-        ls_r.append(np.mean(r[-idx_end:]))
+
+        # Append the mean order parameter of the last 25% of the time points
+        ls_r_q10.append(np.quantile(r[-idx_end:], 0.1))
+        ls_r_q50.append(np.quantile(r[-idx_end:], 0.5))
+        ls_r_q90.append(np.quantile(r[-idx_end:], 0.9))
 
     # Plot the order parameter as a function of time
     fig, ax = plt.subplots()
-    ax.plot(ls_k, r_theoretical, label="Theoretical")
-    ax.plot(ls_k, ls_r, label="Empirical")
+    ax.plot(ls_k, r_theoretical, label="Theoretical", color="blue")
+    ax.fill_between(ls_k, ls_r_q10, ls_r_q90, alpha=0.6, color="orange")
+    ax.plot(ls_k, ls_r_q50, label="Empirical", color="red")
     ax.set_xlabel("Coupling strength (K)")
     ax.set_ylabel("Order parameter (r)")
     ax.set_title("Kuramoto model")
