@@ -39,8 +39,8 @@ def kuramoto_critical_coupling(k: np.ndarray, sigma: float = 1.0) -> np.ndarray:
 def draw_kuramoto_diagram(
     num_oscillators: int = 1000,
     sigma: float = 1.0,
-    dt: float = 1.0,
-    t_end: float = 100.0,
+    dt: float = 0.01,
+    t_end: float = 10.0,
     kmin: float = 0.0,
     kmax: float = 5.0,
 ):
@@ -57,9 +57,9 @@ def draw_kuramoto_diagram(
         Standard deviation of the Gaussian distribution of the
         natural frequencies, default is 1.0.
     dt : float, optional
-        Time step for the numerical integration, default is 1.0.
+        Time step for the numerical integration, default is 0.01.
     t_end : float, optional
-        End time for the numerical integration, default is 100.0.
+        End time for the numerical integration, default is 10.0.
     kmin : float, optional
         Minimum coupling strength, default is 0.0.
     kmax : float, optional

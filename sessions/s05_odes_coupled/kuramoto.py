@@ -155,9 +155,16 @@ def kuramoto_ode_meanfield(
     return dtheta_dt
 
 
-def run_simulation():
+def run_simulation(dt: float = 0.01, interval: int = 1):
     """
     Animates the Kuramoto model simulation on the unit circle with the phase centroid.
+
+    Parameters
+    ----------
+    dt : float, optional
+        Time step for the integration time, by default 0.01.
+    interval : int, optional
+        Interval between frames in milliseconds, by default 10.
     """
     # ------------------------------------------------------------------------#
     # PARAMETERS
@@ -167,7 +174,6 @@ def run_simulation():
     num_oscillators = 100  # Number of oscillators
     max_oscillators = 500  # Maximum number of oscillators allowed in the slider
     sigma = 1.0  # Standard deviation of the natural frequencies
-    dt = 1.0  # Time step
 
     # Initialize oscillators (phase and natural frequency)
     theta, omega = initialize_oscillators(num_oscillators, sigma=sigma)
@@ -280,7 +286,7 @@ def run_simulation():
 
         return scatter, centroid_line, centroid_point, line_order_param, line_kr
 
-    ani = animation.FuncAnimation(fig, update, blit=True, interval=1)
+    ani = animation.FuncAnimation(fig, update, blit=True, interval=interval)
 
     # ------------------------------------------------------------------------#
     # SLIDERS

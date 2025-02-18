@@ -51,7 +51,7 @@ def run_simulation():
     num_oscillators = 100  # Number of oscillators
     max_oscillators = 500  # Maximum number of oscillators allowed in the slider
     sigma = 1.0  # Standard deviation of the natural frequencies
-    dt = 1.0  # Time step
+    dt = 0.01  # Time step
 
     # Initialize oscillators (phase and natural frequency)
     theta, omega = initialize_oscillators(num_oscillators, sigma=sigma)
