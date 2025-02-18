@@ -47,10 +47,11 @@ def draw_kuramoto_diagram(
     num_oscillators: int = 1000,
     sigma: float = 1.0,
     dt: float = 0.01,
-    t_end: float = 500.0,
+    t_end: float = 100.0,
     kmin: float = 0.0,
     kmax: float = 5.0,
-    knum: int = 25,
+    knum: int = 50,
+    seed: int = 1,
 ):
     """
     Draw the Kuramoto diagram, showing the order parameter as a function
@@ -67,13 +68,15 @@ def draw_kuramoto_diagram(
     dt : float, optional
         Time step for the numerical integration, default is 0.01.
     t_end : float, optional
-        End time for the numerical integration, default is 500.0.
+        End time for the numerical integration, default is 100.0.
     kmin : float, optional
         Minimum coupling strength, default is 0.0.
     kmax : float, optional
         Maximum coupling strength, default is 5.0.
     knum : int, optional
-        Number of coupling strengths, default is 25.
+        Number of coupling strengths, default is 50.
+    seed : int, optional
+        Seed for the random number generator, default is 1.
     """
     # Time span and time points relevant for the numerical integration
     t_span = (0, t_end)
@@ -89,9 +92,11 @@ def draw_kuramoto_diagram(
     # Theoretical order parameter
     r_theoretical = kuramoto_critical_coupling(ls_k, sigma=sigma)
 
+    # Initialize the oscillators
+    theta, omega = initialize_oscillators(num_oscillators, sigma=sigma, seed=seed)
+
     # Empirical order parameter
     for idx, coupling_strength in enumerate(ls_k):
-        theta, omega = initialize_oscillators(num_oscillators, sigma=sigma)
         sol = solve_ivp(
             kuramoto_ode_meanfield,
             t_span,
@@ -115,6 +120,9 @@ def draw_kuramoto_diagram(
             f"K = {coupling_strength:.2f}, r (theory) = {r_theoretical[idx]:.2f}"
             f", r (empirical) = {ls_r_q50[idx]:.2f}"
         )
+
+        # Take the last state as the initial condition for the next iteration
+        theta = theta[:, -1]
 
     # Plot the order parameter as a function of time
     fig, ax = plt.subplots()

@@ -8,7 +8,10 @@ from scipy.integrate import solve_ivp
 
 
 def initialize_oscillators(
-    num_oscillators: int, distribution: str = "normal", sigma: float = 1.0
+    num_oscillators: int,
+    distribution: str = "normal",
+    sigma: float = 1.0,
+    seed: int = None,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Initializes the phases and natural frequencies of the oscillators.
@@ -22,7 +25,8 @@ def initialize_oscillators(
         Kuramoto uses unimodal distributions, such as the normal distribution.
     sigma : float, optional
         Standard deviation of the normal distribution, by default 1.0.
-
+    seed : int, optional
+        Seed for the random number generator, by default None.
     Returns
     -------
     theta : ndarray
@@ -30,6 +34,9 @@ def initialize_oscillators(
     omega : ndarray
         Natural frequencies of the oscillators.
     """
+    # Set the seed for reproducibility  (optional)
+    np.random.seed(seed)
+
     # Assign a random initial phase to each oscillator
     # (position in the unit circle)
     theta = np.random.uniform(0, 2 * np.pi, num_oscillators)
@@ -161,7 +168,7 @@ def kuramoto_ode_meanfield(
     return dtheta_dt
 
 
-def run_simulation(dt: float = 0.01, interval: int = 1):
+def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
     """
     Animates the Kuramoto model simulation on the unit circle with the phase centroid.
 
@@ -171,6 +178,8 @@ def run_simulation(dt: float = 0.01, interval: int = 1):
         Time step for the integration time, by default 0.01.
     interval : int, optional
         Interval between frames in milliseconds, by default 10.
+    seed : int, optional
+        Seed for the random number generator, by default 1.
     """
     # ------------------------------------------------------------------------#
     # PARAMETERS
@@ -182,7 +191,7 @@ def run_simulation(dt: float = 0.01, interval: int = 1):
     sigma = 1.0  # Standard deviation of the natural frequencies
 
     # Initialize oscillators (phase and natural frequency)
-    theta, omega = initialize_oscillators(num_oscillators, sigma=sigma)
+    theta, omega = initialize_oscillators(num_oscillators, sigma=sigma, seed=seed)
     t_span = (0, dt)
 
     # Order parameter (phase centroid)
@@ -344,7 +353,7 @@ def run_simulation(dt: float = 0.01, interval: int = 1):
         num_oscillators = int(slider_num_oscillators.val)
         sigma = slider_sigma.val
         # Reinitalize the oscillators
-        theta, omega = initialize_oscillators(num_oscillators, sigma=sigma)
+        theta, omega = initialize_oscillators(num_oscillators, sigma=sigma, seed=seed)
 
     # Attach the update function to the sliders
     slider_coupling.on_changed(update_sliders)
