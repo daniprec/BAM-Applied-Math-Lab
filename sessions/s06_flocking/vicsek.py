@@ -146,8 +146,6 @@ def run_animation(
         np.cos(theta),
         np.sin(theta),
         angles="xy",
-        scale_units="xy",
-        scale=d / 20,
     )
     ax1.set_xlim(0, d)
     ax1.set_ylim(0, d)
@@ -156,7 +154,7 @@ def run_animation(
     # Initialize order parameter
     (line_order_param,) = ax2.plot([], [], label="Order Parameter")
     ax2.set_xlim(0, 3000)
-    ax2.set_ylim(0, 2)
+    ax2.set_ylim(0, 1)
     ax2.set_title("Vicsek Model")
     ax2.set_xlabel("Time")
     ax2.set_ylabel("r")
