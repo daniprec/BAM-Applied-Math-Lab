@@ -83,6 +83,7 @@ def draw_kuramoto_diagram(
     t_eval = np.arange(0, t_end, dt)
     # We will take the last X% of the time points to compute the order parameter
     idx_end = int(len(t_eval) * 0.25)
+    t_eval = t_eval[-idx_end:]
     # Initialize the coupling strength and the empirical order parameter lists
     ls_k = np.linspace(kmin, kmax, knum)
     ls_r_q10 = np.zeros_like(ls_k)
@@ -112,9 +113,9 @@ def draw_kuramoto_diagram(
         r, phi, rcosphi, rsinphi = kuramoto_order_parameter(theta)
 
         # Append the mean order parameter of the last X% of the time points
-        ls_r_q10[idx] = np.percentile(r[-idx_end:], 10)
-        ls_r_q50[idx] = np.percentile(r[-idx_end:], 50)
-        ls_r_q90[idx] = np.percentile(r[-idx_end:], 90)
+        ls_r_q10[idx] = np.percentile(r, 10)
+        ls_r_q50[idx] = np.percentile(r, 50)
+        ls_r_q90[idx] = np.percentile(r, 90)
 
         print(
             f"K = {coupling_strength:.2f}, r (theory) = {r_theoretical[idx]:.2f}"
