@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import solve_ivp
 
+# I will import several functions from the script "kuramoto.py"
 sys.path.append(".")
 
 from sessions.s05_odes_coupled.kuramoto import (
@@ -115,4 +116,5 @@ def draw_kuramoto_diagram(
 
 
 if __name__ == "__main__":
+    draw_kuramoto_diagram()
     draw_kuramoto_diagram()
