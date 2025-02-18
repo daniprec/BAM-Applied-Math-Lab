@@ -2,6 +2,7 @@ import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.spatial
+from matplotlib.axes import Axes
 
 
 def initialize_particles(n: int, d: float = 25) -> tuple[np.ndarray, np.ndarray]:
@@ -82,35 +83,21 @@ def update_rule(
     return xy, theta
 
 
-def plot_particles(xy: np.ndarray, theta: np.ndarray, d: float = 25):
+def vicsek_order_parameter(theta: np.ndarray) -> float:
     """
-    Plot the particles in the 2D space.
+    Compute the order parameter of the Vicsek model.
 
     Parameters
     ----------
-    xy : np.ndarray
-        Position of the particles.
     theta : np.ndarray
         Angle of the particles.
-    d : float, optional
-        Dimension of the space, default is 25.
-    """
-    ax = plt.gca()
-    ax.cla()
-    ax.set_xlim(0, d)
-    ax.set_ylim(0, d)
 
-    # Plot using a quiver plot
-    ax.quiver(
-        xy[0],
-        xy[1],
-        np.cos(theta),
-        np.sin(theta),
-        angles="xy",
-        scale_units="xy",
-        scale=d / 20,
-    )
-    plt.draw()
+    Returns
+    -------
+    float
+        Order parameter of the Vicsek model.
+    """
+    return np.abs(np.mean(np.exp(1j * theta)))
 
 
 def run_animation(
@@ -120,7 +107,6 @@ def run_animation(
     r: float = 1,
     d: float = 25,
     eta: float = 0.1,
-    niter: int = 3,
 ):
     """
     Run the animation of the Vicsek model.
@@ -145,16 +131,53 @@ def run_animation(
     niter : int, optional
         Number of iterations per frame, default is 3.
     """
-    xy, positions = initialize_particles(n, d=d)
+    xy, theta = initialize_particles(n, d=d)
+    ls_order_param = [0] * 3000
+
+    # Plot particles to the left, order parameter to the right
+    ax1: Axes
+    ax2: Axes
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+
+    # Initialize quiver plot
+    plt_particles = ax1.quiver(
+        xy[0],
+        xy[1],
+        np.cos(theta),
+        np.sin(theta),
+        angles="xy",
+        scale_units="xy",
+        scale=d / 20,
+    )
+    ax1.set_xlim(0, d)
+    ax1.set_ylim(0, d)
+    ax1.set_aspect("equal")
+
+    # Initialize order parameter
+    (line_order_param,) = ax2.plot([], [], label="Order Parameter")
+    ax2.set_xlim(0, 3000)
+    ax2.set_ylim(0, 2)
+    ax2.set_title("Vicsek Model")
+    ax2.set_xlabel("Time")
+    ax2.set_ylabel("r")
+    ax2.grid(True)
+    ax2.legend()
 
     def update_animation(frame: int):
-        nonlocal xy, positions
-        for _ in range(niter):
-            xy, positions = update_rule(xy, positions, v0=v0, dt=dt, r=r, d=d, eta=eta)
-        plot_particles(xy, positions, d=d)
+        nonlocal xy, theta
+        xy, theta = update_rule(xy, theta, v0=v0, dt=dt, r=r, d=d, eta=eta)
 
-    fig, ax = plt.subplots()
-    ani = animation.FuncAnimation(fig, update_animation, interval=0)
+        # Update quiver plot
+        plt_particles.set_offsets(xy.T)
+        plt_particles.set_UVC(np.cos(theta), np.sin(theta))
+
+        # Update order parameter
+        ls_order_param.append(vicsek_order_parameter(theta))
+        ls_order_param.pop(0)
+        line_order_param.set_data(range(3000), ls_order_param)
+        return plt_particles, line_order_param
+
+    ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)
     plt.show()
 
 
