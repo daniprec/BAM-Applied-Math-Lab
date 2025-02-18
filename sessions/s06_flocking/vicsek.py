@@ -105,8 +105,6 @@ def run_animation(
     v0: float = 0.03,
     dt: float = 1,
     r: float = 1,
-    d: float = 25,
-    eta: float = 0.1,
 ):
     """
     Run the animation of the Vicsek model.
@@ -124,20 +122,22 @@ def run_animation(
         Time step, default is 1 (standard convention).
     r : float, optional
         Interaction radius, default is 1 (standard convention).
-    d : float, optional
-        Dimension of the space, default is 25.
-    eta : float, optional
-        Noise parameter, default is 0.1.
     niter : int, optional
         Number of iterations per frame, default is 3.
     """
+    # Initialize parameters (will be changed with sliders)
+    eta = 0.1
+    d = 25
+
+    # Initialize particles
     xy, theta = initialize_particles(n, d=d)
     ls_order_param = [0] * 3000
 
     # Plot particles to the left, order parameter to the right
-    ax1: Axes
-    ax2: Axes
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+    fig, axs = plt.subplots(2, 2, figsize=(10, 5), height_ratios=[6, 1])
+    ax1: Axes = axs[0, 0]
+    ax2: Axes = axs[0, 1]
+    ax3: Axes = axs[1, 0]
 
     # Initialize quiver plot
     plt_particles = ax1.quiver(
@@ -161,8 +161,12 @@ def run_animation(
     ax2.grid(True)
     ax2.legend()
 
+    # --------------------------------
+    # ANIMATION
+    # --------------------------------
+
     def update_animation(frame: int):
-        nonlocal xy, theta
+        nonlocal xy, theta, eta, d
         xy, theta = update_rule(xy, theta, v0=v0, dt=dt, r=r, d=d, eta=eta)
 
         # Update quiver plot
@@ -176,6 +180,31 @@ def run_animation(
         return plt_particles, line_order_param
 
     ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)
+
+    # --------------------------------
+    # SLIDERS
+    # --------------------------------
+
+    # Add sliders
+    ax_eta = ax3.inset_axes([0.0, 0.4, 0.8, 0.1])
+    ax_d = ax3.inset_axes([0.0, 0.6, 0.8, 0.1])
+
+    s_eta = plt.Slider(ax_eta, "Noise", 0.0, 2.0, valinit=eta)
+    s_d = plt.Slider(ax_d, "Dimension", 1, 50, valinit=d)
+
+    def update(val):
+        nonlocal xy, eta, d
+        eta = s_eta.val
+        d = s_d.val
+
+        # Update plot limits
+        ax1.set_xlim(0, d)
+        ax1.set_ylim(0, d)
+        ax1.set_aspect("equal")
+
+    s_eta.on_changed(update)
+    s_d.on_changed(update)
+
     plt.show()
 
 
