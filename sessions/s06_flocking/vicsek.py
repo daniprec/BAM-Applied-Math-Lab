@@ -135,31 +135,34 @@ def run_animation(
 
     # Plot particles to the left, order parameter to the right
     fig, axs = plt.subplots(2, 2, figsize=(10, 5), height_ratios=[6, 1])
-    ax1: Axes = axs[0, 0]
-    ax2: Axes = axs[0, 1]
-    ax3: Axes = axs[1, 0]
+    ax_plane: Axes = axs[0, 0]
+    ax_order: Axes = axs[0, 1]
+    ax_sliders: Axes = axs[1, 0]
 
     # Initialize quiver plot
-    plt_particles = ax1.quiver(
+    plt_particles = ax_plane.quiver(
         xy[0],
         xy[1],
         np.cos(theta),
         np.sin(theta),
         angles="xy",
     )
-    ax1.set_xlim(0, d)
-    ax1.set_ylim(0, d)
-    ax1.set_aspect("equal")
+    ax_plane.set_xlim(0, d)
+    ax_plane.set_ylim(0, d)
+    ax_plane.set_aspect("equal")
 
     # Initialize order parameter
-    (line_order_param,) = ax2.plot([], [], label="Order Parameter")
-    ax2.set_xlim(0, 3000)
-    ax2.set_ylim(0, 1)
-    ax2.set_title("Vicsek Model")
-    ax2.set_xlabel("Time")
-    ax2.set_ylabel("r")
-    ax2.grid(True)
-    ax2.legend()
+    (line_order_param,) = ax_order.plot([], [], label="Order Parameter")
+    ax_order.set_xlim(0, 3000)
+    ax_order.set_ylim(0, 1)
+    ax_order.set_title("Vicsek Model")
+    ax_order.set_xlabel("Time")
+    ax_order.set_ylabel("r")
+    ax_order.grid(True)
+    ax_order.legend()
+
+    # Clear axis
+    ax_sliders.axis("off")
 
     # --------------------------------
     # ANIMATION
@@ -186,21 +189,28 @@ def run_animation(
     # --------------------------------
 
     # Add sliders
-    ax_eta = ax3.inset_axes([0.0, 0.4, 0.8, 0.1])
-    ax_d = ax3.inset_axes([0.0, 0.6, 0.8, 0.1])
+    ax_eta = ax_sliders.inset_axes([0.0, 0.3, 0.8, 0.1])
+    ax_d = ax_sliders.inset_axes([0.0, 0.6, 0.8, 0.1])
 
-    s_eta = plt.Slider(ax_eta, "Noise", 0.0, 2.0, valinit=eta)
-    s_d = plt.Slider(ax_d, "Dimension", 1, 50, valinit=d)
+    s_eta = plt.Slider(ax_eta, "Noise", 0.0, 2.0, valinit=eta, valstep=0.1)
+    s_d = plt.Slider(ax_d, "Dimension", 1, 50, valinit=d, valstep=1)
 
     def update(val):
         nonlocal xy, eta, d
+        # Pause animation
+        ani.event_source.stop()
+
+        # Update parameters with sliders
         eta = s_eta.val
         d = s_d.val
 
         # Update plot limits
-        ax1.set_xlim(0, d)
-        ax1.set_ylim(0, d)
-        ax1.set_aspect("equal")
+        ax_plane.set_xlim(0, d)
+        ax_plane.set_ylim(0, d)
+        ax_plane.set_aspect("equal")
+
+        # Reinitialize the animation
+        ani.event_source.start()
 
     s_eta.on_changed(update)
     s_d.on_changed(update)
