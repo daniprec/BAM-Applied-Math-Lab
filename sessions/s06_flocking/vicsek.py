@@ -207,7 +207,7 @@ def run_animation(
     s_eta = plt.Slider(ax_eta, "Noise", 0.0, 1.0, valinit=eta, valstep=0.05)
     s_d = plt.Slider(ax_d, "Dimension", 1, 50, valinit=d, valstep=1)
 
-    def update_sliders(val):
+    def update_sliders(_):
         nonlocal xy, eta, d
         # Pause animation
         ani.event_source.stop()

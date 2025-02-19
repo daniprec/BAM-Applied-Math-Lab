@@ -337,7 +337,7 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
         valstep=1,
     )
 
-    # Sigmas slider
+    # Scale (of natural frequencies distribution) slider
     ax_sigma = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])
     slider_scale = plt.Slider(
         ax_sigma,
@@ -350,13 +350,17 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
 
     def update_sliders(_):
         # Acces the variables from the outer scope to update them
-        nonlocal coupling_strength, num_oscillators, scale, theta, omega
+        nonlocal coupling_strength, num_oscillators, scale, theta, omega, ani
+        # Pause the animation for a moment
+        ani.event_source.stop()
         # Update the parameters according to the sliders values
         coupling_strength = slider_coupling.val
         num_oscillators = int(slider_num_oscillators.val)
         scale = slider_scale.val
         # Reinitalize the oscillators
         theta, omega = initialize_oscillators(num_oscillators, scale=scale, seed=seed)
+        # Restart the animation
+        ani.event_source.start()
 
     # Attach the update function to the sliders
     slider_coupling.on_changed(update_sliders)
