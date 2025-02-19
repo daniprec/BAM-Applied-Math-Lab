@@ -11,8 +11,8 @@ from scipy.stats import cauchy
 def initialize_oscillators(
     num_oscillators: int,
     distribution: str = "cauchy",
-    scale: float = 1.0,
-    scale_phase: float = 2 * np.pi,
+    scale_omega: float = 1.0,
+    scale_phase: float = 1.0,
     seed: int = None,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
@@ -25,10 +25,10 @@ def initialize_oscillators(
     distribution : str, optional
         Distribution of natural frequencies ('uniform', 'normal' or 'cauchy').
         Kuramoto uses unimodal distributions, such as the normal distribution.
-    scale : float, optional
+    scale_omega : float, optional
         Standard deviation of the normal distribution, by default 1.0.
     scale_phase : float, optional
-        Scale of the initial phases, by default 2 * np.pi.
+        Scale of the initial phases, by default 1.0.
     seed : int, optional
         Seed for the random number generator, by default None.
     Returns
@@ -43,15 +43,15 @@ def initialize_oscillators(
 
     # Assign a random initial phase to each oscillator
     # (position in the unit circle)
-    theta = np.random.uniform(0, scale_phase, num_oscillators)
+    theta = np.random.uniform(0, 2 * np.pi * scale_phase, num_oscillators)
 
     # Assign a random natural frequency to each oscillator (angular velocity)
     if distribution == "uniform":
         omega = np.random.uniform(-1.0, 1.0, num_oscillators)
     elif distribution == "normal":
-        omega = np.random.normal(0, scale, num_oscillators)
+        omega = np.random.normal(0, scale_omega, num_oscillators)
     elif distribution == "cauchy":
-        omega = cauchy.rvs(loc=0, scale=scale, size=num_oscillators)
+        omega = cauchy.rvs(loc=0, scale=scale_omega, size=num_oscillators)
     else:
         raise ValueError("Distribution must be 'uniform' or 'normal'.")
 
@@ -194,12 +194,12 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
     max_k = 5.0  # Maximum K allowed in the slider
     num_oscillators = 100  # Number of oscillators
     max_oscillators = 500  # Maximum number of oscillators allowed in the slider
-    scale = 1.0  # Standard deviation of the natural frequencies
-    scale_phase = 2 * np.pi  # Scale of the initial phases
+    scale_omega = 0.5  # Standard deviation of the natural frequencies
+    scale_phase = 1.0  # Scale of the initial phases
 
     # Initialize oscillators (phase and natural frequency)
     theta, omega = initialize_oscillators(
-        num_oscillators, scale=scale, scale_phase=scale_phase, seed=seed
+        num_oscillators, scale_omega=scale_omega, scale_phase=scale_phase, seed=seed
     )
     t_span = (0, dt)
 
@@ -349,9 +349,9 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
         ax_scale,
         "Scale (dist. omegas)",
         valmin=0.1,
-        valmax=2.0,
-        valinit=scale,
-        valstep=0.1,
+        valmax=1.0,
+        valinit=scale_omega,
+        valstep=0.01,
     )
 
     # Scale (of initial phases) slider
@@ -360,24 +360,30 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
         ax_scale_phase,
         "Scale (dist. phases)",
         valmin=0.1,
-        valmax=2 * np.pi,
+        valmax=1.0,
         valinit=scale_phase,
-        valstep=0.1,
+        valstep=0.01,
     )
 
     def update_sliders(_):
         # Acces the variables from the outer scope to update them
-        nonlocal coupling_strength, num_oscillators, scale, scale_phase, theta, omega
+        nonlocal \
+            coupling_strength, \
+            num_oscillators, \
+            scale_omega, \
+            scale_phase, \
+            theta, \
+            omega
         # Pause the animation for a moment
         ani.event_source.stop()
         # Update the parameters according to the sliders values
         coupling_strength = slider_coupling.val
         num_oscillators = int(slider_num_oscillators.val)
-        scale = slider_scale.val
+        scale_omega = slider_scale.val
         scale_phase = slider_scale_phase.val
         # Reinitalize the oscillators
         theta, omega = initialize_oscillators(
-            num_oscillators, scale=scale, scale_phase=scale_phase, seed=seed
+            num_oscillators, scale_omega=scale_omega, scale_phase=scale_phase, seed=seed
         )
         # Restart the animation
         ani.event_source.start()
@@ -394,12 +400,12 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
 
     # When the SPACE key is pressed, the simulation will restart
     def restart(_):
-        nonlocal theta, omega, ls_order_param, dict_kr, scale, scale_phase, seed
+        nonlocal theta, omega, ls_order_param, dict_kr, scale_omega, scale_phase, seed
         # Pause the animation
         ani.event_source.stop()
         # Reinitialize the oscillators
         theta, omega = initialize_oscillators(
-            num_oscillators, scale=scale, scale_phase=scale_phase, seed=seed
+            num_oscillators, scale_omega=scale_omega, scale_phase=scale_phase, seed=seed
         )
         # Reinitialize the order parameter list
         ls_order_param = [0] * 500
