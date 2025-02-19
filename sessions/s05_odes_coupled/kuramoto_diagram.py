@@ -3,6 +3,7 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import solve_ivp
+from scipy.stats import cauchy
 
 # I will import several functions from the script "kuramoto.py"
 sys.path.append(".")
@@ -14,7 +15,9 @@ from sessions.s05_odes_coupled.kuramoto import (
 )
 
 
-def kuramoto_critical_coupling(k: np.ndarray, sigma: float = 1.0) -> np.ndarray:
+def kuramoto_critical_coupling(
+    k: np.ndarray, scale: float = 1.0, distribution: str = "cauchy"
+) -> np.ndarray:
     """
     Compute the theoretical order parameter for the Kuramoto model
     given the coupling strength k.
@@ -23,7 +26,7 @@ def kuramoto_critical_coupling(k: np.ndarray, sigma: float = 1.0) -> np.ndarray:
     ----------
     k : numpy.ndarray
         Coupling strength.
-    sigma : float, optional
+    scale : float, optional
         Standard deviation of the Gaussian distribution of the
         natural frequencies, default is 1.0.
 
@@ -34,18 +37,19 @@ def kuramoto_critical_coupling(k: np.ndarray, sigma: float = 1.0) -> np.ndarray:
     """
     # The probability density function g(omega) is given by the Gaussian
     # distribution, and thus g(0) is
-    g0 = 1 / ((2 * np.pi * (sigma**2)) ** (1 / 2))
+    g0 = cauchy.pdf(0, loc=0, scale=scale)
     # Critical coupling strength
     kc = 2.0 / (g0 * np.pi)
     # Theoretical order parameter
     r = np.zeros_like(k)
+    # This formula is only valid when using Cauchy distribution
     r[k >= kc] = np.sqrt(1 - (kc / k[k > kc]))
     return r
 
 
 def draw_kuramoto_diagram(
-    num_oscillators: int = 1000,
-    sigma: float = 1.0,
+    num_oscillators: int = 5000,
+    scale: float = 1.0,
     dt: float = 0.01,
     t_end: float = 100.0,
     kmin: float = 0.0,
@@ -62,7 +66,7 @@ def draw_kuramoto_diagram(
     ----------
     num_oscillators : int, optional
         Number of oscillators, default is 1000.
-    sigma : float, optional
+    scale : float, optional
         Standard deviation of the Gaussian distribution of the
         natural frequencies, default is 0.01.
     dt : float, optional
@@ -91,10 +95,10 @@ def draw_kuramoto_diagram(
     ls_r_q90 = np.zeros_like(ls_k)
 
     # Theoretical order parameter
-    r_theoretical = kuramoto_critical_coupling(ls_k, sigma=sigma)
+    r_theoretical = kuramoto_critical_coupling(ls_k, scale=scale)
 
     # Initialize the oscillators
-    theta, omega = initialize_oscillators(num_oscillators, sigma=sigma, seed=seed)
+    theta, omega = initialize_oscillators(num_oscillators, scale=scale, seed=seed)
 
     # Empirical order parameter
     for idx, coupling_strength in enumerate(ls_k):

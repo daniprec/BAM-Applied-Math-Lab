@@ -5,12 +5,13 @@ import numpy as np
 from matplotlib import animation
 from matplotlib.axes import Axes
 from scipy.integrate import solve_ivp
+from scipy.stats import cauchy
 
 
 def initialize_oscillators(
     num_oscillators: int,
-    distribution: str = "normal",
-    sigma: float = 1.0,
+    distribution: str = "cauchy",
+    scale: float = 1.0,
     seed: int = None,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
@@ -21,9 +22,9 @@ def initialize_oscillators(
     num_oscillators : int
         Number of oscillators.
     distribution : str, optional
-        Distribution of natural frequencies ('uniform' or 'normal').
+        Distribution of natural frequencies ('uniform', 'normal' or 'cauchy').
         Kuramoto uses unimodal distributions, such as the normal distribution.
-    sigma : float, optional
+    scale : float, optional
         Standard deviation of the normal distribution, by default 1.0.
     seed : int, optional
         Seed for the random number generator, by default None.
@@ -45,7 +46,9 @@ def initialize_oscillators(
     if distribution == "uniform":
         omega = np.random.uniform(-1.0, 1.0, num_oscillators)
     elif distribution == "normal":
-        omega = np.random.normal(0, sigma, num_oscillators)
+        omega = np.random.normal(0, scale, num_oscillators)
+    elif distribution == "cauchy":
+        omega = cauchy.rvs(loc=0, scale=scale, size=num_oscillators)
     else:
         raise ValueError("Distribution must be 'uniform' or 'normal'.")
 
@@ -188,10 +191,10 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
     max_k = 5.0  # Maximum K allowed in the slider
     num_oscillators = 100  # Number of oscillators
     max_oscillators = 500  # Maximum number of oscillators allowed in the slider
-    sigma = 1.0  # Standard deviation of the natural frequencies
+    scale = 1.0  # Standard deviation of the natural frequencies
 
     # Initialize oscillators (phase and natural frequency)
-    theta, omega = initialize_oscillators(num_oscillators, sigma=sigma, seed=seed)
+    theta, omega = initialize_oscillators(num_oscillators, scale=scale, seed=seed)
     t_span = (0, dt)
 
     # Order parameter (phase centroid)
@@ -336,29 +339,29 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
 
     # Sigmas slider
     ax_sigma = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])
-    slider_sigma = plt.Slider(
+    slider_scale = plt.Slider(
         ax_sigma,
-        "Sigma",
+        "Scale",
         valmin=0.1,
         valmax=2.0,
-        valinit=sigma,
+        valinit=scale,
         valstep=0.1,
     )
 
     def update_sliders(_):
         # Acces the variables from the outer scope to update them
-        nonlocal coupling_strength, num_oscillators, sigma, theta, omega
+        nonlocal coupling_strength, num_oscillators, scale, theta, omega
         # Update the parameters according to the sliders values
         coupling_strength = slider_coupling.val
         num_oscillators = int(slider_num_oscillators.val)
-        sigma = slider_sigma.val
+        scale = slider_scale.val
         # Reinitalize the oscillators
-        theta, omega = initialize_oscillators(num_oscillators, sigma=sigma, seed=seed)
+        theta, omega = initialize_oscillators(num_oscillators, scale=scale, seed=seed)
 
     # Attach the update function to the sliders
     slider_coupling.on_changed(update_sliders)
     slider_num_oscillators.on_changed(update_sliders)
-    slider_sigma.on_changed(update_sliders)
+    slider_scale.on_changed(update_sliders)
 
     # ------------------------------------------------------------------------#
     #  DISPLAY
