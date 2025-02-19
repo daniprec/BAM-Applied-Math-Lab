@@ -341,7 +341,7 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
     ax_sigma = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])
     slider_scale = plt.Slider(
         ax_sigma,
-        "Scale",
+        "Scale (dist. omegas)",
         valmin=0.1,
         valmax=2.0,
         valinit=scale,
@@ -366,6 +366,32 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
     slider_coupling.on_changed(update_sliders)
     slider_num_oscillators.on_changed(update_sliders)
     slider_scale.on_changed(update_sliders)
+
+    # ------------------------------------------------------------------------#
+    # RESTART
+    # ------------------------------------------------------------------------#
+
+    # When the SPACE key is pressed, the simulation will restart
+    def restart(_):
+        nonlocal theta, omega, ls_order_param, dict_kr
+        # Pause the animation
+        ani.event_source.stop()
+        # Reinitialize the oscillators
+        theta, omega = initialize_oscillators(num_oscillators, scale=scale, seed=seed)
+        # Reinitialize the order parameter list
+        ls_order_param = [0] * 500
+        # Reinitialize the dictionary of K vs r
+        dict_kr = {0: [0]}
+        # Restart the animation
+        ani.event_source.start()
+
+    # Connect the restart function to the key press event
+    fig.canvas.mpl_connect("key_press_event", restart)
+
+    # Add a message below the sliders
+    ax_sliders.text(
+        0.0, 0.0, "Press SPACE to restart the simulation", fontsize=12, color="red"
+    )
 
     # ------------------------------------------------------------------------#
     #  DISPLAY
