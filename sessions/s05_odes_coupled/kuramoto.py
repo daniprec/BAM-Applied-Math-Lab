@@ -174,7 +174,7 @@ def kuramoto_ode_meanfield(
     return dtheta_dt
 
 
-def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
+def run_simulation(dt: float = 0.01, interval: int = 20, seed: int = 1):
     """
     Animates the Kuramoto model simulation on the unit circle with the phase centroid.
 
@@ -183,7 +183,7 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
     dt : float, optional
         Time step for the integration time, by default 0.01.
     interval : int, optional
-        Interval between frames in milliseconds, by default 10.
+        Interval between frames in milliseconds, by default 20.
     seed : int, optional
         Seed for the random number generator, by default 1.
     """
@@ -231,7 +231,7 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
     ax_phase.add_artist(circle)
 
     # Initialize scatter plot for oscillators
-    scatter = ax_phase.scatter([], [], s=50, color="blue", alpha=0.5)
+    scatter = ax_phase.scatter([], [], s=50, color="blue", alpha=0.25)
 
     # Initialize line for the phase centroid (order parameter)
     (centroid_line,) = ax_phase.plot([], [], color="red", linewidth=2)
