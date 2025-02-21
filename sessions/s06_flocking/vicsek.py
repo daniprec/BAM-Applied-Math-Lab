@@ -5,13 +5,15 @@ import scipy.spatial
 from matplotlib.axes import Axes
 
 
-def initialize_particles(n: int, box_size: float = 25) -> tuple[np.ndarray, np.ndarray]:
+def initialize_particles(
+    num_boids: int, box_size: float = 25
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Initialize the state of the particles.
 
     Parameters
     ----------
-    n : int
+    num_boids : int
         Number of particles.
     box_size : float, optional
         Dimension of the space (default is 25).
@@ -24,9 +26,9 @@ def initialize_particles(n: int, box_size: float = 25) -> tuple[np.ndarray, np.n
         Initial angle of the particles, in radians.
     """
     # Random initial theta
-    theta = np.random.uniform(0, 2 * np.pi, n)
+    theta = np.random.uniform(0, 2 * np.pi, num_boids)
     # Random initial x, y xy
-    xy = np.random.uniform(0, box_size, (2, n))
+    xy = np.random.uniform(0, box_size, (2, num_boids))
     return xy, theta
 
 
