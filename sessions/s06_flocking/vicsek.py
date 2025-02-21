@@ -271,6 +271,7 @@ def run_animation(dt: float = 1):
             np.sin(theta),
             angles="xy",
         )
+
         # Reinitialize the animation
         ani.event_source.start()
 
