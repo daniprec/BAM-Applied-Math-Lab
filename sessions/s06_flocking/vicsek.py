@@ -74,8 +74,10 @@ def vicsek_equations(
     neighbors = d_matrix <= iteraction_radius
     # Compute mean angle of neighbors
     neighbor_mean_theta = theta @ neighbors / np.sum(neighbors, axis=1)
+    # Add noise
+    noise = eta * np.pi * np.random.uniform(-1, 1, len(theta))
     # Update angle
-    theta = neighbor_mean_theta + eta * np.pi * np.random.uniform(-1, 1, len(theta))
+    theta = neighbor_mean_theta + noise
 
     # Update position
     v = v0 * np.array([np.cos(theta), np.sin(theta)])
