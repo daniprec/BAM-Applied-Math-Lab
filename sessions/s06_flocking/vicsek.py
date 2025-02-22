@@ -266,6 +266,7 @@ def run_animation(dt: float = 1):
         # Because the number of particles has changed, we need to redefine the quiver plot
         # This is because the number of particles on the plot is fixed at the beginning
         # and cannot be changed dynamically
+        plt_particles.remove()  # Remove old quiver plot
         plt_particles = ax_plane.quiver(
             xy[0],
             xy[1],
