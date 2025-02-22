@@ -73,11 +73,11 @@ def vicsek_equations(
     d_matrix = scipy.spatial.distance.squareform(d_matrix)
     neighbors = d_matrix <= interaction_radius
     # Compute mean angle of neighbors
-    neighbor_mean_theta = theta @ neighbors / np.sum(neighbors, axis=1)
+    term_theta_avg = theta @ neighbors / np.sum(neighbors, axis=1)
     # Add noise
-    noise = eta * np.pi * np.random.uniform(-1, 1, len(theta))
+    term_noise = eta * np.pi * np.random.uniform(-1, 1, len(theta))
     # Update angle
-    theta = neighbor_mean_theta + noise
+    theta = term_theta_avg + term_noise
 
     # Update position
     v = v0 * np.array([np.cos(theta), np.sin(theta)])

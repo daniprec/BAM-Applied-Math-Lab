@@ -82,9 +82,9 @@ def vicsek_equations(
     d_matrix = scipy.spatial.distance.squareform(d_matrix)
     neighbors = d_matrix <= interaction_radius
     # Compute mean angle of neighbors
-    neighbor_mean_theta = theta @ neighbors / np.sum(neighbors, axis=1)
+    term_theta_avg = theta @ neighbors / np.sum(neighbors, axis=1)
     # Add noise
-    noise = eta * np.pi * np.random.uniform(-1, 1, len(theta))
+    term_noise = eta * np.pi * np.random.uniform(-1, 1, len(theta))
 
     # Compute distances to the predator
     d_pred = np.linalg.norm(xy - xy_pred[:, np.newaxis], axis=0)
@@ -92,10 +92,10 @@ def vicsek_equations(
     affected = d_pred <= radius_predator
     # Compute repulsion direction (away from predator)
     repulsion_angle = np.arctan2(xy[1] - xy_pred[1], xy[0] - xy_pred[0])
-    force_predator = strength_predator * (repulsion_angle - theta) * affected
+    term_predator = strength_predator * (repulsion_angle - theta) * affected
 
     # Update angle
-    theta = neighbor_mean_theta + noise + force_predator
+    theta = term_theta_avg + term_noise + term_predator
 
     # Update position
     v = v0 * np.array([np.cos(theta), np.sin(theta)])
