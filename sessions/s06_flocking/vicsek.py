@@ -38,7 +38,7 @@ def vicsek_equations(
     dt: float = 1,
     eta: float = 0.1,
     box_size: float = 25,
-    iteraction_radius: float = 1,
+    interaction_radius: float = 1,
     v0: float = 0.03,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
@@ -56,7 +56,7 @@ def vicsek_equations(
         Noise parameter, default is 0.1.
     box_size : float, optional
         Dimension of the space, default is 25.
-    iteraction_radius : float, optional
+    interaction_radius : float, optional
         Interaction radius, default is 1 (standard convention).
     v0 : float, optional
         Speed of the particles, default is 0.03.
@@ -71,7 +71,7 @@ def vicsek_equations(
     # Compute distance matrix and neighbor matrix
     d_matrix = scipy.spatial.distance.pdist(xy.T)
     d_matrix = scipy.spatial.distance.squareform(d_matrix)
-    neighbors = d_matrix <= iteraction_radius
+    neighbors = d_matrix <= interaction_radius
     # Compute mean angle of neighbors
     neighbor_mean_theta = theta @ neighbors / np.sum(neighbors, axis=1)
     # Add noise
@@ -121,7 +121,7 @@ def run_animation(dt: float = 1):
     num_boids = 300
     noise_eta = 0.1
     box_size = 25
-    iteraction_radius = 1
+    interaction_radius = 1
     v0 = 0.03
 
     # Initialize particles
@@ -171,13 +171,13 @@ def run_animation(dt: float = 1):
     # --------------------------------
 
     def update_animation(frame: int):
-        nonlocal xy, theta, noise_eta, v0, iteraction_radius, box_size, dict_noise
+        nonlocal xy, theta, noise_eta, v0, interaction_radius, box_size, dict_noise
         xy, theta = vicsek_equations(
             xy,
             theta,
             v0=v0,
             dt=dt,
-            iteraction_radius=iteraction_radius,
+            interaction_radius=interaction_radius,
             box_size=box_size,
             eta=noise_eta,
         )
@@ -206,7 +206,7 @@ def run_animation(dt: float = 1):
 
     # Add sliders
     ax_num_boids = ax_sliders.inset_axes([0.0, 0.0, 0.8, 0.1])
-    ax_iteraction_radius = ax_sliders.inset_axes([0.0, 0.2, 0.8, 0.1])
+    ax_interaction_radius = ax_sliders.inset_axes([0.0, 0.2, 0.8, 0.1])
     ax_noise_eta = ax_sliders.inset_axes([0.0, 0.4, 0.8, 0.1])
     ax_v0 = ax_sliders.inset_axes([0.0, 0.6, 0.8, 0.1])
     ax_box_size = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])
@@ -214,12 +214,12 @@ def run_animation(dt: float = 1):
     slider_num_boids = plt.Slider(
         ax_num_boids, "Number of boids", 100, 1000, valinit=num_boids, valstep=100
     )
-    slider_iteraction_radius = plt.Slider(
-        ax_iteraction_radius,
+    slider_interaction_radius = plt.Slider(
+        ax_interaction_radius,
         "Interaction radius",
         0,
         50,
-        valinit=iteraction_radius,
+        valinit=interaction_radius,
         valstep=1,
     )
     slider_noise_eta = plt.Slider(
@@ -231,7 +231,7 @@ def run_animation(dt: float = 1):
     )
 
     def update_sliders(_):
-        nonlocal xy, iteraction_radius, noise_eta, v0, box_size
+        nonlocal xy, interaction_radius, noise_eta, v0, box_size
         # Pause animation
         ani.event_source.stop()
 
@@ -239,7 +239,7 @@ def run_animation(dt: float = 1):
         noise_eta = slider_noise_eta.val
         v0 = slider_v0.val
         box_size = slider_box_size.val
-        iteraction_radius = slider_iteraction_radius.val
+        interaction_radius = slider_interaction_radius.val
 
         # Update plot limits
         ax_plane.set_xlim(0, box_size)
@@ -249,7 +249,7 @@ def run_animation(dt: float = 1):
         # Reinitialize the animation
         ani.event_source.start()
 
-    slider_iteraction_radius.on_changed(update_sliders)
+    slider_interaction_radius.on_changed(update_sliders)
     slider_noise_eta.on_changed(update_sliders)
     slider_v0.on_changed(update_sliders)
     slider_box_size.on_changed(update_sliders)
