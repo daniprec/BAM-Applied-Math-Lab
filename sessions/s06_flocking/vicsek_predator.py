@@ -85,7 +85,11 @@ def vicsek_equations(
     term_theta_avg = theta @ neighbors / np.sum(neighbors, axis=1)
     # Add noise
     term_noise = eta * np.pi * np.random.uniform(-1, 1, len(theta))
+    # Update angle
+    theta = term_theta_avg + term_noise
+    theta = np.mod(theta, 2 * np.pi)
 
+    # REPULSION FROM PREDATOR
     # Compute distances to the predator
     d_pred = np.linalg.norm(xy - xy_pred[:, np.newaxis], axis=0)
     # Mask for boids within the predator radius
@@ -93,9 +97,9 @@ def vicsek_equations(
     # Compute repulsion direction (away from predator)
     repulsion_angle = np.arctan2(xy[1] - xy_pred[1], xy[0] - xy_pred[0])
     term_predator = strength_predator * (repulsion_angle - theta) * affected
-
     # Update angle
-    theta = term_theta_avg + term_noise + term_predator
+    theta = theta + term_predator
+    theta = np.mod(theta, 2 * np.pi)
 
     # Update position
     v = v0 * np.array([np.cos(theta), np.sin(theta)])
