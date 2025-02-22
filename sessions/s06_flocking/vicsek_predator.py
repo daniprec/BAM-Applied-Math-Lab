@@ -40,9 +40,9 @@ def vicsek_equations(
     box_size: float = 25,
     interaction_radius: float = 1,
     v0: float = 0.03,
-    predator_radius: float = 1,
-    repulsion_strength: float = 0.1,
-    xy_pred: np.ndarray = None,
+    xy_pred: np.ndarray = np.array([-1000, -1000]),
+    radius_predator: float = 1,
+    strength_predator: float = 0.1,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Update the state of the particles based on the Vicsek model.
@@ -63,6 +63,12 @@ def vicsek_equations(
         Interaction radius, default is 1 (standard convention).
     v0 : float, optional
         Speed of the particles, default is 0.03.
+    xy_pred : np.ndarray, optional
+        Position of the predator, default is far away [-1000, -1000].
+    radius_predator : float, optional
+        Radius of the predator, default is 1.
+    strength_predator : float, optional
+        Strength of the repulsion from the predator, default is 0.1.
 
     Returns
     -------
@@ -80,16 +86,13 @@ def vicsek_equations(
     # Add noise
     noise = eta * np.pi * np.random.uniform(-1, 1, len(theta))
 
-    if xy_pred is not None:
-        # Compute distances to the predator
-        d_pred = np.linalg.norm(xy - xy_pred[:, np.newaxis], axis=0)
-        # Mask for boids within the predator radius
-        affected = d_pred <= predator_radius
-        # Compute repulsion direction (away from predator)
-        repulsion_angle = np.arctan2(xy[1] - xy_pred[1], xy[0] - xy_pred[0])
-        force_predator = repulsion_strength * (repulsion_angle - theta) * affected
-    else:
-        force_predator = 0
+    # Compute distances to the predator
+    d_pred = np.linalg.norm(xy - xy_pred[:, np.newaxis], axis=0)
+    # Mask for boids within the predator radius
+    affected = d_pred <= radius_predator
+    # Compute repulsion direction (away from predator)
+    repulsion_angle = np.arctan2(xy[1] - xy_pred[1], xy[0] - xy_pred[0])
+    force_predator = strength_predator * (repulsion_angle - theta) * affected
 
     # Update angle
     theta = neighbor_mean_theta + noise + force_predator
@@ -138,7 +141,9 @@ def run_animation(dt: float = 1):
     box_size = 25
     interaction_radius = 1
     v0 = 0.03
-    xy_pred = None
+    xy_pred = np.array([-1000, -1000])
+    radius_predator = 1
+    strength_predator = 0.1
 
     # Initialize particles
     xy, theta = initialize_particles(num_boids, box_size=box_size)
@@ -164,6 +169,10 @@ def run_animation(dt: float = 1):
     ax_plane.set_ylim(0, box_size)
     ax_plane.set_aspect("equal")
 
+    # Paint circle around the predator
+    circle_predator = plt.Circle(xy_pred, radius_predator, color="red", fill=False)
+    ax_plane.add_artist(circle_predator)
+
     # Initialize order parameter
     (line_order_param,) = ax_order.plot([], [])
     ax_order.set_xlim(0, 3000)
@@ -187,23 +196,29 @@ def run_animation(dt: float = 1):
     # --------------------------------
 
     def update_animation(frame: int):
-        nonlocal xy, theta, xy_pred, noise_eta, v0, interaction_radius, box_size
+        nonlocal xy, theta, noise_eta, v0, interaction_radius, box_size
+        nonlocal xy_pred, radius_predator, strength_predator
         nonlocal ls_order_param, dict_noise
 
         xy, theta = vicsek_equations(
             xy,
             theta,
-            xy_pred=xy_pred,
             v0=v0,
             dt=dt,
             interaction_radius=interaction_radius,
             box_size=box_size,
             eta=noise_eta,
+            xy_pred=xy_pred,
+            radius_predator=radius_predator,
+            strength_predator=strength_predator,
         )
 
         # Update quiver plot
         plt_particles.set_offsets(xy.T)
         plt_particles.set_UVC(np.cos(theta), np.sin(theta))
+
+        # Update predator circle when the predator is present
+        circle_predator.set_center(xy_pred)
 
         # Update order parameter
         ls_order_param.append(vicsek_order_parameter(theta))
@@ -215,7 +230,7 @@ def run_animation(dt: float = 1):
         dict_noise[noise_eta] = order_param
         dict_noise = dict(sorted(dict_noise.items()))
         line_noise.set_data(*zip(*dict_noise.items()))
-        return plt_particles, line_order_param, line_noise
+        return plt_particles, circle_predator, line_order_param, line_noise
 
     ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)
 
@@ -313,7 +328,7 @@ def run_animation(dt: float = 1):
             # Update predator position
             xy_pred = np.array([event.xdata, event.ydata])
         else:
-            xy_pred = None
+            xy_pred = np.array([-1000, -1000])
 
     fig.canvas.mpl_connect("motion_notify_event", on_mouse_move)
 
