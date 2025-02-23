@@ -27,7 +27,7 @@ def initialize_particles(
     """
     # Random initial theta
     theta = np.random.uniform(0, 2 * np.pi, num_boids)
-    # Random initial x, y xy
+    # Random initial x, y
     xy = np.random.uniform(0, box_size, (2, num_boids))
     return xy, theta
 
@@ -106,7 +106,7 @@ def vicsek_order_parameter(theta: np.ndarray) -> float:
     return np.abs(np.mean(np.exp(1j * theta)))
 
 
-def run_animation(dt: float = 1):
+def run_simulation(dt: float = 1):
     """
     Run the animation of the Vicsek model.
     Reference: Topaz, Chad M., Lori Ziegelmeier, and Tom Halverson. 2015.
@@ -292,4 +292,4 @@ def run_animation(dt: float = 1):
 
 
 if __name__ == "__main__":
-    run_animation()
+    run_simulation()

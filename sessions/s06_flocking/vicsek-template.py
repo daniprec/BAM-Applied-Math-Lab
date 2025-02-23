@@ -91,7 +91,7 @@ def vicsek_order_parameter(theta: np.ndarray) -> float:
     return order_param
 
 
-def run_animation(dt: float = 1):
+def run_simulation(dt: float = 1):
     """
     Run the animation of the Vicsek model.
     Reference: Topaz, Chad M., Lori Ziegelmeier, and Tom Halverson. 2015.
@@ -277,4 +277,4 @@ def run_animation(dt: float = 1):
 
 
 if __name__ == "__main__":
-    run_animation()
+    run_simulation()
