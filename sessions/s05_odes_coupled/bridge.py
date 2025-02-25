@@ -253,10 +253,7 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
         # We'll just draw a straight line across:
         bridge_line.set_data([-1, num_pedestrians], [state[0], state[0]])
 
-        # Update pedestrian scatter:
-        #  - x positions = 0..N-1
-        #  - y positions = y(t) for all
-        #  - color ~ thetas
+        # Update pedestrian scatter
         xvals = x_positions
         yvals = np.sin(thetas) * np.abs(state[0])
         # We'll color them by (theta mod 2pi)
