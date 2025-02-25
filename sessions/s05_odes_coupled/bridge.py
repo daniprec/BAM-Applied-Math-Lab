@@ -9,7 +9,7 @@ from scipy.integrate import solve_ivp
 
 
 def initialize_bridge_and_pedestrians(
-    num_pedestrians: int, max_coupling: float = 0.03, seed: int = None
+    num_pedestrians: int, seed: int = None
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     Creates initial state and parameter arrays for:
@@ -32,8 +32,6 @@ def initialize_bridge_and_pedestrians(
         Pedestrians' natural frequencies (omega_i).
     coupling_pedestrians : ndarray
         Pedestrians' coupling constants (c_i).
-    xi_arr : ndarray
-        Pedestrians' phase shifts (xi_i).
     x_positions : ndarray
         Where each pedestrian sits horizontally on the bridge (for plotting).
     """
@@ -46,12 +44,8 @@ def initialize_bridge_and_pedestrians(
     # Pedestrians' initial phases, e.g. random in [0, 2 pi)
     theta_init = np.random.uniform(0, 2 * np.pi, num_pedestrians)
 
-    # Interpreted in real units, the natural frequency of pedestrians corresponds
-    # roughly to 1 Hz lateral stepping (i.e., one step per second in the lateral direction)
-    # to match the bridge's lateral resonance near 1 Hz.
-    freq_pedestrians = np.random.normal(loc=1.0, scale=0.05, size=num_pedestrians)
-    # Numerically, Eckhardt often illustrate examples with the coupling parameter in the range 0.01–0.03
-    coupling_pedestrians = np.random.uniform(0.01, max_coupling, size=num_pedestrians)
+    # Sigma measured in Ref [14]
+    freq_pedestrians = np.random.normal(loc=1.0, scale=0.086, size=num_pedestrians)
 
     # For a simple left-to-right arrangement of pedestrians on the bridge:
     x_positions = np.linspace(0, num_pedestrians - 1, num_pedestrians)
@@ -59,33 +53,27 @@ def initialize_bridge_and_pedestrians(
     # Combine into one initial state vector
     state0 = np.concatenate(([y0, dy0], theta_init))
 
-    return state0, freq_pedestrians, coupling_pedestrians, x_positions
+    return state0, freq_pedestrians, x_positions
 
 
 def bridge_with_pedestrians_ode(
     t: float,
     state: np.ndarray,
-    modal_mass: float,
     damping: float,
-    eigenfreq: float,
     freq_pedestrians: np.ndarray,
-    coupling_pedestrians: np.ndarray,
+    coupling_strength: float,
 ) -> np.ndarray:
-    """ """
+    """Reference: Eckhardt, eq. 66, 67"""
     # Unpack the current state
     y = state[0]
     dy = state[1]
     thetas = state[2:]
-    # Bridge acceleration
-    ddy = (
-        (1.0 / modal_mass) * np.sum(coupling_pedestrians * np.cos(thetas), axis=0)
-        - 2.0 * damping * eigenfreq * dy
-        - (eigenfreq**2) * y
-    )
 
-    # Pedestrians: theta'_i
-    # Note we use the just-computed ddy in each phase equation
-    dthetas = freq_pedestrians - coupling_pedestrians * ddy * np.cos(thetas)
+    # Bridge acceleration
+    ddy = np.sum(np.cos(thetas)) - 2 * damping * dy - y
+
+    # Pedestrians
+    dthetas = freq_pedestrians - coupling_strength * ddy * np.cos(thetas)
 
     # Build the derivative of the full state
     dstate_dt = np.empty_like(state)
@@ -104,13 +92,11 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
     # ------------------------------------------------------------------------
     # PARAMETERS
     # ------------------------------------------------------------------------
-    num_pedestrians = 20  # number of pedestrians
-    modal_mass = 10.0  # mass of the bridge
+    num_pedestrians = 200  # number of pedestrians
     damping = 0.01  # damping ratio
-    eigenfreq = 1.0  # natural frequency (Omega)
     t_span = (0, dt)  # time span for each integration step
     ylim = 1  # y-axis limit for the bridge plot
-    max_coupling = 0.03  # maximum coupling constant
+    coupling_strength = 0.03  # maximum coupling constant
 
     # We will keep a rolling history of length 500
     max_history = 500
@@ -119,10 +105,8 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
     order_data = [0.0] * max_history
 
     # Initialize everything
-    state, freq_pedestrians, coupling_pedestrians, x_positions = (
-        initialize_bridge_and_pedestrians(
-            num_pedestrians, max_coupling=max_coupling, seed=seed
-        )
+    state, freq_pedestrians, x_positions = initialize_bridge_and_pedestrians(
+        num_pedestrians, seed=seed
     )
 
     # ------------------------------------------------------------------------
@@ -178,9 +162,9 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
         ax_damping,
         "Damping (zeta)",
         valmin=0.0,
-        valmax=0.5,
+        valmax=1.0,
         valinit=damping,
-        valstep=0.005,
+        valstep=0.01,
     )
 
     ax_nped = ax_sliders.inset_axes([0.1, 0.6, 0.8, 0.2])
@@ -188,7 +172,7 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
         ax_nped,
         "N. Pedestrians",
         valmin=1,
-        valmax=100,
+        valmax=200,
         valinit=num_pedestrians,
         valstep=1,
     )
@@ -196,41 +180,25 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
     ax_coupling = ax_sliders.inset_axes([0.1, 0.4, 0.8, 0.2])
     slider_coupling = Slider(
         ax_coupling,
-        "Max. Coupling",
-        valmin=0.02,
-        valmax=0.5,
-        valinit=max_coupling,
+        "Coupling strength",
+        valmin=0.0,
+        valmax=1.0,
+        valinit=coupling_strength,
         valstep=0.01,
-    )
-
-    ax_mass = ax_sliders.inset_axes([0.1, 1.0, 0.8, 0.2])
-    slider_mass = Slider(
-        ax_mass,
-        "Modal Mass",
-        valmin=1.0,
-        valmax=10.0,
-        valinit=modal_mass,
-        valstep=1.0,
     )
 
     # ------------------------------------------------------------------------
     # ANIMATION UPDATE FUNCTION
     # ------------------------------------------------------------------------
     def update(frame: int):
-        nonlocal state, damping, modal_mass, coupling_pedestrians
+        nonlocal state, damping, coupling_strength
 
         # Integrate from sim_time to sim_time + dt
         sol = solve_ivp(
             bridge_with_pedestrians_ode,
             t_span,
             state,
-            args=(
-                modal_mass,
-                damping,
-                eigenfreq,
-                freq_pedestrians,
-                coupling_pedestrians,
-            ),
+            args=(damping, freq_pedestrians, coupling_strength),
         )
         state = sol.y[:, -1]
 
@@ -271,18 +239,14 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
     # ------------------------------------------------------------------------
 
     def on_slider_change(_):
-        nonlocal damping, coupling_pedestrians, max_coupling, modal_mass
+        nonlocal damping, coupling_strength
         ani.event_source.stop()
         damping = slider_damping.val
-        modal_mass = slider_mass.val
-        # Re-scale coupling constants
-        coupling_pedestrians *= slider_coupling.val / max_coupling
-        max_coupling = slider_coupling.val
+        coupling_strength = slider_coupling.val
         ani.event_source.start()
 
     slider_damping.on_changed(on_slider_change)
     slider_coupling.on_changed(on_slider_change)
-    slider_mass.on_changed(on_slider_change)
 
     def on_slider_nped_change(_):
         """
@@ -290,7 +254,7 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
         so the changes take effect. This is similar to the Kuramoto code.
         """
         nonlocal state, y_data, order_data, time_data, num_pedestrians
-        nonlocal freq_pedestrians, coupling_pedestrians, x_positions
+        nonlocal freq_pedestrians, x_positions
 
         ani.event_source.stop()
 
@@ -298,8 +262,8 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
         num_pedestrians = int(slider_nped.val)
 
         # Re-initialize everything
-        state, freq_pedestrians, coupling_pedestrians, x_positions = (
-            initialize_bridge_and_pedestrians(num_pedestrians, seed)
+        state, freq_pedestrians, x_positions = initialize_bridge_and_pedestrians(
+            num_pedestrians, seed
         )
 
         # Reset rolling arrays
