@@ -244,7 +244,7 @@ def run_simulation(dt: float = 1):
     # SLIDERS
     # --------------------------------
 
-    # Add sliders
+    # Create child inset axes for sliders
     ax_num_boids = ax_sliders.inset_axes([0.0, 1.2, 0.8, 0.1])
     ax_radius_interaction = ax_sliders.inset_axes([0.0, 1.0, 0.8, 0.1])
     ax_noise_eta = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])
@@ -253,6 +253,7 @@ def run_simulation(dt: float = 1):
     ax_radius_predator = ax_sliders.inset_axes([0.0, 0.2, 0.8, 0.1])
     ax_strength_predator = ax_sliders.inset_axes([0.0, 0.0, 0.8, 0.1])
 
+    # Create sliders in the inset axes
     slider_num_boids = plt.Slider(
         ax_num_boids, "Number of boids", 100, 1000, valinit=num_boids, valstep=100
     )
