@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.spatial
 from matplotlib.axes import Axes
+from matplotlib.backend_bases import MouseEvent
 
 
 def initialize_particles(
@@ -350,7 +351,7 @@ def run_simulation(dt: float = 1):
 
     # Track the mouse position on ax_plane as the predator
 
-    def on_mouse_move(event):
+    def on_mouse_move(event: MouseEvent):
         nonlocal xy_pred
         if event.inaxes == ax_plane:
             # Update predator position
