@@ -95,7 +95,7 @@ def run_simulation(dt: float = 0.01, interval: int = 1, seed: int = 1):
     num_pedestrians = 200  # number of pedestrians
     damping = 0.01  # damping ratio
     t_span = (0, dt)  # time span for each integration step
-    ylim = 1  # y-axis limit for the bridge plot
+    ylim = 20  # y-axis limit for the bridge plot
     coupling_strength = 0.03  # maximum coupling constant
 
     # We will keep a rolling history of length 500
