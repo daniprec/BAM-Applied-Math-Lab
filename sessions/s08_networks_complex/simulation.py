@@ -24,10 +24,12 @@ def initial_state(G: nx.Graph) -> dict:
         The states are represented as strings, with "S" for
         susceptible, "I" for infected, and "R" for recovered.
     """
+    # Initialize all nodes as susceptible
     state = {}
     for node in G.nodes:
         state[node] = "S"
 
+    # Infect a random node
     patient_zero = random.choice(list(G.nodes))
     state[patient_zero] = "I"
     return state
@@ -61,12 +63,17 @@ def state_transition(
         The states are represented as strings, with "S" for
         susceptible, "I" for infected, and "R" for recovered.
     """
+    # Initialize the next state as an empty dictionary
     next_state = {}
+    # Loop over all nodes in the graph
     for node in G.nodes:
+        # If the node is infected, it may recover
         if current_state[node] == "I":
             if random.random() < mu:
                 next_state[node] = "S"
-        else:  # current_state[node] == 'S'
+        # If the node is susceptible, it may become infected
+        else:
+            # There is a chance of infection from each infected neighbor
             for neighbor in G.neighbors(node):
                 if current_state[neighbor] == "I":
                     if random.random() < beta:
@@ -76,8 +83,6 @@ def state_transition(
 
 
 class StopCondition(StopIteration):
-    """Exception raised when a simulation stop condition is met"""
-
     pass
 
 
@@ -130,7 +135,7 @@ class Simulation:
         self._initial_state = initial_state
         self._state_transition = state_transition
         self._stop_condition = stop_condition
-        # It's okay to specify stop_condition=False
+        # It is okay to specify stop_condition=False
         if stop_condition and not callable(stop_condition):
             raise TypeError("'stop_condition' should be a function")
         self.name = name or "Simulation"
