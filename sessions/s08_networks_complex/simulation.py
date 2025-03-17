@@ -36,7 +36,7 @@ def initial_state(G: nx.Graph) -> dict:
 
 
 def state_transition(
-    G: nx.Graph, current_state: dict, mu: float = 0.1, beta: float = 0.1
+    G: nx.Graph, current_state: dict, gamma: float = 0.1, beta: float = 0.1
 ) -> dict:
     """Determines the next state of the nodes in the graph,"
     based on the current state."
@@ -50,7 +50,7 @@ def state_transition(
         The keys are the nodes and the values are the states.
         The states are represented as strings, with "S" for
         susceptible, "I" for infected, and "R" for recovered.
-    mu : float
+    gamma : float
         The probability of recovery, by default 0.1.
     beta : float
         The probability of infection, by default 0.1.
@@ -69,7 +69,7 @@ def state_transition(
     for node in G.nodes:
         # If the node is infected, it may recover
         if current_state[node] == "I":
-            if random.random() < mu:
+            if random.random() < gamma:
                 next_state[node] = "S"
         # If the node is susceptible, it may become infected
         else:
@@ -94,8 +94,9 @@ class Simulation:
         G: nx.Graph,
         initial_state: callable,
         state_transition: callable,
-        stop_condition: callable | None = None,
+        stop_condition: callable = None,
         name: str = "",
+        **kwargs,
     ):
         """
         Create a Simulation instance.
@@ -123,6 +124,9 @@ class Simulation:
             True if the simulation should be stopped at its current state.
         name : str, optional
             A string used in titles of plots and drawings.
+        **kwargs
+            Additional keyword arguments are passed to the state transition
+            function.
 
         Raises
         ------
@@ -134,23 +138,32 @@ class Simulation:
         self.G = G.copy()
         self._initial_state = initial_state
         self._state_transition = state_transition
+        self._kwargs = kwargs
         self._stop_condition = stop_condition
         # It is okay to specify stop_condition=False
         if stop_condition and not callable(stop_condition):
             raise TypeError("'stop_condition' should be a function")
         self.name = name or "Simulation"
 
-        self._states = []
+        # Initialize the list of past states - we will use it later to
+        # plot the evolution of the simulation
+        self._ls_states_history = []
+        # Initialize the value index - we will use it to assign colors
+        # to the nodes in the plot
         self._value_index = {}
+        # Initialize the color map
         self._cmap = plt.cm.get_cmap("tab10")
 
+        # Initialize the simulation by calling the initial state function
         self._initialize()
 
+        # Define the layout of the graph
         self._pos = nx.layout.spring_layout(G)
 
     def _append_state(self, state: dict):
         """Append a state to the list of states and update the value index."""
-        self._states.append(state)
+        # Save the current state in the history
+        self._ls_states_history.append(state)
         # Update self._value_index
         for value in set(state.values()):
             if value not in self._value_index:
@@ -158,12 +171,9 @@ class Simulation:
 
     def _initialize(self):
         """Initialize the simulation by setting the initial state."""
-        if self._initial_state:
-            if callable(self._initial_state):
-                state = self._initial_state(self.G)
-            else:
-                state = self._initial_state
-            nx.set_node_attributes(self.G, state, "state")
+        # Use the initial state function to set the initial state
+        state = self._initial_state(self.G)
+        nx.set_node_attributes(self.G, state, "state")
 
         if any(self.G.nodes[n].get("state") is None for n in self.G.nodes):
             raise ValueError("All nodes must have an initial state")
@@ -178,12 +188,13 @@ class Simulation:
         if self._stop_condition and self._stop_condition(self.G, state):
             raise StopCondition
         state = nx.get_node_attributes(self.G, "state")
-        new_state = self._state_transition(self.G, state)
+        new_state = self._state_transition(self.G, state, **self._kwargs)
         state.update(new_state)
         nx.set_node_attributes(self.G, state, "state")
         self._append_state(state)
 
-    def _categorical_color(self, value):
+    def _categorical_color(self, value: str) -> str:
+        """Return a color for a categorical value"""
         index = self._value_index[value]
         node_color = self._cmap(index)
         return node_color
@@ -191,7 +202,7 @@ class Simulation:
     @property
     def steps(self):
         """Returns the number of steps the sumulation has run"""
-        return len(self._states) - 1
+        return len(self._ls_states_history) - 1
 
     def state(self, step: int = -1):
         """
@@ -214,7 +225,7 @@ class Simulation:
             If `step` argument is greater than the number of steps.
         """
         try:
-            return self._states[step]
+            return self._ls_states_history[step]
         except IndexError:
             raise IndexError("Simulation step %i out of range" % step)
 
@@ -291,8 +302,10 @@ class Simulation:
         matplotlib.axes.Axes
             Axes object for the current plot
         """
-        x_range = range(min_step or 0, max_step or len(self._states))
-        counts = [Counter(s.values()) for s in self._states[min_step:max_step]]
+        x_range = range(min_step or 0, max_step or len(self._ls_states_history))
+        counts = [
+            Counter(s.values()) for s in self._ls_states_history[min_step:max_step]
+        ]
         if labels is None:
             labels = {k for count in counts for k in count}
             labels = sorted(labels, key=self._value_index.get)
