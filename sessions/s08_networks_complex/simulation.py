@@ -350,17 +350,24 @@ class Simulation:
                 break
 
 
-def run_animation():
+def run_animation(gamma: float = 0.02, beta: float = 0.1, graph: str = "small_world"):
     """
     Run the simulation, updating a plot at each step.
     """
-    # Barabasi-Albert preferential attachment graph with n nodes and m edges
-    G = nx.barabasi_albert_graph(n=50, m=2)
+    if graph == "barabasi_albert" or graph == "scale_free":
+        # Barabasi-Albert preferential attachment graph with n nodes and m edges
+        G = nx.barabasi_albert_graph(n=50, m=2)
+    elif graph == "watts_strogatz" or graph == "small_world":
+        # Watts-Strogatz small-world graph with n nodes, k neighbors, and probability p of rewiring
+        G = nx.watts_strogatz_graph(n=50, k=4, p=0.2)
+    else:
+        raise ValueError("Unknown graph type")
+
     pos = nx.spring_layout(G)
 
     # Reinitialize the simulation
     sim = Simulation(
-        G, initial_state, state_transition, gamma=0.05, beta=0.1, name="SIS model"
+        G, initial_state, state_transition, gamma=gamma, beta=beta, name="SIS model"
     )
 
     fig, [ax_graph, ax_history] = plt.subplots(1, 2, figsize=(12, 6))
