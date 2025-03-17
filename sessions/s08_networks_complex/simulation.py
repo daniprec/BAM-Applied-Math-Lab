@@ -1,11 +1,83 @@
+import random
 from collections import Counter
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import networkx as nx
+from matplotlib.axes import Axes
+
+
+def initial_state(G: nx.Graph) -> dict:
+    """Assigns the initial state of the nodes in the graph,
+    in the form of a dictionary.
+
+    Parameters
+    ----------
+    G : nx.Graph
+        The graph on which the simulation is run.
+
+    Returns
+    -------
+    dict
+        A dictionary containing the initial state of the nodes.
+        The keys are the nodes and the values are the states.
+        The states are represented as strings, with "S" for
+        susceptible, "I" for infected, and "R" for recovered.
+    """
+    state = {}
+    for node in G.nodes:
+        state[node] = "S"
+
+    patient_zero = random.choice(list(G.nodes))
+    state[patient_zero] = "I"
+    return state
+
+
+def state_transition(
+    G: nx.Graph, current_state: dict, mu: float = 0.1, beta: float = 0.1
+) -> dict:
+    """Determines the next state of the nodes in the graph,"
+    based on the current state."
+
+    Parameters
+    ----------
+    G : nx.Graph
+        The graph on which the simulation is run.
+    current_state : dict
+        A dictionary containing the current state of the nodes.
+        The keys are the nodes and the values are the states.
+        The states are represented as strings, with "S" for
+        susceptible, "I" for infected, and "R" for recovered.
+    mu : float
+        The probability of recovery, by default 0.1.
+    beta : float
+        The probability of infection, by default 0.1.
+
+    Returns
+    -------
+    dict
+        A dictionary containing the next state of the nodes.
+        The keys are the nodes and the values are the states.
+        The states are represented as strings, with "S" for
+        susceptible, "I" for infected, and "R" for recovered.
+    """
+    next_state = {}
+    for node in G.nodes:
+        if current_state[node] == "I":
+            if random.random() < mu:
+                next_state[node] = "S"
+        else:  # current_state[node] == 'S'
+            for neighbor in G.neighbors(node):
+                if current_state[neighbor] == "I":
+                    if random.random() < beta:
+                        next_state[node] = "I"
+
+    return next_state
 
 
 class StopCondition(StopIteration):
+    """Exception raised when a simulation stop condition is met"""
+
     pass
 
 
@@ -13,33 +85,46 @@ class Simulation:
     """Simulate state transitions on a network"""
 
     def __init__(
-        self, G, initial_state, state_transition, stop_condition=None, name=""
+        self,
+        G: nx.Graph,
+        initial_state: callable,
+        state_transition: callable,
+        stop_condition: callable | None = None,
+        name: str = "",
     ):
         """
         Create a Simulation instance.
 
-        Args:
-            G: a networkx.Graph instance.
-            initial_state: function with signature `initial_state(G)`, that
-                accepts a single argument, the Graph, and returns a dictionary
-                of all node states. The keys in this dict should be node names
-                and the values the corresponding initial node state.
-            state_transition: function with signature
-                `state_transition(G, current_state)` that accepts two
-                arguments, the Graph and a dictionary of current node states,
-                and returns a dictionary of updated node states. The keys in
-                this dict should be node names and the values the corresponding
-                updated node state.
-            stop_condition (optional): function with signature
-                `stop_condition(G, current_state)` that accepts two arguments,
-                the Graph and a dictionary of current node states, and returns
-                True if the simulation should be stopped at its current state.
+        Parameters
+        ----------
+        G : nx.Graph
+            The graph on which the simulation is run.
+        initial_state : callable
+            Function with signature `initial_state(G)`, that
+            accepts a single argument, the Graph, and returns a dictionary
+            of all node states. The keys in this dict should be node names
+            and the values the corresponding initial node state.
+        state_transition : callable
+            Function with signature
+            `state_transition(G, current_state)` that accepts two
+            arguments, the Graph and a dictionary of current node states,
+            and returns a dictionary of updated node states. The keys in
+            this dict should be node names and the values the corresponding
+            updated node state.
+        stop_condition : callable, optional
+            Function with signature
+            `stop_condition(G, current_state)` that accepts two arguments,
+            the Graph and a dictionary of current node states, and returns
+            True if the simulation should be stopped at its current state.
+        name : str, optional
+            A string used in titles of plots and drawings.
 
-        Keyword Args:
-            name (optional): a string used in titles of plots and drawings.
-
-        Raises:
-            ValueError: if not all graph nodes have an initial state.
+        Raises
+        ------
+        ValueError
+            If not all graph nodes have an initial state.
+        TypeError
+            If `stop_condition` is not a function.
         """
         self.G = G.copy()
         self._initial_state = initial_state
@@ -58,7 +143,8 @@ class Simulation:
 
         self._pos = nx.layout.spring_layout(G)
 
-    def _append_state(self, state):
+    def _append_state(self, state: dict):
+        """Append a state to the list of states and update the value index."""
         self._states.append(state)
         # Update self._value_index
         for value in set(state.values()):
@@ -66,6 +152,7 @@ class Simulation:
                 self._value_index[value] = len(self._value_index)
 
     def _initialize(self):
+        """Initialize the simulation by setting the initial state."""
         if self._initial_state:
             if callable(self._initial_state):
                 state = self._initial_state(self.G)
@@ -79,6 +166,7 @@ class Simulation:
         self._append_state(state)
 
     def _step(self):
+        """Advance the simulation by one step."""
         # We're choosing to use the node attributes as the source of truth.
         # This allows the user to manually perturb the network in between steps.
         state = nx.get_node_attributes(self.G, "state")
@@ -100,37 +188,51 @@ class Simulation:
         """Returns the number of steps the sumulation has run"""
         return len(self._states) - 1
 
-    def state(self, step=-1):
+    def state(self, step: int = -1):
         """
         Get a state of the simulation; by default returns the current state.
 
-        Args:
-            step: the step of the simulation to return. Default is -1, the
+        Parameters
+        ----------
+        step : int, optional
+            The step of the simulation to return. Default is -1, the
             current state.
 
-        Returns:
+        Returns
+        -------
+        dict
             Dictionary of node states.
 
-        Raises:
-            IndexError: if `step` argument is greater than the number of steps.
+        Raises
+        ------
+        IndexError
+            If `step` argument is greater than the number of steps.
         """
         try:
             return self._states[step]
         except IndexError:
             raise IndexError("Simulation step %i out of range" % step)
 
-    def draw(self, step=-1, labels=None, **kwargs):
+    def draw(self, step: int = -1, labels: list | None = None, **kwargs):
         """
         Use networkx.draw to draw a simulation state with nodes colored by
         their state value. By default, draws the current state.
 
-        Args:
-            step: the step of the simulation to draw. Default is -1, the
+        Parameters
+        ----------
+        step : int, optional
+            The step of the simulation to draw. Default is -1, the
             current state.
-            kwargs: keyword arguments are passed to networkx.draw()
+        labels : list, optional
+            Ordered sequence of state values to plot. Default is all
+            observed state values, approximately ordered by appearance.
+        kwargs : dict
+            Keyword arguments are passed to networkx.draw()
 
-        Raises:
-            IndexError: if `step` argument is greater than the number of steps.
+        Raises
+        ------
+        IndexError
+            If `step` argument is greater than the number of steps.
         """
         state = self.state(step)
         node_colors = [self._categorical_color(state[n]) for n in self.G.nodes]
@@ -154,21 +256,34 @@ class Simulation:
             title = "{}: {}".format(self.name, title)
         plt.title(title)
 
-    def plot(self, min_step=None, max_step=None, labels=None, **kwargs):
+    def plot(
+        self,
+        min_step: int = None,
+        max_step: int = None,
+        labels: list | None = None,
+        **kwargs,
+    ) -> Axes:
         """
         Use pyplot to plot the relative number of nodes with each state at each
         simulation step. By default, plots all simulation steps.
 
-        Args:
-            min_step: the first step of the simulation to draw. Default is
-                None, which plots starting from the initial state.
-            max_step: the last step, not inclusive, of the simulation to draw.
-                Default is None, which plots up to the current step.
-            labels: ordered sequence of state values to plot. Default is all
-                observed state values, approximately ordered by appearance.
-            kwargs: keyword arguments are passed along to plt.plot()
+        Parameters
+        ----------
+        min_step : int, optional
+            The first step of the simulation to draw. Default is None, which
+            plots starting from the initial state.
+        max_step : int, optional
+            The last step, not inclusive, of the simulation to draw. Default is
+            None, which plots up to the current step.
+        labels : list, optional
+            Ordered sequence of state values to plot. Default is all
+            observed state values, approximately ordered by appearance.
+        kwargs : dict
+            Keyword arguments are passed along to plt.plot()
 
-        Returns:
+        Returns
+        -------
+        matplotlib.axes.Axes
             Axes object for the current plot
         """
         x_range = range(min_step or 0, max_step or len(self._states))
@@ -192,13 +307,15 @@ class Simulation:
 
         return plt.gca()
 
-    def run(self, steps=1):
+    def run(self, steps: int = 1):
         """
         Run the simulation one or more steps, as specified by the `steps`
         argument. Default is to run a single step.
 
-        Args:
-            steps: number of steps to advance the simulation.
+        Parameters
+        ----------
+        steps : int, optional
+            Number of steps to advance the simulation. Default is 1.
         """
         for _ in range(steps):
             try:
