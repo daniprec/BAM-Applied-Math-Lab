@@ -4,6 +4,7 @@ from collections import Counter
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import networkx as nx
+from matplotlib.animation import FuncAnimation
 from matplotlib.axes import Axes
 
 
@@ -229,7 +230,9 @@ class Simulation:
         except IndexError:
             raise IndexError("Simulation step %i out of range" % step)
 
-    def draw(self, step: int = -1, labels: list | None = None, **kwargs):
+    def draw(
+        self, step: int = -1, labels: list | None = None, axis: Axes = None, **kwargs
+    ):
         """
         Use networkx.draw to draw a simulation state with nodes colored by
         their state value. By default, draws the current state.
@@ -250,9 +253,10 @@ class Simulation:
         IndexError
             If `step` argument is greater than the number of steps.
         """
+        axis = axis if axis else plt.gca()
         state = self.state(step)
         node_colors = [self._categorical_color(state[n]) for n in self.G.nodes]
-        nx.draw(self.G, pos=self._pos, node_color=node_colors, **kwargs)
+        nx.draw(self.G, pos=self._pos, node_color=node_colors, ax=axis, **kwargs)
 
         if labels is None:
             labels = sorted(set(state.values()), key=self._value_index.get)
@@ -260,7 +264,7 @@ class Simulation:
             mpl.patches.Patch(color=self._categorical_color(label), label=label)
             for label in labels
         ]
-        plt.legend(handles=patches)
+        axis.legend(handles=patches)
 
         if step == -1:
             step = self.steps
@@ -270,13 +274,15 @@ class Simulation:
             title = "step %i" % (step)
         if self.name:
             title = "{}: {}".format(self.name, title)
-        plt.title(title)
+        axis.set_title(title)
+        return axis
 
     def plot(
         self,
         min_step: int = None,
         max_step: int = None,
         labels: list | None = None,
+        axis: Axes = None,
         **kwargs,
     ) -> Axes:
         """
@@ -302,6 +308,7 @@ class Simulation:
         matplotlib.axes.Axes
             Axes object for the current plot
         """
+        axis = axis if axis else plt.gca()
         x_range = range(min_step or 0, max_step or len(self._ls_states_history))
         counts = [
             Counter(s.values()) for s in self._ls_states_history[min_step:max_step]
@@ -312,18 +319,18 @@ class Simulation:
 
         for label in labels:
             series = [count.get(label, 0) / sum(count.values()) for count in counts]
-            plt.plot(x_range, series, label=label, **kwargs)
+            axis.plot(x_range, series, label=label, **kwargs)
 
         title = "node state proportions"
         if self.name:
             title = "{}: {}".format(self.name, title)
-        plt.title(title)
-        plt.xlabel("Simulation step")
-        plt.ylabel("Proportion of nodes")
-        plt.legend()
-        plt.xlim(x_range.start)
+        axis.set_title(title)
+        axis.set_xlabel("Simulation step")
+        axis.set_ylabel("Proportion of nodes")
+        axis.legend()
+        axis.set_xlim(x_range.start)
 
-        return plt.gca()
+        return axis
 
     def run(self, steps: int = 1):
         """
@@ -341,3 +348,43 @@ class Simulation:
             except StopCondition:
                 print("Stop condition met at step %i." % self.steps)
                 break
+
+
+def run_animation():
+    """
+    Run the simulation, updating a plot at each step.
+    """
+    # Barabasi-Albert preferential attachment graph with n nodes and m edges
+    G = nx.barabasi_albert_graph(n=50, m=2)
+    pos = nx.spring_layout(G)
+
+    # Reinitialize the simulation
+    sim = Simulation(
+        G, initial_state, state_transition, gamma=0.05, beta=0.1, name="SIS model"
+    )
+
+    fig, [ax_graph, ax_history] = plt.subplots(1, 2, figsize=(12, 6))
+
+    def animate(step: int):
+        """
+        Update the plot with the state of the simulation at a given step.
+
+        Parameters
+        ----------
+        step : int
+            The step of the simulation to plot.
+        """
+        nonlocal sim, G, pos, ax_graph, ax_history
+        ax_graph.clear()
+        ax_history.clear()
+        sim._step()
+        ax_graph = sim.draw(step, axis=ax_graph)
+        ax_history = sim.plot(axis=ax_history)
+        return ax_graph, ax_history
+
+    anim = FuncAnimation(fig, animate, interval=100, blit=True)
+    plt.show()
+
+
+if __name__ == "__main__":
+    run_animation()
