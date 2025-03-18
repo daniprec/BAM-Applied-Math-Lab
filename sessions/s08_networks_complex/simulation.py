@@ -399,7 +399,7 @@ def run_animation(gamma: float = 0.02, beta: float = 0.1, graph: str = "small_wo
 
     # Reinitialize the simulation
     sim = Simulation(
-        G, initial_state, state_transition, gamma=gamma, beta=beta, name="SIS model"
+        G, initial_state, state_transition, gamma=gamma, beta=beta, name="SIR model"
     )
 
     fig, [ax_graph, ax_history] = plt.subplots(1, 2, figsize=(12, 6))
