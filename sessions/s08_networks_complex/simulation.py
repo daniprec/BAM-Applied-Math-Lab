@@ -36,8 +36,40 @@ def initial_state(G: nx.Graph) -> dict:
     return state
 
 
+def initial_state_targeted(G: nx.Graph, target: str = "max") -> dict:
+    """Assigns the initial state of the nodes in the graph,
+    in the form of a dictionary.
+
+    Parameters
+    ----------
+    G : nx.Graph
+        The graph on which the simulation is run.
+
+    Returns
+    -------
+    dict
+        A dictionary containing the initial state of the nodes.
+        The keys are the nodes and the values are the states.
+        The states are represented as strings, with "S" for
+        susceptible, "I" for infected, and "R" for recovered.
+    """
+    # Initialize all nodes as susceptible
+    state = {}
+    for node in G.nodes:
+        state[node] = "S"
+
+    if target == "max":
+        # Infect the node with the highest degree
+        patient_zero = max(G.nodes, key=G.degree)
+    elif target == "min":
+        # Infect the node with the lowest degree
+        patient_zero = min(G.nodes, key=G.degree)
+    state[patient_zero] = "I"
+    return state
+
+
 def state_transition(
-    G: nx.Graph, current_state: dict, gamma: float = 0.1, beta: float = 0.1
+    G: nx.Graph, current_state: dict, gamma: float = 0.1, beta: float = 0.2
 ) -> dict:
     """Determines the next state of the nodes in the graph,"
     based on the current state."
@@ -54,7 +86,7 @@ def state_transition(
     gamma : float
         The probability of recovery, by default 0.1.
     beta : float
-        The probability of infection, by default 0.1.
+        The probability of infection, by default 0.2.
 
     Returns
     -------
