@@ -270,12 +270,17 @@ class Simulation:
         IndexError
             If `step` argument is greater than the number of steps.
         """
+
         axis = axis if axis else plt.gca()
 
+        # Get the state of the simulation at the specified step
         state = self.state(step)
+        # Get the color of each node based on its state
         node_colors = [self._categorical_color(state[n]) for n in self.G.nodes]
+        # Draw the graph
         nx.draw(self.G, pos=self._pos, node_color=node_colors, ax=axis, **kwargs)
 
+        # Add a legend to the plot, with colors corresponding to the states
         labels = self._colors.keys()
         patches = [
             mpl.patches.Patch(color=self._categorical_color(label), label=label)
@@ -283,6 +288,7 @@ class Simulation:
         ]
         axis.legend(handles=patches)
 
+        # Set the title of the plot
         if step == -1:
             step = self.steps
         if step == 0:
@@ -322,12 +328,20 @@ class Simulation:
             Axes object for the current plot
         """
         axis = axis if axis else plt.gca()
+
+        # Range of X: first and last step to plot
         x_range = range(min_step or 0, max_step or len(self._ls_states_history))
+
+        # Get the state of the simulation at each step in the range
+        # This will be a list of dictionaries, one for each step
+        # Each dictionary will contain the counts of each state
+        # Example: [{'S': 99, 'I': 1}, {'S': 98, 'I': 2}]
         counts = []
         for state in self._ls_states_history[min_step:max_step]:
             counts.append(Counter(state.values()))
         labels = self._colors.keys()
 
+        # Plot the proportion of nodes in each state at each step
         for label in labels:
             series = [count.get(label, 0) / sum(count.values()) for count in counts]
             axis.plot(x_range, series, label=label, color=self._colors[label], **kwargs)
@@ -362,11 +376,17 @@ class Simulation:
                 break
 
 
-def run_animation(gamma: float = 0.05, beta: float = 0.2, graph: str = "scale_free"):
+def run_animation(gamma: float = 0.05, beta: float = 0.2, graph: str = "small_world"):
     """
     Run the simulation, updating a plot at each step.
     """
-    if graph == "barabasi_albert" or graph == "scale_free":
+    if graph == "random":
+        # Random graph with n nodes and p probability of edge creation
+        G = nx.gnm_random_graph(n=200, m=400)
+        # Make sure the graph is connected
+        while nx.is_connected(G) is False:
+            G = nx.gnm_random_graph(n=200, m=400)
+    elif graph == "barabasi_albert" or graph == "scale_free":
         # Barabasi-Albert preferential attachment graph with n nodes and m edges
         G = nx.barabasi_albert_graph(n=200, m=2)
     elif graph == "watts_strogatz" or graph == "small_world":
@@ -374,8 +394,6 @@ def run_animation(gamma: float = 0.05, beta: float = 0.2, graph: str = "scale_fr
         G = nx.watts_strogatz_graph(n=200, k=4, p=0.2)
     else:
         raise ValueError("Unknown graph type")
-
-    pos = nx.circular_layout(G)
 
     # Reinitialize the simulation
     sim = Simulation(
@@ -393,11 +411,14 @@ def run_animation(gamma: float = 0.05, beta: float = 0.2, graph: str = "scale_fr
         step : int
             The step of the simulation to plot.
         """
-        nonlocal sim, G, pos, ax_graph, ax_history
+        nonlocal sim, G, ax_graph, ax_history
+        # Clear the axes - We will draw them again
         ax_graph.clear()
         ax_history.clear()
+        # Run the simulation for one step
         sim._step()
-        ax_graph = sim.draw(step, axis=ax_graph, node_size=20)
+        # Draw the graph and the history
+        ax_graph = sim.draw(axis=ax_graph, node_size=20)
         ax_history = sim.plot(axis=ax_history, min_step=max(0, step - 100))
         return ax_graph, ax_history
 
