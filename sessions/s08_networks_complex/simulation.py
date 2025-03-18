@@ -340,6 +340,7 @@ class Simulation:
         axis.set_ylabel("Proportion of nodes")
         axis.legend()
         axis.set_xlim(x_range.start)
+        axis.set_ylim(0, 1)
 
         return axis
 
@@ -397,7 +398,7 @@ def run_animation(gamma: float = 0.05, beta: float = 0.2, graph: str = "scale_fr
         ax_history.clear()
         sim._step()
         ax_graph = sim.draw(step, axis=ax_graph, node_size=20)
-        ax_history = sim.plot(axis=ax_history)
+        ax_history = sim.plot(axis=ax_history, min_step=max(0, step - 100))
         return ax_graph, ax_history
 
     anim = FuncAnimation(fig, animate, interval=100, blit=True)
