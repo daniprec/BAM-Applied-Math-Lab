@@ -183,7 +183,7 @@ class Simulation:
         self._ls_states_history = []
         # Initialize the value index - we will use it to assign colors
         # to the nodes in the plot
-        self._value_index = {}
+        self._colors = {"S": "blue", "I": "red", "R": "green"}
         # Initialize the color map
         self._cmap = plt.cm.get_cmap("tab10")
 
@@ -192,15 +192,6 @@ class Simulation:
 
         # Define the layout of the graph
         self._pos = nx.layout.spring_layout(G)
-
-    def _append_state(self, state: dict):
-        """Append a state to the list of states and update the value index."""
-        # Save the current state in the history
-        self._ls_states_history.append(state)
-        # Update self._value_index
-        for value in set(state.values()):
-            if value not in self._value_index:
-                self._value_index[value] = len(self._value_index)
 
     def _initialize(self):
         """Initialize the simulation by setting the initial state."""
@@ -211,7 +202,7 @@ class Simulation:
         if any(self.G.nodes[n].get("state") is None for n in self.G.nodes):
             raise ValueError("All nodes must have an initial state")
 
-        self._append_state(state)
+        self._ls_states_history.append(state)
 
     def _step(self):
         """Advance the simulation by one step."""
@@ -224,12 +215,11 @@ class Simulation:
         new_state = self._state_transition(self.G, state, **self._kwargs)
         state.update(new_state)
         nx.set_node_attributes(self.G, state, "state")
-        self._append_state(state)
+        self._ls_states_history.append(state)
 
     def _categorical_color(self, value: str) -> str:
         """Return a color for a categorical value"""
-        index = self._value_index[value]
-        node_color = self._cmap(index)
+        node_color = self._colors.get(value, "grey")
         return node_color
 
     @property
@@ -262,9 +252,7 @@ class Simulation:
         except IndexError:
             raise IndexError("Simulation step %i out of range" % step)
 
-    def draw(
-        self, step: int = -1, labels: list | None = None, axis: Axes = None, **kwargs
-    ):
+    def draw(self, step: int = -1, axis: Axes = None, **kwargs):
         """
         Use networkx.draw to draw a simulation state with nodes colored by
         their state value. By default, draws the current state.
@@ -274,9 +262,6 @@ class Simulation:
         step : int, optional
             The step of the simulation to draw. Default is -1, the
             current state.
-        labels : list, optional
-            Ordered sequence of state values to plot. Default is all
-            observed state values, approximately ordered by appearance.
         kwargs : dict
             Keyword arguments are passed to networkx.draw()
 
@@ -286,12 +271,12 @@ class Simulation:
             If `step` argument is greater than the number of steps.
         """
         axis = axis if axis else plt.gca()
+
         state = self.state(step)
         node_colors = [self._categorical_color(state[n]) for n in self.G.nodes]
         nx.draw(self.G, pos=self._pos, node_color=node_colors, ax=axis, **kwargs)
 
-        if labels is None:
-            labels = sorted(set(state.values()), key=self._value_index.get)
+        labels = self._colors.keys()
         patches = [
             mpl.patches.Patch(color=self._categorical_color(label), label=label)
             for label in labels
@@ -313,7 +298,6 @@ class Simulation:
         self,
         min_step: int = None,
         max_step: int = None,
-        labels: list | None = None,
         axis: Axes = None,
         **kwargs,
     ) -> Axes:
@@ -329,9 +313,6 @@ class Simulation:
         max_step : int, optional
             The last step, not inclusive, of the simulation to draw. Default is
             None, which plots up to the current step.
-        labels : list, optional
-            Ordered sequence of state values to plot. Default is all
-            observed state values, approximately ordered by appearance.
         kwargs : dict
             Keyword arguments are passed along to plt.plot()
 
@@ -342,16 +323,14 @@ class Simulation:
         """
         axis = axis if axis else plt.gca()
         x_range = range(min_step or 0, max_step or len(self._ls_states_history))
-        counts = [
-            Counter(s.values()) for s in self._ls_states_history[min_step:max_step]
-        ]
-        if labels is None:
-            labels = {k for count in counts for k in count}
-            labels = sorted(labels, key=self._value_index.get)
+        counts = []
+        for state in self._ls_states_history[min_step:max_step]:
+            counts.append(Counter(state.values()))
+        labels = self._colors.keys()
 
         for label in labels:
             series = [count.get(label, 0) / sum(count.values()) for count in counts]
-            axis.plot(x_range, series, label=label, **kwargs)
+            axis.plot(x_range, series, label=label, color=self._colors[label], **kwargs)
 
         title = "node state proportions"
         if self.name:
@@ -382,20 +361,20 @@ class Simulation:
                 break
 
 
-def run_animation(gamma: float = 0.02, beta: float = 0.1, graph: str = "small_world"):
+def run_animation(gamma: float = 0.05, beta: float = 0.2, graph: str = "scale_free"):
     """
     Run the simulation, updating a plot at each step.
     """
     if graph == "barabasi_albert" or graph == "scale_free":
         # Barabasi-Albert preferential attachment graph with n nodes and m edges
-        G = nx.barabasi_albert_graph(n=50, m=2)
+        G = nx.barabasi_albert_graph(n=200, m=2)
     elif graph == "watts_strogatz" or graph == "small_world":
         # Watts-Strogatz small-world graph with n nodes, k neighbors, and probability p of rewiring
-        G = nx.watts_strogatz_graph(n=50, k=4, p=0.2)
+        G = nx.watts_strogatz_graph(n=200, k=4, p=0.2)
     else:
         raise ValueError("Unknown graph type")
 
-    pos = nx.spring_layout(G)
+    pos = nx.circular_layout(G)
 
     # Reinitialize the simulation
     sim = Simulation(
@@ -417,7 +396,7 @@ def run_animation(gamma: float = 0.02, beta: float = 0.1, graph: str = "small_wo
         ax_graph.clear()
         ax_history.clear()
         sim._step()
-        ax_graph = sim.draw(step, axis=ax_graph)
+        ax_graph = sim.draw(step, axis=ax_graph, node_size=20)
         ax_history = sim.plot(axis=ax_history)
         return ax_graph, ax_history
 
