@@ -106,7 +106,8 @@ If the browser does not open automatically, you can manually open it by navigati
 
 ## SESSION 9 (LIVE IN-PERSON)
 
-- Use Facebook data to create and explore directed networks of social interactions
+- Use Facebook data to create and explore networks of social interactions.
+- Simulate the dynamics of disinformation spreading on social networks, using the Daley-Kendall model.
 
 ## SESSION 10 (LIVE IN-PERSON)
 
