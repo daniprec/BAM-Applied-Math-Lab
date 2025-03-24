@@ -106,13 +106,14 @@ If the browser does not open automatically, you can manually open it by navigati
 
 ## SESSION 9 (LIVE IN-PERSON)
 
+- Use Facebook data to create and explore directed networks of social interactions
+
+## SESSION 10 (LIVE IN-PERSON)
+
 - Introduction to cellular automata and Wolfram’s classification.
 - Implementing 1-D cellular automata rules in Python.
 - Visualizing the evolution of cellular automata patterns.
 - Exploring the effects of initial and boundary conditions.
-
-## SESSION 10 (LIVE IN-PERSON)
-
 - Modeling stochastic cellular automata applied to traffic flow models.
 - Implementing the Nagel-Schreckenberg model in Python.
 - Simulating traffic flow and visualizing different traffic phases.
