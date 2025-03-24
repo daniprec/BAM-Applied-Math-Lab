@@ -366,10 +366,11 @@ def run_animation(gamma: float = 0.05, beta: float = 0.1):
     # ANIMATION
     # --------------------------------
 
-    fig, [ax_graph, ax_history] = plt.subplots(1, 2, figsize=(12, 6))
+    fig, [ax_graph, ax_history] = plt.subplots(1, 2, figsize=(15, 9))
 
     # Draw the graph and the history for the first frame
-    ax_graph = sim.draw(axis=ax_graph, node_size=20)
+    plot_options = {"node_size": 10, "with_labels": False, "width": 0.15}
+    ax_graph = sim.draw(axis=ax_graph, **plot_options)
     ax_history = sim.plot(axis=ax_history, min_step=0)
 
     def update_frame(step: int):
@@ -390,7 +391,7 @@ def run_animation(gamma: float = 0.05, beta: float = 0.1):
         # Run the simulation for one step
         sim._step()
         # Draw the graph and the history
-        ax_graph = sim.draw(axis=ax_graph, node_size=20)
+        ax_graph = sim.draw(axis=ax_graph, **plot_options)
         ax_history = sim.plot(axis=ax_history, min_step=max(0, step - 100))
         return ax_graph, ax_history
 
