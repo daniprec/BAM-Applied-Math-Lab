@@ -402,7 +402,7 @@ def run_animation(gamma: float = 0.05, beta: float = 0.2, graph: str = "small_wo
 
     fig, [ax_graph, ax_history] = plt.subplots(1, 2, figsize=(12, 6))
 
-    def animate(step: int):
+    def update_frame(step: int):
         """
         Update the plot with the state of the simulation at a given step.
 
@@ -422,7 +422,7 @@ def run_animation(gamma: float = 0.05, beta: float = 0.2, graph: str = "small_wo
         ax_history = sim.plot(axis=ax_history, min_step=max(0, step - 100))
         return ax_graph, ax_history
 
-    anim = FuncAnimation(fig, animate, interval=100, blit=True)
+    anim = FuncAnimation(fig, update_frame, interval=100, blit=True)
     plt.show()
 
 

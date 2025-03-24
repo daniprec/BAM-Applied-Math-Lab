@@ -342,6 +342,13 @@ def run_animation(gamma: float = 0.05, beta: float = 0.1):
     """
     Run the simulation, updating a plot at each step.
     """
+    # Pause parameter - Will be toggled by pressing the space bar (see on_keypress)
+    pause = True
+
+    # --------------------------------
+    # MAIN BODY
+    # --------------------------------
+
     facebook = pd.read_csv(
         "./data/facebook_combined.txt.gz",
         compression="gzip",
@@ -355,9 +362,17 @@ def run_animation(gamma: float = 0.05, beta: float = 0.1):
         G, initial_state, state_transition, gamma=gamma, beta=beta, name="Fake News"
     )
 
+    # --------------------------------
+    # ANIMATION
+    # --------------------------------
+
     fig, [ax_graph, ax_history] = plt.subplots(1, 2, figsize=(12, 6))
 
-    def animate(step: int):
+    # Draw the graph and the history for the first frame
+    ax_graph = sim.draw(axis=ax_graph, node_size=20)
+    ax_history = sim.plot(axis=ax_history, min_step=0)
+
+    def update_frame(step: int):
         """
         Update the plot with the state of the simulation at a given step.
 
@@ -367,6 +382,8 @@ def run_animation(gamma: float = 0.05, beta: float = 0.1):
             The step of the simulation to plot.
         """
         nonlocal sim, G, ax_graph, ax_history
+        if pause:
+            return ax_graph, ax_history
         # Clear the axes - We will draw them again
         ax_graph.clear()
         ax_history.clear()
@@ -377,7 +394,47 @@ def run_animation(gamma: float = 0.05, beta: float = 0.1):
         ax_history = sim.plot(axis=ax_history, min_step=max(0, step - 100))
         return ax_graph, ax_history
 
-    anim = FuncAnimation(fig, animate, interval=100, blit=True)
+    anim = FuncAnimation(fig, update_frame, interval=100, blit=True)
+
+    # --------------------------------
+    # SPACE BAR PRESS EVENT
+    # --------------------------------
+
+    # When the user presses the space bar, the simulation is paused / resumed
+
+    def on_space(event):
+        nonlocal pause
+        if event.key == " ":
+            pause = not pause
+
+    fig.canvas.mpl_connect("key_press_event", on_space)
+
+    # --------------------------------
+    # ENTER PRESS EVENT
+    # --------------------------------
+
+    # When the user presses the enter key, the simulation is reset
+
+    def on_enter(event):
+        nonlocal sim, ax_graph, ax_history
+        if event.key == "enter":
+            sim = Simulation(
+                G,
+                initial_state,
+                state_transition,
+                gamma=gamma,
+                beta=beta,
+                name="Fake News",
+            )
+            ax_graph.clear()
+            ax_history.clear()
+
+    fig.canvas.mpl_connect("key_press_event", on_enter)
+
+    # --------------------------------
+    # SHOW
+    # --------------------------------
+
     plt.show()
 
 
