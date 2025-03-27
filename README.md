@@ -111,11 +111,4 @@ If the browser does not open automatically, you can manually open it by navigati
 
 ## SESSION 10 (LIVE IN-PERSON)
 
-- Introduction to cellular automata and Wolfram’s classification.
-- Implementing 1-D cellular automata rules in Python.
-- Visualizing the evolution of cellular automata patterns.
-- Exploring the effects of initial and boundary conditions.
-- Modeling stochastic cellular automata applied to traffic flow models.
-- Implementing the Nagel-Schreckenberg model in Python.
-- Simulating traffic flow and visualizing different traffic phases.
-- Analyzing factors affecting traffic congestion and flow.
+- We will dedicate this session to prepare the group projects.
