@@ -308,7 +308,7 @@ def run_simulation(
     ax_k0 = ax_sliders.inset_axes([0.0, 0.4, 0.8, 0.1])  # [x0, y0, width, height]
     ax_k1 = ax_sliders.inset_axes([0.0, 0.3, 0.8, 0.1])  # [x0, y0, width, height]
     ax_bc = ax_sliders.inset_axes([0.3, 0.2, 0.2, 0.1])  # [x0, y0, width, height]
-    ax_thresh = ax_sliders.inset_axes([0.0, 0.1, 0.8, 0.1])  # [x0, y0, width, height]
+    ax_thresh = ax_sliders.inset_axes([0.1, 0.1, 0.7, 0.1])  # [x0, y0, width, height]
 
     # Create the sliders, each in its own axes [min, max, initial]
     slider_f0 = Slider(ax_f0, "F0", 0.01, 0.09, valinit=f[0], valstep=0.01)
@@ -320,7 +320,7 @@ def run_simulation(
     slider_bc = Slider(
         ax_bc, boundary_conditions.capitalize(), 0, 1, valinit=0, valstep=1
     )
-    slider_thresh = Slider(ax_thresh, "Light", 0, 255, valinit=threshold, valstep=1)
+    slider_thresh = Slider(ax_thresh, "Brightness", 0, 100, valinit=50, valstep=1)
 
     # This function will be called when the user changes the sliders
     def update_sliders(_):
@@ -331,7 +331,7 @@ def run_simulation(
         k = (slider_k0.val, slider_k1.val)
         d1 = slider_d1.val
         d2 = slider_d2.val
-        threshold = slider_thresh.val
+        threshold = 255 - 255 * slider_thresh.val / 100
         boundary_conditions = "periodic" if slider_bc.val == 0 else "neumann"
         # Change slider text
         slider_bc.label.set_text(boundary_conditions.capitalize())
