@@ -205,7 +205,6 @@ def run_simulation(
     d2 = 0.05
     f = (0.040, 0.060)
     k = (0.060, 0.040)
-    boundary_conditions = "periodic"
 
     # Pause parameter - Will be toggled by pressing the space bar (see on_keypress)
     pause = False
@@ -243,27 +242,18 @@ def run_simulation(
         of the plot, making the animation faster.
         """
         # Access variables from the outer scope
-        nonlocal pause, uv, mask, d1, d2, f, k, boundary_conditions
+        nonlocal pause, uv, mask, d1, d2, f, k
         if pause:
             return [im]
 
         for _ in range(anim_speed):
             # Solve an initial value problem for a system of ODEs via Euler's method
             uv = uv + gray_scott_pde(_, uv, mask=mask, d1=d1, d2=d2, f=f, k=k) * dt
-            # Apply boundary conditions
-            if boundary_conditions == "neumann":
-                # Neumann - zero flux boundary conditions
-                uv[:, 0, :] = uv[:, 1, :]
-                uv[:, -1, :] = uv[:, -2, :]
-                uv[:, :, 0] = uv[:, :, 1]
-                uv[:, :, -1] = uv[:, :, -2]
-            elif boundary_conditions == "periodic":
-                # Periodic conditions are already implemented in the laplacian function
-                pass
-            else:
-                raise ValueError(
-                    "Invalid boundary_conditions value. Use 'neumann' or 'periodic'."
-                )
+            # Neumann - zero flux boundary conditions
+            uv[:, 0, :] = uv[:, 1, :]
+            uv[:, -1, :] = uv[:, -2, :]
+            uv[:, :, 0] = uv[:, :, 1]
+            uv[:, :, -1] = uv[:, :, -2]
 
         im.set_array(uv[1])
         return [im]  # Elements to update (using blit=True)
@@ -301,14 +291,13 @@ def run_simulation(
 
     # Place the axes objects that will contain the sliders
     # We define the location of each axes inside the right column of the figure
-    ax_d1 = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])  # [x0, y0, width, height]
-    ax_d2 = ax_sliders.inset_axes([0.0, 0.7, 0.8, 0.1])  # [x0, y0, width, height]
+    ax_d1 = ax_sliders.inset_axes([0.0, 0.85, 0.8, 0.1])  # [x0, y0, width, height]
+    ax_d2 = ax_sliders.inset_axes([0.0, 0.75, 0.8, 0.1])  # [x0, y0, width, height]
     ax_f0 = ax_sliders.inset_axes([0.0, 0.6, 0.8, 0.1])  # [x0, y0, width, height]
     ax_f1 = ax_sliders.inset_axes([0.0, 0.5, 0.8, 0.1])  # [x0, y0, width, height]
-    ax_k0 = ax_sliders.inset_axes([0.0, 0.4, 0.8, 0.1])  # [x0, y0, width, height]
-    ax_k1 = ax_sliders.inset_axes([0.0, 0.3, 0.8, 0.1])  # [x0, y0, width, height]
-    ax_bc = ax_sliders.inset_axes([0.3, 0.2, 0.2, 0.1])  # [x0, y0, width, height]
-    ax_thresh = ax_sliders.inset_axes([0.1, 0.1, 0.7, 0.1])  # [x0, y0, width, height]
+    ax_k0 = ax_sliders.inset_axes([0.0, 0.35, 0.8, 0.1])  # [x0, y0, width, height]
+    ax_k1 = ax_sliders.inset_axes([0.0, 0.25, 0.8, 0.1])  # [x0, y0, width, height]
+    ax_thresh = ax_sliders.inset_axes([0.2, 0.1, 0.6, 0.1])  # [x0, y0, width, height]
 
     # Create the sliders, each in its own axes [min, max, initial]
     slider_f0 = Slider(ax_f0, "F0", 0.01, 0.09, valinit=f[0], valstep=0.01)
@@ -317,24 +306,18 @@ def run_simulation(
     slider_k1 = Slider(ax_k1, "K1", 0.01, 0.07, valinit=k[1], valstep=0.01)
     slider_d1 = Slider(ax_d1, "D1", 0.01, 0.2, valinit=d1, valstep=0.01)
     slider_d2 = Slider(ax_d2, "D2", 0.01, 0.2, valinit=d2, valstep=0.01)
-    slider_bc = Slider(
-        ax_bc, boundary_conditions.capitalize(), 0, 1, valinit=0, valstep=1
-    )
     slider_thresh = Slider(ax_thresh, "Brightness", 0, 100, valinit=50, valstep=1)
 
     # This function will be called when the user changes the sliders
     def update_sliders(_):
         # Acces the variables from the outer scope to update them
-        nonlocal f, k, d1, d2, boundary_conditions, threshold, mask, pause
+        nonlocal f, k, d1, d2, threshold, mask, pause
         # Update the parameters according to the sliders values
         f = (slider_f0.val, slider_f1.val)
         k = (slider_k0.val, slider_k1.val)
         d1 = slider_d1.val
         d2 = slider_d2.val
         threshold = 255 - 255 * slider_thresh.val / 100
-        boundary_conditions = "periodic" if slider_bc.val == 0 else "neumann"
-        # Change slider text
-        slider_bc.label.set_text(boundary_conditions.capitalize())
         # Update the mask
         # Threshold to create a binary mask (0 or 1)
         mask = (img_np > threshold).astype(np.int8)
@@ -348,7 +331,6 @@ def run_simulation(
     slider_k1.on_changed(update_sliders)
     slider_d1.on_changed(update_sliders)
     slider_d2.on_changed(update_sliders)
-    slider_bc.on_changed(update_sliders)
     slider_thresh.on_changed(update_sliders)
 
     # ------------------------------------------------------------------------#
