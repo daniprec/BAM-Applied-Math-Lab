@@ -1,9 +1,13 @@
+import tkinter as tk
+from tkinter import filedialog
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import animation
 from matplotlib.axes import Axes
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 from matplotlib.widgets import Slider
+from PIL import Image
 
 
 def laplacian(uv: np.ndarray) -> np.ndarray:
@@ -171,6 +175,26 @@ def run_simulation(
     cmap : str
         Colormap to use for the plot, by default 'jet'.
     """
+    # We first ask the user to upload an image
+    # that will be used as a mask for the Gray-Scott model simulation.
+
+    # Open a file dialog to select an image
+    root = tk.Tk()
+    root.withdraw()  # Hide the main window
+    file_path = filedialog.askopenfilename(
+        title="Select an image for the mask",
+        filetypes=[("Image files", "*.png;*.jpg;*.jpeg;*.bmp;*.gif")],
+    )
+    root.destroy()
+
+    # Load and process the image
+    img = Image.open(file_path).convert("L")  # Convert to grayscale
+    img = img.resize((n, n), Image.Resampling.LANCZOS)
+    img_np = np.array(img)
+    # Threshold to create a binary mask (0 or 1)
+    threshold = 128
+    mask = (img_np > threshold).astype(np.int8)
+
     # ------------------------------------------------------------------------#
     # PARAMETERS
     # ------------------------------------------------------------------------#
@@ -182,11 +206,6 @@ def run_simulation(
     f = (0.040, 0.060)
     k = (0.060, 0.040)
     boundary_conditions = "periodic"
-
-    # Mask - image
-    mask = np.zeros((n, n), dtype=np.int8)  # 0 for f[0], 1 for f[1]
-    # Make the center square of the mask 1 - test purposes
-    mask[n // 4 : 3 * n // 4, n // 4 : 3 * n // 4] = 1
 
     # Pause parameter - Will be toggled by pressing the space bar (see on_keypress)
     pause = False
@@ -224,7 +243,7 @@ def run_simulation(
         of the plot, making the animation faster.
         """
         # Access variables from the outer scope
-        nonlocal pause, uv, d1, d2, f, k, boundary_conditions
+        nonlocal pause, uv, mask, d1, d2, f, k, boundary_conditions
         if pause:
             return [im]
 
@@ -283,33 +302,54 @@ def run_simulation(
     # Place the axes objects that will contain the sliders
     # We define the location of each axes inside the right column of the figure
     ax_d1 = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])  # [x0, y0, width, height]
-    ax_d2 = ax_sliders.inset_axes([0.0, 0.6, 0.8, 0.1])  # [x0, y0, width, height]
-    ax_bc = ax_sliders.inset_axes([0.3, 0.05, 0.2, 0.1])  # [x0, y0, width, height]
+    ax_d2 = ax_sliders.inset_axes([0.0, 0.7, 0.8, 0.1])  # [x0, y0, width, height]
+    ax_f0 = ax_sliders.inset_axes([0.0, 0.6, 0.8, 0.1])  # [x0, y0, width, height]
+    ax_f1 = ax_sliders.inset_axes([0.0, 0.5, 0.8, 0.1])  # [x0, y0, width, height]
+    ax_k0 = ax_sliders.inset_axes([0.0, 0.4, 0.8, 0.1])  # [x0, y0, width, height]
+    ax_k1 = ax_sliders.inset_axes([0.0, 0.3, 0.8, 0.1])  # [x0, y0, width, height]
+    ax_bc = ax_sliders.inset_axes([0.3, 0.2, 0.2, 0.1])  # [x0, y0, width, height]
+    ax_thresh = ax_sliders.inset_axes([0.0, 0.1, 0.8, 0.1])  # [x0, y0, width, height]
 
     # Create the sliders, each in its own axes [min, max, initial]
+    slider_f0 = Slider(ax_f0, "F0", 0.01, 0.09, valinit=f[0], valstep=0.01)
+    slider_f1 = Slider(ax_f1, "F1", 0.01, 0.09, valinit=f[1], valstep=0.01)
+    slider_k0 = Slider(ax_k0, "K0", 0.01, 0.07, valinit=k[0], valstep=0.01)
+    slider_k1 = Slider(ax_k1, "K1", 0.01, 0.07, valinit=k[1], valstep=0.01)
     slider_d1 = Slider(ax_d1, "D1", 0.01, 0.2, valinit=d1, valstep=0.01)
     slider_d2 = Slider(ax_d2, "D2", 0.01, 0.2, valinit=d2, valstep=0.01)
     slider_bc = Slider(
         ax_bc, boundary_conditions.capitalize(), 0, 1, valinit=0, valstep=1
     )
+    slider_thresh = Slider(ax_thresh, "Light", 0, 255, valinit=threshold, valstep=1)
 
     # This function will be called when the user changes the sliders
     def update_sliders(_):
         # Acces the variables from the outer scope to update them
-        nonlocal d1, d2, boundary_conditions, pause
+        nonlocal f, k, d1, d2, boundary_conditions, threshold, mask, pause
         # Update the parameters according to the sliders values
+        f = (slider_f0.val, slider_f1.val)
+        k = (slider_k0.val, slider_k1.val)
         d1 = slider_d1.val
         d2 = slider_d2.val
+        threshold = slider_thresh.val
         boundary_conditions = "periodic" if slider_bc.val == 0 else "neumann"
         # Change slider text
         slider_bc.label.set_text(boundary_conditions.capitalize())
+        # Update the mask
+        # Threshold to create a binary mask (0 or 1)
+        mask = (img_np > threshold).astype(np.int8)
         # Pause the simulation when sliders are updated
-        pause = True
+        # pause = True
 
     # Attach the update function to sliders
+    slider_f0.on_changed(update_sliders)
+    slider_f1.on_changed(update_sliders)
+    slider_k0.on_changed(update_sliders)
+    slider_k1.on_changed(update_sliders)
     slider_d1.on_changed(update_sliders)
     slider_d2.on_changed(update_sliders)
     slider_bc.on_changed(update_sliders)
+    slider_thresh.on_changed(update_sliders)
 
     # ------------------------------------------------------------------------#
     #  DRAW ON UV PLOT
