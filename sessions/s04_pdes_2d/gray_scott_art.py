@@ -209,8 +209,8 @@ def run_simulation(
     length = n * dx  # L
 
     # Initial parameters - Will be changed using the sliders
-    d1 = 0.1
-    d2 = 0.05
+    d1 = 0.100
+    d2 = 0.050
     f = (0.040, 0.060)
     k = (0.060, 0.040)
 
@@ -308,13 +308,13 @@ def run_simulation(
     ax_thresh = ax_sliders.inset_axes([0.2, 0.1, 0.6, 0.1])  # [x0, y0, width, height]
 
     # Create the sliders, each in its own axes [min, max, initial]
-    slider_f0 = Slider(ax_f0, "F0", 0.01, 0.09, valinit=f[0], valstep=0.01)
-    slider_f1 = Slider(ax_f1, "F1", 0.01, 0.09, valinit=f[1], valstep=0.01)
-    slider_k0 = Slider(ax_k0, "K0", 0.01, 0.07, valinit=k[0], valstep=0.01)
-    slider_k1 = Slider(ax_k1, "K1", 0.01, 0.07, valinit=k[1], valstep=0.01)
-    slider_d1 = Slider(ax_d1, "D1", 0.01, 0.2, valinit=d1, valstep=0.01)
-    slider_d2 = Slider(ax_d2, "D2", 0.01, 0.2, valinit=d2, valstep=0.01)
-    slider_thresh = Slider(ax_thresh, "Brightness", 0, 100, valinit=50, valstep=1)
+    slider_f0 = Slider(ax_f0, "F0", 0.010, 0.090, valinit=f[0], valstep=0.001)
+    slider_f1 = Slider(ax_f1, "F1", 0.010, 0.090, valinit=f[1], valstep=0.001)
+    slider_k0 = Slider(ax_k0, "K0", 0.010, 0.070, valinit=k[0], valstep=0.001)
+    slider_k1 = Slider(ax_k1, "K1", 0.010, 0.070, valinit=k[1], valstep=0.001)
+    slider_d1 = Slider(ax_d1, "D1", 0.010, 0.200, valinit=d1, valstep=0.001)
+    slider_d2 = Slider(ax_d2, "D2", 0.010, 0.200, valinit=d2, valstep=0.001)
+    slider_thresh = Slider(ax_thresh, "Brightness", 0, 100, valinit=50, valstep=0.1)
 
     # This function will be called when the user changes the sliders
     def update_sliders(_):
