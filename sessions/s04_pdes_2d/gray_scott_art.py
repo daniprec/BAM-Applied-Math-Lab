@@ -183,8 +183,16 @@ def run_simulation(
     root.withdraw()  # Hide the main window
     file_path = filedialog.askopenfilename(
         title="Select an image for the mask",
-        filetypes=[("Image files", "*.png;*.jpg;*.jpeg;*.bmp;*.gif")],
+        filetypes=[
+            ("Image files", "*.png *.jpg *.jpeg *.bmp *.gif"),
+            ("All files", "*.*"),  # Fallback
+        ],
     )
+    # The following avoids errors if the user cancels the file picker
+    if not file_path:
+        print("No file selected. Exiting.")
+        return
+
     root.destroy()
 
     # Load and process the image
