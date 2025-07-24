@@ -211,8 +211,8 @@ def run_simulation(
     # Initial parameters - Will be changed using the sliders
     d1 = 0.100
     d2 = 0.050
-    f = (0.040, 0.060)
-    k = (0.060, 0.040)
+    f = (0.062, 0.014)
+    k = (0.065, 0.056)
 
     # Pause parameter - Will be toggled by pressing the space bar (see on_keypress)
     pause = False
