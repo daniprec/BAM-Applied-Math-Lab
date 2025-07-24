@@ -283,6 +283,12 @@ def run_simulation(
         if event.key == " ":
             nonlocal pause
             pause ^= True
+        # Pressing the ENTER key resets the simulation
+        elif event.key == "enter":
+            # Reset the uv
+            nonlocal uv
+            uv = np.ones((2, length, length), dtype=np.float32)
+            uv[1] = 0
 
     # Attach the key press event handler to the figure
     fig.canvas.mpl_connect("key_press_event", on_keypress)
