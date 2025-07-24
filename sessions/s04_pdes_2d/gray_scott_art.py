@@ -279,16 +279,25 @@ def run_simulation(
     def on_keypress(event: KeyEvent):
         """This function is called when the user presses a key.
         It pauses or resumes the simulation when the space bar is pressed."""
+        nonlocal pause, uv
         # Pressing the space bar pauses or resumes the simulation
         if event.key == " ":
-            nonlocal pause
             pause ^= True
         # Pressing the ENTER key resets the simulation
         elif event.key == "enter":
             # Reset the uv
-            nonlocal uv
             uv = np.ones((2, length, length), dtype=np.float32)
             uv[1] = 0
+        # Pressing the 'r' key adds a random perturbation to the u and v fields
+        elif event.key == "r":
+            # Generate a random UV field
+            uv[0] = np.random.uniform(0, 1, (length, length))
+            uv[1] = 1 - uv[0]  # Ensure u + v = 1
+            # Update the displayed image
+            im.set_array(uv[1])
+        # Pressing the ESCAPE key closes the window
+        elif event.key == "escape":
+            plt.close(fig)
 
     # Attach the key press event handler to the figure
     fig.canvas.mpl_connect("key_press_event", on_keypress)
@@ -377,7 +386,7 @@ def run_simulation(
         # plus an additive noise of 10% that value
         if event.button == 1:
             u_new = 0.5 * (1 + 0.1 * np.random.randn())
-            v_new = 0.5 * (1 + 0.1 * np.random.randn())
+            v_new = 1 - u_new  # Ensure u + v = 1
         # Right click? Reset to initial values (u, v) = (1, 0)
         elif event.button == 3:
             u_new = 1.0
