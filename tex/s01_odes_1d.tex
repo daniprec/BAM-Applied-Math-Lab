@@ -257,27 +257,37 @@ Now that you have all the components, create an interactive Streamlit applicatio
 
 \subsection{Requirements}
 
+While all the previous code could be done in Google Colab, Streamlit has to be build on your local machine. Follow the instructions in the \texttt{README.md} file in the \href{https://github.com/daniprec/BAM-Applied-Math-Lab}{repository} to set up your environment.
+
+Design an script, name it \texttt{spruce\_budworm\_app.py}. You will find a suggested layout below. This script will use the functions you implemented in sections \ref{sec:implementing_ode_function} through \ref{sec:time_series_visualization}. You can either import them from a separate module (another script you created) or paste the function definitions directly into the script. For best practices, consider creating a module (e.g., \texttt{spruce\_budworm\_model.py}) and importing the functions.
+
+To test your app, run the following command in your terminal:
+\begin{lstlisting}
+streamlit run spruce_budworm_app.py
+\end{lstlisting}
+
 \subsubsection{Sidebar Controls}
 Create sliders for:
 \begin{itemize}
-    \item Growth rate $r$ (range: 0.1 to 1.0)
-    \item Carrying capacity $k$ (range: 5 to 20)
-    \item Initial population $x_0$ (range: 0.1 to $k$)
-    \item Evolution time step (default: 50)
+    \item Growth rate $r$ (range: 0.1 to 1.0).
+    \item Carrying capacity $k$ (range: 5 to 20).
+    \item Initial population $x_0$ (range: 0.1 to $k$).
+    \item Evolution time step (default: 50).
 \end{itemize}
 
 \subsubsection{Interactive Features}
 \begin{itemize}
-    \item Display the differential equation with current parameter values
-    \item Show the phase portrait (rate of change plot)
-    \item Show the time series evolution
-    \item Add a button to "Evolve Forward" that continues the simulation
-    \item Use \texttt{st.session\_state} to maintain simulation state between button clicks
+    \item Display the differential equation with current parameter values.
+    \item Show the phase portrait (rate of change plot), using your function from section \ref{sec:phase_portrait}.
+    \item Show the time series evolution, using your function from section \ref{sec:time_series_visualization}.
+    \item Add a button to ``Evolve Forward'' that continues the simulation, updating the plots.
+    \item Use \texttt{st.session\_state} to maintain simulation state between button clicks. You will need to store the time and population arrays in the session state, otherwise they will reset on each interaction.
 \end{itemize}
 
 \newpage
 
 \subsubsection{Layout Structure}
+
 \begin{lstlisting}
 import streamlit as st
 import numpy as np
@@ -287,7 +297,7 @@ from your_module import (
     plot_spruce_budworm_rate,
     evolve_spruce_budworm,
     plot_spruce_budworm
-)
+)  # Or paste your functions here
 
 st.title("Spruce Budworm Population Dynamics")
 
@@ -303,7 +313,7 @@ if 'initialized' not in st.session_state:
     st.session_state.initialized = True
 
 # Display equation
-st.latex(r"\frac{dx}{dt} = rx\left(1 - \frac{x}{k}\right) - \frac{x^2}{1 + x^2}")
+st.latex(...)  # Show the equation using LaTeX formatting
 
 # Plot phase portrait
 fig1, ax1 = plot_spruce_budworm_rate(...)
@@ -315,6 +325,7 @@ st.pyplot(fig2)
 
 # Evolution button
 if st.button("Evolve Forward"):
+    # Update the session state with new evolution
     st.session_state.t, st.session_state.x = evolve_spruce_budworm(...)
     st.rerun()
 \end{lstlisting}
@@ -358,12 +369,13 @@ Implement the complete Streamlit application as described above, following secti
 
 Answer at least three of the exploration questions from section \ref{sec:exploration_questions} and document your findings in a brief report (1-2 pages). You are encouraged to use LaTeX here. Include screenshots of your application demonstrating different behaviors observed during your exploration.
 
-If you want to go the extra mile:
+If you want to go the extra mile, here are some additional challenges you can tackle:
 
 \begin{itemize}
     \item Create a GitHub repository for your project and push your code there. You can include the text of your report in the repository as well.
     \item Deploy your Streamlit app using Streamlit Cloud or another hosting service. Share the link in your report.
     \item Implement some of the advanced features mentioned in section \ref{sec:streamlit_application}.
+    \item Instead of using SciPy's built-in ODE solver, implement your own simple Euler or Runge-Kutta integrator and compare results.
 \end{itemize}
 
 %--------------------------------------------------------------
@@ -399,18 +411,18 @@ The stability of an equilibrium $x^*$ is determined by the sign of the derivativ
 
 If this derivative is:
 \begin{itemize}
-    \item Negative: the equilibrium is stable (attracting)
-    \item Positive: the equilibrium is unstable (repelling)
-    \item Zero: higher-order analysis is needed
+    \item Negative: the equilibrium is stable (attracting).
+    \item Positive: the equilibrium is unstable (repelling).
+    \item Zero: higher-order analysis is needed.
 \end{itemize}
 
 \subsection{Ecological Interpretation}
 
 \begin{itemize}
-    \item \textbf{Low equilibrium:} Few budworms, controlled by predation
-    \item \textbf{High equilibrium:} Outbreak state, budworms overwhelm predators
-    \item \textbf{Middle equilibrium:} Usually unstable, separates the two basins of attraction
-    \item \textbf{Hysteresis:} The system can "jump" between states depending on history
+    \item \textbf{Low equilibrium:} Few budworms, controlled by predation.
+    \item \textbf{High equilibrium:} Outbreak state, budworms overwhelm predators.
+    \item \textbf{Middle equilibrium:} Usually unstable, separates the two basins of attraction.
+    \item \textbf{Hysteresis:} The system can "jump" between states depending on history.
 \end{itemize}
 
 This behavior explains why spruce budworm populations can suddenly explode from low levels to outbreak proportions, and why simply reducing the outbreak may not return the forest to a healthy state.
