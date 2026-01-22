@@ -141,7 +141,7 @@ Figure \ref{fig:graph} shows an example of the expected output.
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\textwidth]{../img/s01_spruce_budworm.png}
-    \caption{Example phase portrait of the spruce budworm model showing stable (blue) and unstable (red) equilibria. The vertical dashed line indicates the current population $x_t$. Where do you think this population will evolve?}
+    \caption{Example phase portrait of the spruce budworm model showing stable (blue) and unstable (red) equilibria. The green dashed line indicates the current population $x_t$. Where do you think this population will evolve?}
     \label{fig:graph}
 \end{figure}
 
@@ -269,10 +269,10 @@ streamlit run spruce_budworm_app.py
 \subsubsection{Sidebar Controls}
 Create sliders for:
 \begin{itemize}
-    \item Growth rate $r$ (range: 0.1 to 1.0).
-    \item Carrying capacity $k$ (range: 5 to 20).
-    \item Initial population $x_0$ (range: 0.1 to $k$).
-    \item Evolution time step (default: 50).
+    \item Growth rate $r$ (range: 0.0 to 1.0, default 0.5).
+    \item Carrying capacity $k$ (range: 0.1 to 10.0, default 10.0).
+    \item Initial population: set automatically to $k/10$ (the app uses $x_0 = k/10$ by default).
+    \item Time slider for evolution (range: 1 to 100, default 10).
 \end{itemize}
 
 \subsubsection{Interactive Features}
@@ -301,33 +301,37 @@ from your_module import (
 
 st.title("Spruce Budworm Population Dynamics")
 
-# Sidebar parameters
-r = st.sidebar.slider("Growth rate (r)", ...)
-k = st.sidebar.slider("Carrying capacity (k)", ...)
-x0 = st.sidebar.slider("Initial population", ...)
+# Sidebar parameters (as in the app)
+r = st.sidebar.slider("Intrinsic growth rate (r)", 0.0, 1.0, 0.5)
+k = st.sidebar.slider("Carrying capacity (k)", 0.1, 10.0, 10.0)
+
+# The app sets the initial population to k/10 by default
+x0 = k / 10
 
 # Initialize session state
-if 'initialized' not in st.session_state:
-    st.session_state.t = np.array([0])
-    st.session_state.x = np.array([x0])
-    st.session_state.initialized = True
+if ("sbw_x" not in st.session_state):
+    st.session_state["sbw_t"] = np.array([0])
+    st.session_state["sbw_x"] = np.array([x0])
 
-# Display equation
-st.latex(...)  # Show the equation using LaTeX formatting
+# Time slider and control buttons
+t_eval = st.sidebar.slider("Time", 1, 100, 10)
+button = st.sidebar.button("Evolve")
 
-# Plot phase portrait
-fig1, ax1 = plot_spruce_budworm_rate(...)
+# Retrieve session data
+t = st.session_state["sbw_t"]
+x = st.session_state["sbw_x"]
+
+# Evolve if requested
+if button:
+    t, x = evolve_spruce_budworm(t, x, r=r, k=k, t_eval=t_eval)
+    st.session_state["sbw_t"] = t
+    st.session_state["sbw_x"] = x
+
+# Plot phase portrait and time series
+fig1, ax1 = plot_spruce_budworm_rate(x[-1], r=r, k=k)
 st.pyplot(fig1)
-
-# Plot time series
-fig2, ax2 = plot_spruce_budworm(...)
+fig2, ax2 = plot_spruce_budworm(t, x)
 st.pyplot(fig2)
-
-# Evolution button
-if st.button("Evolve Forward"):
-    # Update the session state with new evolution
-    st.session_state.t, st.session_state.x = evolve_spruce_budworm(...)
-    st.rerun()
 \end{lstlisting}
 
 \subsection{Advanced Features (Optional)}
