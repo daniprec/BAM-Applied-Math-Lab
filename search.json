@@ -351,23 +351,11 @@
     ]
   },
   {
-    "objectID": "index.html#preview-the-website",
-    "href": "index.html#preview-the-website",
-    "title": "Applied Math Modeling (Python)",
-    "section": "4.2 Preview the website",
-    "text": "4.2 Preview the website\nFrom the repository root:\nquarto preview",
-    "crumbs": [
-      "Home",
-      "Getting Started",
-      "Home"
-    ]
-  },
-  {
     "objectID": "index.html#run-the-streamlit-app",
     "href": "index.html#run-the-streamlit-app",
     "title": "Applied Math Modeling (Python)",
-    "section": "4.3 Run the Streamlit app",
-    "text": "4.3 Run the Streamlit app\nstreamlit run ./streamlit/home.py",
+    "section": "4.2 Run the Streamlit app",
+    "text": "4.2 Run the Streamlit app\nstreamlit run ./streamlit/home.py",
     "crumbs": [
       "Home",
       "Getting Started",
@@ -848,13 +836,6 @@
     "href": "modules/numerical-integration/index.html",
     "title": "Numerical Integration",
     "section": "",
-    "text": "Numerical integration is fundamental for solving ordinary differential equations (ODEs) that don’t have analytical solutions. In this module, you’ll learn how to:\n\nFormulate ODEs in Python\nUse SciPy’s solve_ivp to numerically integrate ODEs\nVisualize solutions and explore parameter spaces\nApply these techniques to real-world models"
-  },
-  {
-    "objectID": "modules/numerical-integration/index.html#key-parameters",
-    "href": "modules/numerical-integration/index.html#key-parameters",
-    "title": "Numerical Integration",
-    "section": "3.1 Key Parameters",
-    "text": "3.1 Key Parameters\n\nfun: The function defining the ODE system\nt_span: Tuple (t_start, t_end) for integration interval\ny0: Initial conditions (array)\nmethod: Integration method (default: ‘RK45’)\nt_eval: Specific time points to return solution"
+    "text": "1 Introduction\nNumerical integration is fundamental for solving ordinary differential equations (ODEs) that don’t have analytical solutions. In this module, you’ll learn how to:\n\nFormulate ODEs in Python\nUse SciPy’s solve_ivp to numerically integrate ODEs\nVisualize solutions and explore parameter spaces\nApply these techniques to real-world models\n\n\n\n2 The Initial Value Problem\nAn initial value problem (IVP) consists of:\n\\[\\frac{dy}{dt} = f(t, y), \\quad y(t_0) = y_0\\]\nWhere: - \\(f(t, y)\\) is the rate of change function - \\(y_0\\) is the initial condition at time \\(t_0\\)\n\n\n3 SciPy’s solve_ivp\nThe scipy.integrate.solve_ivp function is the standard tool for solving ODEs in Python. Try the following code:\nimport numpy as np\nfrom scipy.integrate import solve_ivp\n\ndef exponential_decay(t, y):\n     return -0.5 * y\n\nt_span = [0, 10]\ny0 = [2, 4, 8]\nsol = solve_ivp(\n    fun=exponential_decay,\n    t_span=t_span, \n    y0=y0)\n\nprint(sol.t)\n\nprint(sol.y)\nHow does solve_ivp work? Let’s understand its parameters (copied from the documentation):\n\nfun: Right-hand side of the system: the time derivative of the state \\(y\\) at time \\(t\\). The calling signature is fun(t, y), where t is a scalar and y is an ndarray with len(y) = len(y0). Additional arguments need to be passed if args is used (see documentation of args argument). fun must return an array of the same shape as y. In our example, exponential_decay defines the ODE \\(\\frac{dy}{dt} = -0.5y\\), which models exponential decay \\(y(t) = y_0 e^{-0.5t}\\).\nt_span: Interval of integration \\((t_0, t_f)\\). The solver starts with \\(t=t_0\\) and integrates until it reaches \\(t=t_f\\). Both \\(t_0\\) and \\(t_f\\) must be floats or values interpretable by the float conversion function.\ny0: Initial state. For problems in the complex domain, pass y0 with a complex data type (even if the initial value is purely real).\n\nYou can also specify additional parameters: - method: Integration method to use. Common choices include 'RK45' (default), 'RK23', 'DOP853', 'Radau', 'BDF', and 'LSODA'. - t_eval: Times at which to store the computed solution, must be sorted and lie within t_span. If None (default), use points selected by the solver. - args: Additional arguments to pass to the user-defined functions. If, for example, fun has the signature fun(t, y, a, b, c), then args=(a, b, c).\n\n\n4 Systems of ODEs\nFor multiple coupled equations, return a list or array of derivatives:\ndef sir_model(t, y, beta, gamma):\n    S, I, R = y\n    N = S + I + R\n    \n    dSdt = -beta * S * I / N\n    dIdt = beta * S * I / N - gamma * I\n    dRdt = gamma * I\n    \n    return [dSdt, dIdt, dRdt]\n\n\n5 Best Practices\n\nAlways check convergence: Plot solutions at different tolerances\nUse appropriate methods: 'RK45' (default) works well for most problems\nVectorize when possible: Makes code faster and cleaner\nDocument parameters: Keep track of units and meanings\nValidate against known solutions: Test your implementation\n\n\n\n6 Next Steps\nApply these techniques to the classical models in Session 1: - SIR epidemiological model - Spruce budworm population dynamics - Michaelis–Menten enzyme kinetics\n\n\n7 Resources\n\nSciPy solve_ivp documentation\nPython for ODEs tutorial"
   }
 ]
