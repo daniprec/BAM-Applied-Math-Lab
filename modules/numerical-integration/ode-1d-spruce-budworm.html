@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Daniel Precioso Garcelán">
+<meta name="author" content="Applied Math Modeling Lab">
 
 <title>Applied Math Modeling (Python) - Session 1: 1D Ordinary Differential Equations</title>
 <style>
@@ -55,7 +55,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -266,58 +286,35 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">1</span> Introduction</a>
+  <li><a href="#sec-introduction" id="toc-sec-introduction" class="nav-link active" data-scroll-target="#sec-introduction"><span class="header-section-number">1</span> Introduction</a>
   <ul class="collapse">
   <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link" data-scroll-target="#learning-objectives"><span class="header-section-number">1.1</span> Learning Objectives</a></li>
   <li><a href="#the-spruce-budworm-model" id="toc-the-spruce-budworm-model" class="nav-link" data-scroll-target="#the-spruce-budworm-model"><span class="header-section-number">1.2</span> The Spruce Budworm Model</a></li>
   </ul></li>
-  <li><a href="#implementing-the-ode-function" id="toc-implementing-the-ode-function" class="nav-link" data-scroll-target="#implementing-the-ode-function"><span class="header-section-number">2</span> Implementing the ODE Function</a>
+  <li><a href="#sec-implementing-ode-function" id="toc-sec-implementing-ode-function" class="nav-link" data-scroll-target="#sec-implementing-ode-function"><span class="header-section-number">2</span> Implementing the ODE Function</a></li>
+  <li><a href="#sec-phase-portrait" id="toc-sec-phase-portrait" class="nav-link" data-scroll-target="#sec-phase-portrait"><span class="header-section-number">3</span> Phase Portrait Visualization</a></li>
+  <li><a href="#sec-numerical-integration" id="toc-sec-numerical-integration" class="nav-link" data-scroll-target="#sec-numerical-integration"><span class="header-section-number">4</span> Numerical Integration</a></li>
+  <li><a href="#sec-time-series-visualization" id="toc-sec-time-series-visualization" class="nav-link" data-scroll-target="#sec-time-series-visualization"><span class="header-section-number">5</span> Time Series Visualization</a></li>
+  <li><a href="#sec-streamlit-application" id="toc-sec-streamlit-application" class="nav-link" data-scroll-target="#sec-streamlit-application"><span class="header-section-number">6</span> Building the Streamlit Application</a>
   <ul class="collapse">
-  <li><a href="#task" id="toc-task" class="nav-link" data-scroll-target="#task"><span class="header-section-number">2.1</span> Task</a></li>
-  <li><a href="#requirements" id="toc-requirements" class="nav-link" data-scroll-target="#requirements"><span class="header-section-number">2.2</span> Requirements</a></li>
-  <li><a href="#hint" id="toc-hint" class="nav-link" data-scroll-target="#hint"><span class="header-section-number">2.3</span> Hint</a></li>
-  <li><a href="#mathematical-expression" id="toc-mathematical-expression" class="nav-link" data-scroll-target="#mathematical-expression"><span class="header-section-number">2.4</span> Mathematical Expression</a></li>
+  <li><a href="#sidebar-controls" id="toc-sidebar-controls" class="nav-link" data-scroll-target="#sidebar-controls"><span class="header-section-number">6.1</span> Sidebar Controls</a></li>
+  <li><a href="#interactive-features" id="toc-interactive-features" class="nav-link" data-scroll-target="#interactive-features"><span class="header-section-number">6.2</span> Interactive Features</a></li>
+  <li><a href="#layout-structure" id="toc-layout-structure" class="nav-link" data-scroll-target="#layout-structure"><span class="header-section-number">6.3</span> Layout Structure</a></li>
+  <li><a href="#advanced-features-optional" id="toc-advanced-features-optional" class="nav-link" data-scroll-target="#advanced-features-optional"><span class="header-section-number">6.4</span> Advanced Features (Optional)</a></li>
   </ul></li>
-  <li><a href="#phase-portrait-visualization" id="toc-phase-portrait-visualization" class="nav-link" data-scroll-target="#phase-portrait-visualization"><span class="header-section-number">3</span> Phase Portrait Visualization</a>
+  <li><a href="#sec-exploration-questions" id="toc-sec-exploration-questions" class="nav-link" data-scroll-target="#sec-exploration-questions"><span class="header-section-number">7</span> Exploration Questions</a>
   <ul class="collapse">
-  <li><a href="#task-1" id="toc-task-1" class="nav-link" data-scroll-target="#task-1"><span class="header-section-number">3.1</span> Task</a></li>
-  <li><a href="#requirements-1" id="toc-requirements-1" class="nav-link" data-scroll-target="#requirements-1"><span class="header-section-number">3.2</span> Requirements</a></li>
-  <li><a href="#hints" id="toc-hints" class="nav-link" data-scroll-target="#hints"><span class="header-section-number">3.3</span> Hints</a></li>
-  <li><a href="#key-concepts" id="toc-key-concepts" class="nav-link" data-scroll-target="#key-concepts"><span class="header-section-number">3.4</span> Key Concepts</a></li>
+  <li><a href="#sec-slow-fast-dynamics" id="toc-sec-slow-fast-dynamics" class="nav-link" data-scroll-target="#sec-slow-fast-dynamics"><span class="header-section-number">7.1</span> Slow-Fast Dynamics</a></li>
   </ul></li>
-  <li><a href="#numerical-integration" id="toc-numerical-integration" class="nav-link" data-scroll-target="#numerical-integration"><span class="header-section-number">4</span> Numerical Integration</a>
+  <li><a href="#sec-deliverable" id="toc-sec-deliverable" class="nav-link" data-scroll-target="#sec-deliverable"><span class="header-section-number">8</span> Deliverable</a></li>
+  <li><a href="#sec-mathematical-background" id="toc-sec-mathematical-background" class="nav-link" data-scroll-target="#sec-mathematical-background"><span class="header-section-number">9</span> Mathematical Background</a>
   <ul class="collapse">
-  <li><a href="#task-2" id="toc-task-2" class="nav-link" data-scroll-target="#task-2"><span class="header-section-number">4.1</span> Task</a></li>
-  <li><a href="#requirements-2" id="toc-requirements-2" class="nav-link" data-scroll-target="#requirements-2"><span class="header-section-number">4.2</span> Requirements</a></li>
-  <li><a href="#code-structure" id="toc-code-structure" class="nav-link" data-scroll-target="#code-structure"><span class="header-section-number">4.3</span> Code Structure</a></li>
-  <li><a href="#important-notes" id="toc-important-notes" class="nav-link" data-scroll-target="#important-notes"><span class="header-section-number">4.4</span> Important Notes</a></li>
+  <li><a href="#equilibrium-analysis" id="toc-equilibrium-analysis" class="nav-link" data-scroll-target="#equilibrium-analysis"><span class="header-section-number">9.1</span> Equilibrium Analysis</a></li>
+  <li><a href="#sec-stability-analysis" id="toc-sec-stability-analysis" class="nav-link" data-scroll-target="#sec-stability-analysis"><span class="header-section-number">9.2</span> Stability Analysis</a></li>
+  <li><a href="#ecological-interpretation" id="toc-ecological-interpretation" class="nav-link" data-scroll-target="#ecological-interpretation"><span class="header-section-number">9.3</span> Ecological Interpretation</a></li>
   </ul></li>
-  <li><a href="#time-series-visualization" id="toc-time-series-visualization" class="nav-link" data-scroll-target="#time-series-visualization"><span class="header-section-number">5</span> Time Series Visualization</a>
-  <ul class="collapse">
-  <li><a href="#task-3" id="toc-task-3" class="nav-link" data-scroll-target="#task-3"><span class="header-section-number">5.1</span> Task</a></li>
-  <li><a href="#requirements-3" id="toc-requirements-3" class="nav-link" data-scroll-target="#requirements-3"><span class="header-section-number">5.2</span> Requirements</a></li>
-  <li><a href="#questions-to-consider" id="toc-questions-to-consider" class="nav-link" data-scroll-target="#questions-to-consider"><span class="header-section-number">5.3</span> Questions to Consider</a></li>
-  </ul></li>
-  <li><a href="#building-the-streamlit-application" id="toc-building-the-streamlit-application" class="nav-link" data-scroll-target="#building-the-streamlit-application"><span class="header-section-number">6</span> Building the Streamlit Application</a>
-  <ul class="collapse">
-  <li><a href="#task-4" id="toc-task-4" class="nav-link" data-scroll-target="#task-4"><span class="header-section-number">6.1</span> Task</a></li>
-  <li><a href="#requirements-4" id="toc-requirements-4" class="nav-link" data-scroll-target="#requirements-4"><span class="header-section-number">6.2</span> Requirements</a>
-  <ul class="collapse">
-  <li><a href="#sidebar-controls" id="toc-sidebar-controls" class="nav-link" data-scroll-target="#sidebar-controls"><span class="header-section-number">6.2.1</span> Sidebar Controls</a></li>
-  <li><a href="#interactive-features" id="toc-interactive-features" class="nav-link" data-scroll-target="#interactive-features"><span class="header-section-number">6.2.2</span> Interactive Features</a></li>
-  <li><a href="#layout-structure" id="toc-layout-structure" class="nav-link" data-scroll-target="#layout-structure"><span class="header-section-number">6.2.3</span> Layout Structure</a></li>
-  </ul></li>
-  <li><a href="#advanced-features-optional" id="toc-advanced-features-optional" class="nav-link" data-scroll-target="#advanced-features-optional"><span class="header-section-number">6.3</span> Advanced Features (Optional)</a></li>
-  </ul></li>
-  <li><a href="#exploration-questions" id="toc-exploration-questions" class="nav-link" data-scroll-target="#exploration-questions"><span class="header-section-number">7</span> Exploration Questions</a></li>
-  <li><a href="#mathematical-background" id="toc-mathematical-background" class="nav-link" data-scroll-target="#mathematical-background"><span class="header-section-number">8</span> Mathematical Background</a>
-  <ul class="collapse">
-  <li><a href="#equilibrium-analysis" id="toc-equilibrium-analysis" class="nav-link" data-scroll-target="#equilibrium-analysis"><span class="header-section-number">8.1</span> Equilibrium Analysis</a></li>
-  <li><a href="#stability-analysis" id="toc-stability-analysis" class="nav-link" data-scroll-target="#stability-analysis"><span class="header-section-number">8.2</span> Stability Analysis</a></li>
-  <li><a href="#ecological-interpretation" id="toc-ecological-interpretation" class="nav-link" data-scroll-target="#ecological-interpretation"><span class="header-section-number">8.3</span> Ecological Interpretation</a></li>
-  </ul></li>
-  <li><a href="#resources" id="toc-resources" class="nav-link" data-scroll-target="#resources"><span class="header-section-number">9</span> Resources</a></li>
-  <li><a href="#tips-for-success" id="toc-tips-for-success" class="nav-link" data-scroll-target="#tips-for-success"><span class="header-section-number">10</span> Tips for Success</a></li>
+  <li><a href="#resources" id="toc-resources" class="nav-link" data-scroll-target="#resources"><span class="header-section-number">10</span> Resources</a></li>
+  <li><a href="#tips-for-success" id="toc-tips-for-success" class="nav-link" data-scroll-target="#tips-for-success"><span class="header-section-number">11</span> Tips for Success</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/numerical-integration/ode-1d-spruce-budworm.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -337,10 +334,16 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>Daniel Precioso Garcelán </p>
+             <p>Applied Math Modeling Lab </p>
           </div>
   </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">Invalid Date</p>
+    </div>
+  </div>
   
     
   </div>
@@ -350,287 +353,279 @@ window.Quarto = {
 </header>
 
 
-<section id="introduction" class="level1" data-number="1">
+<section id="sec-introduction" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Introduction</h1>
-<p>Welcome to this hands-on session on modeling population dynamics using ordinary differential equations (ODEs). Today, we will explore the <strong>spruce budworm model</strong>, a classic example from ecological modeling that demonstrates how simple nonlinear systems can exhibit complex behaviors including multiple equilibria and catastrophic transitions.</p>
+<p>Welcome to this hands-on session on mathematical modeling using ordinary differential equations (ODEs). Today, we will explore the <strong>spruce budworm model</strong>, a classic example from ecological modeling that demonstrates how simple nonlinear systems can exhibit complex behaviors including multiple equilibria and catastrophic transitions.</p>
 <section id="learning-objectives" class="level2" data-number="1.1">
 <h2 data-number="1.1" class="anchored" data-anchor-id="learning-objectives"><span class="header-section-number">1.1</span> Learning Objectives</h2>
 <p>By the end of this session, you will be able to:</p>
 <ul>
-<li>Understand the mathematical formulation of the spruce budworm model</li>
-<li>Implement the model as a Python function</li>
-<li>Solve the ODE numerically using <code>scipy.integrate.solve_ivp</code></li>
-<li>Visualize the phase portrait and identify equilibrium points</li>
-<li>Build an interactive Streamlit application to explore the model</li>
+<li>Understand the mathematical formulation of the spruce budworm model.</li>
+<li>Implement the model as a Python function.</li>
+<li>Solve the ODE numerically using <code>scipy.integrate.solve_ivp</code>.</li>
+<li>Visualize the phase portrait and identify equilibrium points.</li>
+<li>Build an interactive Streamlit application to explore the model.</li>
 </ul>
 </section>
 <section id="the-spruce-budworm-model" class="level2" data-number="1.2">
 <h2 data-number="1.2" class="anchored" data-anchor-id="the-spruce-budworm-model"><span class="header-section-number">1.2</span> The Spruce Budworm Model</h2>
-<p>The spruce budworm is an insect that periodically devastates spruce forests. The population dynamics can be modeled by the following ODE:</p>
+<p>The spruce budworm is an insect that periodically devastates spruce forests. The population dynamics can be modeled by the following ODE <span class="citation" data-cites="strogatz2024nonlinear">(<a href="#ref-strogatz2024nonlinear" role="doc-biblioref">Strogatz 2024, chap. 3.7</a>)</span>:</p>
 <p><span class="math display">\[
 \frac{dx}{dt} = rx\left(1 - \frac{x}{k}\right) - \frac{x^2}{1 + x^2}
 \]</span></p>
 <p>where:</p>
 <ul>
-<li><span class="math inline">\(x(t)\)</span> is the budworm population (adimensional)</li>
-<li><span class="math inline">\(r\)</span> is the intrinsic growth rate (typically <span class="math inline">\(r \approx 0.5\)</span>)</li>
-<li><span class="math inline">\(k\)</span> is the carrying capacity of the forest (typically <span class="math inline">\(k \approx 10\)</span>)</li>
+<li><span class="math inline">\(x(t)\)</span> is the budworm population (adimensional).</li>
+<li><span class="math inline">\(r\)</span> is the intrinsic growth rate (typically <span class="math inline">\(r \approx 0.5\)</span>).</li>
+<li><span class="math inline">\(k\)</span> is the carrying capacity of the forest (typically <span class="math inline">\(k \approx 10\)</span>).</li>
 </ul>
 <p>The first term represents logistic growth, while the second term models predation by birds (which follows a saturating functional response).</p>
-<p><strong>Reference:</strong> Strogatz, S. H. (2018). <em>Nonlinear Dynamics and Chaos</em>, Chapter 3.7.</p>
 </section>
 </section>
-<section id="implementing-the-ode-function" class="level1" data-number="2">
+<section id="sec-implementing-ode-function" class="level1" data-number="2">
 <h1 data-number="2"><span class="header-section-number">2</span> Implementing the ODE Function</h1>
-<section id="task" class="level2" data-number="2.1">
-<h2 data-number="2.1" class="anchored" data-anchor-id="task"><span class="header-section-number">2.1</span> Task</h2>
 <p>Create a Python function that implements the spruce budworm differential equation. The function should follow the signature required by <code>scipy.integrate.solve_ivp</code>.</p>
-</section>
-<section id="requirements" class="level2" data-number="2.2">
-<h2 data-number="2.2" class="anchored" data-anchor-id="requirements"><span class="header-section-number">2.2</span> Requirements</h2>
 <ul>
 <li>Function name: <code>spruce_budworm</code></li>
 <li>Parameters: <code>t</code> (time), <code>x</code> (population), <code>r</code> (growth rate), <code>k</code> (carrying capacity)</li>
-<li>Return: The rate of change <span class="math inline">\(\frac{dx}{dt}\)</span></li>
-<li>Include appropriate docstring documentation</li>
+<li>Return: The rate of change <span class="math inline">\(\frac{dx}{dt}\)</span>.</li>
+<li>Include appropriate docstring documentation.</li>
 </ul>
-</section>
-<section id="hint" class="level2" data-number="2.3">
-<h2 data-number="2.3" class="anchored" data-anchor-id="hint"><span class="header-section-number">2.3</span> Hint</h2>
-<p>The function signature should be:</p>
+<p>Here is a template to get you started:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> spruce_budworm(t: <span class="bu">float</span>, x: <span class="bu">float</span>, r: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.5</span>, k: <span class="bu">float</span> <span class="op">=</span> <span class="dv">10</span>) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Model for the spruce budworm population dynamics."""</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Docstring and type hints"""</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Your implementation here</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    dxdt <span class="op">=</span> <span class="co"># fill in</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    dxdt <span class="op">=</span> ???</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dxdt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><em>Why do we need <code>t</code> as an input?</em> Although the equation does not explicitly depend on time, <code>solve_ivp</code> requires the function to accept time as the first argument.</p>
 </section>
-<section id="mathematical-expression" class="level2" data-number="2.4">
-<h2 data-number="2.4" class="anchored" data-anchor-id="mathematical-expression"><span class="header-section-number">2.4</span> Mathematical Expression</h2>
-<p>Remember to implement:</p>
-<p><span class="math display">\[
-\frac{dx}{dt} = rx\left(1 - \frac{x}{k}\right) - \frac{x^2}{1 + x^2}
-\]</span></p>
-</section>
-</section>
-<section id="phase-portrait-visualization" class="level1" data-number="3">
+<section id="sec-phase-portrait" class="level1" data-number="3">
 <h1 data-number="3"><span class="header-section-number">3</span> Phase Portrait Visualization</h1>
-<section id="task-1" class="level2" data-number="3.1">
-<h2 data-number="3.1" class="anchored" data-anchor-id="task-1"><span class="header-section-number">3.1</span> Task</h2>
 <p>Create a function that plots the rate of change <span class="math inline">\(\frac{dx}{dt}\)</span> as a function of the population <span class="math inline">\(x\)</span>. This phase portrait will help us visualize the equilibrium points and their stability.</p>
-</section>
-<section id="requirements-1" class="level2" data-number="3.2">
-<h2 data-number="3.2" class="anchored" data-anchor-id="requirements-1"><span class="header-section-number">3.2</span> Requirements</h2>
 <ul>
 <li>Function name: <code>plot_spruce_budworm_rate</code></li>
+<li>Parameters: <code>x_t</code> (current population), <code>r</code>, <code>k</code></li>
+<li>Use <code>matplotlib</code> for plotting</li>
 <li>Plot <span class="math inline">\(\frac{dx}{dt}\)</span> vs <span class="math inline">\(x\)</span> for <span class="math inline">\(x \in [0, k]\)</span></li>
 <li>Identify and mark equilibrium points (where <span class="math inline">\(\frac{dx}{dt} = 0\)</span>)</li>
 <li>Color-code equilibrium points:
 <ul>
-<li>Blue circles for stable equilibria (where <span class="math inline">\(\frac{dx}{dt}\)</span> crosses zero from above)</li>
-<li>Red circles for unstable equilibria (where <span class="math inline">\(\frac{dx}{dt}\)</span> crosses zero from below)</li>
+<li>Blue circles for stable equilibria (where <span class="math inline">\(\frac{dx}{dt}\)</span> crosses zero from above).</li>
+<li>Red circles for unstable equilibria (where <span class="math inline">\(\frac{dx}{dt}\)</span> crosses zero from below).</li>
 </ul></li>
-<li>Add a horizontal line at <span class="math inline">\(y = 0\)</span></li>
-<li>Mark the current population <span class="math inline">\(x_t\)</span> with a vertical dashed line</li>
+<li>Add a horizontal line at <span class="math inline">\(y = 0\)</span> to indicate equilibria (null rate of change).</li>
+<li>Label axes and add a title.</li>
+<li>Mark the current population <span class="math inline">\(x_t\)</span> with a vertical dashed line.</li>
 </ul>
-</section>
-<section id="hints" class="level2" data-number="3.3">
-<h2 data-number="3.3" class="anchored" data-anchor-id="hints"><span class="header-section-number">3.3</span> Hints</h2>
+<p>Figure <a href="#fig-graph" class="quarto-xref">Figure&nbsp;1</a> shows an example of the expected output.</p>
+<div id="fig-graph" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-graph-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../../img/s01_spruce_budworm.png" class="img-fluid figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-graph-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Example phase portrait of the spruce budworm model showing stable (blue) and unstable (red) equilibria. The green dashed line indicates the current population <span class="math inline">\(x_t\)</span>. Where do you think this population will evolve?
+</figcaption>
+</figure>
+</div>
+<p>Here are some hints to help you implement this function:</p>
 <ul>
-<li>Use <code>np.linspace</code> to create an array of <span class="math inline">\(x\)</span> values</li>
-<li>To find zero crossings: look for sign changes using <code>np.diff(np.sign(dxdt))</code></li>
-<li>Stability: a fixed point is stable if <span class="math inline">\(\frac{dx}{dt}\)</span> decreases as you pass through it</li>
+<li>You can use <code>np.linspace</code> to create an array of <span class="math inline">\(x\)</span> values.</li>
+<li>To find zero crossings: you can look for sign changes combining <code>np.diff</code> and <code>np.sign</code>.</li>
+<li>Stability: a fixed point is stable if <span class="math inline">\(\frac{dx}{dt}\)</span> decreases as you pass through it.</li>
 </ul>
-</section>
-<section id="key-concepts" class="level2" data-number="3.4">
-<h2 data-number="3.4" class="anchored" data-anchor-id="key-concepts"><span class="header-section-number">3.4</span> Key Concepts</h2>
+<p>Review the following definitions for clarity:</p>
 <ul>
-<li><strong>Equilibrium point</strong>: A value <span class="math inline">\(x^*\)</span> where <span class="math inline">\(\frac{dx}{dt} = 0\)</span></li>
-<li><strong>Stable equilibrium</strong>: Small perturbations decay back to <span class="math inline">\(x^*\)</span></li>
-<li><strong>Unstable equilibrium</strong>: Small perturbations grow away from <span class="math inline">\(x^*\)</span></li>
+<li><strong>Equilibrium point</strong>: A value <span class="math inline">\(x^*\)</span> where <span class="math inline">\(\frac{dx}{dt} = 0\)</span>.</li>
+<li><strong>Stable equilibrium</strong>: Small perturbations decay back to <span class="math inline">\(x^*\)</span>.</li>
+<li><strong>Unstable equilibrium</strong>: Small perturbations grow away from <span class="math inline">\(x^*\)</span>.</li>
 </ul>
 </section>
-</section>
-<section id="numerical-integration" class="level1" data-number="4">
+<section id="sec-numerical-integration" class="level1" data-number="4">
 <h1 data-number="4"><span class="header-section-number">4</span> Numerical Integration</h1>
-<section id="task-2" class="level2" data-number="4.1">
-<h2 data-number="4.1" class="anchored" data-anchor-id="task-2"><span class="header-section-number">4.1</span> Task</h2>
 <p>Create a function that evolves the system forward in time using numerical integration. This function should solve the ODE and append the results to existing time and population arrays.</p>
-</section>
-<section id="requirements-2" class="level2" data-number="4.2">
-<h2 data-number="4.2" class="anchored" data-anchor-id="requirements-2"><span class="header-section-number">4.2</span> Requirements</h2>
 <ul>
 <li>Function name: <code>evolve_spruce_budworm</code></li>
-<li>Use <code>scipy.integrate.solve_ivp</code> with the RK45 method</li>
-<li>Parameters:
+<li>Inputs: <code>t</code> (time array), <code>x</code> (population array), <code>r</code>, <code>k</code>, <code>t_eval</code> (duration to evolve).</li>
+<li>Use <code>scipy.integrate.solve_ivp</code> with the RK45 method.</li>
+<li>Start from the last values in the input arrays.</li>
+<li>Concatenate new results to the input arrays.</li>
+<li>Ensure population never goes negative (use <code>np.clip</code>).</li>
+<li>Return updated <code>t</code> and <code>x</code> arrays.</li>
+</ul>
+<p>Here is a template to get you started:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> evolve_spruce_budworm(t: np.ndarray, x: np.ndarray, ...):</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Don't forget the docstring and type hints"""</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Define time span from last time point</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    t_span <span class="op">=</span> (t[<span class="op">-</span><span class="dv">1</span>], t[<span class="op">-</span><span class="dv">1</span>] <span class="op">+</span> t_eval)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create evaluation points, t_eval</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># This indicates where we want the solution evaluated</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># and should be distributed along the time span</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Hint: use np.linspace</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Solve the ODE</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    solution <span class="op">=</span> solve_ivp(</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>        fun<span class="op">=</span>spruce_budworm,</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>        t_span<span class="op">=</span>t_span,</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>        y0<span class="op">=</span>[x[<span class="op">-</span><span class="dv">1</span>]],</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>        t_eval<span class="op">=</span>t_eval,</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>        args<span class="op">=</span>(r, k),</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>        method<span class="op">=</span><span class="st">"RK45"</span>,</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    t_new <span class="op">=</span> solution.t</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    x_new <span class="op">=</span> solution.y[<span class="dv">0</span>]</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Concatenate results - Hint: use np.concatenate</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Ensure non-negative population - Hint: use np.clip</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> t, x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Some important notes:</p>
 <ul>
-<li><code>t</code>: existing time array</li>
-<li><code>x</code>: existing population array</li>
-<li><code>r</code>, <code>k</code>: model parameters</li>
-<li><code>t_eval</code>: duration to evolve forward</li>
-</ul></li>
-<li>Start from the last values in the input arrays</li>
-<li>Concatenate new results to the input arrays</li>
-<li>Ensure population never goes negative (use <code>np.clip</code>)</li>
-<li>Return updated time and population arrays</li>
+<li>The <code>args</code> parameter in <code>solve_ivp</code> passes additional arguments to your ODE function. You can see how we use it in the example above.</li>
+<li>Initial condition should be <code>[x[-1]]</code> (last population value).</li>
+<li>Use <code>method="RK45"</code> for adaptive step-size Runge-Kutta integration.</li>
 </ul>
 </section>
-<section id="code-structure" class="level2" data-number="4.3">
-<h2 data-number="4.3" class="anchored" data-anchor-id="code-structure"><span class="header-section-number">4.3</span> Code Structure</h2>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> evolve_spruce_budworm(</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    t: np.ndarray, x: np.ndarray, </span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    r: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.5</span>, k: <span class="bu">float</span> <span class="op">=</span> <span class="dv">10</span>, </span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    t_eval: <span class="bu">float</span> <span class="op">=</span> <span class="dv">50</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">tuple</span>[np.ndarray, np.ndarray]:</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Define time span from last time point</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    t_span <span class="op">=</span> (t[<span class="op">-</span><span class="dv">1</span>], t[<span class="op">-</span><span class="dv">1</span>] <span class="op">+</span> t_eval)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create evaluation points</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    t_eval_points <span class="op">=</span> <span class="co"># use np.linspace()</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Solve the ODE</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    solution <span class="op">=</span> <span class="co"># use solve_ivp</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Concatenate results</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    t <span class="op">=</span> np.concatenate((t, solution.t))</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> np.concatenate((x, solution.y[<span class="dv">0</span>]))</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Ensure non-negative population</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> np.clip(x, a_min<span class="op">=</span><span class="dv">0</span>, a_max<span class="op">=</span><span class="va">None</span>)</span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> t, x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-<section id="important-notes" class="level2" data-number="4.4">
-<h2 data-number="4.4" class="anchored" data-anchor-id="important-notes"><span class="header-section-number">4.4</span> Important Notes</h2>
-<ul>
-<li>The <code>args</code> parameter in <code>solve_ivp</code> passes additional arguments to your ODE function</li>
-<li>Initial condition should be <code>[x[-1]]</code> (last population value)</li>
-<li>Use <code>method="RK45"</code> for adaptive step-size Runge-Kutta integration</li>
-</ul>
-</section>
-</section>
-<section id="time-series-visualization" class="level1" data-number="5">
+<section id="sec-time-series-visualization" class="level1" data-number="5">
 <h1 data-number="5"><span class="header-section-number">5</span> Time Series Visualization</h1>
-<section id="task-3" class="level2" data-number="5.1">
-<h2 data-number="5.1" class="anchored" data-anchor-id="task-3"><span class="header-section-number">5.1</span> Task</h2>
 <p>Create a function to plot the population dynamics over time. This visualization shows how the population evolves from the initial condition.</p>
-</section>
-<section id="requirements-3" class="level2" data-number="5.2">
-<h2 data-number="5.2" class="anchored" data-anchor-id="requirements-3"><span class="header-section-number">5.2</span> Requirements</h2>
 <ul>
 <li>Function name: <code>plot_spruce_budworm</code></li>
-<li>Plot time on the x-axis and population on the y-axis</li>
-<li>Use green color for the trajectory</li>
-<li>Ensure y-axis starts at 0 (populations cannot be negative)</li>
-<li>Include grid, labels, and title</li>
-<li>Return the figure and axes objects</li>
+<li>Parameters: <code>t</code> (time array), <code>x</code> (population array).</li>
+<li>Plot time on the x-axis and population on the y-axis.</li>
+<li>Use green color for the trajectory.</li>
+<li>Ensure y-axis starts at 0 (populations cannot be negative).</li>
+<li>Include grid, labels, and title.</li>
+<li>Return the figure and axes objects.</li>
 </ul>
+<p>See Figure <a href="#fig-time-series" class="quarto-xref">Figure&nbsp;2</a> for an example output.</p>
+<div id="fig-time-series" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-time-series-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../../img/s01_spruce_budworm_evolution.png" class="img-fluid figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-time-series-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Example time series of the spruce budworm population over time.
+</figcaption>
+</figure>
+</div>
 </section>
-<section id="questions-to-consider" class="level2" data-number="5.3">
-<h2 data-number="5.3" class="anchored" data-anchor-id="questions-to-consider"><span class="header-section-number">5.3</span> Questions to Consider</h2>
-<ul>
-<li>What happens to the population in the long run?</li>
-<li>Does the final state depend on the initial condition?</li>
-<li>How do different parameter values affect the dynamics?</li>
-</ul>
-</section>
-</section>
-<section id="building-the-streamlit-application" class="level1" data-number="6">
+<section id="sec-streamlit-application" class="level1" data-number="6">
 <h1 data-number="6"><span class="header-section-number">6</span> Building the Streamlit Application</h1>
-<section id="task-4" class="level2" data-number="6.1">
-<h2 data-number="6.1" class="anchored" data-anchor-id="task-4"><span class="header-section-number">6.1</span> Task</h2>
 <p>Now that you have all the components, create an interactive Streamlit application that allows users to explore the spruce budworm model. This will enable real-time parameter adjustment and visualization.</p>
-</section>
-<section id="requirements-4" class="level2" data-number="6.2">
-<h2 data-number="6.2" class="anchored" data-anchor-id="requirements-4"><span class="header-section-number">6.2</span> Requirements</h2>
-<section id="sidebar-controls" class="level3" data-number="6.2.1">
-<h3 data-number="6.2.1" class="anchored" data-anchor-id="sidebar-controls"><span class="header-section-number">6.2.1</span> Sidebar Controls</h3>
+<p>While all the previous code could be done in Google Colab, Streamlit has to be built on your local machine. Follow the instructions in the <a href="../../README.md">README.md</a> file in the <a href="https://github.com/daniprec/BAM-Applied-Math-Lab">repository</a> to set up your environment.</p>
+<p>Design a script, name it <code>spruce_budworm_app.py</code>. You will find a suggested layout below. This script will use the functions you implemented in sections <a href="#sec-implementing-ode-function" class="quarto-xref">Section&nbsp;2</a> through <a href="#sec-time-series-visualization" class="quarto-xref">Section&nbsp;5</a>. You can either import them from a separate module (another script you created) or paste the function definitions directly into the script. For best practices, consider creating a module (e.g., <code>spruce_budworm_model.py</code>) and importing the functions.</p>
+<p>To test your app, run the following command in your terminal:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">streamlit</span> run spruce_budworm_app.py</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="sidebar-controls" class="level2" data-number="6.1">
+<h2 data-number="6.1" class="anchored" data-anchor-id="sidebar-controls"><span class="header-section-number">6.1</span> Sidebar Controls</h2>
 <p>Create sliders for:</p>
 <ul>
-<li>Growth rate <span class="math inline">\(r\)</span> (range: 0.1 to 1.0)</li>
-<li>Carrying capacity <span class="math inline">\(k\)</span> (range: 5 to 20)</li>
-<li>Initial population <span class="math inline">\(x_0\)</span> (range: 0.1 to <span class="math inline">\(k\)</span>)</li>
-<li>Evolution time step (default: 50)</li>
+<li>Growth rate <span class="math inline">\(r\)</span> (range: 0.0 to 1.0, default 0.5).</li>
+<li>Carrying capacity <span class="math inline">\(k\)</span> (range: 0.1 to 10.0, default 10.0).</li>
+<li>Initial population: set automatically to <span class="math inline">\(k/10\)</span> (the app uses <span class="math inline">\(x_0 = k/10\)</span> by default).</li>
+<li>Time slider for evolution (range: 1 to 100, default 10).</li>
 </ul>
 </section>
-<section id="interactive-features" class="level3" data-number="6.2.2">
-<h3 data-number="6.2.2" class="anchored" data-anchor-id="interactive-features"><span class="header-section-number">6.2.2</span> Interactive Features</h3>
+<section id="interactive-features" class="level2" data-number="6.2">
+<h2 data-number="6.2" class="anchored" data-anchor-id="interactive-features"><span class="header-section-number">6.2</span> Interactive Features</h2>
 <ul>
-<li>Display the differential equation with current parameter values</li>
-<li>Show the phase portrait (rate of change plot)</li>
-<li>Show the time series evolution</li>
-<li>Add a button to “Evolve Forward” that continues the simulation</li>
-<li>Use <code>st.session_state</code> to maintain simulation state between button clicks</li>
+<li>Display the differential equation with current parameter values.</li>
+<li>Show the phase portrait (rate of change plot), using your function from section <a href="#sec-phase-portrait" class="quarto-xref">Section&nbsp;3</a>.</li>
+<li>Show the time series evolution, using your function from section <a href="#sec-time-series-visualization" class="quarto-xref">Section&nbsp;5</a>.</li>
+<li>Add a button to “Evolve Forward” that continues the simulation, updating the plots.</li>
+<li>Use <code>st.session_state</code> to maintain simulation state between button clicks. You will need to store the time and population arrays in the session state, otherwise they will reset on each interaction.</li>
 </ul>
 </section>
-<section id="layout-structure" class="level3" data-number="6.2.3">
-<h3 data-number="6.2.3" class="anchored" data-anchor-id="layout-structure"><span class="header-section-number">6.2.3</span> Layout Structure</h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> streamlit <span class="im">as</span> st</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> your_module <span class="im">import</span> (</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    spruce_budworm,</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    plot_spruce_budworm_rate,</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    evolve_spruce_budworm,</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    plot_spruce_budworm</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>st.title(<span class="st">"Spruce Budworm Population Dynamics"</span>)</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Sidebar parameters</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> st.sidebar.slider(<span class="st">"Growth rate (r)"</span>, ...)</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>k <span class="op">=</span> st.sidebar.slider(<span class="st">"Carrying capacity (k)"</span>, ...)</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>x0 <span class="op">=</span> st.sidebar.slider(<span class="st">"Initial population"</span>, ...)</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize session state</span></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">'initialized'</span> <span class="kw">not</span> <span class="kw">in</span> st.session_state:</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    st.session_state.t <span class="op">=</span> np.array([<span class="dv">0</span>])</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    st.session_state.x <span class="op">=</span> np.array([x0])</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    st.session_state.initialized <span class="op">=</span> <span class="va">True</span></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Display equation</span></span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>st.latex(<span class="vs">r"\frac</span><span class="sc">{dx}{dt}</span><span class="vs"> = rx\left(1 - \frac</span><span class="sc">{x}{k}</span><span class="vs">\right) - \frac{x^2}{1 + x^2}"</span>)</span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot phase portrait</span></span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>fig1, ax1 <span class="op">=</span> plot_spruce_budworm_rate(...)</span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>st.pyplot(fig1)</span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot time series</span></span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>fig2, ax2 <span class="op">=</span> plot_spruce_budworm(...)</span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>st.pyplot(fig2)</span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="co"># Evolution button</span></span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> st.button(<span class="st">"Evolve Forward"</span>):</span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>    st.session_state.t, st.session_state.x <span class="op">=</span> evolve_spruce_budworm(...)</span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>    st.rerun()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="layout-structure" class="level2" data-number="6.3">
+<h2 data-number="6.3" class="anchored" data-anchor-id="layout-structure"><span class="header-section-number">6.3</span> Layout Structure</h2>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> streamlit <span class="im">as</span> st</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> your_module <span class="im">import</span> (</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    spruce_budworm,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    plot_spruce_budworm_rate,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    evolve_spruce_budworm,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    plot_spruce_budworm,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>)  <span class="co"># Or paste your functions here</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>st.title(<span class="st">"Spruce Budworm Population Dynamics"</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Sidebar parameters (as in the app)</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> st.sidebar.slider(<span class="st">"Intrinsic growth rate (r)"</span>, <span class="fl">0.0</span>, <span class="fl">1.0</span>, <span class="fl">0.5</span>)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>k <span class="op">=</span> st.sidebar.slider(<span class="st">"Carrying capacity (k)"</span>, <span class="fl">0.1</span>, <span class="fl">10.0</span>, <span class="fl">10.0</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co"># The app sets the initial population to k/10 by default</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>x0 <span class="op">=</span> k <span class="op">/</span> <span class="dv">10</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize session state</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="st">"sbw_x"</span> <span class="kw">not</span> <span class="kw">in</span> st.session_state):</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    st.session_state[<span class="st">"sbw_t"</span>] <span class="op">=</span> np.array([<span class="dv">0</span>])</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    st.session_state[<span class="st">"sbw_x"</span>] <span class="op">=</span> np.array([x0])</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Time slider and control buttons</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>t_eval <span class="op">=</span> st.sidebar.slider(<span class="st">"Time"</span>, <span class="dv">1</span>, <span class="dv">100</span>, <span class="dv">10</span>)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>button <span class="op">=</span> st.sidebar.button(<span class="st">"Evolve"</span>)</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Retrieve session data</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> st.session_state[<span class="st">"sbw_t"</span>]</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> st.session_state[<span class="st">"sbw_x"</span>]</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Evolve if requested</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> button:</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>    t, x <span class="op">=</span> evolve_spruce_budworm(t, x, r<span class="op">=</span>r, k<span class="op">=</span>k, t_eval<span class="op">=</span>t_eval)</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    st.session_state[<span class="st">"sbw_t"</span>] <span class="op">=</span> t</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>    st.session_state[<span class="st">"sbw_x"</span>] <span class="op">=</span> x</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot phase portrait and time series</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>fig1, ax1 <span class="op">=</span> plot_spruce_budworm_rate(x[<span class="op">-</span><span class="dv">1</span>], r<span class="op">=</span>r, k<span class="op">=</span>k)</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>st.pyplot(fig1)</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>fig2, ax2 <span class="op">=</span> plot_spruce_budworm(t, x)</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>st.pyplot(fig2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-</section>
-<section id="advanced-features-optional" class="level2" data-number="6.3">
-<h2 data-number="6.3" class="anchored" data-anchor-id="advanced-features-optional"><span class="header-section-number">6.3</span> Advanced Features (Optional)</h2>
+<section id="advanced-features-optional" class="level2" data-number="6.4">
+<h2 data-number="6.4" class="anchored" data-anchor-id="advanced-features-optional"><span class="header-section-number">6.4</span> Advanced Features (Optional)</h2>
 <ul>
-<li>Add a reset button to restart the simulation</li>
-<li>Display current population value and equilibrium states</li>
-<li>Add explanatory text about bifurcations and catastrophes</li>
-<li>Show multiple trajectories with different initial conditions</li>
-<li>Add animation of the population dynamics</li>
+<li>Add a reset button to restart the simulation.</li>
+<li>Show multiple trajectories with different initial conditions.</li>
+<li>Add animation of the population dynamics.</li>
 </ul>
 </section>
 </section>
-<section id="exploration-questions" class="level1" data-number="7">
+<section id="sec-exploration-questions" class="level1" data-number="7">
 <h1 data-number="7"><span class="header-section-number">7</span> Exploration Questions</h1>
 <p>Once your simulation is working, explore the following questions:</p>
 <ol type="1">
-<li><p><strong>Multiple Equilibria:</strong> For <span class="math inline">\(r = 0.5\)</span> and <span class="math inline">\(k = 10\)</span>, how many equilibrium points exist? Which are stable?</p></li>
-<li><p><strong>Bistability:</strong> Start with two different initial conditions (e.g., <span class="math inline">\(x_0 = 1\)</span> and <span class="math inline">\(x_0 = 8\)</span>). Do they converge to the same equilibrium?</p></li>
-<li><p><strong>Hysteresis:</strong> Slowly increase the carrying capacity <span class="math inline">\(k\)</span> from 5 to 15. Then slowly decrease it back to 5. Does the population return to the same state?</p></li>
-<li><p><strong>Outbreak Dynamics:</strong> What happens if you start with a small population (<span class="math inline">\(x_0 &lt; 2\)</span>) and the carrying capacity is large (<span class="math inline">\(k &gt; 10\)</span>)?</p></li>
-<li><p><strong>Critical Slowing Down:</strong> When the population is near an unstable equilibrium, how long does it take to move away? Compare this to the rate of change far from equilibrium.</p></li>
-<li><p><strong>Parameter Space:</strong> Create a diagram showing the number of equilibria as a function of <span class="math inline">\(r\)</span> and <span class="math inline">\(k\)</span>. Where do bifurcations occur?</p></li>
+<li><strong>Multiple Equilibria:</strong> For <span class="math inline">\(r = 0.5\)</span> and <span class="math inline">\(k = 10\)</span>, how many equilibrium points exist? Which are stable?</li>
+<li><strong>Bistability:</strong> Start with two different initial conditions (e.g., <span class="math inline">\(x_0 = 1\)</span> and <span class="math inline">\(x_0 = 8\)</span>). Do they converge to the same equilibrium?</li>
+<li><strong>Hysteresis:</strong> Slowly increase the carrying capacity <span class="math inline">\(k\)</span> from 5 to 15. Then slowly decrease it back to 5. Does the population return to the same state? If you are interested in this concept, see section <a href="#sec-slow-fast-dynamics" class="quarto-xref">Section&nbsp;7.1</a>.</li>
+<li><strong>Outbreak Dynamics:</strong> What happens if you start with a small population (<span class="math inline">\(x_0 &lt; 2\)</span>) and the carrying capacity is large (<span class="math inline">\(k &gt; 10\)</span>)?</li>
+<li><strong>Critical Slowing Down:</strong> When the population is near an unstable equilibrium, how long does it take to move away? Compare this to the rate of change far from equilibrium.</li>
+<li><strong>Parameter Space:</strong> Create a diagram showing the number of equilibria as a function of <span class="math inline">\(r\)</span> and <span class="math inline">\(k\)</span>. Where do bifurcations occur?</li>
 </ol>
+<section id="sec-slow-fast-dynamics" class="level2" data-number="7.1">
+<h2 data-number="7.1" class="anchored" data-anchor-id="sec-slow-fast-dynamics"><span class="header-section-number">7.1</span> Slow-Fast Dynamics</h2>
+<p>The carrying capacity <span class="math inline">\(k\)</span> can be interpreted as a slowly varying parameter in real ecosystems (e.g., due to seasonal changes or forest management). You can simulate this by gradually changing <span class="math inline">\(k\)</span> over time in your app. This can lead to <strong>hysteresis</strong> effects, where the population does not return to its original state after <span class="math inline">\(k\)</span> is restored. Experiment with this by modifying your Streamlit app to allow <span class="math inline">\(k\)</span> to vary over time.</p>
 </section>
-<section id="mathematical-background" class="level1" data-number="8">
-<h1 data-number="8"><span class="header-section-number">8</span> Mathematical Background</h1>
-<section id="equilibrium-analysis" class="level2" data-number="8.1">
-<h2 data-number="8.1" class="anchored" data-anchor-id="equilibrium-analysis"><span class="header-section-number">8.1</span> Equilibrium Analysis</h2>
+</section>
+<section id="sec-deliverable" class="level1" data-number="8">
+<h1 data-number="8"><span class="header-section-number">8</span> Deliverable</h1>
+<p>Implement the complete Streamlit application as described above, following sections <a href="#sec-implementing-ode-function" class="quarto-xref">Section&nbsp;2</a> through <a href="#sec-streamlit-application" class="quarto-xref">Section&nbsp;6</a>. Ensure that all functions are correctly defined and integrated into the app. Test the application thoroughly to confirm that it behaves as expected.</p>
+<p>Answer at least three of the exploration questions from section <a href="#sec-exploration-questions" class="quarto-xref">Section&nbsp;7</a> and document your findings in a brief report (1-2 pages). You are encouraged to use LaTeX here. Include screenshots of your application demonstrating different behaviors observed during your exploration.</p>
+<p>If you want to go the extra mile, here are some additional challenges you can tackle:</p>
+<ul>
+<li>Create a GitHub repository for your project and push your code there. You can include the text of your report in the repository as well.</li>
+<li>Deploy your Streamlit app using Streamlit Cloud or another hosting service. Share the link in your report.</li>
+<li>Implement some of the advanced features mentioned in section <a href="#sec-streamlit-application" class="quarto-xref">Section&nbsp;6</a>.</li>
+<li>Instead of using SciPy’s built-in ODE solver, implement your own simple Euler or Runge-Kutta integrator and compare results.</li>
+</ul>
+</section>
+<section id="sec-mathematical-background" class="level1" data-number="9">
+<h1 data-number="9"><span class="header-section-number">9</span> Mathematical Background</h1>
+<p>In this section I provide some additional mathematical context for the spruce budworm model. Play with your simulation to see these concepts in action!</p>
+<section id="equilibrium-analysis" class="level2" data-number="9.1">
+<h2 data-number="9.1" class="anchored" data-anchor-id="equilibrium-analysis"><span class="header-section-number">9.1</span> Equilibrium Analysis</h2>
 <p>Equilibrium points satisfy:</p>
 <p><span class="math display">\[
 rx^*\left(1 - \frac{x^*}{k}\right) - \frac{(x^*)^2}{1 + (x^*)^2} = 0
@@ -641,58 +636,62 @@ rx^*\left(1 - \frac{x^*}{k}\right) = \frac{(x^*)^2}{1 + (x^*)^2}
 \]</span></p>
 <p>The left side represents birth rate (logistic growth), and the right side represents predation rate. Equilibria occur where these balance.</p>
 </section>
-<section id="stability-analysis" class="level2" data-number="8.2">
-<h2 data-number="8.2" class="anchored" data-anchor-id="stability-analysis"><span class="header-section-number">8.2</span> Stability Analysis</h2>
+<section id="sec-stability-analysis" class="level2" data-number="9.2">
+<h2 data-number="9.2" class="anchored" data-anchor-id="sec-stability-analysis"><span class="header-section-number">9.2</span> Stability Analysis</h2>
 <p>The stability of an equilibrium <span class="math inline">\(x^*\)</span> is determined by the sign of the derivative:</p>
 <p><span class="math display">\[
 \frac{d}{dx}\left(\frac{dx}{dt}\right)\bigg|_{x=x^*}
 \]</span></p>
 <p>If this derivative is:</p>
 <ul>
-<li>Negative: the equilibrium is stable (attracting)</li>
-<li>Positive: the equilibrium is unstable (repelling)</li>
-<li>Zero: higher-order analysis is needed</li>
+<li>Negative: the equilibrium is stable (attracting).</li>
+<li>Positive: the equilibrium is unstable (repelling).</li>
+<li>Zero: higher-order analysis is needed.</li>
 </ul>
 </section>
-<section id="ecological-interpretation" class="level2" data-number="8.3">
-<h2 data-number="8.3" class="anchored" data-anchor-id="ecological-interpretation"><span class="header-section-number">8.3</span> Ecological Interpretation</h2>
+<section id="ecological-interpretation" class="level2" data-number="9.3">
+<h2 data-number="9.3" class="anchored" data-anchor-id="ecological-interpretation"><span class="header-section-number">9.3</span> Ecological Interpretation</h2>
 <ul>
-<li><strong>Low equilibrium:</strong> Few budworms, controlled by predation</li>
-<li><strong>High equilibrium:</strong> Outbreak state, budworms overwhelm predators</li>
-<li><strong>Middle equilibrium:</strong> Usually unstable, separates the two basins of attraction</li>
-<li><strong>Hysteresis:</strong> The system can “jump” between states depending on history</li>
+<li><strong>Low equilibrium:</strong> Few budworms, controlled by predation.</li>
+<li><strong>High equilibrium:</strong> Outbreak state, budworms overwhelm predators.</li>
+<li><strong>Middle equilibrium:</strong> Usually unstable, separates the two basins of attraction.</li>
+<li><strong>Hysteresis:</strong> The system can “jump” between states depending on history.</li>
 </ul>
 <p>This behavior explains why spruce budworm populations can suddenly explode from low levels to outbreak proportions, and why simply reducing the outbreak may not return the forest to a healthy state.</p>
 </section>
 </section>
-<section id="resources" class="level1" data-number="9">
-<h1 data-number="9"><span class="header-section-number">9</span> Resources</h1>
+<section id="resources" class="level1" data-number="10">
+<h1 data-number="10"><span class="header-section-number">10</span> Resources</h1>
 <ul>
-<li>Strogatz, S. H. (2018). <em>Nonlinear Dynamics and Chaos</em>. CRC Press, Chapter 3.7</li>
+<li><span class="citation" data-cites="strogatz2024nonlinear">(<a href="#ref-strogatz2024nonlinear" role="doc-biblioref">Strogatz 2024, chap. 3.7</a>)</span> for theoretical background on the spruce budworm model.</li>
 <li>SciPy documentation: <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html" class="uri">https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html</a></li>
 <li>Streamlit documentation: <a href="https://docs.streamlit.io" class="uri">https://docs.streamlit.io</a></li>
 <li>Reference implementation: <a href="https://github.com/daniprec/BAM-Applied-Math-Lab/tree/main/sessions/s01_odes_1d" class="uri">https://github.com/daniprec/BAM-Applied-Math-Lab/tree/main/sessions/s01_odes_1d</a></li>
 </ul>
 </section>
-<section id="tips-for-success" class="level1" data-number="10">
-<h1 data-number="10"><span class="header-section-number">10</span> Tips for Success</h1>
+<section id="tips-for-success" class="level1" data-number="11">
+<h1 data-number="11"><span class="header-section-number">11</span> Tips for Success</h1>
 <ul>
-<li><strong>Start simple:</strong> Get section 2 working first, then build up.</li>
+<li><strong>Start simple:</strong> Get section <a href="#sec-implementing-ode-function" class="quarto-xref">Section&nbsp;2</a> working first, then build up.</li>
 <li><strong>Test incrementally:</strong> Verify each function works before moving to the next.</li>
-<li><strong>Use the reference:</strong> The provided code is there to help you understand the structure.</li>
+<li><strong>Use the reference:</strong> The provided code (and additional documentation) is there to help you understand the structure.</li>
 <li><strong>Experiment:</strong> Try different parameter values and see what happens.</li>
-<li><strong>Collaborate:</strong> Discuss with your classmates, but write your own code.</li>
+<li><strong>Collaborate:</strong> Discuss with your teammates, divide the work if needed. You can also work separately and then compare your implementations.</li>
 <li><strong>Ask questions:</strong> If you’re stuck, ask for help!</li>
 </ul>
-<hr>
 <p><strong>Good luck and enjoy your coding!</strong></p>
 
 
 <!-- -->
 
+
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-strogatz2024nonlinear" class="csl-entry" role="listitem">
+Strogatz, Steven H. 2024. <em>Nonlinear Dynamics and Chaos: With Applications to Physics, Biology, Chemistry, and Engineering</em>. Chapman; Hall/CRC.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -1140,337 +1139,354 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   <div class="nav-page nav-page-next">
   </div>
 </nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="sourceCode" id="cb4" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Session 1: 1D Ordinary Differential Equations"</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Building an Interactive Spruce Budworm Simulation"</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Daniel Precioso Garcelán"</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: false</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">    number-sections: true</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="fu"># Introduction</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>Welcome to this hands-on session on modeling population dynamics using ordinary differential equations (ODEs). Today, we will explore the **spruce budworm model**, a classic example from ecological modeling that demonstrates how simple nonlinear systems can exhibit complex behaviors including multiple equilibria and catastrophic transitions.</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="fu">## Learning Objectives</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>By the end of this session, you will be able to:</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Understand the mathematical formulation of the spruce budworm model</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Implement the model as a Python function</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Solve the ODE numerically using <span class="in">`scipy.integrate.solve_ivp`</span></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Visualize the phase portrait and identify equilibrium points</span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Build an interactive Streamlit application to explore the model</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="fu">## The Spruce Budworm Model</span></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>The spruce budworm is an insect that periodically devastates spruce forests. The population dynamics can be modeled by the following ODE:</span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>\frac{dx}{dt} = rx\left(1 - \frac{x}{k}\right) - \frac{x^2}{1 + x^2}</span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>where:</span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$x(t)$ is the budworm population (adimensional)</span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$r$ is the intrinsic growth rate (typically $r \approx 0.5$)</span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$k$ is the carrying capacity of the forest (typically $k \approx 10$)</span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>The first term represents logistic growth, while the second term models predation by birds (which follows a saturating functional response).</span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>**Reference:** Strogatz, S. H. (2018). *Nonlinear Dynamics and Chaos*, Chapter 3.7.</span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a><span class="fu"># Implementing the ODE Function</span></span>
-<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a><span class="fu">## Task</span></span>
-<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>Create a Python function that implements the spruce budworm differential equation. The function should follow the signature required by <span class="in">`scipy.integrate.solve_ivp`</span>.</span>
-<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a><span class="fu">## Requirements</span></span>
-<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Function name: <span class="in">`spruce_budworm`</span></span>
-<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Parameters: <span class="in">`t`</span> (time), <span class="in">`x`</span> (population), <span class="in">`r`</span> (growth rate), <span class="in">`k`</span> (carrying capacity)</span>
-<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Return: The rate of change $\frac{dx}{dt}$</span>
-<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Include appropriate docstring documentation</span>
-<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hint</span></span>
-<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>The function signature should be:</span>
-<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> spruce_budworm(t: <span class="bu">float</span>, x: <span class="bu">float</span>, r: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.5</span>, k: <span class="bu">float</span> <span class="op">=</span> <span class="dv">10</span>) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
-<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Model for the spruce budworm population dynamics."""</span></span>
-<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Your implementation here</span></span>
-<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>    dxdt <span class="op">=</span> <span class="co"># fill in</span></span>
-<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dxdt</span>
-<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a><span class="fu">## Mathematical Expression</span></span>
-<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a>Remember to implement:</span>
-<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a>\frac{dx}{dt} = rx\left(1 - \frac{x}{k}\right) - \frac{x^2}{1 + x^2}</span>
-<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a><span class="fu"># Phase Portrait Visualization</span></span>
-<span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-79"><a href="#cb4-79" aria-hidden="true" tabindex="-1"></a><span class="fu">## Task</span></span>
-<span id="cb4-80"><a href="#cb4-80" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-81"><a href="#cb4-81" aria-hidden="true" tabindex="-1"></a>Create a function that plots the rate of change $\frac{dx}{dt}$ as a function of the population $x$. This phase portrait will help us visualize the equilibrium points and their stability.</span>
-<span id="cb4-82"><a href="#cb4-82" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-83"><a href="#cb4-83" aria-hidden="true" tabindex="-1"></a><span class="fu">## Requirements</span></span>
-<span id="cb4-84"><a href="#cb4-84" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Function name: <span class="in">`plot_spruce_budworm_rate`</span></span>
-<span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Plot $\frac{dx}{dt}$ vs $x$ for $x \in <span class="co">[</span><span class="ot">0, k</span><span class="co">]</span>$</span>
-<span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Identify and mark equilibrium points (where $\frac{dx}{dt} = 0$)</span>
-<span id="cb4-88"><a href="#cb4-88" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Color-code equilibrium points:</span>
-<span id="cb4-89"><a href="#cb4-89" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Blue circles for stable equilibria (where $\frac{dx}{dt}$ crosses zero from above)</span>
-<span id="cb4-90"><a href="#cb4-90" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Red circles for unstable equilibria (where $\frac{dx}{dt}$ crosses zero from below)</span>
-<span id="cb4-91"><a href="#cb4-91" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Add a horizontal line at $y = 0$</span>
-<span id="cb4-92"><a href="#cb4-92" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Mark the current population $x_t$ with a vertical dashed line</span>
-<span id="cb4-93"><a href="#cb4-93" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-94"><a href="#cb4-94" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hints</span></span>
-<span id="cb4-95"><a href="#cb4-95" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-96"><a href="#cb4-96" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Use <span class="in">`np.linspace`</span> to create an array of $x$ values</span>
-<span id="cb4-97"><a href="#cb4-97" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>To find zero crossings: look for sign changes using <span class="in">`np.diff(np.sign(dxdt))`</span></span>
-<span id="cb4-98"><a href="#cb4-98" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Stability: a fixed point is stable if $\frac{dx}{dt}$ decreases as you pass through it</span>
-<span id="cb4-99"><a href="#cb4-99" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-100"><a href="#cb4-100" aria-hidden="true" tabindex="-1"></a><span class="fu">## Key Concepts</span></span>
-<span id="cb4-101"><a href="#cb4-101" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-102"><a href="#cb4-102" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Equilibrium point**: A value $x^*$ where $\frac{dx}{dt} = 0$</span>
-<span id="cb4-103"><a href="#cb4-103" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Stable equilibrium**: Small perturbations decay back to $x^*$</span>
-<span id="cb4-104"><a href="#cb4-104" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Unstable equilibrium**: Small perturbations grow away from $x^*$</span>
-<span id="cb4-105"><a href="#cb4-105" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-106"><a href="#cb4-106" aria-hidden="true" tabindex="-1"></a><span class="fu"># Numerical Integration</span></span>
-<span id="cb4-107"><a href="#cb4-107" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-108"><a href="#cb4-108" aria-hidden="true" tabindex="-1"></a><span class="fu">## Task</span></span>
-<span id="cb4-109"><a href="#cb4-109" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-110"><a href="#cb4-110" aria-hidden="true" tabindex="-1"></a>Create a function that evolves the system forward in time using numerical integration. This function should solve the ODE and append the results to existing time and population arrays.</span>
-<span id="cb4-111"><a href="#cb4-111" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-112"><a href="#cb4-112" aria-hidden="true" tabindex="-1"></a><span class="fu">## Requirements</span></span>
-<span id="cb4-113"><a href="#cb4-113" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-114"><a href="#cb4-114" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Function name: <span class="in">`evolve_spruce_budworm`</span></span>
-<span id="cb4-115"><a href="#cb4-115" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Use <span class="in">`scipy.integrate.solve_ivp`</span> with the RK45 method</span>
-<span id="cb4-116"><a href="#cb4-116" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Parameters:</span>
-<span id="cb4-117"><a href="#cb4-117" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span><span class="in">`t`</span>: existing time array</span>
-<span id="cb4-118"><a href="#cb4-118" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span><span class="in">`x`</span>: existing population array</span>
-<span id="cb4-119"><a href="#cb4-119" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span><span class="in">`r`</span>, <span class="in">`k`</span>: model parameters</span>
-<span id="cb4-120"><a href="#cb4-120" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span><span class="in">`t_eval`</span>: duration to evolve forward</span>
-<span id="cb4-121"><a href="#cb4-121" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Start from the last values in the input arrays</span>
-<span id="cb4-122"><a href="#cb4-122" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Concatenate new results to the input arrays</span>
-<span id="cb4-123"><a href="#cb4-123" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Ensure population never goes negative (use <span class="in">`np.clip`</span>)</span>
-<span id="cb4-124"><a href="#cb4-124" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Return updated time and population arrays</span>
-<span id="cb4-125"><a href="#cb4-125" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-126"><a href="#cb4-126" aria-hidden="true" tabindex="-1"></a><span class="fu">## Code Structure</span></span>
-<span id="cb4-127"><a href="#cb4-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-128"><a href="#cb4-128" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb4-129"><a href="#cb4-129" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> evolve_spruce_budworm(</span>
-<span id="cb4-130"><a href="#cb4-130" aria-hidden="true" tabindex="-1"></a>    t: np.ndarray, x: np.ndarray, </span>
-<span id="cb4-131"><a href="#cb4-131" aria-hidden="true" tabindex="-1"></a>    r: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.5</span>, k: <span class="bu">float</span> <span class="op">=</span> <span class="dv">10</span>, </span>
-<span id="cb4-132"><a href="#cb4-132" aria-hidden="true" tabindex="-1"></a>    t_eval: <span class="bu">float</span> <span class="op">=</span> <span class="dv">50</span></span>
-<span id="cb4-133"><a href="#cb4-133" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">tuple</span>[np.ndarray, np.ndarray]:</span>
-<span id="cb4-134"><a href="#cb4-134" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Define time span from last time point</span></span>
-<span id="cb4-135"><a href="#cb4-135" aria-hidden="true" tabindex="-1"></a>    t_span <span class="op">=</span> (t[<span class="op">-</span><span class="dv">1</span>], t[<span class="op">-</span><span class="dv">1</span>] <span class="op">+</span> t_eval)</span>
-<span id="cb4-136"><a href="#cb4-136" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb4-137"><a href="#cb4-137" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create evaluation points</span></span>
-<span id="cb4-138"><a href="#cb4-138" aria-hidden="true" tabindex="-1"></a>    t_eval_points <span class="op">=</span> <span class="co"># use np.linspace()</span></span>
-<span id="cb4-139"><a href="#cb4-139" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb4-140"><a href="#cb4-140" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Solve the ODE</span></span>
-<span id="cb4-141"><a href="#cb4-141" aria-hidden="true" tabindex="-1"></a>    solution <span class="op">=</span> <span class="co"># use solve_ivp</span></span>
-<span id="cb4-142"><a href="#cb4-142" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb4-143"><a href="#cb4-143" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Concatenate results</span></span>
-<span id="cb4-144"><a href="#cb4-144" aria-hidden="true" tabindex="-1"></a>    t <span class="op">=</span> np.concatenate((t, solution.t))</span>
-<span id="cb4-145"><a href="#cb4-145" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> np.concatenate((x, solution.y[<span class="dv">0</span>]))</span>
-<span id="cb4-146"><a href="#cb4-146" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb4-147"><a href="#cb4-147" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Ensure non-negative population</span></span>
-<span id="cb4-148"><a href="#cb4-148" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> np.clip(x, a_min<span class="op">=</span><span class="dv">0</span>, a_max<span class="op">=</span><span class="va">None</span>)</span>
-<span id="cb4-149"><a href="#cb4-149" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb4-150"><a href="#cb4-150" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> t, x</span>
-<span id="cb4-151"><a href="#cb4-151" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb4-152"><a href="#cb4-152" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-153"><a href="#cb4-153" aria-hidden="true" tabindex="-1"></a><span class="fu">## Important Notes</span></span>
-<span id="cb4-154"><a href="#cb4-154" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-155"><a href="#cb4-155" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The <span class="in">`args`</span> parameter in <span class="in">`solve_ivp`</span> passes additional arguments to your ODE function</span>
-<span id="cb4-156"><a href="#cb4-156" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Initial condition should be <span class="in">`[x[-1]]`</span> (last population value)</span>
-<span id="cb4-157"><a href="#cb4-157" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Use <span class="in">`method="RK45"`</span> for adaptive step-size Runge-Kutta integration</span>
-<span id="cb4-158"><a href="#cb4-158" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-159"><a href="#cb4-159" aria-hidden="true" tabindex="-1"></a><span class="fu"># Time Series Visualization</span></span>
-<span id="cb4-160"><a href="#cb4-160" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-161"><a href="#cb4-161" aria-hidden="true" tabindex="-1"></a><span class="fu">## Task</span></span>
-<span id="cb4-162"><a href="#cb4-162" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-163"><a href="#cb4-163" aria-hidden="true" tabindex="-1"></a>Create a function to plot the population dynamics over time. This visualization shows how the population evolves from the initial condition.</span>
-<span id="cb4-164"><a href="#cb4-164" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-165"><a href="#cb4-165" aria-hidden="true" tabindex="-1"></a><span class="fu">## Requirements</span></span>
-<span id="cb4-166"><a href="#cb4-166" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-167"><a href="#cb4-167" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Function name: <span class="in">`plot_spruce_budworm`</span></span>
-<span id="cb4-168"><a href="#cb4-168" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Plot time on the x-axis and population on the y-axis</span>
-<span id="cb4-169"><a href="#cb4-169" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Use green color for the trajectory</span>
-<span id="cb4-170"><a href="#cb4-170" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Ensure y-axis starts at 0 (populations cannot be negative)</span>
-<span id="cb4-171"><a href="#cb4-171" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Include grid, labels, and title</span>
-<span id="cb4-172"><a href="#cb4-172" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Return the figure and axes objects</span>
-<span id="cb4-173"><a href="#cb4-173" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-174"><a href="#cb4-174" aria-hidden="true" tabindex="-1"></a><span class="fu">## Questions to Consider</span></span>
-<span id="cb4-175"><a href="#cb4-175" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-176"><a href="#cb4-176" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>What happens to the population in the long run?</span>
-<span id="cb4-177"><a href="#cb4-177" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Does the final state depend on the initial condition?</span>
-<span id="cb4-178"><a href="#cb4-178" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>How do different parameter values affect the dynamics?</span>
-<span id="cb4-179"><a href="#cb4-179" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-180"><a href="#cb4-180" aria-hidden="true" tabindex="-1"></a><span class="fu"># Building the Streamlit Application</span></span>
-<span id="cb4-181"><a href="#cb4-181" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-182"><a href="#cb4-182" aria-hidden="true" tabindex="-1"></a><span class="fu">## Task</span></span>
-<span id="cb4-183"><a href="#cb4-183" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-184"><a href="#cb4-184" aria-hidden="true" tabindex="-1"></a>Now that you have all the components, create an interactive Streamlit application that allows users to explore the spruce budworm model. This will enable real-time parameter adjustment and visualization.</span>
-<span id="cb4-185"><a href="#cb4-185" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-186"><a href="#cb4-186" aria-hidden="true" tabindex="-1"></a><span class="fu">## Requirements</span></span>
-<span id="cb4-187"><a href="#cb4-187" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-188"><a href="#cb4-188" aria-hidden="true" tabindex="-1"></a><span class="fu">### Sidebar Controls</span></span>
-<span id="cb4-189"><a href="#cb4-189" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-190"><a href="#cb4-190" aria-hidden="true" tabindex="-1"></a>Create sliders for:</span>
-<span id="cb4-191"><a href="#cb4-191" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-192"><a href="#cb4-192" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Growth rate $r$ (range: 0.1 to 1.0)</span>
-<span id="cb4-193"><a href="#cb4-193" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Carrying capacity $k$ (range: 5 to 20)</span>
-<span id="cb4-194"><a href="#cb4-194" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Initial population $x_0$ (range: 0.1 to $k$)</span>
-<span id="cb4-195"><a href="#cb4-195" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Evolution time step (default: 50)</span>
-<span id="cb4-196"><a href="#cb4-196" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-197"><a href="#cb4-197" aria-hidden="true" tabindex="-1"></a><span class="fu">### Interactive Features</span></span>
-<span id="cb4-198"><a href="#cb4-198" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-199"><a href="#cb4-199" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Display the differential equation with current parameter values</span>
-<span id="cb4-200"><a href="#cb4-200" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Show the phase portrait (rate of change plot)</span>
-<span id="cb4-201"><a href="#cb4-201" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Show the time series evolution</span>
-<span id="cb4-202"><a href="#cb4-202" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Add a button to "Evolve Forward" that continues the simulation</span>
-<span id="cb4-203"><a href="#cb4-203" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Use <span class="in">`st.session_state`</span> to maintain simulation state between button clicks</span>
-<span id="cb4-204"><a href="#cb4-204" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-205"><a href="#cb4-205" aria-hidden="true" tabindex="-1"></a><span class="fu">### Layout Structure</span></span>
-<span id="cb4-206"><a href="#cb4-206" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-207"><a href="#cb4-207" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb4-208"><a href="#cb4-208" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> streamlit <span class="im">as</span> st</span>
-<span id="cb4-209"><a href="#cb4-209" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb4-210"><a href="#cb4-210" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb4-211"><a href="#cb4-211" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> your_module <span class="im">import</span> (</span>
-<span id="cb4-212"><a href="#cb4-212" aria-hidden="true" tabindex="-1"></a>    spruce_budworm,</span>
-<span id="cb4-213"><a href="#cb4-213" aria-hidden="true" tabindex="-1"></a>    plot_spruce_budworm_rate,</span>
-<span id="cb4-214"><a href="#cb4-214" aria-hidden="true" tabindex="-1"></a>    evolve_spruce_budworm,</span>
-<span id="cb4-215"><a href="#cb4-215" aria-hidden="true" tabindex="-1"></a>    plot_spruce_budworm</span>
-<span id="cb4-216"><a href="#cb4-216" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb4-217"><a href="#cb4-217" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-218"><a href="#cb4-218" aria-hidden="true" tabindex="-1"></a>st.title(<span class="st">"Spruce Budworm Population Dynamics"</span>)</span>
-<span id="cb4-219"><a href="#cb4-219" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-220"><a href="#cb4-220" aria-hidden="true" tabindex="-1"></a><span class="co"># Sidebar parameters</span></span>
-<span id="cb4-221"><a href="#cb4-221" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> st.sidebar.slider(<span class="st">"Growth rate (r)"</span>, ...)</span>
-<span id="cb4-222"><a href="#cb4-222" aria-hidden="true" tabindex="-1"></a>k <span class="op">=</span> st.sidebar.slider(<span class="st">"Carrying capacity (k)"</span>, ...)</span>
-<span id="cb4-223"><a href="#cb4-223" aria-hidden="true" tabindex="-1"></a>x0 <span class="op">=</span> st.sidebar.slider(<span class="st">"Initial population"</span>, ...)</span>
-<span id="cb4-224"><a href="#cb4-224" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-225"><a href="#cb4-225" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize session state</span></span>
-<span id="cb4-226"><a href="#cb4-226" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">'initialized'</span> <span class="kw">not</span> <span class="kw">in</span> st.session_state:</span>
-<span id="cb4-227"><a href="#cb4-227" aria-hidden="true" tabindex="-1"></a>    st.session_state.t <span class="op">=</span> np.array([<span class="dv">0</span>])</span>
-<span id="cb4-228"><a href="#cb4-228" aria-hidden="true" tabindex="-1"></a>    st.session_state.x <span class="op">=</span> np.array([x0])</span>
-<span id="cb4-229"><a href="#cb4-229" aria-hidden="true" tabindex="-1"></a>    st.session_state.initialized <span class="op">=</span> <span class="va">True</span></span>
-<span id="cb4-230"><a href="#cb4-230" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-231"><a href="#cb4-231" aria-hidden="true" tabindex="-1"></a><span class="co"># Display equation</span></span>
-<span id="cb4-232"><a href="#cb4-232" aria-hidden="true" tabindex="-1"></a>st.latex(<span class="vs">r"\frac</span><span class="sc">{dx}{dt}</span><span class="vs"> = rx\left(1 - \frac</span><span class="sc">{x}{k}</span><span class="vs">\right) - \frac{x^2}{1 + x^2}"</span>)</span>
-<span id="cb4-233"><a href="#cb4-233" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-234"><a href="#cb4-234" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot phase portrait</span></span>
-<span id="cb4-235"><a href="#cb4-235" aria-hidden="true" tabindex="-1"></a>fig1, ax1 <span class="op">=</span> plot_spruce_budworm_rate(...)</span>
-<span id="cb4-236"><a href="#cb4-236" aria-hidden="true" tabindex="-1"></a>st.pyplot(fig1)</span>
-<span id="cb4-237"><a href="#cb4-237" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-238"><a href="#cb4-238" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot time series</span></span>
-<span id="cb4-239"><a href="#cb4-239" aria-hidden="true" tabindex="-1"></a>fig2, ax2 <span class="op">=</span> plot_spruce_budworm(...)</span>
-<span id="cb4-240"><a href="#cb4-240" aria-hidden="true" tabindex="-1"></a>st.pyplot(fig2)</span>
-<span id="cb4-241"><a href="#cb4-241" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-242"><a href="#cb4-242" aria-hidden="true" tabindex="-1"></a><span class="co"># Evolution button</span></span>
-<span id="cb4-243"><a href="#cb4-243" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> st.button(<span class="st">"Evolve Forward"</span>):</span>
-<span id="cb4-244"><a href="#cb4-244" aria-hidden="true" tabindex="-1"></a>    st.session_state.t, st.session_state.x <span class="op">=</span> evolve_spruce_budworm(...)</span>
-<span id="cb4-245"><a href="#cb4-245" aria-hidden="true" tabindex="-1"></a>    st.rerun()</span>
-<span id="cb4-246"><a href="#cb4-246" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb4-247"><a href="#cb4-247" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-248"><a href="#cb4-248" aria-hidden="true" tabindex="-1"></a><span class="fu">## Advanced Features (Optional)</span></span>
-<span id="cb4-249"><a href="#cb4-249" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-250"><a href="#cb4-250" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Add a reset button to restart the simulation</span>
-<span id="cb4-251"><a href="#cb4-251" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Display current population value and equilibrium states</span>
-<span id="cb4-252"><a href="#cb4-252" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Add explanatory text about bifurcations and catastrophes</span>
-<span id="cb4-253"><a href="#cb4-253" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Show multiple trajectories with different initial conditions</span>
-<span id="cb4-254"><a href="#cb4-254" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Add animation of the population dynamics</span>
-<span id="cb4-255"><a href="#cb4-255" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-256"><a href="#cb4-256" aria-hidden="true" tabindex="-1"></a><span class="fu"># Exploration Questions</span></span>
-<span id="cb4-257"><a href="#cb4-257" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-258"><a href="#cb4-258" aria-hidden="true" tabindex="-1"></a>Once your simulation is working, explore the following questions:</span>
-<span id="cb4-259"><a href="#cb4-259" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-260"><a href="#cb4-260" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Multiple Equilibria:** For $r = 0.5$ and $k = 10$, how many equilibrium points exist? Which are stable?</span>
-<span id="cb4-261"><a href="#cb4-261" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-262"><a href="#cb4-262" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Bistability:** Start with two different initial conditions (e.g., $x_0 = 1$ and $x_0 = 8$). Do they converge to the same equilibrium?</span>
-<span id="cb4-263"><a href="#cb4-263" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-264"><a href="#cb4-264" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Hysteresis:** Slowly increase the carrying capacity $k$ from 5 to 15. Then slowly decrease it back to 5. Does the population return to the same state?</span>
-<span id="cb4-265"><a href="#cb4-265" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-266"><a href="#cb4-266" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Outbreak Dynamics:** What happens if you start with a small population ($x_0 &lt; 2$) and the carrying capacity is large ($k &gt; 10$)?</span>
-<span id="cb4-267"><a href="#cb4-267" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-268"><a href="#cb4-268" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>**Critical Slowing Down:** When the population is near an unstable equilibrium, how long does it take to move away? Compare this to the rate of change far from equilibrium.</span>
-<span id="cb4-269"><a href="#cb4-269" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-270"><a href="#cb4-270" aria-hidden="true" tabindex="-1"></a><span class="ss">6. </span>**Parameter Space:** Create a diagram showing the number of equilibria as a function of $r$ and $k$. Where do bifurcations occur?</span>
-<span id="cb4-271"><a href="#cb4-271" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-272"><a href="#cb4-272" aria-hidden="true" tabindex="-1"></a><span class="fu"># Mathematical Background</span></span>
-<span id="cb4-273"><a href="#cb4-273" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-274"><a href="#cb4-274" aria-hidden="true" tabindex="-1"></a><span class="fu">## Equilibrium Analysis</span></span>
-<span id="cb4-275"><a href="#cb4-275" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-276"><a href="#cb4-276" aria-hidden="true" tabindex="-1"></a>Equilibrium points satisfy:</span>
-<span id="cb4-277"><a href="#cb4-277" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-278"><a href="#cb4-278" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb4-279"><a href="#cb4-279" aria-hidden="true" tabindex="-1"></a>rx^*\left(1 - \frac{x^*}{k}\right) - \frac{(x^*)^2}{1 + (x^*)^2} = 0</span>
-<span id="cb4-280"><a href="#cb4-280" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb4-281"><a href="#cb4-281" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-282"><a href="#cb4-282" aria-hidden="true" tabindex="-1"></a>This can be rewritten as:</span>
-<span id="cb4-283"><a href="#cb4-283" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-284"><a href="#cb4-284" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb4-285"><a href="#cb4-285" aria-hidden="true" tabindex="-1"></a>rx^*\left(1 - \frac{x^*}{k}\right) = \frac{(x^*)^2}{1 + (x^*)^2}</span>
-<span id="cb4-286"><a href="#cb4-286" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb4-287"><a href="#cb4-287" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-288"><a href="#cb4-288" aria-hidden="true" tabindex="-1"></a>The left side represents birth rate (logistic growth), and the right side represents predation rate. Equilibria occur where these balance.</span>
-<span id="cb4-289"><a href="#cb4-289" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-290"><a href="#cb4-290" aria-hidden="true" tabindex="-1"></a><span class="fu">## Stability Analysis</span></span>
-<span id="cb4-291"><a href="#cb4-291" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-292"><a href="#cb4-292" aria-hidden="true" tabindex="-1"></a>The stability of an equilibrium $x^*$ is determined by the sign of the derivative:</span>
-<span id="cb4-293"><a href="#cb4-293" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-294"><a href="#cb4-294" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb4-295"><a href="#cb4-295" aria-hidden="true" tabindex="-1"></a>\frac{d}{dx}\left(\frac{dx}{dt}\right)\bigg|_{x=x^*}</span>
-<span id="cb4-296"><a href="#cb4-296" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb4-297"><a href="#cb4-297" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-298"><a href="#cb4-298" aria-hidden="true" tabindex="-1"></a>If this derivative is:</span>
-<span id="cb4-299"><a href="#cb4-299" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-300"><a href="#cb4-300" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Negative: the equilibrium is stable (attracting)</span>
-<span id="cb4-301"><a href="#cb4-301" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Positive: the equilibrium is unstable (repelling)</span>
-<span id="cb4-302"><a href="#cb4-302" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Zero: higher-order analysis is needed</span>
-<span id="cb4-303"><a href="#cb4-303" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-304"><a href="#cb4-304" aria-hidden="true" tabindex="-1"></a><span class="fu">## Ecological Interpretation</span></span>
-<span id="cb4-305"><a href="#cb4-305" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-306"><a href="#cb4-306" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Low equilibrium:** Few budworms, controlled by predation</span>
-<span id="cb4-307"><a href="#cb4-307" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**High equilibrium:** Outbreak state, budworms overwhelm predators</span>
-<span id="cb4-308"><a href="#cb4-308" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Middle equilibrium:** Usually unstable, separates the two basins of attraction</span>
-<span id="cb4-309"><a href="#cb4-309" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Hysteresis:** The system can "jump" between states depending on history</span>
-<span id="cb4-310"><a href="#cb4-310" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-311"><a href="#cb4-311" aria-hidden="true" tabindex="-1"></a>This behavior explains why spruce budworm populations can suddenly explode from low levels to outbreak proportions, and why simply reducing the outbreak may not return the forest to a healthy state.</span>
-<span id="cb4-312"><a href="#cb4-312" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-313"><a href="#cb4-313" aria-hidden="true" tabindex="-1"></a><span class="fu"># Resources</span></span>
-<span id="cb4-314"><a href="#cb4-314" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-315"><a href="#cb4-315" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Strogatz, S. H. (2018). *Nonlinear Dynamics and Chaos*. CRC Press, Chapter 3.7</span>
-<span id="cb4-316"><a href="#cb4-316" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>SciPy documentation: <span class="ot">&lt;https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html&gt;</span></span>
-<span id="cb4-317"><a href="#cb4-317" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Streamlit documentation: <span class="ot">&lt;https://docs.streamlit.io&gt;</span></span>
-<span id="cb4-318"><a href="#cb4-318" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Reference implementation: <span class="ot">&lt;https://github.com/daniprec/BAM-Applied-Math-Lab/tree/main/sessions/s01_odes_1d&gt;</span></span>
-<span id="cb4-319"><a href="#cb4-319" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-320"><a href="#cb4-320" aria-hidden="true" tabindex="-1"></a><span class="fu"># Tips for Success</span></span>
-<span id="cb4-321"><a href="#cb4-321" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-322"><a href="#cb4-322" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Start simple:** Get section 2 working first, then build up.</span>
-<span id="cb4-323"><a href="#cb4-323" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Test incrementally:** Verify each function works before moving to the next.</span>
-<span id="cb4-324"><a href="#cb4-324" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Use the reference:** The provided code is there to help you understand the structure.</span>
-<span id="cb4-325"><a href="#cb4-325" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Experiment:** Try different parameter values and see what happens.</span>
-<span id="cb4-326"><a href="#cb4-326" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Collaborate:** Discuss with your classmates, but write your own code.</span>
-<span id="cb4-327"><a href="#cb4-327" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Ask questions:** If you're stuck, ask for help!</span>
-<span id="cb4-328"><a href="#cb4-328" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-329"><a href="#cb4-329" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb4-330"><a href="#cb4-330" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-331"><a href="#cb4-331" aria-hidden="true" tabindex="-1"></a>**Good luck and enjoy your coding!**</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Session 1: 1D Ordinary Differential Equations"</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Building an Interactive Spruce Budworm Simulation"</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Applied Math Modeling Lab"</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="an">date:</span><span class="co"> "23rd January 2026"</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="an">bibliography:</span><span class="co"> ../../tex/references.bib</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: false</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co">    number-sections: true</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="fu"># Introduction {#sec-introduction}</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>Welcome to this hands-on session on mathematical modeling using ordinary differential equations (ODEs). Today, we will explore the **spruce budworm model**, a classic example from ecological modeling that demonstrates how simple nonlinear systems can exhibit complex behaviors including multiple equilibria and catastrophic transitions.</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="fu">## Learning Objectives</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>By the end of this session, you will be able to:</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Understand the mathematical formulation of the spruce budworm model.</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Implement the model as a Python function.</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Solve the ODE numerically using <span class="in">`scipy.integrate.solve_ivp`</span>.</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Visualize the phase portrait and identify equilibrium points.</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Build an interactive Streamlit application to explore the model.</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="fu">## The Spruce Budworm Model</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>The spruce budworm is an insect that periodically devastates spruce forests. The population dynamics can be modeled by the following ODE <span class="co">[</span><span class="ot">@strogatz2024nonlinear, chap. 3.7</span><span class="co">]</span>:</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>\frac{dx}{dt} = rx\left(1 - \frac{x}{k}\right) - \frac{x^2}{1 + x^2}</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>where:</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$x(t)$ is the budworm population (adimensional).</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$r$ is the intrinsic growth rate (typically $r \approx 0.5$).</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$k$ is the carrying capacity of the forest (typically $k \approx 10$).</span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>The first term represents logistic growth, while the second term models predation by birds (which follows a saturating functional response).</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a><span class="fu"># Implementing the ODE Function {#sec-implementing-ode-function}</span></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>Create a Python function that implements the spruce budworm differential equation. The function should follow the signature required by <span class="in">`scipy.integrate.solve_ivp`</span>.</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Function name: <span class="in">`spruce_budworm`</span></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Parameters: <span class="in">`t`</span> (time), <span class="in">`x`</span> (population), <span class="in">`r`</span> (growth rate), <span class="in">`k`</span> (carrying capacity)</span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Return: The rate of change $\frac{dx}{dt}$.</span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Include appropriate docstring documentation.</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>Here is a template to get you started:</span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> spruce_budworm(t: <span class="bu">float</span>, x: <span class="bu">float</span>, r: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.5</span>, k: <span class="bu">float</span> <span class="op">=</span> <span class="dv">10</span>) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Docstring and type hints"""</span></span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Your implementation here</span></span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>    dxdt <span class="op">=</span> ???</span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dxdt</span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>*Why do we need `t` as an input?* Although the equation does not explicitly depend on time, <span class="in">`solve_ivp`</span> requires the function to accept time as the first argument.</span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a><span class="fu"># Phase Portrait Visualization {#sec-phase-portrait}</span></span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a>Create a function that plots the rate of change $\frac{dx}{dt}$ as a function of the population $x$. This phase portrait will help us visualize the equilibrium points and their stability.</span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Function name: <span class="in">`plot_spruce_budworm_rate`</span></span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Parameters: <span class="in">`x_t`</span> (current population), <span class="in">`r`</span>, <span class="in">`k`</span></span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Use <span class="in">`matplotlib`</span> for plotting</span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Plot $\frac{dx}{dt}$ vs $x$ for $x \in <span class="co">[</span><span class="ot">0, k</span><span class="co">]</span>$</span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Identify and mark equilibrium points (where $\frac{dx}{dt} = 0$)</span>
+<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Color-code equilibrium points:</span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Blue circles for stable equilibria (where $\frac{dx}{dt}$ crosses zero from above).</span>
+<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Red circles for unstable equilibria (where $\frac{dx}{dt}$ crosses zero from below).</span>
+<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Add a horizontal line at $y = 0$ to indicate equilibria (null rate of change).</span>
+<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Label axes and add a title.</span>
+<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Mark the current population $x_t$ with a vertical dashed line.</span>
+<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a>\newpage</span>
+<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a>Figure @fig-graph shows an example of the expected output.</span>
+<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a><span class="al">![Example phase portrait of the spruce budworm model showing stable (blue) and unstable (red) equilibria. The green dashed line indicates the current population $x_t$. Where do you think this population will evolve?](../../img/s01_spruce_budworm.png)</span>{#fig-graph width=80%}</span>
+<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a>Here are some hints to help you implement this function:</span>
+<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>You can use <span class="in">`np.linspace`</span> to create an array of $x$ values.</span>
+<span id="cb5-90"><a href="#cb5-90" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>To find zero crossings: you can look for sign changes combining <span class="in">`np.diff`</span> and <span class="in">`np.sign`</span>.</span>
+<span id="cb5-91"><a href="#cb5-91" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Stability: a fixed point is stable if $\frac{dx}{dt}$ decreases as you pass through it.</span>
+<span id="cb5-92"><a href="#cb5-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-93"><a href="#cb5-93" aria-hidden="true" tabindex="-1"></a>Review the following definitions for clarity:</span>
+<span id="cb5-94"><a href="#cb5-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-95"><a href="#cb5-95" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Equilibrium point**: A value $x^*$ where $\frac{dx}{dt} = 0$.</span>
+<span id="cb5-96"><a href="#cb5-96" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Stable equilibrium**: Small perturbations decay back to $x^*$.</span>
+<span id="cb5-97"><a href="#cb5-97" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Unstable equilibrium**: Small perturbations grow away from $x^*$.</span>
+<span id="cb5-98"><a href="#cb5-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-99"><a href="#cb5-99" aria-hidden="true" tabindex="-1"></a>\newpage</span>
+<span id="cb5-100"><a href="#cb5-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-101"><a href="#cb5-101" aria-hidden="true" tabindex="-1"></a><span class="fu"># Numerical Integration {#sec-numerical-integration}</span></span>
+<span id="cb5-102"><a href="#cb5-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-103"><a href="#cb5-103" aria-hidden="true" tabindex="-1"></a>Create a function that evolves the system forward in time using numerical integration. This function should solve the ODE and append the results to existing time and population arrays.</span>
+<span id="cb5-104"><a href="#cb5-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-105"><a href="#cb5-105" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Function name: <span class="in">`evolve_spruce_budworm`</span></span>
+<span id="cb5-106"><a href="#cb5-106" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Inputs: <span class="in">`t`</span> (time array), <span class="in">`x`</span> (population array), <span class="in">`r`</span>, <span class="in">`k`</span>, <span class="in">`t_eval`</span> (duration to evolve).</span>
+<span id="cb5-107"><a href="#cb5-107" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Use <span class="in">`scipy.integrate.solve_ivp`</span> with the RK45 method.</span>
+<span id="cb5-108"><a href="#cb5-108" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Start from the last values in the input arrays.</span>
+<span id="cb5-109"><a href="#cb5-109" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Concatenate new results to the input arrays.</span>
+<span id="cb5-110"><a href="#cb5-110" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Ensure population never goes negative (use <span class="in">`np.clip`</span>).</span>
+<span id="cb5-111"><a href="#cb5-111" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Return updated <span class="in">`t`</span> and <span class="in">`x`</span> arrays.</span>
+<span id="cb5-112"><a href="#cb5-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-113"><a href="#cb5-113" aria-hidden="true" tabindex="-1"></a>Here is a template to get you started:</span>
+<span id="cb5-114"><a href="#cb5-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-115"><a href="#cb5-115" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb5-116"><a href="#cb5-116" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> evolve_spruce_budworm(t: np.ndarray, x: np.ndarray, ...):</span>
+<span id="cb5-117"><a href="#cb5-117" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Don't forget the docstring and type hints"""</span></span>
+<span id="cb5-118"><a href="#cb5-118" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Define time span from last time point</span></span>
+<span id="cb5-119"><a href="#cb5-119" aria-hidden="true" tabindex="-1"></a>    t_span <span class="op">=</span> (t[<span class="op">-</span><span class="dv">1</span>], t[<span class="op">-</span><span class="dv">1</span>] <span class="op">+</span> t_eval)</span>
+<span id="cb5-120"><a href="#cb5-120" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-121"><a href="#cb5-121" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create evaluation points, t_eval</span></span>
+<span id="cb5-122"><a href="#cb5-122" aria-hidden="true" tabindex="-1"></a>    <span class="co"># This indicates where we want the solution evaluated</span></span>
+<span id="cb5-123"><a href="#cb5-123" aria-hidden="true" tabindex="-1"></a>    <span class="co"># and should be distributed along the time span</span></span>
+<span id="cb5-124"><a href="#cb5-124" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Hint: use np.linspace</span></span>
+<span id="cb5-125"><a href="#cb5-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-126"><a href="#cb5-126" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Solve the ODE</span></span>
+<span id="cb5-127"><a href="#cb5-127" aria-hidden="true" tabindex="-1"></a>    solution <span class="op">=</span> solve_ivp(</span>
+<span id="cb5-128"><a href="#cb5-128" aria-hidden="true" tabindex="-1"></a>        fun<span class="op">=</span>spruce_budworm,</span>
+<span id="cb5-129"><a href="#cb5-129" aria-hidden="true" tabindex="-1"></a>        t_span<span class="op">=</span>t_span,</span>
+<span id="cb5-130"><a href="#cb5-130" aria-hidden="true" tabindex="-1"></a>        y0<span class="op">=</span>[x[<span class="op">-</span><span class="dv">1</span>]],</span>
+<span id="cb5-131"><a href="#cb5-131" aria-hidden="true" tabindex="-1"></a>        t_eval<span class="op">=</span>t_eval,</span>
+<span id="cb5-132"><a href="#cb5-132" aria-hidden="true" tabindex="-1"></a>        args<span class="op">=</span>(r, k),</span>
+<span id="cb5-133"><a href="#cb5-133" aria-hidden="true" tabindex="-1"></a>        method<span class="op">=</span><span class="st">"RK45"</span>,</span>
+<span id="cb5-134"><a href="#cb5-134" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-135"><a href="#cb5-135" aria-hidden="true" tabindex="-1"></a>    t_new <span class="op">=</span> solution.t</span>
+<span id="cb5-136"><a href="#cb5-136" aria-hidden="true" tabindex="-1"></a>    x_new <span class="op">=</span> solution.y[<span class="dv">0</span>]</span>
+<span id="cb5-137"><a href="#cb5-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-138"><a href="#cb5-138" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Concatenate results - Hint: use np.concatenate</span></span>
+<span id="cb5-139"><a href="#cb5-139" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Ensure non-negative population - Hint: use np.clip</span></span>
+<span id="cb5-140"><a href="#cb5-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-141"><a href="#cb5-141" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> t, x</span>
+<span id="cb5-142"><a href="#cb5-142" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-143"><a href="#cb5-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-144"><a href="#cb5-144" aria-hidden="true" tabindex="-1"></a>Some important notes:</span>
+<span id="cb5-145"><a href="#cb5-145" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-146"><a href="#cb5-146" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The <span class="in">`args`</span> parameter in <span class="in">`solve_ivp`</span> passes additional arguments to your ODE function. You can see how we use it in the example above.</span>
+<span id="cb5-147"><a href="#cb5-147" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Initial condition should be <span class="in">`[x[-1]]`</span> (last population value).</span>
+<span id="cb5-148"><a href="#cb5-148" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Use <span class="in">`method="RK45"`</span> for adaptive step-size Runge-Kutta integration.</span>
+<span id="cb5-149"><a href="#cb5-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-150"><a href="#cb5-150" aria-hidden="true" tabindex="-1"></a><span class="fu"># Time Series Visualization {#sec-time-series-visualization}</span></span>
+<span id="cb5-151"><a href="#cb5-151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-152"><a href="#cb5-152" aria-hidden="true" tabindex="-1"></a>Create a function to plot the population dynamics over time. This visualization shows how the population evolves from the initial condition.</span>
+<span id="cb5-153"><a href="#cb5-153" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-154"><a href="#cb5-154" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Function name: <span class="in">`plot_spruce_budworm`</span></span>
+<span id="cb5-155"><a href="#cb5-155" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Parameters: <span class="in">`t`</span> (time array), <span class="in">`x`</span> (population array).</span>
+<span id="cb5-156"><a href="#cb5-156" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Plot time on the x-axis and population on the y-axis.</span>
+<span id="cb5-157"><a href="#cb5-157" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Use green color for the trajectory.</span>
+<span id="cb5-158"><a href="#cb5-158" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Ensure y-axis starts at 0 (populations cannot be negative).</span>
+<span id="cb5-159"><a href="#cb5-159" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Include grid, labels, and title.</span>
+<span id="cb5-160"><a href="#cb5-160" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Return the figure and axes objects.</span>
+<span id="cb5-161"><a href="#cb5-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-162"><a href="#cb5-162" aria-hidden="true" tabindex="-1"></a>See Figure @fig-time-series for an example output.</span>
+<span id="cb5-163"><a href="#cb5-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-164"><a href="#cb5-164" aria-hidden="true" tabindex="-1"></a><span class="al">![Example time series of the spruce budworm population over time.](../../img/s01_spruce_budworm_evolution.png)</span>{#fig-time-series width=80%}</span>
+<span id="cb5-165"><a href="#cb5-165" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-166"><a href="#cb5-166" aria-hidden="true" tabindex="-1"></a>\newpage</span>
+<span id="cb5-167"><a href="#cb5-167" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-168"><a href="#cb5-168" aria-hidden="true" tabindex="-1"></a><span class="fu"># Building the Streamlit Application {#sec-streamlit-application}</span></span>
+<span id="cb5-169"><a href="#cb5-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-170"><a href="#cb5-170" aria-hidden="true" tabindex="-1"></a>Now that you have all the components, create an interactive Streamlit application that allows users to explore the spruce budworm model. This will enable real-time parameter adjustment and visualization.</span>
+<span id="cb5-171"><a href="#cb5-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-172"><a href="#cb5-172" aria-hidden="true" tabindex="-1"></a>While all the previous code could be done in Google Colab, Streamlit has to be built on your local machine. Follow the instructions in the <span class="co">[</span><span class="ot">README.md</span><span class="co">](../../README.md)</span> file in the <span class="co">[</span><span class="ot">repository</span><span class="co">](https://github.com/daniprec/BAM-Applied-Math-Lab)</span> to set up your environment.</span>
+<span id="cb5-173"><a href="#cb5-173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-174"><a href="#cb5-174" aria-hidden="true" tabindex="-1"></a>Design a script, name it <span class="in">`spruce_budworm_app.py`</span>. You will find a suggested layout below. This script will use the functions you implemented in sections @sec-implementing-ode-function through @sec-time-series-visualization. You can either import them from a separate module (another script you created) or paste the function definitions directly into the script. For best practices, consider creating a module (e.g., <span class="in">`spruce_budworm_model.py`</span>) and importing the functions.</span>
+<span id="cb5-175"><a href="#cb5-175" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-176"><a href="#cb5-176" aria-hidden="true" tabindex="-1"></a>To test your app, run the following command in your terminal:</span>
+<span id="cb5-177"><a href="#cb5-177" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-178"><a href="#cb5-178" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
+<span id="cb5-179"><a href="#cb5-179" aria-hidden="true" tabindex="-1"></a><span class="ex">streamlit</span> run spruce_budworm_app.py</span>
+<span id="cb5-180"><a href="#cb5-180" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-181"><a href="#cb5-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-182"><a href="#cb5-182" aria-hidden="true" tabindex="-1"></a><span class="fu">## Sidebar Controls</span></span>
+<span id="cb5-183"><a href="#cb5-183" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-184"><a href="#cb5-184" aria-hidden="true" tabindex="-1"></a>Create sliders for:</span>
+<span id="cb5-185"><a href="#cb5-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-186"><a href="#cb5-186" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Growth rate $r$ (range: 0.0 to 1.0, default 0.5).</span>
+<span id="cb5-187"><a href="#cb5-187" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Carrying capacity $k$ (range: 0.1 to 10.0, default 10.0).</span>
+<span id="cb5-188"><a href="#cb5-188" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Initial population: set automatically to $k/10$ (the app uses $x_0 = k/10$ by default).</span>
+<span id="cb5-189"><a href="#cb5-189" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Time slider for evolution (range: 1 to 100, default 10).</span>
+<span id="cb5-190"><a href="#cb5-190" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-191"><a href="#cb5-191" aria-hidden="true" tabindex="-1"></a><span class="fu">## Interactive Features</span></span>
+<span id="cb5-192"><a href="#cb5-192" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-193"><a href="#cb5-193" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Display the differential equation with current parameter values.</span>
+<span id="cb5-194"><a href="#cb5-194" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Show the phase portrait (rate of change plot), using your function from section @sec-phase-portrait.</span>
+<span id="cb5-195"><a href="#cb5-195" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Show the time series evolution, using your function from section @sec-time-series-visualization.</span>
+<span id="cb5-196"><a href="#cb5-196" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Add a button to “Evolve Forward” that continues the simulation, updating the plots.</span>
+<span id="cb5-197"><a href="#cb5-197" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Use <span class="in">`st.session_state`</span> to maintain simulation state between button clicks. You will need to store the time and population arrays in the session state, otherwise they will reset on each interaction.</span>
+<span id="cb5-198"><a href="#cb5-198" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-199"><a href="#cb5-199" aria-hidden="true" tabindex="-1"></a>\newpage</span>
+<span id="cb5-200"><a href="#cb5-200" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-201"><a href="#cb5-201" aria-hidden="true" tabindex="-1"></a><span class="fu">## Layout Structure</span></span>
+<span id="cb5-202"><a href="#cb5-202" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-203"><a href="#cb5-203" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb5-204"><a href="#cb5-204" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> streamlit <span class="im">as</span> st</span>
+<span id="cb5-205"><a href="#cb5-205" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb5-206"><a href="#cb5-206" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb5-207"><a href="#cb5-207" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> your_module <span class="im">import</span> (</span>
+<span id="cb5-208"><a href="#cb5-208" aria-hidden="true" tabindex="-1"></a>    spruce_budworm,</span>
+<span id="cb5-209"><a href="#cb5-209" aria-hidden="true" tabindex="-1"></a>    plot_spruce_budworm_rate,</span>
+<span id="cb5-210"><a href="#cb5-210" aria-hidden="true" tabindex="-1"></a>    evolve_spruce_budworm,</span>
+<span id="cb5-211"><a href="#cb5-211" aria-hidden="true" tabindex="-1"></a>    plot_spruce_budworm,</span>
+<span id="cb5-212"><a href="#cb5-212" aria-hidden="true" tabindex="-1"></a>)  <span class="co"># Or paste your functions here</span></span>
+<span id="cb5-213"><a href="#cb5-213" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-214"><a href="#cb5-214" aria-hidden="true" tabindex="-1"></a>st.title(<span class="st">"Spruce Budworm Population Dynamics"</span>)</span>
+<span id="cb5-215"><a href="#cb5-215" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-216"><a href="#cb5-216" aria-hidden="true" tabindex="-1"></a><span class="co"># Sidebar parameters (as in the app)</span></span>
+<span id="cb5-217"><a href="#cb5-217" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> st.sidebar.slider(<span class="st">"Intrinsic growth rate (r)"</span>, <span class="fl">0.0</span>, <span class="fl">1.0</span>, <span class="fl">0.5</span>)</span>
+<span id="cb5-218"><a href="#cb5-218" aria-hidden="true" tabindex="-1"></a>k <span class="op">=</span> st.sidebar.slider(<span class="st">"Carrying capacity (k)"</span>, <span class="fl">0.1</span>, <span class="fl">10.0</span>, <span class="fl">10.0</span>)</span>
+<span id="cb5-219"><a href="#cb5-219" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-220"><a href="#cb5-220" aria-hidden="true" tabindex="-1"></a><span class="co"># The app sets the initial population to k/10 by default</span></span>
+<span id="cb5-221"><a href="#cb5-221" aria-hidden="true" tabindex="-1"></a>x0 <span class="op">=</span> k <span class="op">/</span> <span class="dv">10</span></span>
+<span id="cb5-222"><a href="#cb5-222" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-223"><a href="#cb5-223" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize session state</span></span>
+<span id="cb5-224"><a href="#cb5-224" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="st">"sbw_x"</span> <span class="kw">not</span> <span class="kw">in</span> st.session_state):</span>
+<span id="cb5-225"><a href="#cb5-225" aria-hidden="true" tabindex="-1"></a>    st.session_state[<span class="st">"sbw_t"</span>] <span class="op">=</span> np.array([<span class="dv">0</span>])</span>
+<span id="cb5-226"><a href="#cb5-226" aria-hidden="true" tabindex="-1"></a>    st.session_state[<span class="st">"sbw_x"</span>] <span class="op">=</span> np.array([x0])</span>
+<span id="cb5-227"><a href="#cb5-227" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-228"><a href="#cb5-228" aria-hidden="true" tabindex="-1"></a><span class="co"># Time slider and control buttons</span></span>
+<span id="cb5-229"><a href="#cb5-229" aria-hidden="true" tabindex="-1"></a>t_eval <span class="op">=</span> st.sidebar.slider(<span class="st">"Time"</span>, <span class="dv">1</span>, <span class="dv">100</span>, <span class="dv">10</span>)</span>
+<span id="cb5-230"><a href="#cb5-230" aria-hidden="true" tabindex="-1"></a>button <span class="op">=</span> st.sidebar.button(<span class="st">"Evolve"</span>)</span>
+<span id="cb5-231"><a href="#cb5-231" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-232"><a href="#cb5-232" aria-hidden="true" tabindex="-1"></a><span class="co"># Retrieve session data</span></span>
+<span id="cb5-233"><a href="#cb5-233" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> st.session_state[<span class="st">"sbw_t"</span>]</span>
+<span id="cb5-234"><a href="#cb5-234" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> st.session_state[<span class="st">"sbw_x"</span>]</span>
+<span id="cb5-235"><a href="#cb5-235" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-236"><a href="#cb5-236" aria-hidden="true" tabindex="-1"></a><span class="co"># Evolve if requested</span></span>
+<span id="cb5-237"><a href="#cb5-237" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> button:</span>
+<span id="cb5-238"><a href="#cb5-238" aria-hidden="true" tabindex="-1"></a>    t, x <span class="op">=</span> evolve_spruce_budworm(t, x, r<span class="op">=</span>r, k<span class="op">=</span>k, t_eval<span class="op">=</span>t_eval)</span>
+<span id="cb5-239"><a href="#cb5-239" aria-hidden="true" tabindex="-1"></a>    st.session_state[<span class="st">"sbw_t"</span>] <span class="op">=</span> t</span>
+<span id="cb5-240"><a href="#cb5-240" aria-hidden="true" tabindex="-1"></a>    st.session_state[<span class="st">"sbw_x"</span>] <span class="op">=</span> x</span>
+<span id="cb5-241"><a href="#cb5-241" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-242"><a href="#cb5-242" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot phase portrait and time series</span></span>
+<span id="cb5-243"><a href="#cb5-243" aria-hidden="true" tabindex="-1"></a>fig1, ax1 <span class="op">=</span> plot_spruce_budworm_rate(x[<span class="op">-</span><span class="dv">1</span>], r<span class="op">=</span>r, k<span class="op">=</span>k)</span>
+<span id="cb5-244"><a href="#cb5-244" aria-hidden="true" tabindex="-1"></a>st.pyplot(fig1)</span>
+<span id="cb5-245"><a href="#cb5-245" aria-hidden="true" tabindex="-1"></a>fig2, ax2 <span class="op">=</span> plot_spruce_budworm(t, x)</span>
+<span id="cb5-246"><a href="#cb5-246" aria-hidden="true" tabindex="-1"></a>st.pyplot(fig2)</span>
+<span id="cb5-247"><a href="#cb5-247" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-248"><a href="#cb5-248" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-249"><a href="#cb5-249" aria-hidden="true" tabindex="-1"></a><span class="fu">## Advanced Features (Optional)</span></span>
+<span id="cb5-250"><a href="#cb5-250" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-251"><a href="#cb5-251" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Add a reset button to restart the simulation.</span>
+<span id="cb5-252"><a href="#cb5-252" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Show multiple trajectories with different initial conditions.</span>
+<span id="cb5-253"><a href="#cb5-253" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Add animation of the population dynamics.</span>
+<span id="cb5-254"><a href="#cb5-254" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-255"><a href="#cb5-255" aria-hidden="true" tabindex="-1"></a><span class="fu"># Exploration Questions {#sec-exploration-questions}</span></span>
+<span id="cb5-256"><a href="#cb5-256" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-257"><a href="#cb5-257" aria-hidden="true" tabindex="-1"></a>Once your simulation is working, explore the following questions:</span>
+<span id="cb5-258"><a href="#cb5-258" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-259"><a href="#cb5-259" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Multiple Equilibria:** For $r = 0.5$ and $k = 10$, how many equilibrium points exist? Which are stable?</span>
+<span id="cb5-260"><a href="#cb5-260" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Bistability:** Start with two different initial conditions (e.g., $x_0 = 1$ and $x_0 = 8$). Do they converge to the same equilibrium?</span>
+<span id="cb5-261"><a href="#cb5-261" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Hysteresis:** Slowly increase the carrying capacity $k$ from 5 to 15. Then slowly decrease it back to 5. Does the population return to the same state? If you are interested in this concept, see section @sec-slow-fast-dynamics.</span>
+<span id="cb5-262"><a href="#cb5-262" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Outbreak Dynamics:** What happens if you start with a small population ($x_0 &lt; 2$) and the carrying capacity is large ($k &gt; 10$)?</span>
+<span id="cb5-263"><a href="#cb5-263" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>**Critical Slowing Down:** When the population is near an unstable equilibrium, how long does it take to move away? Compare this to the rate of change far from equilibrium.</span>
+<span id="cb5-264"><a href="#cb5-264" aria-hidden="true" tabindex="-1"></a><span class="ss">6. </span>**Parameter Space:** Create a diagram showing the number of equilibria as a function of $r$ and $k$. Where do bifurcations occur?</span>
+<span id="cb5-265"><a href="#cb5-265" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-266"><a href="#cb5-266" aria-hidden="true" tabindex="-1"></a><span class="fu">## Slow-Fast Dynamics {#sec-slow-fast-dynamics}</span></span>
+<span id="cb5-267"><a href="#cb5-267" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-268"><a href="#cb5-268" aria-hidden="true" tabindex="-1"></a>The carrying capacity $k$ can be interpreted as a slowly varying parameter in real ecosystems (e.g., due to seasonal changes or forest management). You can simulate this by gradually changing $k$ over time in your app. This can lead to **hysteresis** effects, where the population does not return to its original state after $k$ is restored. Experiment with this by modifying your Streamlit app to allow $k$ to vary over time.</span>
+<span id="cb5-269"><a href="#cb5-269" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-270"><a href="#cb5-270" aria-hidden="true" tabindex="-1"></a>\newpage</span>
+<span id="cb5-271"><a href="#cb5-271" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-272"><a href="#cb5-272" aria-hidden="true" tabindex="-1"></a><span class="fu"># Deliverable {#sec-deliverable}</span></span>
+<span id="cb5-273"><a href="#cb5-273" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-274"><a href="#cb5-274" aria-hidden="true" tabindex="-1"></a>Implement the complete Streamlit application as described above, following sections @sec-implementing-ode-function through @sec-streamlit-application. Ensure that all functions are correctly defined and integrated into the app. Test the application thoroughly to confirm that it behaves as expected.</span>
+<span id="cb5-275"><a href="#cb5-275" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-276"><a href="#cb5-276" aria-hidden="true" tabindex="-1"></a>Answer at least three of the exploration questions from section @sec-exploration-questions and document your findings in a brief report (1-2 pages). You are encouraged to use LaTeX here. Include screenshots of your application demonstrating different behaviors observed during your exploration.</span>
+<span id="cb5-277"><a href="#cb5-277" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-278"><a href="#cb5-278" aria-hidden="true" tabindex="-1"></a>If you want to go the extra mile, here are some additional challenges you can tackle:</span>
+<span id="cb5-279"><a href="#cb5-279" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-280"><a href="#cb5-280" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Create a GitHub repository for your project and push your code there. You can include the text of your report in the repository as well.</span>
+<span id="cb5-281"><a href="#cb5-281" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Deploy your Streamlit app using Streamlit Cloud or another hosting service. Share the link in your report.</span>
+<span id="cb5-282"><a href="#cb5-282" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Implement some of the advanced features mentioned in section @sec-streamlit-application.</span>
+<span id="cb5-283"><a href="#cb5-283" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Instead of using SciPy's built-in ODE solver, implement your own simple Euler or Runge-Kutta integrator and compare results.</span>
+<span id="cb5-284"><a href="#cb5-284" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-285"><a href="#cb5-285" aria-hidden="true" tabindex="-1"></a>\newpage</span>
+<span id="cb5-286"><a href="#cb5-286" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-287"><a href="#cb5-287" aria-hidden="true" tabindex="-1"></a><span class="fu"># Mathematical Background {#sec-mathematical-background}</span></span>
+<span id="cb5-288"><a href="#cb5-288" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-289"><a href="#cb5-289" aria-hidden="true" tabindex="-1"></a>In this section I provide some additional mathematical context for the spruce budworm model. Play with your simulation to see these concepts in action!</span>
+<span id="cb5-290"><a href="#cb5-290" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-291"><a href="#cb5-291" aria-hidden="true" tabindex="-1"></a><span class="fu">## Equilibrium Analysis</span></span>
+<span id="cb5-292"><a href="#cb5-292" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-293"><a href="#cb5-293" aria-hidden="true" tabindex="-1"></a>Equilibrium points satisfy:</span>
+<span id="cb5-294"><a href="#cb5-294" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-295"><a href="#cb5-295" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb5-296"><a href="#cb5-296" aria-hidden="true" tabindex="-1"></a>rx^*\left(1 - \frac{x^*}{k}\right) - \frac{(x^*)^2}{1 + (x^*)^2} = 0</span>
+<span id="cb5-297"><a href="#cb5-297" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb5-298"><a href="#cb5-298" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-299"><a href="#cb5-299" aria-hidden="true" tabindex="-1"></a>This can be rewritten as:</span>
+<span id="cb5-300"><a href="#cb5-300" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-301"><a href="#cb5-301" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb5-302"><a href="#cb5-302" aria-hidden="true" tabindex="-1"></a>rx^*\left(1 - \frac{x^*}{k}\right) = \frac{(x^*)^2}{1 + (x^*)^2}</span>
+<span id="cb5-303"><a href="#cb5-303" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb5-304"><a href="#cb5-304" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-305"><a href="#cb5-305" aria-hidden="true" tabindex="-1"></a>The left side represents birth rate (logistic growth), and the right side represents predation rate. Equilibria occur where these balance.</span>
+<span id="cb5-306"><a href="#cb5-306" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-307"><a href="#cb5-307" aria-hidden="true" tabindex="-1"></a><span class="fu">## Stability Analysis {#sec-stability-analysis}</span></span>
+<span id="cb5-308"><a href="#cb5-308" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-309"><a href="#cb5-309" aria-hidden="true" tabindex="-1"></a>The stability of an equilibrium $x^*$ is determined by the sign of the derivative:</span>
+<span id="cb5-310"><a href="#cb5-310" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-311"><a href="#cb5-311" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb5-312"><a href="#cb5-312" aria-hidden="true" tabindex="-1"></a>\frac{d}{dx}\left(\frac{dx}{dt}\right)\bigg|_{x=x^*}</span>
+<span id="cb5-313"><a href="#cb5-313" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb5-314"><a href="#cb5-314" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-315"><a href="#cb5-315" aria-hidden="true" tabindex="-1"></a>If this derivative is:</span>
+<span id="cb5-316"><a href="#cb5-316" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-317"><a href="#cb5-317" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Negative: the equilibrium is stable (attracting).</span>
+<span id="cb5-318"><a href="#cb5-318" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Positive: the equilibrium is unstable (repelling).</span>
+<span id="cb5-319"><a href="#cb5-319" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Zero: higher-order analysis is needed.</span>
+<span id="cb5-320"><a href="#cb5-320" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-321"><a href="#cb5-321" aria-hidden="true" tabindex="-1"></a><span class="fu">## Ecological Interpretation</span></span>
+<span id="cb5-322"><a href="#cb5-322" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-323"><a href="#cb5-323" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Low equilibrium:** Few budworms, controlled by predation.</span>
+<span id="cb5-324"><a href="#cb5-324" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**High equilibrium:** Outbreak state, budworms overwhelm predators.</span>
+<span id="cb5-325"><a href="#cb5-325" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Middle equilibrium:** Usually unstable, separates the two basins of attraction.</span>
+<span id="cb5-326"><a href="#cb5-326" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Hysteresis:** The system can "jump" between states depending on history.</span>
+<span id="cb5-327"><a href="#cb5-327" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-328"><a href="#cb5-328" aria-hidden="true" tabindex="-1"></a>This behavior explains why spruce budworm populations can suddenly explode from low levels to outbreak proportions, and why simply reducing the outbreak may not return the forest to a healthy state.</span>
+<span id="cb5-329"><a href="#cb5-329" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-330"><a href="#cb5-330" aria-hidden="true" tabindex="-1"></a><span class="fu"># Resources</span></span>
+<span id="cb5-331"><a href="#cb5-331" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-332"><a href="#cb5-332" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">@strogatz2024nonlinear, chap. 3.7</span><span class="co">]</span> for theoretical background on the spruce budworm model.</span>
+<span id="cb5-333"><a href="#cb5-333" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>SciPy documentation: <span class="ot">&lt;https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html&gt;</span></span>
+<span id="cb5-334"><a href="#cb5-334" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Streamlit documentation: <span class="ot">&lt;https://docs.streamlit.io&gt;</span></span>
+<span id="cb5-335"><a href="#cb5-335" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Reference implementation: <span class="ot">&lt;https://github.com/daniprec/BAM-Applied-Math-Lab/tree/main/sessions/s01_odes_1d&gt;</span></span>
+<span id="cb5-336"><a href="#cb5-336" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-337"><a href="#cb5-337" aria-hidden="true" tabindex="-1"></a><span class="fu"># Tips for Success</span></span>
+<span id="cb5-338"><a href="#cb5-338" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-339"><a href="#cb5-339" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Start simple:** Get section @sec-implementing-ode-function working first, then build up.</span>
+<span id="cb5-340"><a href="#cb5-340" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Test incrementally:** Verify each function works before moving to the next.</span>
+<span id="cb5-341"><a href="#cb5-341" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Use the reference:** The provided code (and additional documentation) is there to help you understand the structure.</span>
+<span id="cb5-342"><a href="#cb5-342" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Experiment:** Try different parameter values and see what happens.</span>
+<span id="cb5-343"><a href="#cb5-343" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Collaborate:** Discuss with your teammates, divide the work if needed. You can also work separately and then compare your implementations.</span>
+<span id="cb5-344"><a href="#cb5-344" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Ask questions:** If you're stuck, ask for help!</span>
+<span id="cb5-345"><a href="#cb5-345" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-346"><a href="#cb5-346" aria-hidden="true" tabindex="-1"></a>\vspace{1cm}</span>
+<span id="cb5-347"><a href="#cb5-347" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-348"><a href="#cb5-348" aria-hidden="true" tabindex="-1"></a>**Good luck and enjoy your coding!**</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 <footer class="footer">
