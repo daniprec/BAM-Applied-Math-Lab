@@ -2,7 +2,7 @@
 
 Welcome to the Applied Math Lab! This repository contains the materials for the Applied Math Lab, a course offered by the [BAM](https://www.ie.edu/university/studies/academic-programs/bachelor-applied-mathematics/) program at IE University. The course is designed to introduce students to computational methods for solving problems in applied mathematics, with a focus on modeling and simulation. The course covers a range of topics, including ordinary differential equations, partial differential equations, agent-based modeling, network theory, and cellular automata.
 
-You can see the [online version of the course materials here](https://daniprec.github.io/Applied-Math-Modeling/).
+You can see the [online version of the course materials here](https://daniprec.github.io/BAM-Applied-Math-Lab/).
 
 ## Repository Structure
 
