@@ -1,4 +1,4 @@
-\documentclass[12pt,a4paper]{article}
+\documentclass[12pt,letterpaper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 \usepackage{amsmath}
@@ -54,10 +54,8 @@ The first term represents logistic growth, while the second term models predatio
 \section{Implementing the ODE Function}
 \label{sec:implementing_ode_function}
 
-\subsection{Task}
 Create a Python function that implements the spruce budworm differential equation. The function should follow the signature required by \texttt{scipy.integrate.solve\_ivp}.
 
-\subsection{Requirements}
 \begin{itemize}
     \item Function name: \texttt{spruce\_budworm}
     \item Parameters: \texttt{t} (time), \texttt{x} (population), \texttt{r} (growth rate), \texttt{k} (carrying capacity)
@@ -65,8 +63,7 @@ Create a Python function that implements the spruce budworm differential equatio
     \item Include appropriate docstring documentation.
 \end{itemize}
 
-\subsection{Hint}
-The function signature should be:
+Here is a template to get you started:
 \begin{lstlisting}
 def spruce_budworm(t: float, x: float, r: float = 0.5, k: float = 10) -> float:
     """Docstring and type hints"""
@@ -82,10 +79,8 @@ def spruce_budworm(t: float, x: float, r: float = 0.5, k: float = 10) -> float:
 \section{Phase Portrait Visualization}
 \label{sec:phase_portrait}
 
-\subsection{Task}
 Create a function that plots the rate of change $\frac{dx}{dt}$ as a function of the population $x$. This phase portrait will help us visualize the equilibrium points and their stability.
 
-\subsection{Requirements}
 \begin{itemize}
     \item Function name: \texttt{plot\_spruce\_budworm\_rate}
     \item Parameters: \texttt{x\_t} (current population), \texttt{r}, \texttt{k}
@@ -102,6 +97,8 @@ Create a function that plots the rate of change $\frac{dx}{dt}$ as a function of
     \item Mark the current population $x_t$ with a vertical dashed line.
 \end{itemize}
 
+\newpage
+
 Figure \ref{fig:graph} shows an example of the expected output.
 
 \begin{figure}[htbp]
@@ -111,14 +108,16 @@ Figure \ref{fig:graph} shows an example of the expected output.
     \label{fig:graph}
 \end{figure}
 
-\subsection{Hints}
+Here are some hints to help you implement this function:
+
 \begin{itemize}
     \item You can use \texttt{np.linspace} to create an array of $x$ values.
     \item To find zero crossings: you can look for sign changes combining \texttt{np.diff} and \texttt{np.sign}.
     \item Stability: a fixed point is stable if $\frac{dx}{dt}$ decreases as you pass through it.
 \end{itemize}
 
-\subsection{Key Concepts}
+Review the following definitions for clarity:
+
 \begin{itemize}
     \item \textbf{Equilibrium point}: A value $x^*$ where $\frac{dx}{dt} = 0$.
     \item \textbf{Stable equilibrium}: Small perturbations decay back to $x^*$.
@@ -132,10 +131,8 @@ Figure \ref{fig:graph} shows an example of the expected output.
 \section{Numerical Integration}
 \label{sec:numerical_integration}
 
-\subsection{Task}
 Create a function that evolves the system forward in time using numerical integration. This function should solve the ODE and append the results to existing time and population arrays.
 
-\subsection{Requirements}
 \begin{itemize}
     \item Function name: \texttt{evolve\_spruce\_budworm}
     \item Inputs: \texttt{t} (time array), \texttt{x} (population array), \texttt{r}, \texttt{k}, \texttt{t\_eval} (duration to evolve).
@@ -146,12 +143,12 @@ Create a function that evolves the system forward in time using numerical integr
     \item Return updated \texttt{t} and \texttt{x} arrays.
 \end{itemize}
 
-\subsection{Hints}
+Here is a template to get you started:
+
 \begin{lstlisting}
 def evolve_spruce_budworm(t: np.ndarray, x: np.ndarray, ...):
     """Don't forget the docstring and type hints"""
     # Define time span from last time point
-    # This indicates the start and end times for integration
     t_span = (t[-1], t[-1] + t_eval)
     
     # Create evaluation points, t_eval
@@ -171,16 +168,14 @@ def evolve_spruce_budworm(t: np.ndarray, x: np.ndarray, ...):
     t_new = solution.t
     x_new = solution.y[0]
     
-    # Concatenate results
-    # Hint: use np.concatenate
-    
-    # Ensure non-negative population
-    # Hint: use np.clip
-    
+    # Concatenate results - Hint: use np.concatenate
+    # Ensure non-negative population - Hint: use np.clip
+
     return t, x
 \end{lstlisting}
 
-\subsection{Important Notes}
+Some important notes:
+
 \begin{itemize}
     \item The \texttt{args} parameter in \texttt{solve\_ivp} passes additional arguments to your ODE function. You can see how we use it in the example above.
     \item Initial condition should be \texttt{[x[-1]]} (last population value).
@@ -192,10 +187,8 @@ def evolve_spruce_budworm(t: np.ndarray, x: np.ndarray, ...):
 \section{Time Series Visualization}
 \label{sec:time_series_visualization}
 
-\subsection{Task}
 Create a function to plot the population dynamics over time. This visualization shows how the population evolves from the initial condition.
 
-\subsection{Requirements}
 \begin{itemize}
     \item Function name: \texttt{plot\_spruce\_budworm}
     \item Parameters: \texttt{t} (time array), \texttt{x} (population array).
@@ -217,13 +210,12 @@ See Figure \ref{fig:time_series} for an example output.
 
 %--------------------------------------------------------------
 
+\newpage
+
 \section{Building the Streamlit Application}
 \label{sec:streamlit_application}
 
-\subsection{Task}
 Now that you have all the components, create an interactive Streamlit application that allows users to explore the spruce budworm model. This will enable real-time parameter adjustment and visualization.
-
-\subsection{Requirements}
 
 While all the previous code could be done in Google Colab, Streamlit has to be build on your local machine. Follow the instructions in the \texttt{README.md} file in the \href{https://github.com/daniprec/BAM-Applied-Math-Lab}{repository} to set up your environment.
 
@@ -234,7 +226,7 @@ To test your app, run the following command in your terminal:
 streamlit run spruce_budworm_app.py
 \end{lstlisting}
 
-\subsubsection{Sidebar Controls}
+\subsection{Sidebar Controls}
 Create sliders for:
 \begin{itemize}
     \item Growth rate $r$ (range: 0.0 to 1.0, default 0.5).
@@ -243,7 +235,7 @@ Create sliders for:
     \item Time slider for evolution (range: 1 to 100, default 10).
 \end{itemize}
 
-\subsubsection{Interactive Features}
+\subsection{Interactive Features}
 \begin{itemize}
     \item Display the differential equation with current parameter values.
     \item Show the phase portrait (rate of change plot), using your function from section \ref{sec:phase_portrait}.
@@ -254,7 +246,7 @@ Create sliders for:
 
 \newpage
 
-\subsubsection{Layout Structure}
+\subsection{Layout Structure}
 
 \begin{lstlisting}
 import streamlit as st
@@ -336,6 +328,8 @@ Once your simulation is working, explore the following questions:
 The carrying capacity $k$ can be interpreted as a slowly varying parameter in real ecosystems (e.g., due to seasonal changes or forest management). You can simulate this by gradually changing $k$ over time in your app. This can lead to \textbf{hysteresis} effects, where the population does not return to its original state after $k$ is restored. Experiment with this by modifying your Streamlit app to allow $k$ to vary over time.
 
 %--------------------------------------------------------------
+
+\newpage
 
 \section{Deliverable}
 \label{sec:deliverable}
