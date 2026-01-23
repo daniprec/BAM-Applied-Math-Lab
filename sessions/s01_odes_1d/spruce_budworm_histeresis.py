@@ -14,7 +14,7 @@ from sessions.s01_odes_1d.spruce_budworm import spruce_budworm
 def k_func(t, k0: float = 6.0, amp: float = 4.0, freq: float = 0.01):
     """Periodic variation of carrying capacity k(t). Accepts scalar or array-like t."""
     t_arr = np.asarray(t)
-    return k0 + amp * np.sin(2 * np.pi * freq * t_arr)
+    return k0 + amp * (1 + np.sin(2 * np.pi * freq * t_arr))
 
 
 def integrate_time_varying_k(
@@ -60,11 +60,11 @@ def find_zero_crossings(xgrid: np.ndarray, dxdt: np.ndarray) -> np.ndarray:
 def make_animation():
     # parameters (tweak if you want faster/slower cycles)
     r = 0.5
-    k0 = 6.0
-    amp = 4.0
+    k0 = 0.1
+    amp = 0.5
     freq = 0.01
     t0, tf, dt = 0.0, 500.0, 0.1
-    x0 = k0 / 2.0  # start near middle of carrying capacity
+    x0 = (k0 + amp) / 2.0  # start near middle of carrying capacity
 
     t, x, kvals = integrate_time_varying_k(
         r=r, k0=k0, amp=amp, freq=freq, t0=t0, tf=tf, dt=dt, x0=x0
@@ -100,7 +100,8 @@ def make_animation():
     (k_marker,) = ax_k.plot([], [], "rD")
     ax_k.set_title("k(t)")
     ax_k.set_ylim(t[0], t[-1])
-    ax_k.set_xlim(kvals.min() - 0.5, kvals.max() + 0.5)
+    # Reuse the k limits from hysteresis plot
+    ax_k.set_xlim(kmin - kpad, kmax + kpad)
     ax_k.set_ylabel("Time")
     ax_k.grid()
 
@@ -110,7 +111,7 @@ def make_animation():
     ax_x.set_title("x(t)")
     ax_x.set_xlabel("Time")
     ax_x.set_xlim(t[0], t[-1])
-    ax_x.set_ylim(max(0.0, x.min() - 0.5), x.max() + 0.5)
+    ax_x.set_ylim(max(0.0, xmin - xpad), xmax + xpad)
     ax_x.grid()
 
     def update(frame: int):
