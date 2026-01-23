@@ -61,7 +61,7 @@ def make_animation():
     # parameters (tweak if you want faster/slower cycles)
     r = 0.5
     k0 = 0.1
-    amp = 0.5
+    amp = 4.95
     freq = 0.01
     t0, tf, dt = 0.0, 500.0, 0.1
     x0 = (k0 + amp) / 2.0  # start near middle of carrying capacity
