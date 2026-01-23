@@ -1,42 +1,11 @@
-\documentclass[12pt,a4paper]{article}
+\documentclass[12pt,letterpaper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{graphicx}
-\usepackage{listings}
-\usepackage{xcolor}
-\usepackage{hyperref}
-\usepackage{geometry}
-\geometry{margin=1in}
-
-% Python code styling
-\definecolor{codegreen}{rgb}{0,0.6,0}
-\definecolor{codegray}{rgb}{0.5,0.5,0.5}
-\definecolor{codepurple}{rgb}{0.58,0,0.82}
-\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
-
-\lstdefinestyle{pythonstyle}{
-    backgroundcolor=\color{backcolour},   
-    commentstyle=\color{codegreen},
-    keywordstyle=\color{magenta},
-    numberstyle=\tiny\color{codegray},
-    stringstyle=\color{codepurple},
-    basicstyle=\ttfamily\footnotesize,
-    breakatwhitespace=false,         
-    breaklines=true,                 
-    captionpos=b,                    
-    keepspaces=true,                 
-    numbers=left,                    
-    numbersep=5pt,                  
-    showspaces=false,                
-    showstringspaces=false,
-    showtabs=false,                  
-    tabsize=2,
-    language=Python
-}
-
-\lstset{style=pythonstyle}
+% Use common project style
+\usepackage{bamlab}
 
 \title{Session 1: 1D Ordinary Differential Equations\\
 \large Building an Interactive Spruce Budworm Simulation}
@@ -48,23 +17,24 @@
 \maketitle
 
 \section{Introduction}
+\label{sec:introduction}
 
-Welcome to this hands-on session on modeling population dynamics using ordinary differential equations (ODEs). Today, we will explore the \textbf{spruce budworm model}, a classic example from ecological modeling that demonstrates how simple nonlinear systems can exhibit complex behaviors including multiple equilibria and catastrophic transitions.
+Welcome to this hands-on session on mathematical modeling using ordinary differential equations (ODEs). Today, we will explore the \textbf{spruce budworm model}, a classic example from ecological modeling that demonstrates how simple nonlinear systems can exhibit complex behaviors including multiple equilibria and catastrophic transitions.
 
 \subsection{Learning Objectives}
 
 By the end of this session, you will be able to:
 \begin{itemize}
-    \item Understand the mathematical formulation of the spruce budworm model
-    \item Implement the model as a Python function
-    \item Solve the ODE numerically using \texttt{scipy.integrate.solve\_ivp}
-    \item Visualize the phase portrait and identify equilibrium points
-    \item Build an interactive Streamlit application to explore the model
+    \item Understand the mathematical formulation of the spruce budworm model.
+    \item Implement the model as a Python function.
+    \item Solve the ODE numerically using \texttt{scipy.integrate.solve\_ivp}.
+    \item Visualize the phase portrait and identify equilibrium points.
+    \item Build an interactive Streamlit application to explore the model.
 \end{itemize}
 
 \subsection{The Spruce Budworm Model}
 
-The spruce budworm is an insect that periodically devastates spruce forests. The population dynamics can be modeled by the following ODE:
+The spruce budworm is an insect that periodically devastates spruce forests. The population dynamics can be modeled by the following ODE \cite[Chapter 3.7]{strogatz2024nonlinear}:
 
 \begin{equation}
 \frac{dx}{dt} = rx\left(1 - \frac{x}{k}\right) - \frac{x^2}{1 + x^2}
@@ -72,188 +42,212 @@ The spruce budworm is an insect that periodically devastates spruce forests. The
 
 where:
 \begin{itemize}
-    \item $x(t)$ is the budworm population (adimensional)
-    \item $r$ is the intrinsic growth rate (typically $r \approx 0.5$)
-    \item $k$ is the carrying capacity of the forest (typically $k \approx 10$)
+    \item $x(t)$ is the budworm population (adimensional).
+    \item $r$ is the intrinsic growth rate (typically $r \approx 0.5$).
+    \item $k$ is the carrying capacity of the forest (typically $k \approx 10$).
 \end{itemize}
 
 The first term represents logistic growth, while the second term models predation by birds (which follows a saturating functional response).
 
-\textbf{Reference:} Strogatz, S. H. (2018). \textit{Nonlinear Dynamics and Chaos}, Chapter 3.7.
-
 %--------------------------------------------------------------
 
 \section{Implementing the ODE Function}
+\label{sec:implementing_ode_function}
 
-\subsection{Task}
 Create a Python function that implements the spruce budworm differential equation. The function should follow the signature required by \texttt{scipy.integrate.solve\_ivp}.
 
-\subsection{Requirements}
 \begin{itemize}
     \item Function name: \texttt{spruce\_budworm}
     \item Parameters: \texttt{t} (time), \texttt{x} (population), \texttt{r} (growth rate), \texttt{k} (carrying capacity)
-    \item Return: The rate of change $\frac{dx}{dt}$
-    \item Include appropriate docstring documentation
+    \item Return: The rate of change $\frac{dx}{dt}$.
+    \item Include appropriate docstring documentation.
 \end{itemize}
 
-\subsection{Hint}
-The function signature should be:
+Here is a template to get you started:
 \begin{lstlisting}
 def spruce_budworm(t: float, x: float, r: float = 0.5, k: float = 10) -> float:
-    """Model for the spruce budworm population dynamics."""
+    """Docstring and type hints"""
     # Your implementation here
     dxdt = ???
     return dxdt
 \end{lstlisting}
 
-\subsection{Mathematical Expression}
-Remember to implement:
-\begin{equation}
-\frac{dx}{dt} = rx\left(1 - \frac{x}{k}\right) - \frac{x^2}{1 + x^2}
-\end{equation}
+\textit{Why do we need \texttt{t} as an input?} Although the equation does not explicitly depend on time, \texttt{solve\_ivp} requires the function to accept time as the first argument.
 
 %--------------------------------------------------------------
 
 \section{Phase Portrait Visualization}
+\label{sec:phase_portrait}
 
-\subsection{Task}
 Create a function that plots the rate of change $\frac{dx}{dt}$ as a function of the population $x$. This phase portrait will help us visualize the equilibrium points and their stability.
 
-\subsection{Requirements}
 \begin{itemize}
     \item Function name: \texttt{plot\_spruce\_budworm\_rate}
+    \item Parameters: \texttt{x\_t} (current population), \texttt{r}, \texttt{k}
+    \item Use \texttt{matplotlib} for plotting
     \item Plot $\frac{dx}{dt}$ vs $x$ for $x \in [0, k]$
     \item Identify and mark equilibrium points (where $\frac{dx}{dt} = 0$)
     \item Color-code equilibrium points:
     \begin{itemize}
-        \item Blue circles for stable equilibria (where $\frac{dx}{dt}$ crosses zero from above)
-        \item Red circles for unstable equilibria (where $\frac{dx}{dt}$ crosses zero from below)
+        \item Blue circles for stable equilibria (where $\frac{dx}{dt}$ crosses zero from above).
+        \item Red circles for unstable equilibria (where $\frac{dx}{dt}$ crosses zero from below).
     \end{itemize}
-    \item Add a horizontal line at $y = 0$
-    \item Mark the current population $x_t$ with a vertical dashed line
+    \item Add a horizontal line at $y = 0$ to indicate equilibria (null rate of change).
+    \item Label axes and add a title.
+    \item Mark the current population $x_t$ with a vertical dashed line.
 \end{itemize}
 
-\subsection{Hints}
+\newpage
+
+Figure \ref{fig:graph} shows an example of the expected output.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{../img/s01_spruce_budworm.png}
+    \caption{Example phase portrait of the spruce budworm model showing stable (blue) and unstable (red) equilibria. The green dashed line indicates the current population $x_t$. Where do you think this population will evolve?}
+    \label{fig:graph}
+\end{figure}
+
+Here are some hints to help you implement this function:
+
 \begin{itemize}
-    \item Use \texttt{np.linspace} to create an array of $x$ values
-    \item To find zero crossings: look for sign changes using \texttt{np.diff(np.sign(dxdt))}
-    \item Stability: a fixed point is stable if $\frac{dx}{dt}$ decreases as you pass through it
+    \item You can use \texttt{np.linspace} to create an array of $x$ values.
+    \item To find zero crossings: you can look for sign changes combining \texttt{np.diff} and \texttt{np.sign}.
+    \item Stability: a fixed point is stable if $\frac{dx}{dt}$ decreases as you pass through it.
 \end{itemize}
 
-\subsection{Key Concepts}
+Review the following definitions for clarity:
+
 \begin{itemize}
-    \item \textbf{Equilibrium point}: A value $x^*$ where $\frac{dx}{dt} = 0$
-    \item \textbf{Stable equilibrium}: Small perturbations decay back to $x^*$
-    \item \textbf{Unstable equilibrium}: Small perturbations grow away from $x^*$
+    \item \textbf{Equilibrium point}: A value $x^*$ where $\frac{dx}{dt} = 0$.
+    \item \textbf{Stable equilibrium}: Small perturbations decay back to $x^*$.
+    \item \textbf{Unstable equilibrium}: Small perturbations grow away from $x^*$.
 \end{itemize}
+
+%--------------------------------------------------------------
+
+\newpage
 
 \section{Numerical Integration}
+\label{sec:numerical_integration}
 
-\subsection{Task}
 Create a function that evolves the system forward in time using numerical integration. This function should solve the ODE and append the results to existing time and population arrays.
 
-\subsection{Requirements}
 \begin{itemize}
     \item Function name: \texttt{evolve\_spruce\_budworm}
-    \item Use \texttt{scipy.integrate.solve\_ivp} with the RK45 method
-    \item Parameters:
-    \begin{itemize}
-        \item \texttt{t}: existing time array
-        \item \texttt{x}: existing population array
-        \item \texttt{r}, \texttt{k}: model parameters
-        \item \texttt{t\_eval}: duration to evolve forward
-    \end{itemize}
-    \item Start from the last values in the input arrays
-    \item Concatenate new results to the input arrays
-    \item Ensure population never goes negative (use \texttt{np.clip})
-    \item Return updated time and population arrays
+    \item Inputs: \texttt{t} (time array), \texttt{x} (population array), \texttt{r}, \texttt{k}, \texttt{t\_eval} (duration to evolve).
+    \item Use \texttt{scipy.integrate.solve\_ivp} with the RK45 method.
+    \item Start from the last values in the input arrays.
+    \item Concatenate new results to the input arrays.
+    \item Ensure population never goes negative (use \texttt{np.clip}).
+    \item Return updated \texttt{t} and \texttt{x} arrays.
 \end{itemize}
 
-\subsection{Code Structure}
+Here is a template to get you started:
+
 \begin{lstlisting}
-def evolve_spruce_budworm(
-    t: np.ndarray, x: np.ndarray, 
-    r: float = 0.5, k: float = 10, 
-    t_eval: float = 50
-) -> tuple[np.ndarray, np.ndarray]:
+def evolve_spruce_budworm(t: np.ndarray, x: np.ndarray, ...):
+    """Don't forget the docstring and type hints"""
     # Define time span from last time point
     t_span = (t[-1], t[-1] + t_eval)
     
-    # Create evaluation points
-    t_eval_points = np.linspace(???)
+    # Create evaluation points, t_eval
+    # This indicates where we want the solution evaluated
+    # and should be distributed along the time span
+    # Hint: use np.linspace
     
     # Solve the ODE
-    solution = solve_ivp(???)
+    solution = solve_ivp(
+        fun=spruce_budworm,
+        t_span=t_span,
+        y0=[x[-1]],
+        t_eval=t_eval,
+        args=(r, k),
+        method="RK45"
+    )
+    t_new = solution.t
+    x_new = solution.y[0]
     
-    # Concatenate results
-    t = np.concatenate((t, solution.t))
-    x = np.concatenate((x, solution.y[0]))
-    
-    # Ensure non-negative population
-    x = np.clip(x, a_min=0, a_max=None)
-    
+    # Concatenate results - Hint: use np.concatenate
+    # Ensure non-negative population - Hint: use np.clip
+
     return t, x
 \end{lstlisting}
 
-\subsection{Important Notes}
+Some important notes:
+
 \begin{itemize}
-    \item The \texttt{args} parameter in \texttt{solve\_ivp} passes additional arguments to your ODE function
-    \item Initial condition should be \texttt{[x[-1]]} (last population value)
-    \item Use \texttt{method="RK45"} for adaptive step-size Runge-Kutta integration
+    \item The \texttt{args} parameter in \texttt{solve\_ivp} passes additional arguments to your ODE function. You can see how we use it in the example above.
+    \item Initial condition should be \texttt{[x[-1]]} (last population value).
+    \item Use \texttt{method="RK45"} for adaptive step-size Runge-Kutta integration.
 \end{itemize}
 
 %--------------------------------------------------------------
 
 \section{Time Series Visualization}
+\label{sec:time_series_visualization}
 
-\subsection{Task}
 Create a function to plot the population dynamics over time. This visualization shows how the population evolves from the initial condition.
 
-\subsection{Requirements}
 \begin{itemize}
     \item Function name: \texttt{plot\_spruce\_budworm}
-    \item Plot time on the x-axis and population on the y-axis
-    \item Use green color for the trajectory
-    \item Ensure y-axis starts at 0 (populations cannot be negative)
-    \item Include grid, labels, and title
-    \item Return the figure and axes objects
+    \item Parameters: \texttt{t} (time array), \texttt{x} (population array).
+    \item Plot time on the x-axis and population on the y-axis.
+    \item Use green color for the trajectory.
+    \item Ensure y-axis starts at 0 (populations cannot be negative).
+    \item Include grid, labels, and title.
+    \item Return the figure and axes objects.
 \end{itemize}
 
-\subsection{Questions to Consider}
-\begin{itemize}
-    \item What happens to the population in the long run?
-    \item Does the final state depend on the initial condition?
-    \item How do different parameter values affect the dynamics?
-\end{itemize}
+See Figure \ref{fig:time_series} for an example output.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{../img/s01_spruce_budworm_evolution.png}
+    \caption{Example time series of the spruce budworm population over time.}
+    \label{fig:time_series}
+\end{figure}
 
 %--------------------------------------------------------------
 
-\section{Building the Streamlit Application}
+\newpage
 
-\subsection{Task}
+\section{Building the Streamlit Application}
+\label{sec:streamlit_application}
+
 Now that you have all the components, create an interactive Streamlit application that allows users to explore the spruce budworm model. This will enable real-time parameter adjustment and visualization.
 
-\subsection{Requirements}
+While all the previous code could be done in Google Colab, Streamlit has to be build on your local machine. Follow the instructions in the \texttt{README.md} file in the \href{https://github.com/daniprec/BAM-Applied-Math-Lab}{repository} to set up your environment.
 
-\subsubsection{Sidebar Controls}
+Design an script, name it \texttt{spruce\_budworm\_app.py}. You will find a suggested layout below. This script will use the functions you implemented in sections \ref{sec:implementing_ode_function} through \ref{sec:time_series_visualization}. You can either import them from a separate module (another script you created) or paste the function definitions directly into the script. For best practices, consider creating a module (e.g., \texttt{spruce\_budworm\_model.py}) and importing the functions.
+
+To test your app, run the following command in your terminal:
+\begin{lstlisting}
+streamlit run spruce_budworm_app.py
+\end{lstlisting}
+
+\subsection{Sidebar Controls}
 Create sliders for:
 \begin{itemize}
-    \item Growth rate $r$ (range: 0.1 to 1.0)
-    \item Carrying capacity $k$ (range: 5 to 20)
-    \item Initial population $x_0$ (range: 0.1 to $k$)
-    \item Evolution time step (default: 50)
+    \item Growth rate $r$ (range: 0.0 to 1.0, default 0.5).
+    \item Carrying capacity $k$ (range: 0.1 to 10.0, default 10.0).
+    \item Initial population: set automatically to $k/10$ (the app uses $x_0 = k/10$ by default).
+    \item Time slider for evolution (range: 1 to 100, default 10).
 \end{itemize}
 
-\subsubsection{Interactive Features}
+\subsection{Interactive Features}
 \begin{itemize}
-    \item Display the differential equation with current parameter values
-    \item Show the phase portrait (rate of change plot)
-    \item Show the time series evolution
-    \item Add a button to "Evolve Forward" that continues the simulation
-    \item Use \texttt{st.session\_state} to maintain simulation state between button clicks
+    \item Display the differential equation with current parameter values.
+    \item Show the phase portrait (rate of change plot), using your function from section \ref{sec:phase_portrait}.
+    \item Show the time series evolution, using your function from section \ref{sec:time_series_visualization}.
+    \item Add a button to ``Evolve Forward'' that continues the simulation, updating the plots.
+    \item Use \texttt{st.session\_state} to maintain simulation state between button clicks. You will need to store the time and population arrays in the session state, otherwise they will reset on each interaction.
 \end{itemize}
 
-\subsubsection{Layout Structure}
+\newpage
+
+\subsection{Layout Structure}
+
 \begin{lstlisting}
 import streamlit as st
 import numpy as np
@@ -263,50 +257,54 @@ from your_module import (
     plot_spruce_budworm_rate,
     evolve_spruce_budworm,
     plot_spruce_budworm
-)
+)  # Or paste your functions here
 
 st.title("Spruce Budworm Population Dynamics")
 
-# Sidebar parameters
-r = st.sidebar.slider("Growth rate (r)", ...)
-k = st.sidebar.slider("Carrying capacity (k)", ...)
-x0 = st.sidebar.slider("Initial population", ...)
+# Sidebar parameters (as in the app)
+r = st.sidebar.slider("Intrinsic growth rate (r)", 0.0, 1.0, 0.5)
+k = st.sidebar.slider("Carrying capacity (k)", 0.1, 10.0, 10.0)
+
+# The app sets the initial population to k/10 by default
+x0 = k / 10
 
 # Initialize session state
-if 'initialized' not in st.session_state:
-    st.session_state.t = np.array([0])
-    st.session_state.x = np.array([x0])
-    st.session_state.initialized = True
+if ("sbw_x" not in st.session_state):
+    st.session_state["sbw_t"] = np.array([0])
+    st.session_state["sbw_x"] = np.array([x0])
 
-# Display equation
-st.latex(r"\frac{dx}{dt} = rx\left(1 - \frac{x}{k}\right) - \frac{x^2}{1 + x^2}")
+# Time slider and control buttons
+t_eval = st.sidebar.slider("Time", 1, 100, 10)
+button = st.sidebar.button("Evolve")
 
-# Plot phase portrait
-fig1, ax1 = plot_spruce_budworm_rate(...)
+# Retrieve session data
+t = st.session_state["sbw_t"]
+x = st.session_state["sbw_x"]
+
+# Evolve if requested
+if button:
+    t, x = evolve_spruce_budworm(t, x, r=r, k=k, t_eval=t_eval)
+    st.session_state["sbw_t"] = t
+    st.session_state["sbw_x"] = x
+
+# Plot phase portrait and time series
+fig1, ax1 = plot_spruce_budworm_rate(x[-1], r=r, k=k)
 st.pyplot(fig1)
-
-# Plot time series
-fig2, ax2 = plot_spruce_budworm(...)
+fig2, ax2 = plot_spruce_budworm(t, x)
 st.pyplot(fig2)
-
-# Evolution button
-if st.button("Evolve Forward"):
-    st.session_state.t, st.session_state.x = evolve_spruce_budworm(...)
-    st.rerun()
 \end{lstlisting}
 
 \subsection{Advanced Features (Optional)}
 \begin{itemize}
-    \item Add a reset button to restart the simulation
-    \item Display current population value and equilibrium states
-    \item Add explanatory text about bifurcations and catastrophes
-    \item Show multiple trajectories with different initial conditions
-    \item Add animation of the population dynamics
+    \item Add a reset button to restart the simulation.
+    \item Show multiple trajectories with different initial conditions.
+    \item Add animation of the population dynamics.
 \end{itemize}
 
 %--------------------------------------------------------------
 
 \section{Exploration Questions}
+\label{sec:exploration_questions}
 
 Once your simulation is working, explore the following questions:
 
@@ -315,7 +313,7 @@ Once your simulation is working, explore the following questions:
     
     \item \textbf{Bistability:} Start with two different initial conditions (e.g., $x_0 = 1$ and $x_0 = 8$). Do they converge to the same equilibrium?
     
-    \item \textbf{Hysteresis:} Slowly increase the carrying capacity $k$ from 5 to 15. Then slowly decrease it back to 5. Does the population return to the same state?
+    \item \textbf{Hysteresis:} Slowly increase the carrying capacity $k$ from 5 to 15. Then slowly decrease it back to 5. Does the population return to the same state? If you are interested in this concept, see section \ref{sec:slow_fast_dynamics}.
     
     \item \textbf{Outbreak Dynamics:} What happens if you start with a small population ($x_0 < 2$) and the carrying capacity is large ($k > 10$)?
     
@@ -324,7 +322,39 @@ Once your simulation is working, explore the following questions:
     \item \textbf{Parameter Space:} Create a diagram showing the number of equilibria as a function of $r$ and $k$. Where do bifurcations occur?
 \end{enumerate}
 
+\subsection{Slow-Fast Dynamics}
+\label{sec:slow_fast_dynamics}
+
+The carrying capacity $k$ can be interpreted as a slowly varying parameter in real ecosystems (e.g., due to seasonal changes or forest management). You can simulate this by gradually changing $k$ over time in your app. This can lead to \textbf{hysteresis} effects, where the population does not return to its original state after $k$ is restored. Experiment with this by modifying your Streamlit app to allow $k$ to vary over time.
+
+%--------------------------------------------------------------
+
+\newpage
+
+\section{Deliverable}
+\label{sec:deliverable}
+
+Implement the complete Streamlit application as described above, following sections \ref{sec:implementing_ode_function} through \ref{sec:streamlit_application}. Ensure that all functions are correctly defined and integrated into the app. Test the application thoroughly to confirm that it behaves as expected.
+
+Answer at least three of the exploration questions from section \ref{sec:exploration_questions} and document your findings in a brief report (1-2 pages). You are encouraged to use LaTeX here. Include screenshots of your application demonstrating different behaviors observed during your exploration.
+
+If you want to go the extra mile, here are some additional challenges you can tackle:
+
+\begin{itemize}
+    \item Create a GitHub repository for your project and push your code there. You can include the text of your report in the repository as well.
+    \item Deploy your Streamlit app using Streamlit Cloud or another hosting service. Share the link in your report.
+    \item Implement some of the advanced features mentioned in section \ref{sec:streamlit_application}.
+    \item Instead of using SciPy's built-in ODE solver, implement your own simple Euler or Runge-Kutta integrator and compare results.
+\end{itemize}
+
+%--------------------------------------------------------------
+
+\newpage
+
 \section{Mathematical Background}
+\label{sec:mathematical_background}
+
+In this section I provide some additional mathematical context for the spruce budworm model. Play with your simulation to see these concepts in action!
 
 \subsection{Equilibrium Analysis}
 
@@ -341,6 +371,7 @@ rx^*\left(1 - \frac{x^*}{k}\right) = \frac{(x^*)^2}{1 + (x^*)^2}
 The left side represents birth rate (logistic growth), and the right side represents predation rate. Equilibria occur where these balance.
 
 \subsection{Stability Analysis}
+\label{sec:stability_analysis}
 
 The stability of an equilibrium $x^*$ is determined by the sign of the derivative:
 \begin{equation}
@@ -349,46 +380,52 @@ The stability of an equilibrium $x^*$ is determined by the sign of the derivativ
 
 If this derivative is:
 \begin{itemize}
-    \item Negative: the equilibrium is stable (attracting)
-    \item Positive: the equilibrium is unstable (repelling)
-    \item Zero: higher-order analysis is needed
+    \item Negative: the equilibrium is stable (attracting).
+    \item Positive: the equilibrium is unstable (repelling).
+    \item Zero: higher-order analysis is needed.
 \end{itemize}
 
 \subsection{Ecological Interpretation}
 
 \begin{itemize}
-    \item \textbf{Low equilibrium:} Few budworms, controlled by predation
-    \item \textbf{High equilibrium:} Outbreak state, budworms overwhelm predators
-    \item \textbf{Middle equilibrium:} Usually unstable, separates the two basins of attraction
-    \item \textbf{Hysteresis:} The system can "jump" between states depending on history
+    \item \textbf{Low equilibrium:} Few budworms, controlled by predation.
+    \item \textbf{High equilibrium:} Outbreak state, budworms overwhelm predators.
+    \item \textbf{Middle equilibrium:} Usually unstable, separates the two basins of attraction.
+    \item \textbf{Hysteresis:} The system can "jump" between states depending on history.
 \end{itemize}
 
 This behavior explains why spruce budworm populations can suddenly explode from low levels to outbreak proportions, and why simply reducing the outbreak may not return the forest to a healthy state.
 
 %--------------------------------------------------------------
-
 \section{Resources}
 
 \begin{itemize}
-    \item Strogatz, S. H. (2018). \textit{Nonlinear Dynamics and Chaos}. CRC Press, Chapter 3.7
+    \item \cite[Chapter 3.7]{strogatz2024nonlinear} for theoretical background on the spruce budworm model.
     \item SciPy documentation: \url{https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html}
     \item Streamlit documentation: \url{https://docs.streamlit.io}
     \item Reference implementation: \url{https://github.com/daniprec/BAM-Applied-Math-Lab/tree/main/sessions/s01_odes_1d}
 \end{itemize}
 
+%--------------------------------------------------------------
+
 \section{Tips for Success}
 
 \begin{itemize}
-    \item \textbf{Start simple:} Get section 2 working first, then build up.
+    \item \textbf{Start simple:} Get section~\ref{sec:implementing_ode_function} working first, then build up.
     \item \textbf{Test incrementally:} Verify each function works before moving to the next.
-    \item \textbf{Use the reference:} The provided code is there to help you understand the structure.
+    \item \textbf{Use the reference:} The provided code (and additional documentation) is there to help you understand the structure.
     \item \textbf{Experiment:} Try different parameter values and see what happens.
-    \item \textbf{Collaborate:} Discuss with your classmates, but write your own code.
+    \item \textbf{Collaborate:} Discuss with your teammates, divide the work if needed. You can also work separately and then compare your implementations.
     \item \textbf{Ask questions:} If you're stuck, ask for help!
 \end{itemize}
 
 \vspace{1cm}
 
 \noindent\textbf{Good luck and enjoy your coding!}
+
+%--------------------------------------------------------------
+
+\bibliographystyle{plain}
+\bibliography{references}
 
 \end{document}

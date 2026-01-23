@@ -56,6 +56,16 @@ If the browser does not open automatically, you can manually open it by navigati
 - Creating animations in Python to visualize system evolution.
 - Building interactive Python programs with on-click events to set initial conditions.
 
+You can see the models in action here: [https://bam-applied-math-lab.streamlit.app/]
+
+Alternatively, run them yourself in your local machine using the following command:
+
+```bash
+streamlit run ./streamlit/home.py
+```
+
+> **Note:** Requires to have the conda environment active. See the instructions above.
+
 ## SESSION 2 (LIVE IN-PERSON)
 
 - Using Python for numerical integration to solve 2D systems of nonlinear ordinary differential equations (ODEs).
