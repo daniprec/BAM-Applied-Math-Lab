@@ -7,7 +7,7 @@
     "text": "Welcome to this hands-on session on mathematical modeling using ordinary differential equations (ODEs). Today, we will explore the spruce budworm model, a classic example from ecological modeling that demonstrates how simple nonlinear systems can exhibit complex behaviors including multiple equilibria and catastrophic transitions.\n\n\nBy the end of this session, you will be able to:\n\nUnderstand the mathematical formulation of the spruce budworm model.\nImplement the model as a Python function.\nSolve the ODE numerically using scipy.integrate.solve_ivp.\nVisualize the phase portrait and identify equilibrium points.\nBuild an interactive Streamlit application to explore the model.\n\n\n\n\nThe spruce budworm is an insect that periodically devastates spruce forests. The population dynamics can be modeled by the following ODE (Strogatz 2024, chap. 3.7):\n\\[\n\\frac{dx}{dt} = rx\\left(1 - \\frac{x}{k}\\right) - \\frac{x^2}{1 + x^2}\n\\]\nwhere:\n\n\\(x(t)\\) is the budworm population (adimensional).\n\\(r\\) is the intrinsic growth rate (typically \\(r \\approx 0.5\\)).\n\\(k\\) is the carrying capacity of the forest (typically \\(k \\approx 10\\)).\n\nThe first term represents logistic growth, while the second term models predation by birds (which follows a saturating functional response).",
     "crumbs": [
       "Session 1: ODEs in 1D",
-      "Spruce Budworm Population Model"
+      "Spruce Budworm Model"
     ]
   },
   {
@@ -18,7 +18,7 @@
     "text": "Welcome to this hands-on session on mathematical modeling using ordinary differential equations (ODEs). Today, we will explore the spruce budworm model, a classic example from ecological modeling that demonstrates how simple nonlinear systems can exhibit complex behaviors including multiple equilibria and catastrophic transitions.\n\n\nBy the end of this session, you will be able to:\n\nUnderstand the mathematical formulation of the spruce budworm model.\nImplement the model as a Python function.\nSolve the ODE numerically using scipy.integrate.solve_ivp.\nVisualize the phase portrait and identify equilibrium points.\nBuild an interactive Streamlit application to explore the model.\n\n\n\n\nThe spruce budworm is an insect that periodically devastates spruce forests. The population dynamics can be modeled by the following ODE (Strogatz 2024, chap. 3.7):\n\\[\n\\frac{dx}{dt} = rx\\left(1 - \\frac{x}{k}\\right) - \\frac{x^2}{1 + x^2}\n\\]\nwhere:\n\n\\(x(t)\\) is the budworm population (adimensional).\n\\(r\\) is the intrinsic growth rate (typically \\(r \\approx 0.5\\)).\n\\(k\\) is the carrying capacity of the forest (typically \\(k \\approx 10\\)).\n\nThe first term represents logistic growth, while the second term models predation by birds (which follows a saturating functional response).",
     "crumbs": [
       "Session 1: ODEs in 1D",
-      "Spruce Budworm Population Model"
+      "Spruce Budworm Model"
     ]
   },
   {
@@ -29,7 +29,7 @@
     "text": "Implementing the ODE Function\nCreate a Python function that implements the spruce budworm differential equation. The function should follow the signature required by scipy.integrate.solve_ivp.\n\nFunction name: spruce_budworm\nParameters: t (time), x (population), r (growth rate), k (carrying capacity)\nReturn: The rate of change \\(\\frac{dx}{dt}\\).\nInclude appropriate docstring documentation.\n\nHere is a template to get you started:\ndef spruce_budworm(t: float, x: float, r: float = 0.5, k: float = 10) -&gt; float:\n    \"\"\"Docstring and type hints\"\"\"\n    # Your implementation here\n    dxdt = # fill in the equation\n    return dxdt\nWhy do we need t as an input? Although the equation does not explicitly depend on time, solve_ivp requires the function to accept time as the first argument.",
     "crumbs": [
       "Session 1: ODEs in 1D",
-      "Spruce Budworm Population Model"
+      "Spruce Budworm Model"
     ]
   },
   {
@@ -40,7 +40,7 @@
     "text": "Phase Portrait Visualization\nCreate a function that plots the rate of change \\(\\frac{dx}{dt}\\) as a function of the population \\(x\\). This phase portrait will help us visualize the equilibrium points and their stability.\n\nFunction name: plot_spruce_budworm_rate\nParameters: x_t (current population), r, k\nUse matplotlib for plotting\nPlot \\(\\frac{dx}{dt}\\) vs \\(x\\) for \\(x \\in [0, k]\\)\nIdentify and mark equilibrium points (where \\(\\frac{dx}{dt} = 0\\))\nColor-code equilibrium points:\n\nBlue circles for stable equilibria (where \\(\\frac{dx}{dt}\\) crosses zero from above).\nRed circles for unstable equilibria (where \\(\\frac{dx}{dt}\\) crosses zero from below).\n\nAdd a horizontal line at \\(y = 0\\) to indicate equilibria (null rate of change).\nLabel axes and add a title.\nMark the current population \\(x_t\\) with a vertical dashed line.\n\nFigure 1 shows an example of the expected output.\n\n\n\n\n\n\n\n\nFigure 1: Phase portrait (rate plot) of the spruce budworm model. Stable equilibria are marked in blue, unstable equilibria in red, and the current population \\(x_t\\) is shown as a green dashed line.\n\n\n\n\n\nHere are some hints to help you implement this function:\n\nYou can use np.linspace to create an array of \\(x\\) values.\nTo find zero crossings: you can look for sign changes combining np.diff and np.sign.\nStability: a fixed point is stable if \\(\\frac{dx}{dt}\\) decreases as you pass through it.\n\nReview the following definitions for clarity:\n\nEquilibrium point: A value \\(x^*\\) where \\(\\frac{dx}{dt} = 0\\).\nStable equilibrium: Small perturbations decay back to \\(x^*\\).\nUnstable equilibrium: Small perturbations grow away from \\(x^*\\).",
     "crumbs": [
       "Session 1: ODEs in 1D",
-      "Spruce Budworm Population Model"
+      "Spruce Budworm Model"
     ]
   },
   {
@@ -51,7 +51,7 @@
     "text": "Numerical Integration\nCreate a function that evolves the system forward in time using numerical integration. This function should solve the ODE and append the results to existing time and population arrays.\n\nFunction name: evolve_spruce_budworm\nInputs: t (time array), x (population array), r, k, t_eval (duration to evolve).\nUse scipy.integrate.solve_ivp with the RK45 method.\nStart from the last values in the input arrays.\nConcatenate new results to the input arrays.\nEnsure population never goes negative (use np.clip).\nReturn updated t and x arrays.\n\nHere is a template to get you started:\ndef evolve_spruce_budworm(t: np.ndarray, x: np.ndarray, ...):\n    \"\"\"Don't forget the docstring and type hints\"\"\"\n    # Define time span from last time point\n    t_span = (t[-1], t[-1] + t_eval)\n\n    # Create evaluation points, t_eval\n    # This indicates where we want the solution evaluated\n    # and should be distributed along the time span\n    # Hint: use np.linspace\n\n    # Solve the ODE\n    solution = solve_ivp(\n        fun=spruce_budworm,\n        t_span=t_span,\n        y0=[x[-1]],\n        t_eval=t_eval,\n        args=(r, k),\n        method=\"RK45\",\n    )\n    t_new = solution.t\n    x_new = solution.y[0]\n\n    # Concatenate results - Hint: use np.concatenate\n    # Ensure non-negative population - Hint: use np.clip\n\n    return t, x\nSome important notes:\n\nThe args parameter in solve_ivp passes additional arguments to your ODE function. You can see how we use it in the example above.\nInitial condition should be [x[-1]] (last population value).\nUse method=\"RK45\" for adaptive step-size Runge-Kutta integration.",
     "crumbs": [
       "Session 1: ODEs in 1D",
-      "Spruce Budworm Population Model"
+      "Spruce Budworm Model"
     ]
   },
   {
@@ -62,7 +62,7 @@
     "text": "Time Series Visualization\nCreate a function to plot the population dynamics over time. This visualization shows how the population evolves from the initial condition.\n\nFunction name: plot_spruce_budworm\nParameters: t (time array), x (population array).\nPlot time on the x-axis and population on the y-axis.\nUse green color for the trajectory.\nEnsure y-axis starts at 0 (populations cannot be negative).\nInclude grid, labels, and title.\nReturn the figure and axes objects.\n\nSee Figure 2 for an example output.\n\n\n\n\n\n\n\n\nFigure 2: Time series of the spruce budworm population generated with SciPy’s RK45 solver.",
     "crumbs": [
       "Session 1: ODEs in 1D",
-      "Spruce Budworm Population Model"
+      "Spruce Budworm Model"
     ]
   },
   {
@@ -73,7 +73,7 @@
     "text": "Building the Streamlit Application\nNow that you have all the components, create an interactive Streamlit application that allows users to explore the spruce budworm model. This will enable real-time parameter adjustment and visualization.\nWhile all the previous code could be done in Google Colab, Streamlit has to be built on your local machine. Follow the instructions in the README.md file in the repository to set up your environment.\nDesign a script, name it spruce_budworm_app.py. You will find a suggested layout below. This script will use the functions you implemented in sections Section 2 through Section 5. You can either import them from a separate module (another script you created) or paste the function definitions directly into the script. For best practices, consider creating a module (e.g., spruce_budworm_model.py) and importing the functions.\nTo test your app, run the following command in your terminal:\nstreamlit run spruce_budworm_app.py\n\nSidebar Controls\nCreate sliders for:\n\nGrowth rate \\(r\\) (range: 0.0 to 1.0, default 0.5).\nCarrying capacity \\(k\\) (range: 0.1 to 10.0, default 10.0).\nInitial population: set automatically to \\(k/10\\) (the app uses \\(x_0 = k/10\\) by default).\nTime slider for evolution (range: 1 to 100, default 10).\n\n\n\nInteractive Features\n\nDisplay the differential equation with current parameter values.\nShow the phase portrait (rate of change plot), using your function from section Section 3.\nShow the time series evolution, using your function from section Section 5.\nAdd a button to “Evolve Forward” that continues the simulation, updating the plots.\nUse st.session_state to maintain simulation state between button clicks. You will need to store the time and population arrays in the session state, otherwise they will reset on each interaction.\n\n\n\nLayout Structure\nimport streamlit as st\nimport numpy as np\nimport matplotlib.pyplot as plt\nfrom your_module import (\n    spruce_budworm,\n    plot_spruce_budworm_rate,\n    evolve_spruce_budworm,\n    plot_spruce_budworm,\n)  # Or paste your functions here\n\nst.title(\"Spruce Budworm Population Dynamics\")\n\n# Sidebar parameters (as in the app)\nr = st.sidebar.slider(\"Intrinsic growth rate (r)\", 0.0, 1.0, 0.5)\nk = st.sidebar.slider(\"Carrying capacity (k)\", 0.1, 10.0, 10.0)\n\n# The app sets the initial population to k/10 by default\nx0 = k / 10\n\n# Initialize session state\nif (\"sbw_x\" not in st.session_state):\n    st.session_state[\"sbw_t\"] = np.array([0])\n    st.session_state[\"sbw_x\"] = np.array([x0])\n\n# Time slider and control buttons\nt_eval = st.sidebar.slider(\"Time\", 1, 100, 10)\nbutton = st.sidebar.button(\"Evolve\")\n\n# Retrieve session data\nt = st.session_state[\"sbw_t\"]\nx = st.session_state[\"sbw_x\"]\n\n# Evolve if requested\nif button:\n    t, x = evolve_spruce_budworm(t, x, r=r, k=k, t_eval=t_eval)\n    st.session_state[\"sbw_t\"] = t\n    st.session_state[\"sbw_x\"] = x\n\n# Plot phase portrait and time series\nfig1, ax1 = plot_spruce_budworm_rate(x[-1], r=r, k=k)\nst.pyplot(fig1)\nfig2, ax2 = plot_spruce_budworm(t, x)\nst.pyplot(fig2)\n\n\nAdvanced Features (Optional)\n\nAdd a reset button to restart the simulation.\nShow multiple trajectories with different initial conditions.\nAdd animation of the population dynamics.",
     "crumbs": [
       "Session 1: ODEs in 1D",
-      "Spruce Budworm Population Model"
+      "Spruce Budworm Model"
     ]
   },
   {
@@ -84,7 +84,7 @@
     "text": "Exploration Questions\nOnce your simulation is working, explore the following questions:\n\nMultiple Equilibria: For \\(r = 0.5\\) and \\(k = 10\\), how many equilibrium points exist? Which are stable?\nBistability: Start with two different initial conditions (e.g., \\(x_0 = 1\\) and \\(x_0 = 8\\)). Do they converge to the same equilibrium?\nHysteresis: Slowly increase the carrying capacity \\(k\\) from 5 to 15. Then slowly decrease it back to 5. Does the population return to the same state? If you are interested in this concept, see section Section 7.1.\nOutbreak Dynamics: What happens if you start with a small population (\\(x_0 &lt; 2\\)) and the carrying capacity is large (\\(k &gt; 10\\))?\nCritical Slowing Down: When the population is near an unstable equilibrium, how long does it take to move away? Compare this to the rate of change far from equilibrium.\nParameter Space: Create a diagram showing the number of equilibria as a function of \\(r\\) and \\(k\\). Where do bifurcations occur?\n\n\nSlow-Fast Dynamics\nThe carrying capacity \\(k\\) can be interpreted as a slowly varying parameter in real ecosystems (e.g., due to seasonal changes or forest management). You can simulate this by gradually changing \\(k\\) over time in your app. This can lead to hysteresis effects, where the population does not return to its original state after \\(k\\) is restored. Experiment with this by modifying your Streamlit app to allow \\(k\\) to vary over time.",
     "crumbs": [
       "Session 1: ODEs in 1D",
-      "Spruce Budworm Population Model"
+      "Spruce Budworm Model"
     ]
   },
   {
@@ -95,7 +95,7 @@
     "text": "Mathematical Background\nIn this section I provide some additional mathematical context for the spruce budworm model. Play with your simulation to see these concepts in action!\n\nEquilibrium Analysis\nEquilibrium points satisfy:\n\\[\nrx^*\\left(1 - \\frac{x^*}{k}\\right) - \\frac{(x^*)^2}{1 + (x^*)^2} = 0\n\\]\nThis can be rewritten as:\n\\[\nrx^*\\left(1 - \\frac{x^*}{k}\\right) = \\frac{(x^*)^2}{1 + (x^*)^2}\n\\]\nThe left side represents birth rate (logistic growth), and the right side represents predation rate. Equilibria occur where these balance.\n\n\nStability Analysis\nThe stability of an equilibrium \\(x^*\\) is determined by the sign of the derivative:\n\\[\n\\frac{d}{dx}\\left(\\frac{dx}{dt}\\right)\\bigg|_{x=x^*}\n\\]\nIf this derivative is:\n\nNegative: the equilibrium is stable (attracting).\nPositive: the equilibrium is unstable (repelling).\nZero: higher-order analysis is needed.\n\n\n\nEcological Interpretation\n\nLow equilibrium: Few budworms, controlled by predation.\nHigh equilibrium: Outbreak state, budworms overwhelm predators.\nMiddle equilibrium: Usually unstable, separates the two basins of attraction.\nHysteresis: The system can “jump” between states depending on history.\n\nThis behavior explains why spruce budworm populations can suddenly explode from low levels to outbreak proportions, and why simply reducing the outbreak may not return the forest to a healthy state.",
     "crumbs": [
       "Session 1: ODEs in 1D",
-      "Spruce Budworm Population Model"
+      "Spruce Budworm Model"
     ]
   },
   {
@@ -106,7 +106,7 @@
     "text": "Resources\n\n(Strogatz 2024, chap. 3.7) for theoretical background on the spruce budworm model.\nSciPy documentation: https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html\nStreamlit documentation: https://docs.streamlit.io\nReference implementation: https://github.com/daniprec/BAM-Applied-Math-Lab/tree/main/sessions/s01_odes_1d",
     "crumbs": [
       "Session 1: ODEs in 1D",
-      "Spruce Budworm Population Model"
+      "Spruce Budworm Model"
     ]
   },
   {
