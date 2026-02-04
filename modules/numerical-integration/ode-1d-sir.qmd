@@ -1,0 +1,80 @@
+---
+title: "Session 1: 1D Ordinary Differential Equations"
+subtitle: "SIR Epidemic Model"
+author: "Daniel Precioso Garcelán"
+bibliography: ../../tex/references.bib
+format:
+  html:
+    toc: true
+    code-fold: false
+    number-sections: true
+---
+
+# Introduction {#sec-introduction}
+
+The SIR model is a classical compartmental model in epidemiology. It splits the population into:
+
+- $S(t)$: susceptible
+- $I(t)$: infected
+- $R(t)$: recovered
+
+and describes how individuals move between these compartments over time.
+
+## Learning objectives
+
+- Implement and solve a **system** of ODEs with `scipy.integrate.solve_ivp`.
+- Visualize $S(t)$, $I(t)$, and $R(t)$.
+- Interpret how the parameters $(\beta, \gamma)$ change the epidemic curve.
+
+# The SIR Model {#sec-sir-model}
+
+We will use the normalized SIR model (fractions of the population, so $S+I+R=1$):
+
+$$
+\begin{aligned}
+\dot S &= -\beta SI,\\
+\dot I &= \beta SI - \gamma I,\\
+\dot R &= \gamma I.
+\end{aligned}
+$$
+
+- $\beta$ controls infection/transmission.
+- $\gamma$ controls recovery.
+
+# Reference Implementation {#sec-reference}
+
+A working implementation is provided in:
+
+- `sessions/s01_odes_1d/sir_model.py`
+
+The model function is `sir_model(t, y, beta, gamma)` and the plotting helper is `plot_sir_model(...)`.
+
+# Render-time Figure {#sec-render-figure}
+
+The figure below is generated at render-time from the reference script.
+
+```{python}
+#| label: fig-sir
+#| fig-cap: "SIR dynamics for default parameters."
+#| fig-width: 8
+#| fig-height: 4
+#| echo: false
+
+from sessions.s01_odes_1d.sir_model import plot_sir_model
+
+plot_sir_model(beta=0.3, gamma=0.1, s0=0.99, i0=0.01, r0=0.0, t_show=160)
+```
+
+# Exploration {#sec-exploration}
+
+1. Increase $\beta$ while keeping $\gamma$ fixed. What happens to the peak of $I(t)$?
+2. Increase $\gamma$ while keeping $\beta$ fixed. Does the epidemic end sooner?
+3. Try different initial infected fractions $I(0)$. Do you always see an outbreak?
+
+# Run Locally {#sec-run-locally}
+
+To run the standalone script and show the plot:
+
+```bash
+python sessions/s01_odes_1d/sir_model.py
+```
