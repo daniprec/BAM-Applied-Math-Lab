@@ -6,11 +6,11 @@ bibliography: ../../tex/references.bib
 format: html
 ---
 
-# Introduction {#sec-introduction}
+## Introduction {#sec-introduction}
 
 Welcome to this hands-on session on mathematical modeling using ordinary differential equations (ODEs). Today, we will explore the **spruce budworm model**, a classic example from ecological modeling that demonstrates how simple nonlinear systems can exhibit complex behaviors including multiple equilibria and catastrophic transitions.
 
-## Learning Objectives
+### Learning Objectives
 
 By the end of this session, you will be able to:
 
@@ -20,7 +20,7 @@ By the end of this session, you will be able to:
 - Visualize the phase portrait and identify equilibrium points.
 - Build an interactive Streamlit application to explore the model.
 
-## The Spruce Budworm Model
+### The Spruce Budworm Model
 
 The spruce budworm is an insect that periodically devastates spruce forests. The population dynamics can be modeled by the following ODE [@strogatz2024nonlinear, chap. 3.7]:
 
@@ -36,7 +36,7 @@ where:
 
 The first term represents logistic growth, while the second term models predation by birds (which follows a saturating functional response).
 
-# Implementing the ODE Function {#sec-implementing-ode-function}
+## Implementing the ODE Function {#sec-implementing-ode-function}
 
 Create a Python function that implements the spruce budworm differential equation. The function should follow the signature required by `scipy.integrate.solve_ivp`.
 
@@ -57,7 +57,7 @@ def spruce_budworm(t: float, x: float, r: float = 0.5, k: float = 10) -> float:
 
 *Why do we need `t` as an input?* Although the equation does not explicitly depend on time, `solve_ivp` requires the function to accept time as the first argument.
 
-# Phase Portrait Visualization {#sec-phase-portrait}
+## Phase Portrait Visualization {#sec-phase-portrait}
 
 Create a function that plots the rate of change $\frac{dx}{dt}$ as a function of the population $x$. This phase portrait will help us visualize the equilibrium points and their stability.
 
@@ -108,7 +108,7 @@ Review the following definitions for clarity:
 - **Stable equilibrium**: Small perturbations decay back to $x^*$.
 - **Unstable equilibrium**: Small perturbations grow away from $x^*$.
 
-# Numerical Integration {#sec-numerical-integration}
+## Numerical Integration {#sec-numerical-integration}
 
 Create a function that evolves the system forward in time using numerical integration. This function should solve the ODE and append the results to existing time and population arrays.
 
@@ -157,7 +157,7 @@ Some important notes:
 - Initial condition should be `[x[-1]]` (last population value).
 - Use `method="RK45"` for adaptive step-size Runge-Kutta integration.
 
-# Time Series Visualization {#sec-time-series-visualization}
+## Time Series Visualization {#sec-time-series-visualization}
 
 Create a function to plot the population dynamics over time. This visualization shows how the population evolves from the initial condition.
 
@@ -196,7 +196,7 @@ plt.show()
 plt.close()
 ```
 
-# Building the Streamlit Application {#sec-streamlit-application}
+## Building the Streamlit Application {#sec-streamlit-application}
 
 Now that you have all the components, create an interactive Streamlit application that allows users to explore the spruce budworm model. This will enable real-time parameter adjustment and visualization.
 
@@ -210,7 +210,7 @@ To test your app, run the following command in your terminal:
 streamlit run spruce_budworm_app.py
 ```
 
-## Sidebar Controls
+### Sidebar Controls
 
 Create sliders for:
 
@@ -219,7 +219,7 @@ Create sliders for:
 - Initial population: set automatically to $k/10$ (the app uses $x_0 = k/10$ by default).
 - Time slider for evolution (range: 1 to 100, default 10).
 
-## Interactive Features
+### Interactive Features
 
 - Display the differential equation with current parameter values.
 - Show the phase portrait (rate of change plot), using your function from section @sec-phase-portrait.
@@ -229,7 +229,7 @@ Create sliders for:
 
 
 
-## Layout Structure
+### Layout Structure
 
 ```python
 import streamlit as st
@@ -277,13 +277,13 @@ fig2, ax2 = plot_spruce_budworm(t, x)
 st.pyplot(fig2)
 ```
 
-## Advanced Features (Optional)
+### Advanced Features (Optional)
 
 - Add a reset button to restart the simulation.
 - Show multiple trajectories with different initial conditions.
 - Add animation of the population dynamics.
 
-# Exploration Questions {#sec-exploration-questions}
+## Exploration Questions {#sec-exploration-questions}
 
 Once your simulation is working, explore the following questions:
 
@@ -294,15 +294,15 @@ Once your simulation is working, explore the following questions:
 5. **Critical Slowing Down:** When the population is near an unstable equilibrium, how long does it take to move away? Compare this to the rate of change far from equilibrium.
 6. **Parameter Space:** Create a diagram showing the number of equilibria as a function of $r$ and $k$. Where do bifurcations occur?
 
-## Slow-Fast Dynamics {#sec-slow-fast-dynamics}
+### Slow-Fast Dynamics {#sec-slow-fast-dynamics}
 
 The carrying capacity $k$ can be interpreted as a slowly varying parameter in real ecosystems (e.g., due to seasonal changes or forest management). You can simulate this by gradually changing $k$ over time in your app. This can lead to **hysteresis** effects, where the population does not return to its original state after $k$ is restored. Experiment with this by modifying your Streamlit app to allow $k$ to vary over time.
 
-# Mathematical Background {#sec-mathematical-background}
+## Mathematical Background {#sec-mathematical-background}
 
 In this section I provide some additional mathematical context for the spruce budworm model. Play with your simulation to see these concepts in action!
 
-## Equilibrium Analysis
+### Equilibrium Analysis
 
 Equilibrium points satisfy:
 
@@ -318,7 +318,7 @@ $$
 
 The left side represents birth rate (logistic growth), and the right side represents predation rate. Equilibria occur where these balance.
 
-## Stability Analysis {#sec-stability-analysis}
+### Stability Analysis {#sec-stability-analysis}
 
 The stability of an equilibrium $x^*$ is determined by the sign of the derivative:
 
@@ -332,7 +332,7 @@ If this derivative is:
 - Positive: the equilibrium is unstable (repelling).
 - Zero: higher-order analysis is needed.
 
-## Ecological Interpretation
+### Ecological Interpretation
 
 - **Low equilibrium:** Few budworms, controlled by predation.
 - **High equilibrium:** Outbreak state, budworms overwhelm predators.
@@ -341,7 +341,7 @@ If this derivative is:
 
 This behavior explains why spruce budworm populations can suddenly explode from low levels to outbreak proportions, and why simply reducing the outbreak may not return the forest to a healthy state.
 
-# Resources
+## Resources
 
 - [@strogatz2024nonlinear, chap. 3.7] for theoretical background on the spruce budworm model.
 - SciPy documentation: <https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html>

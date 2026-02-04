@@ -6,7 +6,7 @@ bibliography: ../../tex/references.bib
 format: html
 ---
 
-# Introduction {#sec-introduction}
+## Introduction {#sec-introduction}
 
 In Session 1 we studied 1D ODEs, where the geometry is simple: trajectories move along a line and equilibria are points where $\dot x = 0$.
 In **2D**, the state is $(x(t), y(t))$ and trajectories live in the **phase plane**. This unlocks new qualitative behaviors: spirals, limit cycles, excitability, and relaxation oscillations.
@@ -19,7 +19,7 @@ In the course material, we will use several 2D models (CDIMA reaction, Van der P
 - animate the trajectory with `matplotlib.animation`
 - restart the simulation interactively using mouse clicks
 
-## Learning Objectives
+### Learning Objectives
 
 By the end of this session, you will be able to:
 
@@ -30,7 +30,7 @@ By the end of this session, you will be able to:
 - Create a Matplotlib animation that updates plot elements per frame.
 - Add an on-click event to change initial conditions/parameters and restart the animation.
 
-# What Do We Need? {#sec-what-do-we-need}
+## What Do We Need? {#sec-what-do-we-need}
 
 This session uses the same stack as in the slides:
 
@@ -41,7 +41,7 @@ This session uses the same stack as in the slides:
 
 We will not use Streamlit here because Matplotlib animations + click interactions are not as straightforward to embed in Streamlit (as of the time of writing).
 
-# The FitzHugh–Nagumo Model {#sec-fhn-model}
+## The FitzHugh–Nagumo Model {#sec-fhn-model}
 
 The FitzHugh–Nagumo (FHN) model is a 2D reduction of the Hodgkin–Huxley neuron model and a classical example of an **excitable system** and **relaxation oscillator**.
 
@@ -62,7 +62,7 @@ where:
 - $\epsilon \ll 1$ controls time-scale separation
 - $\alpha,\gamma$ shape the nonlinearities
 
-# Implementing the ODE Function {#sec-implementing-ode-function}
+## Implementing the ODE Function {#sec-implementing-ode-function}
 
 `solve_ivp` expects a function with the signature:
 
@@ -93,7 +93,7 @@ def fitzhugh_nagumo(
 
 Even if the equations do not explicitly depend on time, `t` must be present because `solve_ivp` will call the function as `fun(t, y)`.
 
-# Numerical Integration in 2D {#sec-numerical-integration-2d}
+## Numerical Integration in 2D {#sec-numerical-integration-2d}
 
 To integrate a trajectory from an initial condition $(v_0, w_0)$ over a time interval $[t_0, t_f]$:
 
@@ -121,7 +121,7 @@ v, w = sol.y  # v = sol.y[0], w = sol.y[1]
 
 The output `sol.y` is a 2-by-$N$ array, with each row being a time series for one variable.
 
-# Phase Plane: Trajectories, Nullclines, Fixed Points {#sec-phase-plane}
+## Phase Plane: Trajectories, Nullclines, Fixed Points {#sec-phase-plane}
 
 In the **phase plane**, we plot $w$ versus $v$. A trajectory is the parametric curve:
 $$ (v(t), w(t)). $$
@@ -133,7 +133,7 @@ Two key geometric objects help interpret the flow:
   - $\dot w = 0$ (the $w$-nullcline)
 - **Fixed points**: intersections of nullclines, where $\dot v = \dot w = 0$.
 
-## Nullclines (Analytical) {#sec-nullclines-analytical}
+### Nullclines (Analytical) {#sec-nullclines-analytical}
 
 For the FHN system we can write nullclines explicitly.
 
@@ -147,7 +147,7 @@ $$v - \gamma w = 0 \quad\Rightarrow\quad w = \frac{v}{\gamma}.$$
 
 These are often faster and cleaner than numerical approximations.
 
-## Nullclines (Numerical) {#sec-nullclines-numerical}
+### Nullclines (Numerical) {#sec-nullclines-numerical}
 
 In many models, nullclines are not available in closed form. A robust numerical alternative is:
 
@@ -157,7 +157,7 @@ In many models, nullclines are not available in closed form. A robust numerical 
 
 The repository includes a general helper in `sessions/s02_odes_2d/cdima.py` called `compute_nullclines` that does exactly this (it is reused by the baseline FHN script).
 
-## Fixed Point via `fsolve` {#sec-fixed-point}
+### Fixed Point via `fsolve` {#sec-fixed-point}
 
 To locate a fixed point, we solve
 $$F(v,w) = (\dot v, \dot w) = (0,0).$$
@@ -180,7 +180,7 @@ fp = fixed_point(fitzhugh_nagumo, guess=np.array([0.0, 0.0]), args=args)
 print(fp)  # [v*, w*]
 ```
 
-# Plotting: Static Figure {#sec-static-plot}
+## Plotting: Static Figure {#sec-static-plot}
 
 Before animating anything, build a static figure:
 
@@ -204,7 +204,7 @@ fig, axs = plt.subplots(figsize=(10, 5), nrows=2, ncols=2, height_ratios=[5, 1])
 
 This lets you combine the phase plane, time series, and a simple parameter indicator (e.g. a vertical line showing the current $I_{\mathrm{app}}$).
 
-# Plotting: Animation {#sec-animation}
+## Plotting: Animation {#sec-animation}
 
 To animate a trajectory, we initialize line objects (empty data) and update them every frame.
 
@@ -232,7 +232,7 @@ ani = animation.FuncAnimation(
 
 Key idea: the animation function must **return the artists** that changed, otherwise `blit=True` cannot efficiently redraw.
 
-# Updating an Existing Animation {#sec-restart-animation}
+## Updating an Existing Animation {#sec-restart-animation}
 
 To restart an animation after changing initial conditions or parameters (pattern used in the baseline scripts):
 
@@ -245,7 +245,7 @@ ani.event_source.start()
 
 This is equivalent to stopping, clearing frames, changing the `fargs`, and starting again.
 
-# User Interaction (On Click) {#sec-interaction}
+## User Interaction (On Click) {#sec-interaction}
 
 Matplotlib can react to user mouse clicks via `mpl_connect`.
 
@@ -273,7 +273,7 @@ In the provided script, clicking in:
 
 and the animation restarts using the new data.
 
-# Baseline Code to Run {#sec-baseline}
+## Baseline Code to Run {#sec-baseline}
 
 The repository already contains a complete interactive implementation for the FitzHugh–Nagumo model:
 
@@ -291,7 +291,7 @@ Try the following interactions:
 - click in the bottom-left axis to change $I_{\mathrm{app}}$
 - observe how the trajectory, nullclines, and fixed point update
 
-# Work in Pairs (Suggested Division) {#sec-work-in-pairs}
+## Work in Pairs (Suggested Division) {#sec-work-in-pairs}
 
 This matches the workflow in the slides:
 
@@ -307,7 +307,7 @@ This matches the workflow in the slides:
 - animate the trajectory
 - add a second plot (bonus): $v(t)$ vs time
 
-# Homework {#sec-homework}
+## Homework {#sec-homework}
 
 Implement the animation for **one** of the following models (your choice), in a single script:
 
@@ -324,12 +324,12 @@ When you run the script, it should show a figure with:
 
 **Extra mile**: make the figure interactive so that the user can click to set the initial condition and the animation restarts.
 
-# Exploration Questions {#sec-exploration-questions}
+## Exploration Questions {#sec-exploration-questions}
 
 1. For fixed $(\alpha, \gamma, \epsilon)$, how does the qualitative behavior change as you increase $I_{\mathrm{app}}$?
 2. Pick two initial conditions on different sides of the nullclines. Do trajectories converge to the same attractor?
 3. Use the analytical nullclines for FHN and compare them to the numerical nullclines computed on a grid. When does the numerical approximation look noisy, and how can you improve it?
 
-# Next Session {#sec-next}
+## Next Session {#sec-next}
 
 Next: reaction–diffusion systems (Gray–Scott), Laplacians with NumPy, Matplotlib animations, and user interactions.
