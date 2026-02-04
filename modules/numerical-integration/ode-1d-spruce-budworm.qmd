@@ -77,11 +77,28 @@ Create a function that plots the rate of change $\frac{dx}{dt}$ as a function of
 - Label axes and add a title.
 - Mark the current population $x_t$ with a vertical dashed line.
 
-\newpage
+@fig-graph shows an example of the expected output.
 
-Figure @fig-graph shows an example of the expected output.
+```{python}
+#| label: fig-graph
+#| fig-cap: "Phase portrait (rate plot) of the spruce budworm model. Stable equilibria are marked in blue, unstable equilibria in red, and the current population $x_t$ is shown as a green dashed line."
+#| fig-width: 8
+#| fig-height: 4
+#| echo: false
 
-![Example phase portrait of the spruce budworm model showing stable (blue) and unstable (red) equilibria. The green dashed line indicates the current population $x_t$. Where do you think this population will evolve?](../../img/s01_spruce_budworm.png){#fig-graph width=80%}
+import matplotlib.pyplot as plt
+import numpy as np
+
+from sessions.s01_odes_1d.spruce_budworm import plot_spruce_budworm_rate
+
+r = 0.5
+k = 10.0
+x_t = k / 10
+
+plot_spruce_budworm_rate(x_t, r=r, k=k)
+plt.show()
+plt.close()
+```
 
 Here are some hints to help you implement this function:
 
@@ -94,8 +111,6 @@ Review the following definitions for clarity:
 - **Equilibrium point**: A value $x^*$ where $\frac{dx}{dt} = 0$.
 - **Stable equilibrium**: Small perturbations decay back to $x^*$.
 - **Unstable equilibrium**: Small perturbations grow away from $x^*$.
-
-\newpage
 
 # Numerical Integration {#sec-numerical-integration}
 
@@ -158,11 +173,32 @@ Create a function to plot the population dynamics over time. This visualization 
 - Include grid, labels, and title.
 - Return the figure and axes objects.
 
-See Figure @fig-time-series for an example output.
+See @fig-time-series for an example output.
 
-![Example time series of the spruce budworm population over time.](../../img/s01_spruce_budworm_evolution.png){#fig-time-series width=80%}
+```{python}
+#| label: fig-time-series
+#| fig-cap: "Time series of the spruce budworm population generated with SciPy's RK45 solver."
+#| fig-width: 8
+#| fig-height: 4
+#| echo: false
 
-\newpage
+import matplotlib.pyplot as plt
+import numpy as np
+
+from sessions.s01_odes_1d.spruce_budworm import evolve_spruce_budworm, plot_spruce_budworm
+
+r = 0.5
+k = 10.0
+t = np.array([0.0])
+x = np.array([k / 10])
+
+for _ in range(5):
+    t, x = evolve_spruce_budworm(t, x, r=r, k=k, t_eval=10)
+
+plot_spruce_budworm(t, x)
+plt.show()
+plt.close()
+```
 
 # Building the Streamlit Application {#sec-streamlit-application}
 
@@ -195,7 +231,7 @@ Create sliders for:
 - Add a button to “Evolve Forward” that continues the simulation, updating the plots.
 - Use `st.session_state` to maintain simulation state between button clicks. You will need to store the time and population arrays in the session state, otherwise they will reset on each interaction.
 
-\newpage
+
 
 ## Layout Structure
 
@@ -266,8 +302,6 @@ Once your simulation is working, explore the following questions:
 
 The carrying capacity $k$ can be interpreted as a slowly varying parameter in real ecosystems (e.g., due to seasonal changes or forest management). You can simulate this by gradually changing $k$ over time in your app. This can lead to **hysteresis** effects, where the population does not return to its original state after $k$ is restored. Experiment with this by modifying your Streamlit app to allow $k$ to vary over time.
 
-\newpage
-
 # Deliverable {#sec-deliverable}
 
 Implement the complete Streamlit application as described above, following sections @sec-implementing-ode-function through @sec-streamlit-application. Ensure that all functions are correctly defined and integrated into the app. Test the application thoroughly to confirm that it behaves as expected.
@@ -280,8 +314,6 @@ If you want to go the extra mile, here are some additional challenges you can ta
 - Deploy your Streamlit app using Streamlit Cloud or another hosting service. Share the link in your report.
 - Implement some of the advanced features mentioned in section @sec-streamlit-application.
 - Instead of using SciPy's built-in ODE solver, implement your own simple Euler or Runge-Kutta integrator and compare results.
-
-\newpage
 
 # Mathematical Background {#sec-mathematical-background}
 
