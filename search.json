@@ -125,14 +125,22 @@
     "href": "modules/ode-1d/sir.html",
     "title": "1D Ordinary Differential Equations",
     "section": "",
-    "text": "The SIR model is a classical compartmental model in epidemiology. It splits the population into:\n\n\\(S(t)\\): susceptible\n\\(I(t)\\): infected\n\\(R(t)\\): recovered\n\nand describes how individuals move between these compartments over time.\n\n\n\nImplement and solve a system of ODEs with scipy.integrate.solve_ivp.\nVisualize \\(S(t)\\), \\(I(t)\\), and \\(R(t)\\).\nInterpret how the parameters \\((\\beta, \\gamma)\\) change the epidemic curve."
+    "text": "The SIR model is a classical compartmental model in epidemiology. It splits the population into:\n\n\\(S(t)\\): susceptible\n\\(I(t)\\): infected\n\\(R(t)\\): recovered\n\nand describes how individuals move between these compartments over time.\n\n\n\nImplement and solve a system of ODEs with scipy.integrate.solve_ivp.\nVisualize \\(S(t)\\), \\(I(t)\\), and \\(R(t)\\).\nInterpret how the parameters \\((\\beta, \\gamma)\\) change the epidemic curve.",
+    "crumbs": [
+      "Session 1: ODEs in 1D",
+      "SIR Epidemic Model"
+    ]
   },
   {
     "objectID": "modules/ode-1d/sir.html#learning-objectives",
     "href": "modules/ode-1d/sir.html#learning-objectives",
     "title": "1D Ordinary Differential Equations",
     "section": "",
-    "text": "Implement and solve a system of ODEs with scipy.integrate.solve_ivp.\nVisualize \\(S(t)\\), \\(I(t)\\), and \\(R(t)\\).\nInterpret how the parameters \\((\\beta, \\gamma)\\) change the epidemic curve."
+    "text": "Implement and solve a system of ODEs with scipy.integrate.solve_ivp.\nVisualize \\(S(t)\\), \\(I(t)\\), and \\(R(t)\\).\nInterpret how the parameters \\((\\beta, \\gamma)\\) change the epidemic curve.",
+    "crumbs": [
+      "Session 1: ODEs in 1D",
+      "SIR Epidemic Model"
+    ]
   },
   {
     "objectID": "modules/ode-1d/assignment.html",
@@ -392,21 +400,7 @@
     "href": "modules/ode-1d/index.html",
     "title": "Numerical Integration",
     "section": "",
-    "text": "Numerical integration is fundamental for solving ordinary differential equations (ODEs) that don’t have analytical solutions. In this module, you’ll learn how to:\n\nFormulate ODEs in Python\nUse SciPy’s solve_ivp to numerically integrate ODEs\nVisualize solutions and explore parameter spaces\nApply these techniques to real-world models"
-  },
-  {
-    "objectID": "modules/ode-1d/index.html#session-1-1d-odes",
-    "href": "modules/ode-1d/index.html#session-1-1d-odes",
-    "title": "Numerical Integration",
-    "section": "Session 1: 1D ODEs",
-    "text": "Session 1: 1D ODEs\n\nSIR Epidemic Model\nMichaelis–Menten Enzyme Kinetics\nSpruce Budworm Population Model\nAssignment"
-  },
-  {
-    "objectID": "modules/ode-1d/index.html#session-2-2d-odes",
-    "href": "modules/ode-1d/index.html#session-2-2d-odes",
-    "title": "Numerical Integration",
-    "section": "Session 2: 2D ODEs",
-    "text": "Session 2: 2D ODEs\n\nCDIMA Reaction\nVan der Pol Oscillator\nFitzHugh–Nagumo Model\nAssignment"
+    "text": "Introduction\nNumerical integration is fundamental for solving ordinary differential equations (ODEs) that don’t have analytical solutions. In this module, you’ll learn how to:\n\nFormulate ODEs in Python\nUse SciPy’s solve_ivp to numerically integrate ODEs\nVisualize solutions and explore parameter spaces\nApply these techniques to real-world models\n\n\n\nContents\n\nSIR Epidemic Model\nMichaelis–Menten Enzyme Kinetics\nSpruce Budworm Population Model\nAssignment\n\n\n\nThe Initial Value Problem\nAn initial value problem (IVP) consists of:\n\\[\\frac{dy}{dt} = f(t, y), \\quad y(t_0) = y_0\\]\nWhere: - \\(f(t, y)\\) is the rate of change function - \\(y_0\\) is the initial condition at time \\(t_0\\)\n\n\nSciPy’s solve_ivp\nThe scipy.integrate.solve_ivp function is the standard tool for solving ODEs in Python. Try the following code:\nimport numpy as np\nfrom scipy.integrate import solve_ivp\n\ndef exponential_decay(t, y):\n     return -0.5 * y\n\nt_span = [0, 10]\ny0 = [2, 4, 8]\nsol = solve_ivp(\n    fun=exponential_decay,\n    t_span=t_span, \n    y0=y0)\n\nprint(sol.t)\n\nprint(sol.y)\nHow does solve_ivp work? Let’s understand its parameters (copied from the documentation):\n\nfun: Right-hand side of the system: the time derivative of the state \\(y\\) at time \\(t\\). The calling signature is fun(t, y), where t is a scalar and y is an ndarray with len(y) = len(y0). Additional arguments need to be passed if args is used (see documentation of args argument). fun must return an array of the same shape as y. In our example, exponential_decay defines the ODE \\(\\frac{dy}{dt} = -0.5y\\), which models exponential decay \\(y(t) = y_0 e^{-0.5t}\\).\nt_span: Interval of integration \\((t_0, t_f)\\). The solver starts with \\(t=t_0\\) and integrates until it reaches \\(t=t_f\\). Both \\(t_0\\) and \\(t_f\\) must be floats or values interpretable by the float conversion function.\ny0: Initial state. For problems in the complex domain, pass y0 with a complex data type (even if the initial value is purely real).\n\nYou can also specify additional parameters: - method: Integration method to use. Common choices include 'RK45' (default), 'RK23', 'DOP853', 'Radau', 'BDF', and 'LSODA'. - t_eval: Times at which to store the computed solution, must be sorted and lie within t_span. If None (default), use points selected by the solver. - args: Additional arguments to pass to the user-defined functions. If, for example, fun has the signature fun(t, y, a, b, c), then args=(a, b, c).\n\n\nSystems of ODEs\nFor multiple coupled equations, return a list or array of derivatives:\ndef sir_model(t, y, beta, gamma):\n    S, I, R = y\n    N = S + I + R\n    \n    dSdt = -beta * S * I / N\n    dIdt = beta * S * I / N - gamma * I\n    dRdt = gamma * I\n    \n    return [dSdt, dIdt, dRdt]\n\n\nBest Practices\n\nAlways check convergence: Plot solutions at different tolerances\nUse appropriate methods: 'RK45' (default) works well for most problems\nVectorize when possible: Makes code faster and cleaner\nDocument parameters: Keep track of units and meanings\nValidate against known solutions: Test your implementation\n\n\n\nNext Steps\nApply these techniques to the classical models in Session 1: - SIR epidemiological model - Spruce budworm population dynamics - Michaelis–Menten enzyme kinetics\n\n\nResources\n\nSciPy solve_ivp documentation\nPython for ODEs tutorial"
   },
   {
     "objectID": "modules/ode-1d/michaelis-menten.html",
