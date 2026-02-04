@@ -1,0 +1,339 @@
+---
+title: "Session 2: 2D Ordinary Differential Equations"
+subtitle: "Phase Plane, Nullclines, Animation, and Interaction (FitzHugh–Nagumo)"
+author: "Daniel Precioso Garcelán"
+bibliography: ../../tex/references.bib
+format:
+  html:
+    toc: true
+    code-fold: false
+    number-sections: true
+---
+
+# Introduction {#sec-introduction}
+
+In Session 1 we studied 1D ODEs, where the geometry is simple: trajectories move along a line and equilibria are points where $\dot x = 0$.
+In **2D**, the state is $(x(t), y(t))$ and trajectories live in the **phase plane**. This unlocks new qualitative behaviors: spirals, limit cycles, excitability, and relaxation oscillations.
+
+In the course material, we will use several 2D models (CDIMA reaction, Van der Pol, FitzHugh–Nagumo). In this session we focus on the **workflow**:
+
+- integrate a system with `scipy.integrate.solve_ivp`
+- visualize trajectories in the phase plane
+- compute **nullclines** and **fixed points**
+- animate the trajectory with `matplotlib.animation`
+- restart the simulation interactively using mouse clicks
+
+## Learning Objectives
+
+By the end of this session, you will be able to:
+
+- Implement a 2D ODE in the signature expected by `solve_ivp`.
+- Compute and plot phase-plane trajectories.
+- Compute nullclines (analytically when possible, numerically otherwise).
+- Locate fixed points using `scipy.optimize.fsolve`.
+- Create a Matplotlib animation that updates plot elements per frame.
+- Add an on-click event to change initial conditions/parameters and restart the animation.
+
+# What Do We Need? {#sec-what-do-we-need}
+
+This session uses the same stack as in the slides:
+
+- `scipy`: `solve_ivp()` to integrate the ODEs; `fsolve()` to compute fixed points.
+- `matplotlib.pyplot`: create the figure/axes and plot static elements.
+- `matplotlib.animation`: update plot elements over time (animations).
+- `matplotlib.backend_bases`: on-click events to interact with the model.
+
+We will not use Streamlit here because Matplotlib animations + click interactions are not as straightforward to embed in Streamlit (as of the time of writing).
+
+# The FitzHugh–Nagumo Model {#sec-fhn-model}
+
+The FitzHugh–Nagumo (FHN) model is a 2D reduction of the Hodgkin–Huxley neuron model and a classical example of an **excitable system** and **relaxation oscillator**.
+
+We will use the following nondimensional form (matching the baseline code in `sessions/s02_odes_2d/fitzhugh_nagumo.py`):
+
+$$
+\begin{aligned}
+\dot v &= \frac{1}{\epsilon}\Big(v(1-v)(v-\alpha) - w + I_{\mathrm{app}}\Big)\\
+\dot w &= v - \gamma w
+\end{aligned}
+$$
+
+where:
+
+- $v$ is the fast variable (membrane potential-like)
+- $w$ is the slow recovery variable
+- $I_{\mathrm{app}}$ is an applied current (control parameter)
+- $\epsilon \ll 1$ controls time-scale separation
+- $\alpha,\gamma$ shape the nonlinearities
+
+# Implementing the ODE Function {#sec-implementing-ode-function}
+
+`solve_ivp` expects a function with the signature:
+
+```python
+f(t, y, *args) -> dy_dt
+```
+
+where `y` is a vector (here, `y = [v, w]`). A minimal implementation is:
+
+```python
+import numpy as np
+
+
+def fitzhugh_nagumo(
+	t: float,
+	vw: np.ndarray,
+	i_app: float = 0.5,
+	gamma: float = 0.5,
+	alpha: float = 0.1,
+	epsilon: float = 0.01,
+) -> np.ndarray:
+	v, w = vw
+	fv = v * (1 - v) * (v - alpha)
+	dvdt = (fv - w + i_app) / epsilon
+	dwdt = v - gamma * w
+	return np.array([dvdt, dwdt])
+```
+
+Even if the equations do not explicitly depend on time, `t` must be present because `solve_ivp` will call the function as `fun(t, y)`.
+
+# Numerical Integration in 2D {#sec-numerical-integration-2d}
+
+To integrate a trajectory from an initial condition $(v_0, w_0)$ over a time interval $[t_0, t_f]$:
+
+```python
+import numpy as np
+from scipy.integrate import solve_ivp
+
+t_span = (0.0, 10.0)
+t_eval = np.arange(t_span[0], t_span[1], 0.01)
+
+y0 = [0.0, 0.0]  # [v0, w0]
+args = (0.1, 0.5, 0.1, 0.01)  # (i_app, gamma, alpha, epsilon)
+
+sol = solve_ivp(
+	fun=fitzhugh_nagumo,
+	t_span=t_span,
+	y0=y0,
+	t_eval=t_eval,
+	method="RK45",
+	args=args,
+)
+
+v, w = sol.y  # v = sol.y[0], w = sol.y[1]
+```
+
+The output `sol.y` is a 2-by-$N$ array, with each row being a time series for one variable.
+
+# Phase Plane: Trajectories, Nullclines, Fixed Points {#sec-phase-plane}
+
+In the **phase plane**, we plot $w$ versus $v$. A trajectory is the parametric curve:
+$$ (v(t), w(t)). $$
+
+Two key geometric objects help interpret the flow:
+
+- **Nullclines**: curves where one derivative is zero.
+  - $\dot v = 0$ (the $v$-nullcline)
+  - $\dot w = 0$ (the $w$-nullcline)
+- **Fixed points**: intersections of nullclines, where $\dot v = \dot w = 0$.
+
+## Nullclines (Analytical) {#sec-nullclines-analytical}
+
+For the FHN system we can write nullclines explicitly.
+
+Because $\dot v = 0$ is equivalent to the numerator being zero,
+
+$$v(1-v)(v-\alpha) - w + I_{\mathrm{app}} = 0 \quad\Rightarrow\quad w = v(1-v)(v-\alpha) + I_{\mathrm{app}}.$$
+
+And from $\dot w = 0$:
+
+$$v - \gamma w = 0 \quad\Rightarrow\quad w = \frac{v}{\gamma}.$$
+
+These are often faster and cleaner than numerical approximations.
+
+## Nullclines (Numerical) {#sec-nullclines-numerical}
+
+In many models, nullclines are not available in closed form. A robust numerical alternative is:
+
+1. create a grid in $(v, w)$
+2. evaluate $(\dot v, \dot w)$ on the grid
+3. find **sign changes** (zero crossings) of $\dot v$ and $\dot w$
+
+The repository includes a general helper in `sessions/s02_odes_2d/cdima.py` called `compute_nullclines` that does exactly this (it is reused by the baseline FHN script).
+
+## Fixed Point via `fsolve` {#sec-fixed-point}
+
+To locate a fixed point, we solve
+$$F(v,w) = (\dot v, \dot w) = (0,0).$$
+
+Numerically, `scipy.optimize.fsolve` can find a root near an initial guess:
+
+```python
+import numpy as np
+from scipy.optimize import fsolve
+
+
+def fixed_point(system_func, guess, args):
+	def F(x):
+		return system_func(None, x, *args)
+
+	return fsolve(F, guess)
+
+
+fp = fixed_point(fitzhugh_nagumo, guess=np.array([0.0, 0.0]), args=args)
+print(fp)  # [v*, w*]
+```
+
+# Plotting: Static Figure {#sec-static-plot}
+
+Before animating anything, build a static figure:
+
+- phase plane: nullclines + fixed point + trajectory
+- time series: one variable (e.g., $v(t)$)
+
+Typical Matplotlib keywords you will use:
+
+- `lw`: line width
+- `linestyle`: `"-"`, `"--"`, `"None"`
+- `marker`: `"o"`, `"+"`, `"*"`, ...
+- `markersize`: size of markers
+- `color`: `"blue"`, `"red"`, ...
+- `label`: legend label
+
+In the baseline script you will find a multi-panel layout created via:
+
+```python
+fig, axs = plt.subplots(figsize=(10, 5), nrows=2, ncols=2, height_ratios=[5, 1])
+```
+
+This lets you combine the phase plane, time series, and a simple parameter indicator (e.g. a vertical line showing the current $I_{\mathrm{app}}$).
+
+# Plotting: Animation {#sec-animation}
+
+To animate a trajectory, we initialize line objects (empty data) and update them every frame.
+
+The core pattern is:
+
+```python
+import matplotlib.animation as animation
+
+
+def animate(i: int, xy: np.ndarray):
+	x, y = xy
+	line.set_data(x[:i], y[:i])
+	return (line,)
+
+
+ani = animation.FuncAnimation(
+	fig,
+	animate,
+	fargs=(sol.y,),
+	frames=len(t_eval),
+	interval=1,
+	blit=True,
+)
+```
+
+Key idea: the animation function must **return the artists** that changed, otherwise `blit=True` cannot efficiently redraw.
+
+# Updating an Existing Animation {#sec-restart-animation}
+
+To restart an animation after changing initial conditions or parameters (pattern used in the baseline scripts):
+
+```python
+ani.event_source.stop()
+ani.frame_seq = ani.new_frame_seq()
+ani._args = (new_data, ...)
+ani.event_source.start()
+```
+
+This is equivalent to stopping, clearing frames, changing the `fargs`, and starting again.
+
+# User Interaction (On Click) {#sec-interaction}
+
+Matplotlib can react to user mouse clicks via `mpl_connect`.
+
+Minimal pattern:
+
+```python
+from matplotlib.backend_bases import MouseEvent
+
+
+def mouse_click(event: MouseEvent):
+	if event.inaxes == ax_phase:
+		v0 = event.xdata
+		w0 = event.ydata
+		# recompute trajectory, nullclines, fixed point
+		# restart animation
+
+
+fig.canvas.mpl_connect("button_press_event", mouse_click)
+```
+
+In the provided script, clicking in:
+
+- the **phase plane** sets the new initial condition $(v_0, w_0)$
+- the **parameter axis** sets a new $I_{\mathrm{app}}$
+
+and the animation restarts using the new data.
+
+# Baseline Code to Run {#sec-baseline}
+
+The repository already contains a complete interactive implementation for the FitzHugh–Nagumo model:
+
+- `sessions/s02_odes_2d/fitzhugh_nagumo.py`
+
+From the repository root, run:
+
+```bash
+python sessions/s02_odes_2d/fitzhugh_nagumo.py
+```
+
+Try the following interactions:
+
+- click in the phase plane to set $(v_0, w_0)$
+- click in the bottom-left axis to change $I_{\mathrm{app}}$
+- observe how the trajectory, nullclines, and fixed point update
+
+# Work in Pairs (Suggested Division) {#sec-work-in-pairs}
+
+This matches the workflow in the slides:
+
+**Task A: Phase Plane (Math + SciPy + NumPy)**
+
+- integrate a trajectory with `solve_ivp`
+- compute nullclines (analytical if possible, or numerical on a grid)
+- compute a fixed point with `fsolve`
+
+**Task B: Plot + Animation (Matplotlib)**
+
+- plot nullclines + fixed point + trajectory
+- animate the trajectory
+- add a second plot (bonus): $v(t)$ vs time
+
+# Homework {#sec-homework}
+
+Implement the animation for **one** of the following models (your choice), in a single script:
+
+- Van der Pol
+- FitzHugh–Nagumo
+
+When you run the script, it should show a figure with:
+
+- nullclines
+- fixed point
+- animated trajectory
+
+**Bonus**: animate a second plot (in the same figure) with the evolution of one variable in time.
+
+**Extra mile**: make the figure interactive so that the user can click to set the initial condition and the animation restarts.
+
+# Exploration Questions {#sec-exploration-questions}
+
+1. For fixed $(\alpha, \gamma, \epsilon)$, how does the qualitative behavior change as you increase $I_{\mathrm{app}}$?
+2. Pick two initial conditions on different sides of the nullclines. Do trajectories converge to the same attractor?
+3. Use the analytical nullclines for FHN and compare them to the numerical nullclines computed on a grid. When does the numerical approximation look noisy, and how can you improve it?
+
+# Next Session {#sec-next}
+
+Next: reaction–diffusion systems (Gray–Scott), Laplacians with NumPy, Matplotlib animations, and user interactions.
