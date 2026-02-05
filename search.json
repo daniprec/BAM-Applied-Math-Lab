@@ -2,20 +2,9 @@
   {
     "objectID": "modules/ode-1d/spruce-budworm.html",
     "href": "modules/ode-1d/spruce-budworm.html",
-    "title": "1D Ordinary Differential Equations",
+    "title": "Spruce Budworm Model",
     "section": "",
-    "text": "Welcome to this hands-on session on mathematical modeling using ordinary differential equations (ODEs). Today, we will explore the spruce budworm model, a classic example from ecological modeling that demonstrates how simple nonlinear systems can exhibit complex behaviors including multiple equilibria and catastrophic transitions.\n\n\nBy the end of this session, you will be able to:\n\nUnderstand the mathematical formulation of the spruce budworm model.\nImplement the model as a Python function.\nSolve the ODE numerically using scipy.integrate.solve_ivp.\nVisualize the phase portrait and identify equilibrium points.\nBuild an interactive Streamlit application to explore the model.\n\n\n\n\nThe spruce budworm is an insect that periodically devastates spruce forests. The population dynamics can be modeled by the following ODE (Strogatz 2024, chap. 3.7):\n\\[\n\\frac{dx}{dt} = rx\\left(1 - \\frac{x}{k}\\right) - \\frac{x^2}{1 + x^2}\n\\]\nwhere:\n\n\\(x(t)\\) is the budworm population (adimensional).\n\\(r\\) is the intrinsic growth rate (typically \\(r \\approx 0.5\\)).\n\\(k\\) is the carrying capacity of the forest (typically \\(k \\approx 10\\)).\n\nThe first term represents logistic growth, while the second term models predation by birds (which follows a saturating functional response).",
-    "crumbs": [
-      "Session 1: ODEs in 1D",
-      "Spruce Budworm Model"
-    ]
-  },
-  {
-    "objectID": "modules/ode-1d/spruce-budworm.html#sec-introduction",
-    "href": "modules/ode-1d/spruce-budworm.html#sec-introduction",
-    "title": "1D Ordinary Differential Equations",
-    "section": "",
-    "text": "Welcome to this hands-on session on mathematical modeling using ordinary differential equations (ODEs). Today, we will explore the spruce budworm model, a classic example from ecological modeling that demonstrates how simple nonlinear systems can exhibit complex behaviors including multiple equilibria and catastrophic transitions.\n\n\nBy the end of this session, you will be able to:\n\nUnderstand the mathematical formulation of the spruce budworm model.\nImplement the model as a Python function.\nSolve the ODE numerically using scipy.integrate.solve_ivp.\nVisualize the phase portrait and identify equilibrium points.\nBuild an interactive Streamlit application to explore the model.\n\n\n\n\nThe spruce budworm is an insect that periodically devastates spruce forests. The population dynamics can be modeled by the following ODE (Strogatz 2024, chap. 3.7):\n\\[\n\\frac{dx}{dt} = rx\\left(1 - \\frac{x}{k}\\right) - \\frac{x^2}{1 + x^2}\n\\]\nwhere:\n\n\\(x(t)\\) is the budworm population (adimensional).\n\\(r\\) is the intrinsic growth rate (typically \\(r \\approx 0.5\\)).\n\\(k\\) is the carrying capacity of the forest (typically \\(k \\approx 10\\)).\n\nThe first term represents logistic growth, while the second term models predation by birds (which follows a saturating functional response).",
+    "text": "The spruce budworm is an insect that periodically devastates spruce forests. The population dynamics can be modeled by the following ODE (Strogatz 2024, chap. 3.7):\n\\[\n\\frac{dx}{dt} = rx\\left(1 - \\frac{x}{k}\\right) - \\frac{x^2}{1 + x^2}\n\\]\nwhere:\nThe first term represents logistic growth, while the second term models predation by birds (which follows a saturating functional response).",
     "crumbs": [
       "Session 1: ODEs in 1D",
       "Spruce Budworm Model"
@@ -24,7 +13,7 @@
   {
     "objectID": "modules/ode-1d/spruce-budworm.html#sec-implementing-ode-function",
     "href": "modules/ode-1d/spruce-budworm.html#sec-implementing-ode-function",
-    "title": "1D Ordinary Differential Equations",
+    "title": "Spruce Budworm Model",
     "section": "Implementing the ODE Function",
     "text": "Implementing the ODE Function\nCreate a Python function that implements the spruce budworm differential equation. The function should follow the signature required by scipy.integrate.solve_ivp.\n\nFunction name: spruce_budworm\nParameters: t (time), x (population), r (growth rate), k (carrying capacity)\nReturn: The rate of change \\(\\frac{dx}{dt}\\).\nInclude appropriate docstring documentation.\n\nHere is a template to get you started:\ndef spruce_budworm(t: float, x: float, r: float = 0.5, k: float = 10) -&gt; float:\n    \"\"\"Docstring and type hints\"\"\"\n    # Your implementation here\n    dxdt = # fill in the equation\n    return dxdt\nWhy do we need t as an input? Although the equation does not explicitly depend on time, solve_ivp requires the function to accept time as the first argument.",
     "crumbs": [
@@ -35,7 +24,7 @@
   {
     "objectID": "modules/ode-1d/spruce-budworm.html#sec-phase-portrait",
     "href": "modules/ode-1d/spruce-budworm.html#sec-phase-portrait",
-    "title": "1D Ordinary Differential Equations",
+    "title": "Spruce Budworm Model",
     "section": "Phase Portrait Visualization",
     "text": "Phase Portrait Visualization\nCreate a function that plots the rate of change \\(\\frac{dx}{dt}\\) as a function of the population \\(x\\). This phase portrait will help us visualize the equilibrium points and their stability.\n\nFunction name: plot_spruce_budworm_rate\nParameters: x_t (current population), r, k\nUse matplotlib for plotting\nPlot \\(\\frac{dx}{dt}\\) vs \\(x\\) for \\(x \\in [0, k]\\)\nIdentify and mark equilibrium points (where \\(\\frac{dx}{dt} = 0\\))\nColor-code equilibrium points:\n\nBlue circles for stable equilibria (where \\(\\frac{dx}{dt}\\) crosses zero from above).\nRed circles for unstable equilibria (where \\(\\frac{dx}{dt}\\) crosses zero from below).\n\nAdd a horizontal line at \\(y = 0\\) to indicate equilibria (null rate of change).\nLabel axes and add a title.\nMark the current population \\(x_t\\) with a vertical dashed line.\n\nFigure 1 shows an example of the expected output.\n\n\n\n\n\n\n\n\nFigure 1: Phase portrait (rate plot) of the spruce budworm model. Stable equilibria are marked in blue, unstable equilibria in red, and the current population \\(x_t\\) is shown as a green dashed line.\n\n\n\n\n\nHere are some hints to help you implement this function:\n\nYou can use np.linspace to create an array of \\(x\\) values.\nTo find zero crossings: you can look for sign changes combining np.diff and np.sign.\nStability: a fixed point is stable if \\(\\frac{dx}{dt}\\) decreases as you pass through it.\n\nReview the following definitions for clarity:\n\nEquilibrium point: A value \\(x^*\\) where \\(\\frac{dx}{dt} = 0\\).\nStable equilibrium: Small perturbations decay back to \\(x^*\\).\nUnstable equilibrium: Small perturbations grow away from \\(x^*\\).",
     "crumbs": [
@@ -46,7 +35,7 @@
   {
     "objectID": "modules/ode-1d/spruce-budworm.html#sec-numerical-integration",
     "href": "modules/ode-1d/spruce-budworm.html#sec-numerical-integration",
-    "title": "1D Ordinary Differential Equations",
+    "title": "Spruce Budworm Model",
     "section": "Numerical Integration",
     "text": "Numerical Integration\nCreate a function that evolves the system forward in time using numerical integration. This function should solve the ODE and append the results to existing time and population arrays.\n\nFunction name: evolve_spruce_budworm\nInputs: t (time array), x (population array), r, k, t_eval (duration to evolve).\nUse scipy.integrate.solve_ivp with the RK45 method.\nStart from the last values in the input arrays.\nConcatenate new results to the input arrays.\nEnsure population never goes negative (use np.clip).\nReturn updated t and x arrays.\n\nHere is a template to get you started:\ndef evolve_spruce_budworm(t: np.ndarray, x: np.ndarray, ...):\n    \"\"\"Don't forget the docstring and type hints\"\"\"\n    # Define time span from last time point\n    t_span = (t[-1], t[-1] + t_eval)\n\n    # Create evaluation points, t_eval\n    # This indicates where we want the solution evaluated\n    # and should be distributed along the time span\n    # Hint: use np.linspace\n\n    # Solve the ODE\n    solution = solve_ivp(\n        fun=spruce_budworm,\n        t_span=t_span,\n        y0=[x[-1]],\n        t_eval=t_eval,\n        args=(r, k),\n        method=\"RK45\",\n    )\n    t_new = solution.t\n    x_new = solution.y[0]\n\n    # Concatenate results - Hint: use np.concatenate\n    # Ensure non-negative population - Hint: use np.clip\n\n    return t, x\nSome important notes:\n\nThe args parameter in solve_ivp passes additional arguments to your ODE function. You can see how we use it in the example above.\nInitial condition should be [x[-1]] (last population value).\nUse method=\"RK45\" for adaptive step-size Runge-Kutta integration.",
     "crumbs": [
@@ -57,7 +46,7 @@
   {
     "objectID": "modules/ode-1d/spruce-budworm.html#sec-time-series-visualization",
     "href": "modules/ode-1d/spruce-budworm.html#sec-time-series-visualization",
-    "title": "1D Ordinary Differential Equations",
+    "title": "Spruce Budworm Model",
     "section": "Time Series Visualization",
     "text": "Time Series Visualization\nCreate a function to plot the population dynamics over time. This visualization shows how the population evolves from the initial condition.\n\nFunction name: plot_spruce_budworm\nParameters: t (time array), x (population array).\nPlot time on the x-axis and population on the y-axis.\nUse green color for the trajectory.\nEnsure y-axis starts at 0 (populations cannot be negative).\nInclude grid, labels, and title.\nReturn the figure and axes objects.\n\nSee Figure 2 for an example output.\n\n\n\n\n\n\n\n\nFigure 2: Time series of the spruce budworm population generated with SciPy’s RK45 solver.",
     "crumbs": [
@@ -68,9 +57,9 @@
   {
     "objectID": "modules/ode-1d/spruce-budworm.html#sec-streamlit-application",
     "href": "modules/ode-1d/spruce-budworm.html#sec-streamlit-application",
-    "title": "1D Ordinary Differential Equations",
+    "title": "Spruce Budworm Model",
     "section": "Building the Streamlit Application",
-    "text": "Building the Streamlit Application\nNow that you have all the components, create an interactive Streamlit application that allows users to explore the spruce budworm model. This will enable real-time parameter adjustment and visualization.\nWhile all the previous code could be done in Google Colab, Streamlit has to be built on your local machine. Follow the instructions in the README.md file in the repository to set up your environment.\nDesign a script, name it spruce_budworm_app.py. You will find a suggested layout below. This script will use the functions you implemented in sections Section 2 through Section 5. You can either import them from a separate module (another script you created) or paste the function definitions directly into the script. For best practices, consider creating a module (e.g., spruce_budworm_model.py) and importing the functions.\nTo test your app, run the following command in your terminal:\nstreamlit run spruce_budworm_app.py\n\nSidebar Controls\nCreate sliders for:\n\nGrowth rate \\(r\\) (range: 0.0 to 1.0, default 0.5).\nCarrying capacity \\(k\\) (range: 0.1 to 10.0, default 10.0).\nInitial population: set automatically to \\(k/10\\) (the app uses \\(x_0 = k/10\\) by default).\nTime slider for evolution (range: 1 to 100, default 10).\n\n\n\nInteractive Features\n\nDisplay the differential equation with current parameter values.\nShow the phase portrait (rate of change plot), using your function from section Section 3.\nShow the time series evolution, using your function from section Section 5.\nAdd a button to “Evolve Forward” that continues the simulation, updating the plots.\nUse st.session_state to maintain simulation state between button clicks. You will need to store the time and population arrays in the session state, otherwise they will reset on each interaction.\n\n\n\nLayout Structure\nimport streamlit as st\nimport numpy as np\nimport matplotlib.pyplot as plt\nfrom your_module import (\n    spruce_budworm,\n    plot_spruce_budworm_rate,\n    evolve_spruce_budworm,\n    plot_spruce_budworm,\n)  # Or paste your functions here\n\nst.title(\"Spruce Budworm Population Dynamics\")\n\n# Sidebar parameters (as in the app)\nr = st.sidebar.slider(\"Intrinsic growth rate (r)\", 0.0, 1.0, 0.5)\nk = st.sidebar.slider(\"Carrying capacity (k)\", 0.1, 10.0, 10.0)\n\n# The app sets the initial population to k/10 by default\nx0 = k / 10\n\n# Initialize session state\nif (\"sbw_x\" not in st.session_state):\n    st.session_state[\"sbw_t\"] = np.array([0])\n    st.session_state[\"sbw_x\"] = np.array([x0])\n\n# Time slider and control buttons\nt_eval = st.sidebar.slider(\"Time\", 1, 100, 10)\nbutton = st.sidebar.button(\"Evolve\")\n\n# Retrieve session data\nt = st.session_state[\"sbw_t\"]\nx = st.session_state[\"sbw_x\"]\n\n# Evolve if requested\nif button:\n    t, x = evolve_spruce_budworm(t, x, r=r, k=k, t_eval=t_eval)\n    st.session_state[\"sbw_t\"] = t\n    st.session_state[\"sbw_x\"] = x\n\n# Plot phase portrait and time series\nfig1, ax1 = plot_spruce_budworm_rate(x[-1], r=r, k=k)\nst.pyplot(fig1)\nfig2, ax2 = plot_spruce_budworm(t, x)\nst.pyplot(fig2)\n\n\nAdvanced Features (Optional)\n\nAdd a reset button to restart the simulation.\nShow multiple trajectories with different initial conditions.\nAdd animation of the population dynamics.",
+    "text": "Building the Streamlit Application\nNow that you have all the components, create an interactive Streamlit application that allows users to explore the spruce budworm model. This will enable real-time parameter adjustment and visualization.\nWhile all the previous code could be done in Google Colab, Streamlit has to be built on your local machine. Follow the instructions in the README.md file in the repository to set up your environment.\nDesign a script, name it spruce_budworm_app.py. You will find a suggested layout below. This script will use the functions you implemented in sections Section 1 through Section 4. You can either import them from a separate module (another script you created) or paste the function definitions directly into the script. For best practices, consider creating a module (e.g., spruce_budworm_model.py) and importing the functions.\nTo test your app, run the following command in your terminal:\nstreamlit run spruce_budworm_app.py\n\nSidebar Controls\nCreate sliders for:\n\nGrowth rate \\(r\\) (range: 0.0 to 1.0, default 0.5).\nCarrying capacity \\(k\\) (range: 0.1 to 10.0, default 10.0).\nInitial population: set automatically to \\(k/10\\) (the app uses \\(x_0 = k/10\\) by default).\nTime slider for evolution (range: 1 to 100, default 10).\n\n\n\nInteractive Features\n\nDisplay the differential equation with current parameter values.\nShow the phase portrait (rate of change plot), using your function from section Section 2.\nShow the time series evolution, using your function from section Section 4.\nAdd a button to “Evolve Forward” that continues the simulation, updating the plots.\nUse st.session_state to maintain simulation state between button clicks. You will need to store the time and population arrays in the session state, otherwise they will reset on each interaction.\n\n\n\nLayout Structure\nimport streamlit as st\nimport numpy as np\nimport matplotlib.pyplot as plt\nfrom your_module import (\n    spruce_budworm,\n    plot_spruce_budworm_rate,\n    evolve_spruce_budworm,\n    plot_spruce_budworm,\n)  # Or paste your functions here\n\nst.title(\"Spruce Budworm Population Dynamics\")\n\n# Sidebar parameters (as in the app)\nr = st.sidebar.slider(\"Intrinsic growth rate (r)\", 0.0, 1.0, 0.5)\nk = st.sidebar.slider(\"Carrying capacity (k)\", 0.1, 10.0, 10.0)\n\n# The app sets the initial population to k/10 by default\nx0 = k / 10\n\n# Initialize session state\nif (\"sbw_x\" not in st.session_state):\n    st.session_state[\"sbw_t\"] = np.array([0])\n    st.session_state[\"sbw_x\"] = np.array([x0])\n\n# Time slider and control buttons\nt_eval = st.sidebar.slider(\"Time\", 1, 100, 10)\nbutton = st.sidebar.button(\"Evolve\")\n\n# Retrieve session data\nt = st.session_state[\"sbw_t\"]\nx = st.session_state[\"sbw_x\"]\n\n# Evolve if requested\nif button:\n    t, x = evolve_spruce_budworm(t, x, r=r, k=k, t_eval=t_eval)\n    st.session_state[\"sbw_t\"] = t\n    st.session_state[\"sbw_x\"] = x\n\n# Plot phase portrait and time series\nfig1, ax1 = plot_spruce_budworm_rate(x[-1], r=r, k=k)\nst.pyplot(fig1)\nfig2, ax2 = plot_spruce_budworm(t, x)\nst.pyplot(fig2)\n\n\nAdvanced Features (Optional)\n\nAdd a reset button to restart the simulation.\nShow multiple trajectories with different initial conditions.\nAdd animation of the population dynamics.",
     "crumbs": [
       "Session 1: ODEs in 1D",
       "Spruce Budworm Model"
@@ -79,9 +68,9 @@
   {
     "objectID": "modules/ode-1d/spruce-budworm.html#sec-exploration-questions",
     "href": "modules/ode-1d/spruce-budworm.html#sec-exploration-questions",
-    "title": "1D Ordinary Differential Equations",
+    "title": "Spruce Budworm Model",
     "section": "Exploration Questions",
-    "text": "Exploration Questions\nOnce your simulation is working, explore the following questions:\n\nMultiple Equilibria: For \\(r = 0.5\\) and \\(k = 10\\), how many equilibrium points exist? Which are stable?\nBistability: Start with two different initial conditions (e.g., \\(x_0 = 1\\) and \\(x_0 = 8\\)). Do they converge to the same equilibrium?\nHysteresis: Slowly increase the carrying capacity \\(k\\) from 5 to 15. Then slowly decrease it back to 5. Does the population return to the same state? If you are interested in this concept, see section Section 7.1.\nOutbreak Dynamics: What happens if you start with a small population (\\(x_0 &lt; 2\\)) and the carrying capacity is large (\\(k &gt; 10\\))?\nCritical Slowing Down: When the population is near an unstable equilibrium, how long does it take to move away? Compare this to the rate of change far from equilibrium.\nParameter Space: Create a diagram showing the number of equilibria as a function of \\(r\\) and \\(k\\). Where do bifurcations occur?\n\n\nSlow-Fast Dynamics\nThe carrying capacity \\(k\\) can be interpreted as a slowly varying parameter in real ecosystems (e.g., due to seasonal changes or forest management). You can simulate this by gradually changing \\(k\\) over time in your app. This can lead to hysteresis effects, where the population does not return to its original state after \\(k\\) is restored. Experiment with this by modifying your Streamlit app to allow \\(k\\) to vary over time.",
+    "text": "Exploration Questions\nOnce your simulation is working, explore the following questions:\n\nMultiple Equilibria: For \\(r = 0.5\\) and \\(k = 10\\), how many equilibrium points exist? Which are stable?\nBistability: Start with two different initial conditions (e.g., \\(x_0 = 1\\) and \\(x_0 = 8\\)). Do they converge to the same equilibrium?\nHysteresis: Slowly increase the carrying capacity \\(k\\) from 5 to 15. Then slowly decrease it back to 5. Does the population return to the same state? If you are interested in this concept, see section Section 6.1.\nOutbreak Dynamics: What happens if you start with a small population (\\(x_0 &lt; 2\\)) and the carrying capacity is large (\\(k &gt; 10\\))?\nCritical Slowing Down: When the population is near an unstable equilibrium, how long does it take to move away? Compare this to the rate of change far from equilibrium.\nParameter Space: Create a diagram showing the number of equilibria as a function of \\(r\\) and \\(k\\). Where do bifurcations occur?\n\n\nSlow-Fast Dynamics\nThe carrying capacity \\(k\\) can be interpreted as a slowly varying parameter in real ecosystems (e.g., due to seasonal changes or forest management). You can simulate this by gradually changing \\(k\\) over time in your app. This can lead to hysteresis effects, where the population does not return to its original state after \\(k\\) is restored. Experiment with this by modifying your Streamlit app to allow \\(k\\) to vary over time.",
     "crumbs": [
       "Session 1: ODEs in 1D",
       "Spruce Budworm Model"
@@ -90,7 +79,7 @@
   {
     "objectID": "modules/ode-1d/spruce-budworm.html#sec-mathematical-background",
     "href": "modules/ode-1d/spruce-budworm.html#sec-mathematical-background",
-    "title": "1D Ordinary Differential Equations",
+    "title": "Spruce Budworm Model",
     "section": "Mathematical Background",
     "text": "Mathematical Background\nIn this section I provide some additional mathematical context for the spruce budworm model. Play with your simulation to see these concepts in action!\n\nEquilibrium Analysis\nEquilibrium points satisfy:\n\\[\nrx^*\\left(1 - \\frac{x^*}{k}\\right) - \\frac{(x^*)^2}{1 + (x^*)^2} = 0\n\\]\nThis can be rewritten as:\n\\[\nrx^*\\left(1 - \\frac{x^*}{k}\\right) = \\frac{(x^*)^2}{1 + (x^*)^2}\n\\]\nThe left side represents birth rate (logistic growth), and the right side represents predation rate. Equilibria occur where these balance.\n\n\nStability Analysis\nThe stability of an equilibrium \\(x^*\\) is determined by the sign of the derivative:\n\\[\n\\frac{d}{dx}\\left(\\frac{dx}{dt}\\right)\\bigg|_{x=x^*}\n\\]\nIf this derivative is:\n\nNegative: the equilibrium is stable (attracting).\nPositive: the equilibrium is unstable (repelling).\nZero: higher-order analysis is needed.\n\n\n\nEcological Interpretation\n\nLow equilibrium: Few budworms, controlled by predation.\nHigh equilibrium: Outbreak state, budworms overwhelm predators.\nMiddle equilibrium: Usually unstable, separates the two basins of attraction.\nHysteresis: The system can “jump” between states depending on history.\n\nThis behavior explains why spruce budworm populations can suddenly explode from low levels to outbreak proportions, and why simply reducing the outbreak may not return the forest to a healthy state.",
     "crumbs": [
@@ -101,7 +90,7 @@
   {
     "objectID": "modules/ode-1d/spruce-budworm.html#resources",
     "href": "modules/ode-1d/spruce-budworm.html#resources",
-    "title": "1D Ordinary Differential Equations",
+    "title": "Spruce Budworm Model",
     "section": "Resources",
     "text": "Resources\n\n(Strogatz 2024, chap. 3.7) for theoretical background on the spruce budworm model.\nSciPy documentation: https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html\nStreamlit documentation: https://docs.streamlit.io\nReference implementation: https://github.com/daniprec/BAM-Applied-Math-Lab/tree/main/sessions/s01_odes_1d",
     "crumbs": [
@@ -112,31 +101,9 @@
   {
     "objectID": "modules/ode-1d/sir.html",
     "href": "modules/ode-1d/sir.html",
-    "title": "1D Ordinary Differential Equations",
+    "title": "SIR Epidemic Model",
     "section": "",
-    "text": "The SIR model is a classical compartmental model in epidemiology. It splits the population into:\n\n\\(S(t)\\): susceptible\n\\(I(t)\\): infected\n\\(R(t)\\): recovered\n\nand describes how individuals move between these compartments over time.\n\n\n\nImplement and solve a system of ODEs with scipy.integrate.solve_ivp.\nVisualize \\(S(t)\\), \\(I(t)\\), and \\(R(t)\\).\nInterpret how the parameters \\((\\beta, \\gamma)\\) change the epidemic curve.",
-    "crumbs": [
-      "Session 1: ODEs in 1D",
-      "SIR Epidemic Model"
-    ]
-  },
-  {
-    "objectID": "modules/ode-1d/sir.html#sec-introduction",
-    "href": "modules/ode-1d/sir.html#sec-introduction",
-    "title": "1D Ordinary Differential Equations",
-    "section": "",
-    "text": "The SIR model is a classical compartmental model in epidemiology. It splits the population into:\n\n\\(S(t)\\): susceptible\n\\(I(t)\\): infected\n\\(R(t)\\): recovered\n\nand describes how individuals move between these compartments over time.\n\n\n\nImplement and solve a system of ODEs with scipy.integrate.solve_ivp.\nVisualize \\(S(t)\\), \\(I(t)\\), and \\(R(t)\\).\nInterpret how the parameters \\((\\beta, \\gamma)\\) change the epidemic curve.",
-    "crumbs": [
-      "Session 1: ODEs in 1D",
-      "SIR Epidemic Model"
-    ]
-  },
-  {
-    "objectID": "modules/ode-1d/sir.html#sec-sir-model",
-    "href": "modules/ode-1d/sir.html#sec-sir-model",
-    "title": "1D Ordinary Differential Equations",
-    "section": "The SIR Model",
-    "text": "The SIR Model\nWe will use the normalized SIR model (fractions of the population, so \\(S+I+R=1\\)):\n\\[\n\\begin{aligned}\n\\dot S &= -\\beta SI,\\\\\n\\dot I &= \\beta SI - \\gamma I,\\\\\n\\dot R &= \\gamma I.\n\\end{aligned}\n\\]\n\n\\(\\beta\\) controls infection/transmission.\n\\(\\gamma\\) controls recovery.",
+    "text": "The SIR model is a classical compartmental model in epidemiology. It splits the population into:\nand describes how individuals move between these compartments over time.\nWe will use the normalized SIR model (fractions of the population, so \\(S+I+R=1\\)):\n\\[\n\\begin{aligned}\n\\dot S &= -\\beta SI,\\\\\n\\dot I &= \\beta SI - \\gamma I,\\\\\n\\dot R &= \\gamma I.\n\\end{aligned}\n\\]",
     "crumbs": [
       "Session 1: ODEs in 1D",
       "SIR Epidemic Model"
@@ -145,7 +112,7 @@
   {
     "objectID": "modules/ode-1d/sir.html#sec-reference",
     "href": "modules/ode-1d/sir.html#sec-reference",
-    "title": "1D Ordinary Differential Equations",
+    "title": "SIR Epidemic Model",
     "section": "Reference Implementation",
     "text": "Reference Implementation\nA working implementation is provided in:\n\nsessions/s01_odes_1d/sir_model.py\n\nThe model function is sir_model(t, y, beta, gamma) and the plotting helper is plot_sir_model(...).",
     "crumbs": [
@@ -156,7 +123,7 @@
   {
     "objectID": "modules/ode-1d/sir.html#sec-render-figure",
     "href": "modules/ode-1d/sir.html#sec-render-figure",
-    "title": "1D Ordinary Differential Equations",
+    "title": "SIR Epidemic Model",
     "section": "Render-time Figure",
     "text": "Render-time Figure\nThe figure below is generated at render-time from the reference script.\n\n\n\n\n\n\n\n\nFigure 1: SIR dynamics for default parameters.",
     "crumbs": [
@@ -167,7 +134,7 @@
   {
     "objectID": "modules/ode-1d/sir.html#sec-exploration",
     "href": "modules/ode-1d/sir.html#sec-exploration",
-    "title": "1D Ordinary Differential Equations",
+    "title": "SIR Epidemic Model",
     "section": "Exploration",
     "text": "Exploration\n\nIncrease \\(\\beta\\) while keeping \\(\\gamma\\) fixed. What happens to the peak of \\(I(t)\\)?\nIncrease \\(\\gamma\\) while keeping \\(\\beta\\) fixed. Does the epidemic end sooner?\nTry different initial infected fractions \\(I(0)\\). Do you always see an outbreak?",
     "crumbs": [
@@ -178,7 +145,7 @@
   {
     "objectID": "modules/ode-1d/sir.html#sec-run-locally",
     "href": "modules/ode-1d/sir.html#sec-run-locally",
-    "title": "1D Ordinary Differential Equations",
+    "title": "SIR Epidemic Model",
     "section": "Run Locally",
     "text": "Run Locally\nTo run the standalone script and show the plot:\npython sessions/s01_odes_1d/sir_model.py",
     "crumbs": [
@@ -189,20 +156,9 @@
   {
     "objectID": "modules/ode-1d/assignment.html",
     "href": "modules/ode-1d/assignment.html",
-    "title": "1D Ordinary Differential Equations",
+    "title": "Assignment",
     "section": "",
-    "text": "Implement the complete Streamlit application for the Spruce Budworm model as described here, following the sections from Implementing the ODE Function through Building the Streamlit Application. Ensure that all functions are correctly defined and integrated into the app. Test the application thoroughly to confirm that it behaves as expected.\nAnswer at least three of the exploration questions from Exploration Questions and document your findings in a brief report (1-2 pages). You are encouraged to use LaTeX here. Include graphs demonstrating different behaviors observed during your exploration.\nIf you want to go the extra mile, here are some additional challenges you can tackle:\n\nCreate a GitHub repository for your project and push your code there. You can include the text of your report in the repository as well.\nDeploy your Streamlit app using Streamlit Cloud or another hosting service. Share the link in your report.\nImplement some of the advanced features mentioned in Building the Streamlit Application.\nInstead of using SciPy’s built-in ODE solver, implement your own simple Euler or Runge-Kutta integrator and compare results.",
-    "crumbs": [
-      "Session 1: ODEs in 1D",
-      "Assignment"
-    ]
-  },
-  {
-    "objectID": "modules/ode-1d/assignment.html#sec-deliverable",
-    "href": "modules/ode-1d/assignment.html#sec-deliverable",
-    "title": "1D Ordinary Differential Equations",
-    "section": "",
-    "text": "Implement the complete Streamlit application for the Spruce Budworm model as described here, following the sections from Implementing the ODE Function through Building the Streamlit Application. Ensure that all functions are correctly defined and integrated into the app. Test the application thoroughly to confirm that it behaves as expected.\nAnswer at least three of the exploration questions from Exploration Questions and document your findings in a brief report (1-2 pages). You are encouraged to use LaTeX here. Include graphs demonstrating different behaviors observed during your exploration.\nIf you want to go the extra mile, here are some additional challenges you can tackle:\n\nCreate a GitHub repository for your project and push your code there. You can include the text of your report in the repository as well.\nDeploy your Streamlit app using Streamlit Cloud or another hosting service. Share the link in your report.\nImplement some of the advanced features mentioned in Building the Streamlit Application.\nInstead of using SciPy’s built-in ODE solver, implement your own simple Euler or Runge-Kutta integrator and compare results.",
+    "text": "Implement the complete Streamlit application for the Spruce Budworm model as described here, following the sections from Implementing the ODE Function through Building the Streamlit Application. Ensure that all functions are correctly defined and integrated into the app. Test the application thoroughly to confirm that it behaves as expected.\nAnswer at least three of the exploration questions from Exploration Questions and document your findings in a brief report (1-2 pages). You are encouraged to use LaTeX here. Include graphs demonstrating different behaviors observed during your exploration.\nIf you want to go the extra mile, here are some additional challenges you can tackle:",
     "crumbs": [
       "Session 1: ODEs in 1D",
       "Assignment"
@@ -211,7 +167,7 @@
   {
     "objectID": "modules/ode-1d/assignment.html#tips-for-success",
     "href": "modules/ode-1d/assignment.html#tips-for-success",
-    "title": "1D Ordinary Differential Equations",
+    "title": "Assignment",
     "section": "Tips for Success",
     "text": "Tips for Success\n\nStart simple: Get the ODE function working first (see Implementing the ODE Function for an example), then build up.\nStart simple: Get Implementing the ODE Function working first, then build up.\nTest incrementally: Verify each function works before moving to the next.\nUse the reference: The provided code (and additional documentation) is there to help you understand the structure.\nExperiment: Try different parameter values and see what happens.\nCollaborate: Discuss with your teammates, divide the work if needed. You can also work separately and then compare your implementations.\nAsk questions: If you’re stuck, ask for help!\n\nGood luck and enjoy your coding!",
     "crumbs": [
@@ -222,7 +178,7 @@
   {
     "objectID": "modules/ode-2d/cdima.html",
     "href": "modules/ode-2d/cdima.html",
-    "title": "2D Ordinary Differential Equations",
+    "title": "CDIMA Reaction (Phase Plane + Nullclines)",
     "section": "",
     "text": "The CDIMA model (Chlorine Dioxide–Iodine–Malonic Acid reaction) is a classic 2D chemical oscillator used to study phase-plane dynamics.\nThis page focuses on:\n\nintegrating a 2D system with solve_ivp\nplotting trajectories in the phase plane\ncomputing numerical nullclines using the shared helper compute_nullclines",
     "crumbs": [
@@ -233,7 +189,7 @@
   {
     "objectID": "modules/ode-2d/cdima.html#sec-introduction",
     "href": "modules/ode-2d/cdima.html#sec-introduction",
-    "title": "2D Ordinary Differential Equations",
+    "title": "CDIMA Reaction (Phase Plane + Nullclines)",
     "section": "",
     "text": "The CDIMA model (Chlorine Dioxide–Iodine–Malonic Acid reaction) is a classic 2D chemical oscillator used to study phase-plane dynamics.\nThis page focuses on:\n\nintegrating a 2D system with solve_ivp\nplotting trajectories in the phase plane\ncomputing numerical nullclines using the shared helper compute_nullclines",
     "crumbs": [
@@ -244,7 +200,7 @@
   {
     "objectID": "modules/ode-2d/cdima.html#sec-model",
     "href": "modules/ode-2d/cdima.html#sec-model",
-    "title": "2D Ordinary Differential Equations",
+    "title": "CDIMA Reaction (Phase Plane + Nullclines)",
     "section": "Model",
     "text": "Model\nThe reference implementation lives in:\n\nsessions/s02_odes_2d/cdima.py\n\nand defines the vector field:\n\\[\n\\begin{aligned}\n\\dot x &= a - x - \\frac{4xy}{1+x^2},\\\\\n\\dot y &= bx\\left(1 - \\frac{y}{1+x^2}\\right).\n\\end{aligned}\n\\]",
     "crumbs": [
@@ -255,7 +211,7 @@
   {
     "objectID": "modules/ode-2d/cdima.html#sec-render-phase-plane",
     "href": "modules/ode-2d/cdima.html#sec-render-phase-plane",
-    "title": "2D Ordinary Differential Equations",
+    "title": "CDIMA Reaction (Phase Plane + Nullclines)",
     "section": "Render-time Phase Plane",
     "text": "Render-time Phase Plane\n\n\n\n\n\n\n\n\nFigure 1: CDIMA: trajectory in the phase plane with numerically approximated nullclines.",
     "crumbs": [
@@ -266,7 +222,7 @@
   {
     "objectID": "modules/ode-2d/cdima.html#sec-run-interactive",
     "href": "modules/ode-2d/cdima.html#sec-run-interactive",
-    "title": "2D Ordinary Differential Equations",
+    "title": "CDIMA Reaction (Phase Plane + Nullclines)",
     "section": "Run the Interactive Version",
     "text": "Run the Interactive Version\nThe full interactive + animated version (with click-to-restart) is in the reference script:\npython sessions/s02_odes_2d/cdima.py",
     "crumbs": [
@@ -275,25 +231,25 @@
     ]
   },
   {
-    "objectID": "modules/ode-2d/assignment.html",
-    "href": "modules/ode-2d/assignment.html",
-    "title": "2D Ordinary Differential Equations",
+    "objectID": "syllabus.html",
+    "href": "syllabus.html",
+    "title": "Applied Math Lab",
     "section": "",
-    "text": "Complete the 2D ODE session deliverables based on the models covered in this module:\n\nCDIMA Reaction\nVan der Pol Oscillator\nFitzHugh–Nagumo Model\n\nWrite a short report describing what you explored, including figures/screenshots and a brief explanation of your results.",
+    "text": "This course has 10 live in-person sessions.\n\n\nSimulate classical one-dimensional ODE models (SIR epidemiological model, spruce budworm population model, Michaelis–Menten enzyme kinetics). Solve ODEs numerically with SciPy in Python, and build/deploy a simple Streamlit web app to explore parameter effects. Groups are assigned and remain for the whole course.\n\n\n\nExplore two-dimensional ODEs via nonlinear oscillatory systems: Van der Pol oscillator and FitzHugh–Nagumo model. Create animations with matplotlib and build interactive Python programs that let users set initial conditions via mouse clicks.\n\n\n\nIntroduce partial differential equations through reaction–diffusion models (Gierer–Meinhardt and Gray–Scott). Implement 1D and 2D Laplacians with NumPy and animate spatiotemporal evolution to study Turing instability and pattern formation.\n\n\n\nImplement coupled ODEs, focusing on the Kuramoto model. Animate multiple plots simultaneously (e.g., oscillator evolution and a bifurcation diagram).\n\n\n\nSimulate flocking behavior using the Vicsek model. Implement interaction rules for “boids” and extend the simulation by treating the mouse as a predator and coding avoidance behavior.\n\n\n\nIntroduce NetworkX: build graphs, compute structural metrics (degree distribution, clustering coefficient, centrality), and visualize different network types. Establish foundations for modeling dynamics on networks.\n\n\n\nSimulate spreading processes (fake news, epidemics) on real-world networks. Retrieve and process open-source network datasets, and investigate how network structure shapes propagation dynamics.\n\n\n\nIntroduce one-dimensional cellular automata as a framework for discrete dynamical systems. Explore deterministic and stochastic CA, and how simple local rules generate complex global behavior.\n\n\n\nApply cellular automata to traffic modeling with the Nagel–Schreckenberg model. Study congestion, flow, and phase transitions by tuning parameters such as vehicle density and maximum speed.\n\n\n\nWrap-up and support session for the final project: address remaining questions, clarify concepts, and help groups prepare deliverables.",
     "crumbs": [
-      "Session 2: ODEs in 2D",
-      "Assignment"
+      "Getting Started",
+      "Syllabus"
     ]
   },
   {
-    "objectID": "modules/ode-2d/assignment.html#assignment",
-    "href": "modules/ode-2d/assignment.html#assignment",
-    "title": "2D Ordinary Differential Equations",
+    "objectID": "syllabus.html#program",
+    "href": "syllabus.html#program",
+    "title": "Applied Math Lab",
     "section": "",
-    "text": "Complete the 2D ODE session deliverables based on the models covered in this module:\n\nCDIMA Reaction\nVan der Pol Oscillator\nFitzHugh–Nagumo Model\n\nWrite a short report describing what you explored, including figures/screenshots and a brief explanation of your results.",
+    "text": "This course has 10 live in-person sessions.\n\n\nSimulate classical one-dimensional ODE models (SIR epidemiological model, spruce budworm population model, Michaelis–Menten enzyme kinetics). Solve ODEs numerically with SciPy in Python, and build/deploy a simple Streamlit web app to explore parameter effects. Groups are assigned and remain for the whole course.\n\n\n\nExplore two-dimensional ODEs via nonlinear oscillatory systems: Van der Pol oscillator and FitzHugh–Nagumo model. Create animations with matplotlib and build interactive Python programs that let users set initial conditions via mouse clicks.\n\n\n\nIntroduce partial differential equations through reaction–diffusion models (Gierer–Meinhardt and Gray–Scott). Implement 1D and 2D Laplacians with NumPy and animate spatiotemporal evolution to study Turing instability and pattern formation.\n\n\n\nImplement coupled ODEs, focusing on the Kuramoto model. Animate multiple plots simultaneously (e.g., oscillator evolution and a bifurcation diagram).\n\n\n\nSimulate flocking behavior using the Vicsek model. Implement interaction rules for “boids” and extend the simulation by treating the mouse as a predator and coding avoidance behavior.\n\n\n\nIntroduce NetworkX: build graphs, compute structural metrics (degree distribution, clustering coefficient, centrality), and visualize different network types. Establish foundations for modeling dynamics on networks.\n\n\n\nSimulate spreading processes (fake news, epidemics) on real-world networks. Retrieve and process open-source network datasets, and investigate how network structure shapes propagation dynamics.\n\n\n\nIntroduce one-dimensional cellular automata as a framework for discrete dynamical systems. Explore deterministic and stochastic CA, and how simple local rules generate complex global behavior.\n\n\n\nApply cellular automata to traffic modeling with the Nagel–Schreckenberg model. Study congestion, flow, and phase transitions by tuning parameters such as vehicle density and maximum speed.\n\n\n\nWrap-up and support session for the final project: address remaining questions, clarify concepts, and help groups prepare deliverables.",
     "crumbs": [
-      "Session 2: ODEs in 2D",
-      "Assignment"
+      "Getting Started",
+      "Syllabus"
     ]
   },
   {
@@ -363,31 +319,31 @@
     ]
   },
   {
-    "objectID": "syllabus.html",
-    "href": "syllabus.html",
-    "title": "Applied Math Lab",
+    "objectID": "modules/ode-2d/assignment.html",
+    "href": "modules/ode-2d/assignment.html",
+    "title": "Assignment",
     "section": "",
-    "text": "This course has 10 live in-person sessions.\n\n\nSimulate classical one-dimensional ODE models (SIR epidemiological model, spruce budworm population model, Michaelis–Menten enzyme kinetics). Solve ODEs numerically with SciPy in Python, and build/deploy a simple Streamlit web app to explore parameter effects. Groups are assigned and remain for the whole course.\n\n\n\nExplore two-dimensional ODEs via nonlinear oscillatory systems: Van der Pol oscillator and FitzHugh–Nagumo model. Create animations with matplotlib and build interactive Python programs that let users set initial conditions via mouse clicks.\n\n\n\nIntroduce partial differential equations through reaction–diffusion models (Gierer–Meinhardt and Gray–Scott). Implement 1D and 2D Laplacians with NumPy and animate spatiotemporal evolution to study Turing instability and pattern formation.\n\n\n\nImplement coupled ODEs, focusing on the Kuramoto model. Animate multiple plots simultaneously (e.g., oscillator evolution and a bifurcation diagram).\n\n\n\nSimulate flocking behavior using the Vicsek model. Implement interaction rules for “boids” and extend the simulation by treating the mouse as a predator and coding avoidance behavior.\n\n\n\nIntroduce NetworkX: build graphs, compute structural metrics (degree distribution, clustering coefficient, centrality), and visualize different network types. Establish foundations for modeling dynamics on networks.\n\n\n\nSimulate spreading processes (fake news, epidemics) on real-world networks. Retrieve and process open-source network datasets, and investigate how network structure shapes propagation dynamics.\n\n\n\nIntroduce one-dimensional cellular automata as a framework for discrete dynamical systems. Explore deterministic and stochastic CA, and how simple local rules generate complex global behavior.\n\n\n\nApply cellular automata to traffic modeling with the Nagel–Schreckenberg model. Study congestion, flow, and phase transitions by tuning parameters such as vehicle density and maximum speed.\n\n\n\nWrap-up and support session for the final project: address remaining questions, clarify concepts, and help groups prepare deliverables.",
+    "text": "Complete the 2D ODE session deliverables based on the models covered in this module:\n\nCDIMA Reaction\nVan der Pol Oscillator\nFitzHugh–Nagumo Model\n\nWrite a short report describing what you explored, including figures/screenshots and a brief explanation of your results.",
     "crumbs": [
-      "Getting Started",
-      "Syllabus"
+      "Session 2: ODEs in 2D",
+      "Assignment"
     ]
   },
   {
-    "objectID": "syllabus.html#program",
-    "href": "syllabus.html#program",
-    "title": "Applied Math Lab",
+    "objectID": "modules/ode-2d/assignment.html#assignment",
+    "href": "modules/ode-2d/assignment.html#assignment",
+    "title": "Assignment",
     "section": "",
-    "text": "This course has 10 live in-person sessions.\n\n\nSimulate classical one-dimensional ODE models (SIR epidemiological model, spruce budworm population model, Michaelis–Menten enzyme kinetics). Solve ODEs numerically with SciPy in Python, and build/deploy a simple Streamlit web app to explore parameter effects. Groups are assigned and remain for the whole course.\n\n\n\nExplore two-dimensional ODEs via nonlinear oscillatory systems: Van der Pol oscillator and FitzHugh–Nagumo model. Create animations with matplotlib and build interactive Python programs that let users set initial conditions via mouse clicks.\n\n\n\nIntroduce partial differential equations through reaction–diffusion models (Gierer–Meinhardt and Gray–Scott). Implement 1D and 2D Laplacians with NumPy and animate spatiotemporal evolution to study Turing instability and pattern formation.\n\n\n\nImplement coupled ODEs, focusing on the Kuramoto model. Animate multiple plots simultaneously (e.g., oscillator evolution and a bifurcation diagram).\n\n\n\nSimulate flocking behavior using the Vicsek model. Implement interaction rules for “boids” and extend the simulation by treating the mouse as a predator and coding avoidance behavior.\n\n\n\nIntroduce NetworkX: build graphs, compute structural metrics (degree distribution, clustering coefficient, centrality), and visualize different network types. Establish foundations for modeling dynamics on networks.\n\n\n\nSimulate spreading processes (fake news, epidemics) on real-world networks. Retrieve and process open-source network datasets, and investigate how network structure shapes propagation dynamics.\n\n\n\nIntroduce one-dimensional cellular automata as a framework for discrete dynamical systems. Explore deterministic and stochastic CA, and how simple local rules generate complex global behavior.\n\n\n\nApply cellular automata to traffic modeling with the Nagel–Schreckenberg model. Study congestion, flow, and phase transitions by tuning parameters such as vehicle density and maximum speed.\n\n\n\nWrap-up and support session for the final project: address remaining questions, clarify concepts, and help groups prepare deliverables.",
+    "text": "Complete the 2D ODE session deliverables based on the models covered in this module:\n\nCDIMA Reaction\nVan der Pol Oscillator\nFitzHugh–Nagumo Model\n\nWrite a short report describing what you explored, including figures/screenshots and a brief explanation of your results.",
     "crumbs": [
-      "Getting Started",
-      "Syllabus"
+      "Session 2: ODEs in 2D",
+      "Assignment"
     ]
   },
   {
     "objectID": "modules/ode-2d/van-der-pol.html",
     "href": "modules/ode-2d/van-der-pol.html",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Van der Pol Oscillator (Phase Plane + Nullclines)",
     "section": "",
     "text": "The Van der Pol oscillator is a canonical nonlinear system that exhibits a limit cycle and, for large \\(\\mu\\), a relaxation oscillation.\nThe reference implementation is in:\n\nsessions/s02_odes_2d/van_der_pol.py",
     "crumbs": [
@@ -398,7 +354,7 @@
   {
     "objectID": "modules/ode-2d/van-der-pol.html#sec-introduction",
     "href": "modules/ode-2d/van-der-pol.html#sec-introduction",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Van der Pol Oscillator (Phase Plane + Nullclines)",
     "section": "",
     "text": "The Van der Pol oscillator is a canonical nonlinear system that exhibits a limit cycle and, for large \\(\\mu\\), a relaxation oscillation.\nThe reference implementation is in:\n\nsessions/s02_odes_2d/van_der_pol.py",
     "crumbs": [
@@ -409,7 +365,7 @@
   {
     "objectID": "modules/ode-2d/van-der-pol.html#sec-model",
     "href": "modules/ode-2d/van-der-pol.html#sec-model",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Van der Pol Oscillator (Phase Plane + Nullclines)",
     "section": "Model",
     "text": "Model\nUsing the same form as the reference script:\n\\[\n\\begin{aligned}\n\\dot x &= \\mu\\left(y - \\left(\\frac{x^3}{3} - x\\right)\\right),\\\\\n\\dot y &= -\\frac{x}{\\mu}.\n\\end{aligned}\n\\]",
     "crumbs": [
@@ -420,7 +376,7 @@
   {
     "objectID": "modules/ode-2d/van-der-pol.html#sec-render-phase-plane",
     "href": "modules/ode-2d/van-der-pol.html#sec-render-phase-plane",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Van der Pol Oscillator (Phase Plane + Nullclines)",
     "section": "Render-time Phase Plane",
     "text": "Render-time Phase Plane\n\n\n\n\n\n\n\n\nFigure 1: Van der Pol: trajectory in the phase plane with numerically approximated nullclines.",
     "crumbs": [
@@ -431,7 +387,7 @@
   {
     "objectID": "modules/ode-2d/van-der-pol.html#sec-run-interactive",
     "href": "modules/ode-2d/van-der-pol.html#sec-run-interactive",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Van der Pol Oscillator (Phase Plane + Nullclines)",
     "section": "Run the Interactive Version",
     "text": "Run the Interactive Version\npython sessions/s02_odes_2d/van_der_pol.py",
     "crumbs": [
@@ -442,7 +398,7 @@
   {
     "objectID": "modules/ode-2d/fitzhugh-nagumo.html",
     "href": "modules/ode-2d/fitzhugh-nagumo.html",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Phase Plane, Nullclines, Animation, and Interaction (FitzHugh–Nagumo)",
     "section": "",
     "text": "In Session 1 we studied 1D ODEs, where the geometry is simple: trajectories move along a line and equilibria are points where \\(\\dot x = 0\\). In 2D, the state is \\((x(t), y(t))\\) and trajectories live in the phase plane. This unlocks new qualitative behaviors: spirals, limit cycles, excitability, and relaxation oscillations.\nIn the course material, we will use several 2D models (CDIMA reaction, Van der Pol, FitzHugh–Nagumo). In this session we focus on the workflow:\n\nintegrate a system with scipy.integrate.solve_ivp\nvisualize trajectories in the phase plane\ncompute nullclines and fixed points\nanimate the trajectory with matplotlib.animation\nrestart the simulation interactively using mouse clicks\n\n\n\nBy the end of this session, you will be able to:\n\nImplement a 2D ODE in the signature expected by solve_ivp.\nCompute and plot phase-plane trajectories.\nCompute nullclines (analytically when possible, numerically otherwise).\nLocate fixed points using scipy.optimize.fsolve.\nCreate a Matplotlib animation that updates plot elements per frame.\nAdd an on-click event to change initial conditions/parameters and restart the animation.",
     "crumbs": [
@@ -453,7 +409,7 @@
   {
     "objectID": "modules/ode-2d/fitzhugh-nagumo.html#sec-introduction",
     "href": "modules/ode-2d/fitzhugh-nagumo.html#sec-introduction",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Phase Plane, Nullclines, Animation, and Interaction (FitzHugh–Nagumo)",
     "section": "",
     "text": "In Session 1 we studied 1D ODEs, where the geometry is simple: trajectories move along a line and equilibria are points where \\(\\dot x = 0\\). In 2D, the state is \\((x(t), y(t))\\) and trajectories live in the phase plane. This unlocks new qualitative behaviors: spirals, limit cycles, excitability, and relaxation oscillations.\nIn the course material, we will use several 2D models (CDIMA reaction, Van der Pol, FitzHugh–Nagumo). In this session we focus on the workflow:\n\nintegrate a system with scipy.integrate.solve_ivp\nvisualize trajectories in the phase plane\ncompute nullclines and fixed points\nanimate the trajectory with matplotlib.animation\nrestart the simulation interactively using mouse clicks\n\n\n\nBy the end of this session, you will be able to:\n\nImplement a 2D ODE in the signature expected by solve_ivp.\nCompute and plot phase-plane trajectories.\nCompute nullclines (analytically when possible, numerically otherwise).\nLocate fixed points using scipy.optimize.fsolve.\nCreate a Matplotlib animation that updates plot elements per frame.\nAdd an on-click event to change initial conditions/parameters and restart the animation.",
     "crumbs": [
@@ -464,7 +420,7 @@
   {
     "objectID": "modules/ode-2d/fitzhugh-nagumo.html#sec-what-do-we-need",
     "href": "modules/ode-2d/fitzhugh-nagumo.html#sec-what-do-we-need",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Phase Plane, Nullclines, Animation, and Interaction (FitzHugh–Nagumo)",
     "section": "What Do We Need?",
     "text": "What Do We Need?\nThis session uses the same stack as in the slides:\n\nscipy: solve_ivp() to integrate the ODEs; fsolve() to compute fixed points.\nmatplotlib.pyplot: create the figure/axes and plot static elements.\nmatplotlib.animation: update plot elements over time (animations).\nmatplotlib.backend_bases: on-click events to interact with the model.\n\nWe will not use Streamlit here because Matplotlib animations + click interactions are not as straightforward to embed in Streamlit (as of the time of writing).",
     "crumbs": [
@@ -475,7 +431,7 @@
   {
     "objectID": "modules/ode-2d/fitzhugh-nagumo.html#sec-fhn-model",
     "href": "modules/ode-2d/fitzhugh-nagumo.html#sec-fhn-model",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Phase Plane, Nullclines, Animation, and Interaction (FitzHugh–Nagumo)",
     "section": "The FitzHugh–Nagumo Model",
     "text": "The FitzHugh–Nagumo Model\nThe FitzHugh–Nagumo (FHN) model is a 2D reduction of the Hodgkin–Huxley neuron model and a classical example of an excitable system and relaxation oscillator.\nWe will use the following nondimensional form (matching the baseline code in sessions/s02_odes_2d/fitzhugh_nagumo.py):\n\\[\n\\begin{aligned}\n\\dot v &= \\frac{1}{\\epsilon}\\Big(v(1-v)(v-\\alpha) - w + I_{\\mathrm{app}}\\Big)\\\\\n\\dot w &= v - \\gamma w\n\\end{aligned}\n\\]\nwhere:\n\n\\(v\\) is the fast variable (membrane potential-like)\n\\(w\\) is the slow recovery variable\n\\(I_{\\mathrm{app}}\\) is an applied current (control parameter)\n\\(\\epsilon \\ll 1\\) controls time-scale separation\n\\(\\alpha,\\gamma\\) shape the nonlinearities",
     "crumbs": [
@@ -486,7 +442,7 @@
   {
     "objectID": "modules/ode-2d/fitzhugh-nagumo.html#sec-implementing-ode-function",
     "href": "modules/ode-2d/fitzhugh-nagumo.html#sec-implementing-ode-function",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Phase Plane, Nullclines, Animation, and Interaction (FitzHugh–Nagumo)",
     "section": "Implementing the ODE Function",
     "text": "Implementing the ODE Function\nsolve_ivp expects a function with the signature:\nf(t, y, *args) -&gt; dy_dt\nwhere y is a vector (here, y = [v, w]). A minimal implementation is:\nimport numpy as np\n\n\ndef fitzhugh_nagumo(\n    t: float,\n    vw: np.ndarray,\n    i_app: float = 0.5,\n    gamma: float = 0.5,\n    alpha: float = 0.1,\n    epsilon: float = 0.01,\n) -&gt; np.ndarray:\n    v, w = vw\n    fv = v * (1 - v) * (v - alpha)\n    dvdt = (fv - w + i_app) / epsilon\n    dwdt = v - gamma * w\n    return np.array([dvdt, dwdt])\nEven if the equations do not explicitly depend on time, t must be present because solve_ivp will call the function as fun(t, y).",
     "crumbs": [
@@ -497,7 +453,7 @@
   {
     "objectID": "modules/ode-2d/fitzhugh-nagumo.html#sec-numerical-integration-2d",
     "href": "modules/ode-2d/fitzhugh-nagumo.html#sec-numerical-integration-2d",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Phase Plane, Nullclines, Animation, and Interaction (FitzHugh–Nagumo)",
     "section": "Numerical Integration in 2D",
     "text": "Numerical Integration in 2D\nTo integrate a trajectory from an initial condition \\((v_0, w_0)\\) over a time interval \\([t_0, t_f]\\):\nimport numpy as np\nfrom scipy.integrate import solve_ivp\n\nt_span = (0.0, 10.0)\nt_eval = np.arange(t_span[0], t_span[1], 0.01)\n\ny0 = [0.0, 0.0]  # [v0, w0]\nargs = (0.1, 0.5, 0.1, 0.01)  # (i_app, gamma, alpha, epsilon)\n\nsol = solve_ivp(\n    fun=fitzhugh_nagumo,\n    t_span=t_span,\n    y0=y0,\n    t_eval=t_eval,\n    method=\"RK45\",\n    args=args,\n)\n\nv, w = sol.y  # v = sol.y[0], w = sol.y[1]\nThe output sol.y is a 2-by-\\(N\\) array, with each row being a time series for one variable.",
     "crumbs": [
@@ -508,7 +464,7 @@
   {
     "objectID": "modules/ode-2d/fitzhugh-nagumo.html#sec-phase-plane",
     "href": "modules/ode-2d/fitzhugh-nagumo.html#sec-phase-plane",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Phase Plane, Nullclines, Animation, and Interaction (FitzHugh–Nagumo)",
     "section": "Phase Plane: Trajectories, Nullclines, Fixed Points",
     "text": "Phase Plane: Trajectories, Nullclines, Fixed Points\nIn the phase plane, we plot \\(w\\) versus \\(v\\). A trajectory is the parametric curve: \\[ (v(t), w(t)). \\]\nTwo key geometric objects help interpret the flow:\n\nNullclines: curves where one derivative is zero.\n\n\\(\\dot v = 0\\) (the \\(v\\)-nullcline)\n\\(\\dot w = 0\\) (the \\(w\\)-nullcline)\n\nFixed points: intersections of nullclines, where \\(\\dot v = \\dot w = 0\\).\n\n\nNullclines (Analytical)\nFor the FHN system we can write nullclines explicitly.\nBecause \\(\\dot v = 0\\) is equivalent to the numerator being zero,\n\\[v(1-v)(v-\\alpha) - w + I_{\\mathrm{app}} = 0 \\quad\\Rightarrow\\quad w = v(1-v)(v-\\alpha) + I_{\\mathrm{app}}.\\]\nAnd from \\(\\dot w = 0\\):\n\\[v - \\gamma w = 0 \\quad\\Rightarrow\\quad w = \\frac{v}{\\gamma}.\\]\nThese are often faster and cleaner than numerical approximations.\n\n\nNullclines (Numerical)\nIn many models, nullclines are not available in closed form. A robust numerical alternative is:\n\ncreate a grid in \\((v, w)\\)\nevaluate \\((\\dot v, \\dot w)\\) on the grid\nfind sign changes (zero crossings) of \\(\\dot v\\) and \\(\\dot w\\)\n\nThe repository includes a general helper in sessions/s02_odes_2d/cdima.py called compute_nullclines that does exactly this (it is reused by the baseline FHN script).\n\n\nFixed Point via fsolve\nTo locate a fixed point, we solve \\[F(v,w) = (\\dot v, \\dot w) = (0,0).\\]\nNumerically, scipy.optimize.fsolve can find a root near an initial guess:\nimport numpy as np\nfrom scipy.optimize import fsolve\n\n\ndef fixed_point(system_func, guess, args):\n    def F(x):\n        return system_func(None, x, *args)\n\n    return fsolve(F, guess)\n\n\nfp = fixed_point(fitzhugh_nagumo, guess=np.array([0.0, 0.0]), args=args)\nprint(fp)  # [v*, w*]",
     "crumbs": [
@@ -519,7 +475,7 @@
   {
     "objectID": "modules/ode-2d/fitzhugh-nagumo.html#sec-static-plot",
     "href": "modules/ode-2d/fitzhugh-nagumo.html#sec-static-plot",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Phase Plane, Nullclines, Animation, and Interaction (FitzHugh–Nagumo)",
     "section": "Plotting: Static Figure",
     "text": "Plotting: Static Figure\nBefore animating anything, build a static figure:\n\nphase plane: nullclines + fixed point + trajectory\ntime series: one variable (e.g., \\(v(t)\\))\n\nTypical Matplotlib keywords you will use:\n\nlw: line width\nlinestyle: \"-\", \"--\", \"None\"\nmarker: \"o\", \"+\", \"*\", …\nmarkersize: size of markers\ncolor: \"blue\", \"red\", …\nlabel: legend label\n\nIn the baseline script you will find a multi-panel layout created via:\nfig, axs = plt.subplots(figsize=(10, 5), nrows=2, ncols=2, height_ratios=[5, 1])\nThis lets you combine the phase plane, time series, and a simple parameter indicator (e.g. a vertical line showing the current \\(I_{\\mathrm{app}}\\)).",
     "crumbs": [
@@ -530,7 +486,7 @@
   {
     "objectID": "modules/ode-2d/fitzhugh-nagumo.html#sec-animation",
     "href": "modules/ode-2d/fitzhugh-nagumo.html#sec-animation",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Phase Plane, Nullclines, Animation, and Interaction (FitzHugh–Nagumo)",
     "section": "Plotting: Animation",
     "text": "Plotting: Animation\nTo animate a trajectory, we initialize line objects (empty data) and update them every frame.\nThe core pattern is:\nimport matplotlib.animation as animation\n\n\ndef animate(i: int, xy: np.ndarray):\n    x, y = xy\n    line.set_data(x[:i], y[:i])\n    return (line,)\n\n\nani = animation.FuncAnimation(\n    fig,\n    animate,\n    fargs=(sol.y,),\n    frames=len(t_eval),\n    interval=1,\n    blit=True,\n)\nKey idea: the animation function must return the artists that changed, otherwise blit=True cannot efficiently redraw.",
     "crumbs": [
@@ -541,7 +497,7 @@
   {
     "objectID": "modules/ode-2d/fitzhugh-nagumo.html#sec-restart-animation",
     "href": "modules/ode-2d/fitzhugh-nagumo.html#sec-restart-animation",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Phase Plane, Nullclines, Animation, and Interaction (FitzHugh–Nagumo)",
     "section": "Updating an Existing Animation",
     "text": "Updating an Existing Animation\nTo restart an animation after changing initial conditions or parameters (pattern used in the baseline scripts):\nani.event_source.stop()\nani.frame_seq = ani.new_frame_seq()\nani._args = (new_data, ...)\nani.event_source.start()\nThis is equivalent to stopping, clearing frames, changing the fargs, and starting again.",
     "crumbs": [
@@ -552,7 +508,7 @@
   {
     "objectID": "modules/ode-2d/fitzhugh-nagumo.html#sec-interaction",
     "href": "modules/ode-2d/fitzhugh-nagumo.html#sec-interaction",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Phase Plane, Nullclines, Animation, and Interaction (FitzHugh–Nagumo)",
     "section": "User Interaction (On Click)",
     "text": "User Interaction (On Click)\nMatplotlib can react to user mouse clicks via mpl_connect.\nMinimal pattern:\nfrom matplotlib.backend_bases import MouseEvent\n\n\ndef mouse_click(event: MouseEvent):\n    if event.inaxes == ax_phase:\n        v0 = event.xdata\n        w0 = event.ydata\n        # recompute trajectory, nullclines, fixed point\n        # restart animation\n\n\nfig.canvas.mpl_connect(\"button_press_event\", mouse_click)\nIn the provided script, clicking in:\n\nthe phase plane sets the new initial condition \\((v_0, w_0)\\)\nthe parameter axis sets a new \\(I_{\\mathrm{app}}\\)\n\nand the animation restarts using the new data.",
     "crumbs": [
@@ -563,7 +519,7 @@
   {
     "objectID": "modules/ode-2d/fitzhugh-nagumo.html#sec-baseline",
     "href": "modules/ode-2d/fitzhugh-nagumo.html#sec-baseline",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Phase Plane, Nullclines, Animation, and Interaction (FitzHugh–Nagumo)",
     "section": "Baseline Code to Run",
     "text": "Baseline Code to Run\nThe repository already contains a complete interactive implementation for the FitzHugh–Nagumo model:\n\nsessions/s02_odes_2d/fitzhugh_nagumo.py\n\nFrom the repository root, run:\npython sessions/s02_odes_2d/fitzhugh_nagumo.py\nTry the following interactions:\n\nclick in the phase plane to set \\((v_0, w_0)\\)\nclick in the bottom-left axis to change \\(I_{\\mathrm{app}}\\)\nobserve how the trajectory, nullclines, and fixed point update",
     "crumbs": [
@@ -574,7 +530,7 @@
   {
     "objectID": "modules/ode-2d/fitzhugh-nagumo.html#sec-work-in-pairs",
     "href": "modules/ode-2d/fitzhugh-nagumo.html#sec-work-in-pairs",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Phase Plane, Nullclines, Animation, and Interaction (FitzHugh–Nagumo)",
     "section": "Work in Pairs (Suggested Division)",
     "text": "Work in Pairs (Suggested Division)\nThis matches the workflow in the slides:\nTask A: Phase Plane (Math + SciPy + NumPy)\n\nintegrate a trajectory with solve_ivp\ncompute nullclines (analytical if possible, or numerical on a grid)\ncompute a fixed point with fsolve\n\nTask B: Plot + Animation (Matplotlib)\n\nplot nullclines + fixed point + trajectory\nanimate the trajectory\nadd a second plot (bonus): \\(v(t)\\) vs time",
     "crumbs": [
@@ -585,7 +541,7 @@
   {
     "objectID": "modules/ode-2d/fitzhugh-nagumo.html#sec-homework",
     "href": "modules/ode-2d/fitzhugh-nagumo.html#sec-homework",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Phase Plane, Nullclines, Animation, and Interaction (FitzHugh–Nagumo)",
     "section": "Homework",
     "text": "Homework\nImplement the animation for one of the following models (your choice), in a single script:\n\nVan der Pol\nFitzHugh–Nagumo\n\nWhen you run the script, it should show a figure with:\n\nnullclines\nfixed point\nanimated trajectory\n\nBonus: animate a second plot (in the same figure) with the evolution of one variable in time.\nExtra mile: make the figure interactive so that the user can click to set the initial condition and the animation restarts.",
     "crumbs": [
@@ -596,7 +552,7 @@
   {
     "objectID": "modules/ode-2d/fitzhugh-nagumo.html#sec-exploration-questions",
     "href": "modules/ode-2d/fitzhugh-nagumo.html#sec-exploration-questions",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Phase Plane, Nullclines, Animation, and Interaction (FitzHugh–Nagumo)",
     "section": "Exploration Questions",
     "text": "Exploration Questions\n\nFor fixed \\((\\alpha, \\gamma, \\epsilon)\\), how does the qualitative behavior change as you increase \\(I_{\\mathrm{app}}\\)?\nPick two initial conditions on different sides of the nullclines. Do trajectories converge to the same attractor?\nUse the analytical nullclines for FHN and compare them to the numerical nullclines computed on a grid. When does the numerical approximation look noisy, and how can you improve it?",
     "crumbs": [
@@ -607,7 +563,7 @@
   {
     "objectID": "modules/ode-2d/fitzhugh-nagumo.html#sec-next",
     "href": "modules/ode-2d/fitzhugh-nagumo.html#sec-next",
-    "title": "2D Ordinary Differential Equations",
+    "title": "Phase Plane, Nullclines, Animation, and Interaction (FitzHugh–Nagumo)",
     "section": "Next Session",
     "text": "Next Session\nNext: reaction–diffusion systems (Gray–Scott), Laplacians with NumPy, Matplotlib animations, and user interactions.",
     "crumbs": [
@@ -618,94 +574,89 @@
   {
     "objectID": "modules/ode-1d/index.html",
     "href": "modules/ode-1d/index.html",
-    "title": "Numerical Integration",
+    "title": "Ordinary Differential Equations in 1D",
     "section": "",
-    "text": "Numerical integration is fundamental for solving ordinary differential equations (ODEs) that don’t have analytical solutions. In this module, you’ll learn how to:\n\nFormulate ODEs in Python\nUse SciPy’s solve_ivp to numerically integrate ODEs\nVisualize solutions and explore parameter spaces\nApply these techniques to real-world models"
-  },
-  {
-    "objectID": "modules/ode-1d/index.html#introduction",
-    "href": "modules/ode-1d/index.html#introduction",
-    "title": "Numerical Integration",
-    "section": "",
-    "text": "Numerical integration is fundamental for solving ordinary differential equations (ODEs) that don’t have analytical solutions. In this module, you’ll learn how to:\n\nFormulate ODEs in Python\nUse SciPy’s solve_ivp to numerically integrate ODEs\nVisualize solutions and explore parameter spaces\nApply these techniques to real-world models"
+    "text": "Numerical integration is fundamental for solving ordinary differential equations (ODEs) that don’t have analytical solutions. In this first session, you will learn how to:",
+    "crumbs": [
+      "Session 1: ODEs in 1D"
+    ]
   },
   {
     "objectID": "modules/ode-1d/index.html#contents",
     "href": "modules/ode-1d/index.html#contents",
-    "title": "Numerical Integration",
+    "title": "Ordinary Differential Equations in 1D",
     "section": "Contents",
-    "text": "Contents\n\nSIR Epidemic Model\nMichaelis–Menten Enzyme Kinetics\nSpruce Budworm Population Model\nAssignment"
+    "text": "Contents\n\nSIR Epidemic Model\nMichaelis–Menten Enzyme Kinetics\nSpruce Budworm Population Model\nAssignment",
+    "crumbs": [
+      "Session 1: ODEs in 1D"
+    ]
   },
   {
     "objectID": "modules/ode-1d/index.html#the-initial-value-problem",
     "href": "modules/ode-1d/index.html#the-initial-value-problem",
-    "title": "Numerical Integration",
+    "title": "Ordinary Differential Equations in 1D",
     "section": "The Initial Value Problem",
-    "text": "The Initial Value Problem\nAn initial value problem (IVP) consists of:\n\\[\\frac{dy}{dt} = f(t, y), \\quad y(t_0) = y_0\\]\nWhere: - \\(f(t, y)\\) is the rate of change function - \\(y_0\\) is the initial condition at time \\(t_0\\)"
+    "text": "The Initial Value Problem\nAn initial value problem (IVP) consists of:\n\\[\\frac{dy}{dt} = f(t, y), \\quad y(t_0) = y_0\\]\nWhere: - \\(f(t, y)\\) is the rate of change function - \\(y_0\\) is the initial condition at time \\(t_0\\)",
+    "crumbs": [
+      "Session 1: ODEs in 1D"
+    ]
   },
   {
     "objectID": "modules/ode-1d/index.html#scipys-solve_ivp",
     "href": "modules/ode-1d/index.html#scipys-solve_ivp",
-    "title": "Numerical Integration",
+    "title": "Ordinary Differential Equations in 1D",
     "section": "SciPy’s solve_ivp",
-    "text": "SciPy’s solve_ivp\nThe scipy.integrate.solve_ivp function is the standard tool for solving ODEs in Python. Try the following code:\nimport numpy as np\nfrom scipy.integrate import solve_ivp\n\ndef exponential_decay(t, y):\n     return -0.5 * y\n\nt_span = [0, 10]\ny0 = [2, 4, 8]\nsol = solve_ivp(\n    fun=exponential_decay,\n    t_span=t_span, \n    y0=y0)\n\nprint(sol.t)\n\nprint(sol.y)\nHow does solve_ivp work? Let’s understand its parameters (copied from the documentation):\n\nfun: Right-hand side of the system: the time derivative of the state \\(y\\) at time \\(t\\). The calling signature is fun(t, y), where t is a scalar and y is an ndarray with len(y) = len(y0). Additional arguments need to be passed if args is used (see documentation of args argument). fun must return an array of the same shape as y. In our example, exponential_decay defines the ODE \\(\\frac{dy}{dt} = -0.5y\\), which models exponential decay \\(y(t) = y_0 e^{-0.5t}\\).\nt_span: Interval of integration \\((t_0, t_f)\\). The solver starts with \\(t=t_0\\) and integrates until it reaches \\(t=t_f\\). Both \\(t_0\\) and \\(t_f\\) must be floats or values interpretable by the float conversion function.\ny0: Initial state. For problems in the complex domain, pass y0 with a complex data type (even if the initial value is purely real).\n\nYou can also specify additional parameters: - method: Integration method to use. Common choices include 'RK45' (default), 'RK23', 'DOP853', 'Radau', 'BDF', and 'LSODA'. - t_eval: Times at which to store the computed solution, must be sorted and lie within t_span. If None (default), use points selected by the solver. - args: Additional arguments to pass to the user-defined functions. If, for example, fun has the signature fun(t, y, a, b, c), then args=(a, b, c)."
+    "text": "SciPy’s solve_ivp\nThe scipy.integrate.solve_ivp function is the standard tool for solving ODEs in Python. Try the following code:\nimport numpy as np\nfrom scipy.integrate import solve_ivp\n\ndef exponential_decay(t, y):\n     return -0.5 * y\n\nt_span = [0, 10]\ny0 = [2, 4, 8]\nsol = solve_ivp(\n    fun=exponential_decay,\n    t_span=t_span, \n    y0=y0)\n\nprint(sol.t)\n\nprint(sol.y)\nHow does solve_ivp work? Let’s understand its parameters (copied from the documentation):\n\nfun: Right-hand side of the system: the time derivative of the state \\(y\\) at time \\(t\\). The calling signature is fun(t, y), where t is a scalar and y is an ndarray with len(y) = len(y0). Additional arguments need to be passed if args is used (see documentation of args argument). fun must return an array of the same shape as y. In our example, exponential_decay defines the ODE \\(\\frac{dy}{dt} = -0.5y\\), which models exponential decay \\(y(t) = y_0 e^{-0.5t}\\).\nt_span: Interval of integration \\((t_0, t_f)\\). The solver starts with \\(t=t_0\\) and integrates until it reaches \\(t=t_f\\). Both \\(t_0\\) and \\(t_f\\) must be floats or values interpretable by the float conversion function.\ny0: Initial state. For problems in the complex domain, pass y0 with a complex data type (even if the initial value is purely real).\n\nYou can also specify additional parameters: - method: Integration method to use. Common choices include 'RK45' (default), 'RK23', 'DOP853', 'Radau', 'BDF', and 'LSODA'. - t_eval: Times at which to store the computed solution, must be sorted and lie within t_span. If None (default), use points selected by the solver. - args: Additional arguments to pass to the user-defined functions. If, for example, fun has the signature fun(t, y, a, b, c), then args=(a, b, c).",
+    "crumbs": [
+      "Session 1: ODEs in 1D"
+    ]
   },
   {
     "objectID": "modules/ode-1d/index.html#systems-of-odes",
     "href": "modules/ode-1d/index.html#systems-of-odes",
-    "title": "Numerical Integration",
+    "title": "Ordinary Differential Equations in 1D",
     "section": "Systems of ODEs",
-    "text": "Systems of ODEs\nFor multiple coupled equations, return a list or array of derivatives:\ndef sir_model(t, y, beta, gamma):\n    S, I, R = y\n    N = S + I + R\n    \n    dSdt = -beta * S * I / N\n    dIdt = beta * S * I / N - gamma * I\n    dRdt = gamma * I\n    \n    return [dSdt, dIdt, dRdt]"
+    "text": "Systems of ODEs\nFor multiple coupled equations, return a list or array of derivatives:\ndef sir_model(t, y, beta, gamma):\n    S, I, R = y\n    N = S + I + R\n    \n    dSdt = -beta * S * I / N\n    dIdt = beta * S * I / N - gamma * I\n    dRdt = gamma * I\n    \n    return [dSdt, dIdt, dRdt]",
+    "crumbs": [
+      "Session 1: ODEs in 1D"
+    ]
   },
   {
     "objectID": "modules/ode-1d/index.html#best-practices",
     "href": "modules/ode-1d/index.html#best-practices",
-    "title": "Numerical Integration",
+    "title": "Ordinary Differential Equations in 1D",
     "section": "Best Practices",
-    "text": "Best Practices\n\nAlways check convergence: Plot solutions at different tolerances\nUse appropriate methods: 'RK45' (default) works well for most problems\nVectorize when possible: Makes code faster and cleaner\nDocument parameters: Keep track of units and meanings\nValidate against known solutions: Test your implementation"
+    "text": "Best Practices\n\nAlways check convergence: Plot solutions at different tolerances\nUse appropriate methods: 'RK45' (default) works well for most problems\nVectorize when possible: Makes code faster and cleaner\nDocument parameters: Keep track of units and meanings\nValidate against known solutions: Test your implementation",
+    "crumbs": [
+      "Session 1: ODEs in 1D"
+    ]
   },
   {
     "objectID": "modules/ode-1d/index.html#next-steps",
     "href": "modules/ode-1d/index.html#next-steps",
-    "title": "Numerical Integration",
+    "title": "Ordinary Differential Equations in 1D",
     "section": "Next Steps",
-    "text": "Next Steps\nApply these techniques to the classical models in Session 1: - SIR epidemiological model - Spruce budworm population dynamics - Michaelis–Menten enzyme kinetics"
+    "text": "Next Steps\nApply these techniques to the classical models in Session 1: - SIR epidemiological model - Spruce budworm population dynamics - Michaelis–Menten enzyme kinetics",
+    "crumbs": [
+      "Session 1: ODEs in 1D"
+    ]
   },
   {
     "objectID": "modules/ode-1d/index.html#resources",
     "href": "modules/ode-1d/index.html#resources",
-    "title": "Numerical Integration",
+    "title": "Ordinary Differential Equations in 1D",
     "section": "Resources",
-    "text": "Resources\n\nSciPy solve_ivp documentation\nPython for ODEs tutorial"
+    "text": "Resources\n\nSciPy solve_ivp documentation\nPython for ODEs tutorial",
+    "crumbs": [
+      "Session 1: ODEs in 1D"
+    ]
   },
   {
     "objectID": "modules/ode-1d/michaelis-menten.html",
     "href": "modules/ode-1d/michaelis-menten.html",
-    "title": "1D Ordinary Differential Equations",
+    "title": "Michaelis–Menten Enzyme Kinetics",
     "section": "",
-    "text": "Michaelis–Menten kinetics is a foundational model in biochemical reaction dynamics. It relates substrate concentration to reaction rate using a saturating nonlinearity.\n\n\n\nSolve a 1D ODE with solve_ivp.\nPlot both a time series and the rate curve \\(v(s)\\).",
-    "crumbs": [
-      "Session 1: ODEs in 1D",
-      "Michaelis–Menten Kinetics"
-    ]
-  },
-  {
-    "objectID": "modules/ode-1d/michaelis-menten.html#sec-introduction",
-    "href": "modules/ode-1d/michaelis-menten.html#sec-introduction",
-    "title": "1D Ordinary Differential Equations",
-    "section": "",
-    "text": "Michaelis–Menten kinetics is a foundational model in biochemical reaction dynamics. It relates substrate concentration to reaction rate using a saturating nonlinearity.\n\n\n\nSolve a 1D ODE with solve_ivp.\nPlot both a time series and the rate curve \\(v(s)\\).",
-    "crumbs": [
-      "Session 1: ODEs in 1D",
-      "Michaelis–Menten Kinetics"
-    ]
-  },
-  {
-    "objectID": "modules/ode-1d/michaelis-menten.html#sec-model",
-    "href": "modules/ode-1d/michaelis-menten.html#sec-model",
-    "title": "1D Ordinary Differential Equations",
-    "section": "Model",
-    "text": "Model\nThe (simplified) substrate dynamics implemented in the reference script is:\n\\[\n\\dot s = \\frac{V_{\\max}s}{K_m + s}\n\\]\nwhere \\(V_{\\max}\\) is the maximum rate and \\(K_m\\) is the Michaelis constant.",
+    "text": "Michaelis–Menten kinetics is a foundational model in biochemical reaction dynamics. It relates substrate concentration to reaction rate using a saturating nonlinearity.\nThe (simplified) substrate dynamics implemented in the reference script is:\n\\[\n\\dot s = \\frac{V_{\\max}s}{K_m + s}\n\\]\nwhere \\(V_{\\max}\\) is the maximum rate and \\(K_m\\) is the Michaelis constant.",
     "crumbs": [
       "Session 1: ODEs in 1D",
       "Michaelis–Menten Kinetics"
@@ -714,7 +665,7 @@
   {
     "objectID": "modules/ode-1d/michaelis-menten.html#sec-reference",
     "href": "modules/ode-1d/michaelis-menten.html#sec-reference",
-    "title": "1D Ordinary Differential Equations",
+    "title": "Michaelis–Menten Enzyme Kinetics",
     "section": "Reference Implementation",
     "text": "Reference Implementation\nSee:\n\nsessions/s01_odes_1d/michaelis_menten.py\n\nThe helper plot_michaelis_menten(...) produces:\n\n\\(s(t)\\) over time\n\\(v(s)\\) with guides at \\(s=K_m\\) and \\(v=V_{\\max}/2\\)",
     "crumbs": [
@@ -725,7 +676,7 @@
   {
     "objectID": "modules/ode-1d/michaelis-menten.html#sec-render-figure",
     "href": "modules/ode-1d/michaelis-menten.html#sec-render-figure",
-    "title": "1D Ordinary Differential Equations",
+    "title": "Michaelis–Menten Enzyme Kinetics",
     "section": "Render-time Figure",
     "text": "Render-time Figure\n\n\n\n\n\n\n\n\nFigure 1: Michaelis–Menten: time series \\(s(t)\\) and rate curve \\(v(s)\\).",
     "crumbs": [
@@ -736,7 +687,7 @@
   {
     "objectID": "modules/ode-1d/michaelis-menten.html#sec-exploration",
     "href": "modules/ode-1d/michaelis-menten.html#sec-exploration",
-    "title": "1D Ordinary Differential Equations",
+    "title": "Michaelis–Menten Enzyme Kinetics",
     "section": "Exploration",
     "text": "Exploration\n\nIncrease \\(V_{\\max}\\) and observe how the rate curve changes.\nIncrease \\(K_m\\) (lower affinity). How does the saturation point shift?",
     "crumbs": [
@@ -747,7 +698,7 @@
   {
     "objectID": "modules/ode-1d/michaelis-menten.html#sec-run-locally",
     "href": "modules/ode-1d/michaelis-menten.html#sec-run-locally",
-    "title": "1D Ordinary Differential Equations",
+    "title": "Michaelis–Menten Enzyme Kinetics",
     "section": "Run Locally",
     "text": "Run Locally\npython sessions/s01_odes_1d/michaelis_menten.py",
     "crumbs": [
