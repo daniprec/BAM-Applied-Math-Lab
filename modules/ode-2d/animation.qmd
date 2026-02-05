@@ -6,7 +6,9 @@ format: html
 
 This page summarizes the core Matplotlib pattern we use to animate trajectories in the phase plane, and how to restart an animation when the user changes parameters or initial conditions.
 
-## Minimal animation pattern
+If you struggle with this part, feel free to check a complete example of the [CDMI animation here](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/sessions/s02_odes_2d/cdima.py).
+
+## Minimal Animation Template
 
 ```python
 import matplotlib.animation as animation
@@ -23,35 +25,41 @@ ax = plt.gca()  # get current axis
 
 # Initialize the line object for animation on the phase plane
 (plot_trajectory,) = ax.plot([], [], lw=2)
+# This trajectory would be x-y for the
+# phase plane of the CDIMA and Van der Pol models, and v-w for the FitzHugh–Nagumo model
 
 
-def animate(frame: int, xy):
+def animate(frame: int, xy: tuple[np.ndarray, np.ndarray]):
 	"""Update function called once per frame."""
-	x, y = xy
+	# unpack the solution (x(t), y(t)) or (v(t), w(t))
+    x, y = xy
+    # update the line data to show the trajectory up to the current frame
 	plot_trajectory.set_data(x[:frame], y[:frame])
+    # return the updated artist (line) for blitting
 	return (plot_trajectory,)
 
 
+# The animation object that will run the animation
 ani = animation.FuncAnimation(
 	fig,
 	animate,
 	fargs=(sol.y,),
 	frames=len(sol.t),
-	interval=1,
-	blit=True,
+	interval=1,  # delay between frames in milliseconds
+	blit=True,  # redraw only the updated artists for efficiency
 )
 ```
 
-## What Happens in an Animation?
+### What Happens in an Animation?
 
 The animation function is called once per frame:
 
-- `frame` (or `i`) is the frame index (0, 1, 2, ...)
-- `xy` is the data to plot (here, the solution `sol.y` returned by `solve_ivp`)
-- the function must **update the artists** (lines, points, text, etc.)
-- it must **return an iterable** with the updated artists when `blit=True`
+- `frame` (or `i`) is the frame index (0, 1, 2, ...).
+- `xy` is the data to plot (here, the solution `sol.y` returned by `solve_ivp`).
+- the function must **update the artists** (lines, points, text, etc.).
+- it must **return an iterable** with the updated artists when `blit=True`. This tells Matplotlib which parts of the plot to redraw for the next frame, improving performance.
 
-## The Animation Function in Detail
+### The Animation Function in Detail
 
 Template:
 
@@ -69,7 +77,7 @@ line.set_data(x, y)
 
 This replaces the line coordinates by the new points $(x,y)$.
 
-## Creating the Animation (`FuncAnimation`)
+### Creating the Animation (`FuncAnimation`)
 
 ```python
 import matplotlib.animation as animation
@@ -91,7 +99,7 @@ Arguments:
 - `interval`: delay between frames (milliseconds)
 - `blit`: if `True`, redraws only the updated artists (faster). When using `blit=True`, your animation function must return the artists that were updated.
 
-## Restarting an Animation (Interactivity)
+## Interactivity: Restarting the Animation
 
 When the user clicks (new initial condition) or changes a parameter, a common pattern is:
 
@@ -103,3 +111,36 @@ ani.event_source.start()         # start again
 ```
 
 This is the mechanism used in the interactive scripts: recompute `solve_ivp(...)`, update nullclines/fixed point, then restart the animation with the new data.
+
+## Mouse Clicks
+
+Matplotlib figures can react to user input via the event system. A common pattern is to capture clicks in a specific axis and use the click position as a new initial condition.
+
+```python
+from matplotlib.backend_bases import MouseEvent
+
+
+def mouse_click(event: MouseEvent):
+	# Check if the mouse click happens in the axis "ax1"
+	if event.inaxes == ax1:
+		# Get the position of the mouse click on the axis
+		x0 = event.xdata
+		y0 = event.ydata
+	else:
+		return
+
+	# This part of the code should update the plot.
+	# Use the animation functions we have learnt:
+	# 1) stop the current animation
+	# 2) clear/reset it
+	# 3) recompute the solution (and nullclines/fixed point if needed)
+	# 4) set new animation arguments
+	# 5) start again
+
+
+# Make the figure aware of user clicks.
+# Whenever the user clicks, we run the function "mouse_click".
+fig.canvas.mpl_connect("button_press_event", mouse_click)
+```
+
+You will need to stop the current animation, clear it, update the parameters/initial conditions, and start over (see the previous section).
