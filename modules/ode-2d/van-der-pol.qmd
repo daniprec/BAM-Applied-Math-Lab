@@ -58,3 +58,35 @@ plt.close()
 
 Follow the steps outline in [the CDIMA model](cdima.qmd) to explore how the Van der Pol system behaves for different initial conditions and parameters.
 
+## The Stable Limit Cycle
+
+The Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions.
+Plot this limit cycle as a $x(t)-t$ plot, and verify that it matches the phase plane trajectories.
+
+```{python}
+#| label: fig-limit-cycle
+#| fig-cap: "Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with `scipy.integrate.solve_ivp()` and matplotlib."
+#| fig-width: 8
+#| fig-height: 4
+#| echo: false
+xy = (2, -2)
+
+fig, ax = plt.subplots(figsize=(8, 4))
+sol = solve_ivp(
+    van_der_pol,
+    [0, 40],
+    xy,
+    args=(mu,),
+    t_eval=np.linspace(0, 40, 4000),
+)
+ax.plot(sol.t, sol.y[0])
+plt.xlabel("Time (t)")
+plt.ylabel("x(t)")
+plt.legend()
+plt.show()
+plt.close()
+```
+
+The amplitude and period of the limit cycle depend on $\mu$. There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with $\mu$, while the fast phase becomes more abrupt. This leads to a characteristic "relaxation oscillation" shape for large $\mu$.
+
+Play with the parameter $\mu$ to see how it changes the shape of the limit cycle and the transient dynamics.

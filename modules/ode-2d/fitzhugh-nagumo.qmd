@@ -39,7 +39,7 @@ epsilon = 0.01
 
 fig, ax = plt.subplots(figsize=(8, 4))
 for v0, w0 in ls_vw:
-    sol = solve_ivp(fitzhugh_nagumo, [0, 20], [v0, w0], args=(i_app, gamma, alpha, epsilon), t_eval=np.linspace(0, 20, 2000))
+    sol = solve_ivp(fitzhugh_nagumo, [0, 20], [v0, w0], args=(i_app, gamma, alpha, epsilon), t_eval=np.linspace(0, 2, 2000))
     ax.plot(sol.y[0], sol.y[1], label=f"IC: ({v0}, {w0})")
     # Mark the initial condition
     ax.plot(v0, w0, 'o', color='black')
@@ -51,3 +51,40 @@ plt.close()
 ```
 
 Follow the steps outline in [the CDIMA model](cdima.qmd) to explore how the FitzHugh–Nagumo system behaves for different initial conditions and parameters.
+
+## Time Series and Excitability
+
+In the **excitable** regime, trajectories typically stay near the resting equilibrium, but sufficiently large perturbations can trigger a large excursion
+(a "spike") before returning to rest.
+
+Below we plot the fast variable $v(t)$ for a fixed parameter set and initial condition.
+
+```{python}
+#| label: fig-time-series
+#| fig-cap: "Time series $v(t)$ for the FitzHugh–Nagumo system (same parameters as the phase-plane plot). Depending on the initial condition, the solution may relax to rest or exhibit a spike/oscillation."
+#| fig-width: 8
+#| fig-height: 4
+#| echo: false
+
+vw = (0.3, 0.0)
+t_span = [0, 2]
+t_eval = np.linspace(t_span[0], t_span[1], 2000)
+
+fig, ax = plt.subplots(figsize=(8, 4))
+sol = solve_ivp(
+    fitzhugh_nagumo,
+    t_span,
+    vw,
+    args=(i_app, gamma, alpha, epsilon),
+    t_eval=t_eval,
+)
+
+ax.plot(sol.t, sol.y[0], label=f"IC: ({vw[0]}, {vw[1]})")
+plt.xlabel("Time (t)")
+plt.ylabel("v(t)")
+plt.legend()
+plt.show()
+plt.close()
+```
+
+Try changing the initial condition and parameters to see how the time series changes. What regimes of behavior do you observe? Can you connect these observations to the phase plane trajectories and the underlying theory of excitability?
