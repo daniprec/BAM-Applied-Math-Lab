@@ -213,7 +213,7 @@
     "href": "modules/ode-2d/van-der-pol.html#the-stable-limit-cycle",
     "title": "Van der Pol Oscillator",
     "section": "The Stable Limit Cycle",
-    "text": "The Stable Limit Cycle\nThe Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions. Plot this limit cycle as a \\(x(t)-t\\) plot, and verify that it matches the phase plane trajectories.\n\n\n/tmp/ipykernel_2878/2854713749.py:14: UserWarning:\n\nNo artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.\n\n\n\n\n\n\n\n\n\nFigure 2: Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nThe amplitude and period of the limit cycle depend on \\(\\mu\\). There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with \\(\\mu\\), while the fast phase becomes more abrupt. This leads to a characteristic “relaxation oscillation” shape for large \\(\\mu\\).\nPlay with the parameter \\(\\mu\\) to see how it changes the shape of the limit cycle and the transient dynamics.",
+    "text": "The Stable Limit Cycle\nThe Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions. Plot this limit cycle as a \\(x(t)-t\\) plot, and verify that it matches the phase plane trajectories.\n\n\n/tmp/ipykernel_2857/2854713749.py:14: UserWarning:\n\nNo artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.\n\n\n\n\n\n\n\n\n\nFigure 2: Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nThe amplitude and period of the limit cycle depend on \\(\\mu\\). There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with \\(\\mu\\), while the fast phase becomes more abrupt. This leads to a characteristic “relaxation oscillation” shape for large \\(\\mu\\).\nPlay with the parameter \\(\\mu\\) to see how it changes the shape of the limit cycle and the transient dynamics.",
     "crumbs": [
       "Session 2: ODEs in 2D",
       "Van der Pol Oscillator"
@@ -418,42 +418,44 @@
     "href": "modules/ode-2d/animation.html",
     "title": "Animations and Interactivity",
     "section": "",
-    "text": "This page summarizes the core Matplotlib pattern we use to animate trajectories in the phase plane, and how to restart an animation when the user changes parameters or initial conditions."
+    "text": "This page summarizes the core Matplotlib pattern we use to animate trajectories in the phase plane, and how to restart an animation when the user changes parameters or initial conditions.\nIf you struggle with this part, feel free to check a complete example of the CDMI animation here.",
+    "crumbs": [
+      "Session 2: ODEs in 2D",
+      "Animation Template"
+    ]
   },
   {
-    "objectID": "modules/ode-2d/animation.html#minimal-animation-pattern",
-    "href": "modules/ode-2d/animation.html#minimal-animation-pattern",
+    "objectID": "modules/ode-2d/animation.html#minimal-animation-template",
+    "href": "modules/ode-2d/animation.html#minimal-animation-template",
     "title": "Animations and Interactivity",
-    "section": "Minimal animation pattern",
-    "text": "Minimal animation pattern\nimport matplotlib.animation as animation\nimport matplotlib.pyplot as plt\n\n# ...\n# Your code to compute trajectories, nullclines, fixed point...\n# Example: sol = solve_ivp(...)\n# ...\n\n# Open a new figure (white canvas)\nfig = plt.figure()\nax = plt.gca()  # get current axis\n\n# Initialize the line object for animation on the phase plane\n(plot_trajectory,) = ax.plot([], [], lw=2)\n\n\ndef animate(frame: int, xy):\n    \"\"\"Update function called once per frame.\"\"\"\n    x, y = xy\n    plot_trajectory.set_data(x[:frame], y[:frame])\n    return (plot_trajectory,)\n\n\nani = animation.FuncAnimation(\n    fig,\n    animate,\n    fargs=(sol.y,),\n    frames=len(sol.t),\n    interval=1,\n    blit=True,\n)"
+    "section": "Minimal Animation Template",
+    "text": "Minimal Animation Template\nimport matplotlib.animation as animation\nimport matplotlib.pyplot as plt\n\n# ...\n# Your code to compute trajectories, nullclines, fixed point...\n# Example: sol = solve_ivp(...)\n# ...\n\n# Open a new figure (white canvas)\nfig = plt.figure()\nax = plt.gca()  # get current axis\n\n# Initialize the line object for animation on the phase plane\n(plot_trajectory,) = ax.plot([], [], lw=2)\n# This trajectory would be x-y for the\n# phase plane of the CDIMA and Van der Pol models, and v-w for the FitzHugh–Nagumo model\n\n\ndef animate(frame: int, xy: tuple[np.ndarray, np.ndarray]):\n    \"\"\"Update function called once per frame.\"\"\"\n    # unpack the solution (x(t), y(t)) or (v(t), w(t))\n    x, y = xy\n    # update the line data to show the trajectory up to the current frame\n    plot_trajectory.set_data(x[:frame], y[:frame])\n    # return the updated artist (line) for blitting\n    return (plot_trajectory,)\n\n\n# The animation object that will run the animation\nani = animation.FuncAnimation(\n    fig,\n    animate,\n    fargs=(sol.y,),\n    frames=len(sol.t),\n    interval=1,  # delay between frames in milliseconds\n    blit=True,  # redraw only the updated artists for efficiency\n)\n\nWhat Happens in an Animation?\nThe animation function is called once per frame:\n\nframe (or i) is the frame index (0, 1, 2, …).\nxy is the data to plot (here, the solution sol.y returned by solve_ivp).\nthe function must update the artists (lines, points, text, etc.).\nit must return an iterable with the updated artists when blit=True. This tells Matplotlib which parts of the plot to redraw for the next frame, improving performance.\n\n\n\nThe Animation Function in Detail\nTemplate:\ndef animate_function(i: int, *args):\n    # update plot elements\n    return (artist1, artist2, ...)\nIn our case, the second input argument is the solution from solve_ivp. Updating a line is typically done with:\nline.set_data(x, y)\nThis replaces the line coordinates by the new points \\((x,y)\\).\n\n\nCreating the Animation (FuncAnimation)\nimport matplotlib.animation as animation\n\nani = animation.FuncAnimation(\n    fig,\n    function,\n    fargs=(sol.y,),\n    interval=1,\n    blit=True,\n)\nArguments:\n\nfig: the Matplotlib figure to animate\nfunction: the callback that updates plot elements on each frame\nfargs: extra arguments passed to function (everything except the frame index)\ninterval: delay between frames (milliseconds)\nblit: if True, redraws only the updated artists (faster). When using blit=True, your animation function must return the artists that were updated.",
+    "crumbs": [
+      "Session 2: ODEs in 2D",
+      "Animation Template"
+    ]
   },
   {
-    "objectID": "modules/ode-2d/animation.html#what-happens-in-an-animation",
-    "href": "modules/ode-2d/animation.html#what-happens-in-an-animation",
+    "objectID": "modules/ode-2d/animation.html#interactivity-restarting-the-animation",
+    "href": "modules/ode-2d/animation.html#interactivity-restarting-the-animation",
     "title": "Animations and Interactivity",
-    "section": "What Happens in an Animation?",
-    "text": "What Happens in an Animation?\nThe animation function is called once per frame:\n\nframe (or i) is the frame index (0, 1, 2, …)\nxy is the data to plot (here, the solution sol.y returned by solve_ivp)\nthe function must update the artists (lines, points, text, etc.)\nit must return an iterable with the updated artists when blit=True"
+    "section": "Interactivity: Restarting the Animation",
+    "text": "Interactivity: Restarting the Animation\nWhen the user clicks (new initial condition) or changes a parameter, a common pattern is:\nani.event_source.stop()          # stop the current animation\nani.frame_seq = ani.new_frame_seq()  # reset frame generator\nani._args = (xy, ...)            # replace animation inputs (like new fargs)\nani.event_source.start()         # start again\nThis is the mechanism used in the interactive scripts: recompute solve_ivp(...), update nullclines/fixed point, then restart the animation with the new data.",
+    "crumbs": [
+      "Session 2: ODEs in 2D",
+      "Animation Template"
+    ]
   },
   {
-    "objectID": "modules/ode-2d/animation.html#the-animation-function-in-detail",
-    "href": "modules/ode-2d/animation.html#the-animation-function-in-detail",
+    "objectID": "modules/ode-2d/animation.html#mouse-clicks",
+    "href": "modules/ode-2d/animation.html#mouse-clicks",
     "title": "Animations and Interactivity",
-    "section": "The Animation Function in Detail",
-    "text": "The Animation Function in Detail\nTemplate:\ndef animate_function(i: int, *args):\n    # update plot elements\n    return (artist1, artist2, ...)\nIn our case, the second input argument is the solution from solve_ivp. Updating a line is typically done with:\nline.set_data(x, y)\nThis replaces the line coordinates by the new points \\((x,y)\\)."
-  },
-  {
-    "objectID": "modules/ode-2d/animation.html#creating-the-animation-funcanimation",
-    "href": "modules/ode-2d/animation.html#creating-the-animation-funcanimation",
-    "title": "Animations and Interactivity",
-    "section": "Creating the Animation (FuncAnimation)",
-    "text": "Creating the Animation (FuncAnimation)\nimport matplotlib.animation as animation\n\nani = animation.FuncAnimation(\n    fig,\n    function,\n    fargs=(sol.y,),\n    interval=1,\n    blit=True,\n)\nArguments:\n\nfig: the Matplotlib figure to animate\nfunction: the callback that updates plot elements on each frame\nfargs: extra arguments passed to function (everything except the frame index)\ninterval: delay between frames (milliseconds)\nblit: if True, redraws only the updated artists (faster). When using blit=True, your animation function must return the artists that were updated."
-  },
-  {
-    "objectID": "modules/ode-2d/animation.html#restarting-an-animation-interactivity",
-    "href": "modules/ode-2d/animation.html#restarting-an-animation-interactivity",
-    "title": "Animations and Interactivity",
-    "section": "Restarting an Animation (Interactivity)",
-    "text": "Restarting an Animation (Interactivity)\nWhen the user clicks (new initial condition) or changes a parameter, a common pattern is:\nani.event_source.stop()          # stop the current animation\nani.frame_seq = ani.new_frame_seq()  # reset frame generator\nani._args = (xy, ...)            # replace animation inputs (like new fargs)\nani.event_source.start()         # start again\nThis is the mechanism used in the interactive scripts: recompute solve_ivp(...), update nullclines/fixed point, then restart the animation with the new data."
+    "section": "Mouse Clicks",
+    "text": "Mouse Clicks\nMatplotlib figures can react to user input via the event system. A common pattern is to capture clicks in a specific axis and use the click position as a new initial condition.\nfrom matplotlib.backend_bases import MouseEvent\n\n\ndef mouse_click(event: MouseEvent):\n    # Check if the mouse click happens in the axis \"ax1\"\n    if event.inaxes == ax1:\n        # Get the position of the mouse click on the axis\n        x0 = event.xdata\n        y0 = event.ydata\n    else:\n        return\n\n    # This part of the code should update the plot.\n    # Use the animation functions we have learnt:\n    # 1) stop the current animation\n    # 2) clear/reset it\n    # 3) recompute the solution (and nullclines/fixed point if needed)\n    # 4) set new animation arguments\n    # 5) start again\n\n\n# Make the figure aware of user clicks.\n# Whenever the user clicks, we run the function \"mouse_click\".\nfig.canvas.mpl_connect(\"button_press_event\", mouse_click)\nYou will need to stop the current animation, clear it, update the parameters/initial conditions, and start over (see the previous section).",
+    "crumbs": [
+      "Session 2: ODEs in 2D",
+      "Animation Template"
+    ]
   },
   {
     "objectID": "modules/ode-1d/index.html",
