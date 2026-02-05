@@ -8,7 +8,7 @@ The CDIMA model (Chlorine Dioxide–Iodine–Malonic Acid reaction) is a classic
 The equations are:
 
 $$\begin{aligned}
-\dot x &= a - x \frac{4xy}{1+x^2} \\
+\dot x &= a - x - \frac{4xy}{1+x^2} \\
 \dot y &= bx \left( 1 - \frac{y}{1+x^2} \right)
 \end{aligned}$$
 
@@ -21,7 +21,7 @@ A **phase plane** is a 2D plot whose axes are the state variables (here, $x$ and
 
 ```{python}
 #| label: fig-phase-plane
-#| fig-cap: "Phase plane of the CDIMA system with a = 10, b = 4. Trajectories are shown for different initial conditions (IC as x, y). Generated with `scipy.integrate.solve_ivp()` and matplotlib."
+#| fig-cap: "Phase plane of the CDIMA system with a = 10, b = 4. Trajectories are shown for different initial conditions (IC as x-y, marked black). Generated with `scipy.integrate.solve_ivp()` and matplotlib."
 #| fig-width: 8
 #| fig-height: 4
 #| echo: false
@@ -39,9 +39,112 @@ fig, ax = plt.subplots(figsize=(8, 4))
 for x0, y0 in ls_xy:
     sol = solve_ivp(cdima, [0, 20], [x0, y0], args=(a, b), t_eval=np.linspace(0, 20, 2000))
     ax.plot(sol.y[0], sol.y[1], label=f"IC: ({x0}, {y0})")
+    # Mark the initial condition
+    ax.plot(x0, y0, 'o', color='black')
 plt.xlabel("x")
 plt.ylabel("y")
 plt.legend()
 plt.show()
 plt.close()
 ```
+
+Generating this phase plane in Python is simple. We will follow the same approach as in 1D: define the right-hand side as a function, choose a time span and evaluation grid, and integrate with `scipy.integrate.solve_ivp()`. Follow the steps below.
+
+### Define the ODE Function
+
+First, define the `cdima()` function. Remeber that any ODE (in any dimension), can be written as:
+
+```python
+def ode(t, state, *params):
+    # state represents the current values of the variables (e.g., x, y)
+
+    # params are any additional parameters needed to compute the derivatives
+    # each of them is separated by commas
+
+    return dstate_dt  # this should be a list/array of the same length as state
+```
+
+Can you write the `cdima()` function in this format? If you need an extra hint, uncollapse the code block below.
+
+::: {.callout-tip collapse="true"}
+## Hint: CDIMA right-hand side (click to expand)
+
+```python
+def cdima(t: float, state: tuple[float, float], a: int, b: int) -> tuple[float, float]:
+    """Remember the docstring and type hints!"""
+    x, y = state  # unpack the state variables
+    dxdt =  # compute dx/dt
+    dydt = # compute dy/dt
+    return (dxdt, dydt)  # return the derivatives as a list
+```
+:::
+
+### Solve the Initial Value Problem
+
+Next, we need to solve the initial value problem (IVP) for a given initial condition and parameters.
+The workflow is similar to 1D, but now we have a vector of state variables instead of a single variable. The `solve_ivp()` function will return the trajectories for both $x(t)$ and $y(t)$, which we can then plot in the phase plane.
+
+Using `scipy.integrate.solve_ivp()` and your previously defined `cdima()` function, can you write the code to solve the IVP for a specific initial condition and parameters? The output should be the trajectories of $x(t)$ and $y(t)$, i.e. two arrays of the same length.
+
+If you need a hint, uncollapse the code block below.
+
+::: {.callout-tip collapse="true"}
+## Hint: Solving the IVP (click to expand)
+```python
+from scipy.integrate import solve_ivp
+import numpy as np
+
+# Define parameters
+a, b = 10, 4
+# Define initial condition
+x0, y0 = 0, 3 
+# Define time span and evaluation points
+t_span = (0, 20) # Start at t=0 and end at t=20
+t_eval = np.linspace(t_span[0], t_span[1], 2000)  # Return 2000 points between t=0 and t=20
+# Solve the IVP
+sol = solve_ivp(cdima, t_span, [x0, y0], args=(a, b), t_eval=t_eval)
+# sol.y[0] will give you x(t) and sol.y[1] will give you y(t)
+```
+:::
+
+Do you have it? Great! Try the following initial conditions: $a=10$, $b=4$, and $(x_0,y_0) = (0,3)$. You can see this trajectory in @fig-phase-plane. What will be the state of the system at $t=5$?
+
+::: {.callout-tip collapse="true"}
+## Solution: State at t=20 (click to expand)
+```{python}
+from scipy.integrate import solve_ivp
+import numpy as np
+
+from sessions.s02_odes_2d.cdima import cdima
+
+a, b = 10, 4
+x0, y0 = 0, 3
+
+t_span = (0, 5)
+t_eval = np.linspace(t_span[0], t_span[1], 500)
+sol = solve_ivp(cdima, t_span, [x0, y0], args=(a, b), t_eval=t_eval)
+final_state = sol.y[:, -1]  # Get the last column of sol.y, which corresponds to the state at t=5
+print(f"State at t=5: x={final_state[0]:.2f}, y={final_state[1]:.2f}")
+```
+:::
+
+### Plotting the Phase Plane
+
+Finally, we can plot the trajectories in the phase plane using `matplotlib.pyplot`. Try to reproduce the plot in @fig-phase-plane by plotting $y(t)$ vs. $x(t)$ for different initial conditions. You can also mark the initial conditions on the plot to see where the trajectories start.
+
+::: {.callout-tip collapse="true"}
+## Hint: Plotting the Phase Plane (click to expand)
+```python
+import matplotlib.pyplot as plt 
+
+fig, ax = plt.subplots(figsize=(8, 4))
+for x0, y0 in [(0, 3), (0, 1.5), (2, 0)]:
+    sol = solve_ivp(cdima, [0, 20], [x0, y0], args=(a, b), t_eval=np.linspace(0, 20, 2000))
+    ax.plot(sol.y[0], sol.y[1], label=f"IC: ({x0}, {y0})")  # Plot y vs. x
+    ax.plot(x0, y0, 'o', color='black')  # Mark the initial condition
+plt.xlabel("x")
+plt.ylabel("y")
+plt.legend()
+plt.show()
+```
+:::
