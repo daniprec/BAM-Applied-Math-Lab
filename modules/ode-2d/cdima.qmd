@@ -12,7 +12,7 @@ $$\begin{aligned}
 \dot y &= bx \left( 1 - \frac{y}{1+x^2} \right)
 \end{aligned}$$
 
-where $x$ and $y$ represent concentrations of chemical species, and $a,b$ are parameters controlling the reaction rates.
+where $x$ and $y$ represent concentrations of chemical species, and $a,b$ are parameters controlling the reaction rates [@scott1994nonlinear, Chapter 8.3].
 
 ## Phase-Plane Analysis
 
@@ -197,7 +197,7 @@ We have two options:
 1. **Analytical approach**: Set $\dot x = 0$ and $\dot y = 0$ and solve the resulting equations for $y$ as a function of $x$ (or vice versa). This can be done by hand or using symbolic computation tools like SymPy.
 2. **Numerical approach**: Evaluate the derivatives on a grid of $(x,y)$ values and identify where they change sign (i.e., where they cross zero). This can be done using numerical methods and is often more practical for complex systems. @fig-nullclines shows the nullclines computed using a numerical approach.
 
-Pick one of these methods to compute the nullclines for the CDIMA system, and then plot them in the phase plane. The intersection points of the nullclines correspond to equilibrium points (fixed points) of the system.
+Pick one of these methods to compute the nullclines for the CDIMA system, and then plot them in the phase plane. The intersection points of the nullclines correspond to equilibrium points of the system.
 
 ::: {.callout-tip collapse="true"}
 ## Hint: Computing Nullclines (click to expand)
@@ -236,13 +236,13 @@ Now you can plot the nullclines using matplotlib
 **Recommendation:** do not join the points! There is no guarantee that the sequence of points in `dxdt_nullcline_x` and `dxdt_nullcline_y` (or `dydt_nullcline_x` and `dydt_nullcline_y`) will form a continuous curve, so it's better to plot them as individual points (e.g., using `'o'` markers) rather than trying to connect them with lines.
 :::
 
-## Fixed Points on the Phase Plane
+## Equilibrium Points on the Phase Plane
 
-The intersection points of the nullclines correspond to fixed points (equilibria) of the system. In other words, they are points where both $\dot x = 0$ and $\dot y = 0$ simultaneously.
+The intersection points of the nullclines correspond to equilibrium points (equilibria) of the system. In other words, they are points where both $\dot x = 0$ and $\dot y = 0$ simultaneously.
 
-To find the fixed points, we can look for the coordinates where the x-nullcline and y-nullcline intersect. This can be done by checking for points that are close to each other in both nullcline datasets or by using a more systematic approach (e.g., clustering or root-finding methods).
+To find the equilibrium points, we can look for the coordinates where the x-nullcline and y-nullcline intersect. This can be done by checking for points that are close to each other in both nullcline datasets or by using a more systematic approach (e.g., clustering or root-finding methods).
 
-In Python, we can use the `scipy.optimize.fsolve()` function to find the roots of the system of equations defined by the nullclines. This will give us the coordinates of the fixed points.
+In Python, we can use the `scipy.optimize.fsolve()` function to find the roots of the system of equations defined by the nullclines. This will give us the coordinates of the equilibrium points.
 
 ```python
 from scipy.optimize import fsolve
@@ -254,15 +254,15 @@ a, b = 10, 4
 def cdima_fixed(xy: np.ndarray) -> np.ndarray:
     return cdima(None, xy, a, b)
 
-fixed_point = fsolve(cdima_fixed, [1, 1])  # Initial guess for the fixed point
-print(f"Fixed point: x={fixed_point[0]:.2f}, y={fixed_point[1]:.2f}")
+equilibrium_point = fsolve(cdima_fixed, [1, 1])  # Initial guess for the equilibrium point
+print(f"Equilibrium point: x={equilibrium_point[0]:.2f}, y={equilibrium_point[1]:.2f}")
 ```
 
-If we have done things well, plotting the fixed point on the phase plane should show that it lies at the intersection of the nullclines.
+If we have done things well, plotting the equilibrium point on the phase plane should show that it lies at the intersection of the nullclines.
 
 ```{python}
-#| label: fig-fixed-point
-#| fig-cap: "Fixed point of the CDIMA system with a = 10, b = 4. The fixed point is marked with a black dot at the intersection of the nullclines. Generated with `scipy.optimize.fsolve()` and `matplotlib.pyplot`."
+#| label: fig-equilibrium-point
+#| fig-cap: "Equilibrium point of the CDIMA system with a = 10, b = 4. The equilibrium point is marked with a black dot at the intersection of the nullclines. Generated with `scipy.optimize.fsolve()` and `matplotlib.pyplot`."
 #| fig-width: 8
 #| fig-height: 4
 #| echo: false
@@ -271,7 +271,7 @@ from scipy.optimize import fsolve
 def cdima_fixed(xy: np.ndarray) -> np.ndarray:
     return cdima(None, xy, a, b)
 
-fixed_point = fsolve(cdima_fixed, [1, 1])  # Initial guess for the fixed point
+equilibrium_point = fsolve(cdima_fixed, [1, 1])  # Initial guess for the equilibrium point
 
 fig, ax = plt.subplots(figsize=(8, 4))
 ax.plot(
@@ -292,7 +292,7 @@ ax.plot(
     color="red",
     label="dy/dt = 0 Nullcline",
     )
-ax.plot(fixed_point[0], fixed_point[1], 'o', color='black', label='Fixed Point')  # Mark the fixed point
+ax.plot(equilibrium_point[0], equilibrium_point[1], 'o', color='black', label='Equilibrium Point')  # Mark the equilibrium point
 plt.xlabel("x")
 plt.ylabel("y")
 plt.legend()
@@ -300,11 +300,47 @@ plt.show()
 plt.close()
 ```
 
+## Stability of the Equilibrium Point
+
+As you know from 1D systems, a equilibrium point can be stable or unstable. A stable equilibrium point attracts nearby trajectories, while an unstable equilibrium point repels them. In 2D systems, we can determine the stability of an equilibrium point by analyzing the Jacobian matrix of the system at that point. The Jacobian matrix is a 2x2 matrix that contains the partial derivatives of the right-hand side of the ODEs with respect to the state variables.
+
+$$J =
+\begin{bmatrix}
+\frac{\partial f}{\partial x} & \frac{\partial f}{\partial y} \\
+\frac{\partial g}{\partial x} & \frac{\partial g}{\partial y}
+\end{bmatrix}$$
+
+Where $f$ and $g$ are the right-hand sides of the ODEs for $\dot x$ and $\dot y$, respectively. For the CDIMA system:
+
+$$J =
+\begin{bmatrix}
+-1 - \frac{4y}{1+x^2} + \frac{8x^2y}{(1+x^2)^2} & -\frac{4x}{1+x^2} \\
+b \left( 1 - \frac{y}{1+x^2} \right) & -\frac{bx}{1+x^2}
+\end{bmatrix}$$
+
+The eigenvalues of the Jacobian determine the stability of the equilibrium point:
+
+- If both eigenvalues have negative real parts, the equilibrium point is stable (attracting).
+- If at least one eigenvalue has a positive real part, the equilibrium point is unstable (repelling).
+
+So all we need to do is compute the equilibrium point $(x^*, y^*)$, evaluate the Jacobian at that point, and compute its eigenvalues to determine stability.
+
+As the CDIMA model has two parameters, we can explore how the stability of the equilibrium point changes as we vary $a$ and $b$. This leads to a stability diagram in the parameter space, which can be very insightful for understanding the system's behavior.
+
+For the CDIMA model, we can prove that the boundary between stable and unstable regimes is given by the curve $b = \frac{3}{5} a - \frac{25}{a}$ in the $(a,b)$ parameter space [@strogatz2024nonlinear, chap. 8.3]. Now go to your CDIMA simulation and explore how the trajectories change as you cross this boundary by varying $a$ and $b$.
+
 ## Closing Remarks
 
-Have you done all the steps above? Great! You should now have a good understanding of how to analyze a 2D ODE system using phase-plane methods. You can explore how changing the parameters affects the trajectories, nullclines, and fixed points. Try different initial conditions to see how the system's behavior changes.
+Have you done all the steps above? Great! You should now have a good understanding of how to analyze a 2D ODE system using phase-plane methods. You can explore how changing the parameters affects the trajectories, nullclines, and equilibrium points. Try different initial conditions to see how the system's behavior changes.
 
 Your next steps:
 
 - Reproduce the phase plane and nullcline plots for other systems such as [the Van der Pol oscillator](van-der-pol.qmd) and [the FitzHugh–Nagumo model](fitzhugh-nagumo.qmd).
 - Create an interactive animation of the trajectories in the phase plane using `matplotlib.animation`. You can follow the guide showed [here](animation.qmd) to get started.
+
+
+## Resources
+
+- [@strogatz2024nonlinear, chap. 8.3] for theoretical background on the CDIMA model and phase-plane analysis.
+- SciPy documentation: <https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html>
+- Reference implementation: <https://github.com/daniprec/BAM-Applied-Math-Lab/tree/main/sessions/s02_odes_2d>
