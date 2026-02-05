@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Applied Math Lab - Phase Plane, Nullclines, Animation, and Interaction (FitzHugh–Nagumo)</title>
+<title>Applied Math Lab - FitzHugh–Nagumo Model</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -261,42 +261,14 @@ window.Quarto = {
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#sec-introduction" id="toc-sec-introduction" class="nav-link active" data-scroll-target="#sec-introduction">Introduction</a>
-  <ul>
-  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link" data-scroll-target="#learning-objectives">Learning Objectives</a></li>
-  </ul></li>
-  <li><a href="#sec-what-do-we-need" id="toc-sec-what-do-we-need" class="nav-link" data-scroll-target="#sec-what-do-we-need">What Do We Need?</a></li>
-  <li><a href="#sec-fhn-model" id="toc-sec-fhn-model" class="nav-link" data-scroll-target="#sec-fhn-model">The FitzHugh–Nagumo Model</a></li>
-  <li><a href="#sec-implementing-ode-function" id="toc-sec-implementing-ode-function" class="nav-link" data-scroll-target="#sec-implementing-ode-function">Implementing the ODE Function</a></li>
-  <li><a href="#sec-numerical-integration-2d" id="toc-sec-numerical-integration-2d" class="nav-link" data-scroll-target="#sec-numerical-integration-2d">Numerical Integration in 2D</a></li>
-  <li><a href="#sec-phase-plane" id="toc-sec-phase-plane" class="nav-link" data-scroll-target="#sec-phase-plane">Phase Plane: Trajectories, Nullclines, Fixed Points</a>
-  <ul>
-  <li><a href="#sec-nullclines-analytical" id="toc-sec-nullclines-analytical" class="nav-link" data-scroll-target="#sec-nullclines-analytical">Nullclines (Analytical)</a></li>
-  <li><a href="#sec-nullclines-numerical" id="toc-sec-nullclines-numerical" class="nav-link" data-scroll-target="#sec-nullclines-numerical">Nullclines (Numerical)</a></li>
-  <li><a href="#sec-fixed-point" id="toc-sec-fixed-point" class="nav-link" data-scroll-target="#sec-fixed-point">Fixed Point via <code>fsolve</code></a></li>
-  </ul></li>
-  <li><a href="#sec-static-plot" id="toc-sec-static-plot" class="nav-link" data-scroll-target="#sec-static-plot">Plotting: Static Figure</a></li>
-  <li><a href="#sec-animation" id="toc-sec-animation" class="nav-link" data-scroll-target="#sec-animation">Plotting: Animation</a></li>
-  <li><a href="#sec-restart-animation" id="toc-sec-restart-animation" class="nav-link" data-scroll-target="#sec-restart-animation">Updating an Existing Animation</a></li>
-  <li><a href="#sec-interaction" id="toc-sec-interaction" class="nav-link" data-scroll-target="#sec-interaction">User Interaction (On Click)</a></li>
-  <li><a href="#sec-baseline" id="toc-sec-baseline" class="nav-link" data-scroll-target="#sec-baseline">Baseline Code to Run</a></li>
-  <li><a href="#sec-work-in-pairs" id="toc-sec-work-in-pairs" class="nav-link" data-scroll-target="#sec-work-in-pairs">Work in Pairs (Suggested Division)</a></li>
-  <li><a href="#sec-homework" id="toc-sec-homework" class="nav-link" data-scroll-target="#sec-homework">Homework</a></li>
-  <li><a href="#sec-exploration-questions" id="toc-sec-exploration-questions" class="nav-link" data-scroll-target="#sec-exploration-questions">Exploration Questions</a></li>
-  <li><a href="#sec-next" id="toc-sec-next" class="nav-link" data-scroll-target="#sec-next">Next Session</a></li>
-  </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/ode-2d/fitzhugh-nagumo.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../modules/ode-2d/index.html">Session 2: ODEs in 2D</a></li><li class="breadcrumb-item"><a href="../../modules/ode-2d/fitzhugh-nagumo.html">FitzHugh–Nagumo Model</a></li></ol></nav>
 <div class="quarto-title">
-<div class="quarto-title-block"><div><h1 class="title">Phase Plane, Nullclines, Animation, and Interaction (FitzHugh–Nagumo)</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+<div class="quarto-title-block"><div><h1 class="title">FitzHugh–Nagumo Model</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
 <p class="subtitle lead">2D Ordinary Differential Equations</p>
 </div>
 
@@ -314,295 +286,34 @@ window.Quarto = {
 </header>
 
 
-<section id="sec-introduction" class="level2">
-<h2 class="anchored" data-anchor-id="sec-introduction">Introduction</h2>
-<p>In Session 1 we studied 1D ODEs, where the geometry is simple: trajectories move along a line and equilibria are points where <span class="math inline">\(\dot x = 0\)</span>. In <strong>2D</strong>, the state is <span class="math inline">\((x(t), y(t))\)</span> and trajectories live in the <strong>phase plane</strong>. This unlocks new qualitative behaviors: spirals, limit cycles, excitability, and relaxation oscillations.</p>
-<p>In the course material, we will use several 2D models (CDIMA reaction, Van der Pol, FitzHugh–Nagumo). In this session we focus on the <strong>workflow</strong>:</p>
-<ul>
-<li>integrate a system with <code>scipy.integrate.solve_ivp</code></li>
-<li>visualize trajectories in the phase plane</li>
-<li>compute <strong>nullclines</strong> and <strong>fixed points</strong></li>
-<li>animate the trajectory with <code>matplotlib.animation</code></li>
-<li>restart the simulation interactively using mouse clicks</li>
-</ul>
-<section id="learning-objectives" class="level3">
-<h3 class="anchored" data-anchor-id="learning-objectives">Learning Objectives</h3>
-<p>By the end of this session, you will be able to:</p>
-<ul>
-<li>Implement a 2D ODE in the signature expected by <code>solve_ivp</code>.</li>
-<li>Compute and plot phase-plane trajectories.</li>
-<li>Compute nullclines (analytically when possible, numerically otherwise).</li>
-<li>Locate fixed points using <code>scipy.optimize.fsolve</code>.</li>
-<li>Create a Matplotlib animation that updates plot elements per frame.</li>
-<li>Add an on-click event to change initial conditions/parameters and restart the animation.</li>
-</ul>
-</section>
-</section>
-<section id="sec-what-do-we-need" class="level2">
-<h2 class="anchored" data-anchor-id="sec-what-do-we-need">What Do We Need?</h2>
-<p>This session uses the same stack as in the slides:</p>
-<ul>
-<li><code>scipy</code>: <code>solve_ivp()</code> to integrate the ODEs; <code>fsolve()</code> to compute fixed points.</li>
-<li><code>matplotlib.pyplot</code>: create the figure/axes and plot static elements.</li>
-<li><code>matplotlib.animation</code>: update plot elements over time (animations).</li>
-<li><code>matplotlib.backend_bases</code>: on-click events to interact with the model.</li>
-</ul>
-<p>We will not use Streamlit here because Matplotlib animations + click interactions are not as straightforward to embed in Streamlit (as of the time of writing).</p>
-</section>
-<section id="sec-fhn-model" class="level2">
-<h2 class="anchored" data-anchor-id="sec-fhn-model">The FitzHugh–Nagumo Model</h2>
-<p>The FitzHugh–Nagumo (FHN) model is a 2D reduction of the Hodgkin–Huxley neuron model and a classical example of an <strong>excitable system</strong> and <strong>relaxation oscillator</strong>.</p>
-<p>We will use the following nondimensional form (matching the baseline code in <code>sessions/s02_odes_2d/fitzhugh_nagumo.py</code>):</p>
-<p><span class="math display">\[
-\begin{aligned}
-\dot v &amp;= \frac{1}{\epsilon}\Big(v(1-v)(v-\alpha) - w + I_{\mathrm{app}}\Big)\\
+<p>The FitzHugh–Nagumo model is a simplified neuron model that captures key features of excitability and spiking behavior. It consists of two coupled ODEs:</p>
+<p><span class="math display">\[\begin{aligned}
+\epsilon \dot v &amp;= f(v) - w + I_{\text{app}} \\
 \dot w &amp;= v - \gamma w
-\end{aligned}
+\end{aligned}\]</span></p>
+<p>Where <span class="math inline">\(v\)</span> is the fast variable representing the membrane potential, <span class="math inline">\(w\)</span> is a recovery variable, <span class="math inline">\(I_{\text{app}}\)</span> is an applied current, and <span class="math inline">\(\epsilon \ll 1\)</span> controls the timescale separation between the fast variable <span class="math inline">\(v\)</span> and the slow variable <span class="math inline">\(w\)</span>. <span class="math inline">\(f(v)\)</span> is a cubic nonlinearity, often taken as</p>
+<p><span class="math display">\[
+f(v) = v (1 - v)(v - \alpha),\quad \text{for } 0 &lt; \alpha &lt; 1
 \]</span></p>
-<p>where:</p>
-<ul>
-<li><span class="math inline">\(v\)</span> is the fast variable (membrane potential-like)</li>
-<li><span class="math inline">\(w\)</span> is the slow recovery variable</li>
-<li><span class="math inline">\(I_{\mathrm{app}}\)</span> is an applied current (control parameter)</li>
-<li><span class="math inline">\(\epsilon \ll 1\)</span> controls time-scale separation</li>
-<li><span class="math inline">\(\alpha,\gamma\)</span> shape the nonlinearities</li>
-</ul>
-</section>
-<section id="sec-implementing-ode-function" class="level2">
-<h2 class="anchored" data-anchor-id="sec-implementing-ode-function">Implementing the ODE Function</h2>
-<p><code>solve_ivp</code> expects a function with the signature:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>f(t, y, <span class="op">*</span>args) <span class="op">-&gt;</span> dy_dt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>where <code>y</code> is a vector (here, <code>y = [v, w]</code>). A minimal implementation is:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fitzhugh_nagumo(</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    t: <span class="bu">float</span>,</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    vw: np.ndarray,</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    i_app: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    gamma: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    alpha: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.1</span>,</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    epsilon: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.01</span>,</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> np.ndarray:</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    v, w <span class="op">=</span> vw</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    fv <span class="op">=</span> v <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> v) <span class="op">*</span> (v <span class="op">-</span> alpha)</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    dvdt <span class="op">=</span> (fv <span class="op">-</span> w <span class="op">+</span> i_app) <span class="op">/</span> epsilon</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    dwdt <span class="op">=</span> v <span class="op">-</span> gamma <span class="op">*</span> w</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array([dvdt, dwdt])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Even if the equations do not explicitly depend on time, <code>t</code> must be present because <code>solve_ivp</code> will call the function as <code>fun(t, y)</code>.</p>
-</section>
-<section id="sec-numerical-integration-2d" class="level2">
-<h2 class="anchored" data-anchor-id="sec-numerical-integration-2d">Numerical Integration in 2D</h2>
-<p>To integrate a trajectory from an initial condition <span class="math inline">\((v_0, w_0)\)</span> over a time interval <span class="math inline">\([t_0, t_f]\)</span>:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.integrate <span class="im">import</span> solve_ivp</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>t_span <span class="op">=</span> (<span class="fl">0.0</span>, <span class="fl">10.0</span>)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>t_eval <span class="op">=</span> np.arange(t_span[<span class="dv">0</span>], t_span[<span class="dv">1</span>], <span class="fl">0.01</span>)</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>y0 <span class="op">=</span> [<span class="fl">0.0</span>, <span class="fl">0.0</span>]  <span class="co"># [v0, w0]</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>args <span class="op">=</span> (<span class="fl">0.1</span>, <span class="fl">0.5</span>, <span class="fl">0.1</span>, <span class="fl">0.01</span>)  <span class="co"># (i_app, gamma, alpha, epsilon)</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>sol <span class="op">=</span> solve_ivp(</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    fun<span class="op">=</span>fitzhugh_nagumo,</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    t_span<span class="op">=</span>t_span,</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    y0<span class="op">=</span>y0,</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    t_eval<span class="op">=</span>t_eval,</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    method<span class="op">=</span><span class="st">"RK45"</span>,</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    args<span class="op">=</span>args,</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>v, w <span class="op">=</span> sol.y  <span class="co"># v = sol.y[0], w = sol.y[1]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The output <code>sol.y</code> is a 2-by-<span class="math inline">\(N\)</span> array, with each row being a time series for one variable.</p>
-</section>
-<section id="sec-phase-plane" class="level2">
-<h2 class="anchored" data-anchor-id="sec-phase-plane">Phase Plane: Trajectories, Nullclines, Fixed Points</h2>
-<p>In the <strong>phase plane</strong>, we plot <span class="math inline">\(w\)</span> versus <span class="math inline">\(v\)</span>. A trajectory is the parametric curve: <span class="math display">\[ (v(t), w(t)). \]</span></p>
-<p>Two key geometric objects help interpret the flow:</p>
-<ul>
-<li><strong>Nullclines</strong>: curves where one derivative is zero.
-<ul>
-<li><span class="math inline">\(\dot v = 0\)</span> (the <span class="math inline">\(v\)</span>-nullcline)</li>
-<li><span class="math inline">\(\dot w = 0\)</span> (the <span class="math inline">\(w\)</span>-nullcline)</li>
-</ul></li>
-<li><strong>Fixed points</strong>: intersections of nullclines, where <span class="math inline">\(\dot v = \dot w = 0\)</span>.</li>
-</ul>
-<section id="sec-nullclines-analytical" class="level3">
-<h3 class="anchored" data-anchor-id="sec-nullclines-analytical">Nullclines (Analytical)</h3>
-<p>For the FHN system we can write nullclines explicitly.</p>
-<p>Because <span class="math inline">\(\dot v = 0\)</span> is equivalent to the numerator being zero,</p>
-<p><span class="math display">\[v(1-v)(v-\alpha) - w + I_{\mathrm{app}} = 0 \quad\Rightarrow\quad w = v(1-v)(v-\alpha) + I_{\mathrm{app}}.\]</span></p>
-<p>And from <span class="math inline">\(\dot w = 0\)</span>:</p>
-<p><span class="math display">\[v - \gamma w = 0 \quad\Rightarrow\quad w = \frac{v}{\gamma}.\]</span></p>
-<p>These are often faster and cleaner than numerical approximations.</p>
-</section>
-<section id="sec-nullclines-numerical" class="level3">
-<h3 class="anchored" data-anchor-id="sec-nullclines-numerical">Nullclines (Numerical)</h3>
-<p>In many models, nullclines are not available in closed form. A robust numerical alternative is:</p>
-<ol type="1">
-<li>create a grid in <span class="math inline">\((v, w)\)</span></li>
-<li>evaluate <span class="math inline">\((\dot v, \dot w)\)</span> on the grid</li>
-<li>find <strong>sign changes</strong> (zero crossings) of <span class="math inline">\(\dot v\)</span> and <span class="math inline">\(\dot w\)</span></li>
-</ol>
-<p>The repository includes a general helper in <code>sessions/s02_odes_2d/cdima.py</code> called <code>compute_nullclines</code> that does exactly this (it is reused by the baseline FHN script).</p>
-</section>
-<section id="sec-fixed-point" class="level3">
-<h3 class="anchored" data-anchor-id="sec-fixed-point">Fixed Point via <code>fsolve</code></h3>
-<p>To locate a fixed point, we solve <span class="math display">\[F(v,w) = (\dot v, \dot w) = (0,0).\]</span></p>
-<p>Numerically, <code>scipy.optimize.fsolve</code> can find a root near an initial guess:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.optimize <span class="im">import</span> fsolve</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fixed_point(system_func, guess, args):</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> F(x):</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> system_func(<span class="va">None</span>, x, <span class="op">*</span>args)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fsolve(F, guess)</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>fp <span class="op">=</span> fixed_point(fitzhugh_nagumo, guess<span class="op">=</span>np.array([<span class="fl">0.0</span>, <span class="fl">0.0</span>]), args<span class="op">=</span>args)</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(fp)  <span class="co"># [v*, w*]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-</section>
-<section id="sec-static-plot" class="level2">
-<h2 class="anchored" data-anchor-id="sec-static-plot">Plotting: Static Figure</h2>
-<p>Before animating anything, build a static figure:</p>
-<ul>
-<li>phase plane: nullclines + fixed point + trajectory</li>
-<li>time series: one variable (e.g., <span class="math inline">\(v(t)\)</span>)</li>
-</ul>
-<p>Typical Matplotlib keywords you will use:</p>
-<ul>
-<li><code>lw</code>: line width</li>
-<li><code>linestyle</code>: <code>"-"</code>, <code>"--"</code>, <code>"None"</code></li>
-<li><code>marker</code>: <code>"o"</code>, <code>"+"</code>, <code>"*"</code>, …</li>
-<li><code>markersize</code>: size of markers</li>
-<li><code>color</code>: <code>"blue"</code>, <code>"red"</code>, …</li>
-<li><code>label</code>: legend label</li>
-</ul>
-<p>In the baseline script you will find a multi-panel layout created via:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">5</span>), nrows<span class="op">=</span><span class="dv">2</span>, ncols<span class="op">=</span><span class="dv">2</span>, height_ratios<span class="op">=</span>[<span class="dv">5</span>, <span class="dv">1</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>This lets you combine the phase plane, time series, and a simple parameter indicator (e.g.&nbsp;a vertical line showing the current <span class="math inline">\(I_{\mathrm{app}}\)</span>).</p>
-</section>
-<section id="sec-animation" class="level2">
-<h2 class="anchored" data-anchor-id="sec-animation">Plotting: Animation</h2>
-<p>To animate a trajectory, we initialize line objects (empty data) and update them every frame.</p>
-<p>The core pattern is:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.animation <span class="im">as</span> animation</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> animate(i: <span class="bu">int</span>, xy: np.ndarray):</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    x, y <span class="op">=</span> xy</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    line.set_data(x[:i], y[:i])</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (line,)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>ani <span class="op">=</span> animation.FuncAnimation(</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    fig,</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    animate,</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    fargs<span class="op">=</span>(sol.y,),</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    frames<span class="op">=</span><span class="bu">len</span>(t_eval),</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    interval<span class="op">=</span><span class="dv">1</span>,</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    blit<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Key idea: the animation function must <strong>return the artists</strong> that changed, otherwise <code>blit=True</code> cannot efficiently redraw.</p>
-</section>
-<section id="sec-restart-animation" class="level2">
-<h2 class="anchored" data-anchor-id="sec-restart-animation">Updating an Existing Animation</h2>
-<p>To restart an animation after changing initial conditions or parameters (pattern used in the baseline scripts):</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>ani.event_source.stop()</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>ani.frame_seq <span class="op">=</span> ani.new_frame_seq()</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>ani._args <span class="op">=</span> (new_data, ...)</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>ani.event_source.start()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>This is equivalent to stopping, clearing frames, changing the <code>fargs</code>, and starting again.</p>
-</section>
-<section id="sec-interaction" class="level2">
-<h2 class="anchored" data-anchor-id="sec-interaction">User Interaction (On Click)</h2>
-<p>Matplotlib can react to user mouse clicks via <code>mpl_connect</code>.</p>
-<p>Minimal pattern:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.backend_bases <span class="im">import</span> MouseEvent</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mouse_click(event: MouseEvent):</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> event.inaxes <span class="op">==</span> ax_phase:</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>        v0 <span class="op">=</span> event.xdata</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>        w0 <span class="op">=</span> event.ydata</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>        <span class="co"># recompute trajectory, nullclines, fixed point</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        <span class="co"># restart animation</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>fig.canvas.mpl_connect(<span class="st">"button_press_event"</span>, mouse_click)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>In the provided script, clicking in:</p>
-<ul>
-<li>the <strong>phase plane</strong> sets the new initial condition <span class="math inline">\((v_0, w_0)\)</span></li>
-<li>the <strong>parameter axis</strong> sets a new <span class="math inline">\(I_{\mathrm{app}}\)</span></li>
-</ul>
-<p>and the animation restarts using the new data.</p>
-</section>
-<section id="sec-baseline" class="level2">
-<h2 class="anchored" data-anchor-id="sec-baseline">Baseline Code to Run</h2>
-<p>The repository already contains a complete interactive implementation for the FitzHugh–Nagumo model:</p>
-<ul>
-<li><code>sessions/s02_odes_2d/fitzhugh_nagumo.py</code></li>
-</ul>
-<p>From the repository root, run:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> sessions/s02_odes_2d/fitzhugh_nagumo.py</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Try the following interactions:</p>
-<ul>
-<li>click in the phase plane to set <span class="math inline">\((v_0, w_0)\)</span></li>
-<li>click in the bottom-left axis to change <span class="math inline">\(I_{\mathrm{app}}\)</span></li>
-<li>observe how the trajectory, nullclines, and fixed point update</li>
-</ul>
-</section>
-<section id="sec-work-in-pairs" class="level2">
-<h2 class="anchored" data-anchor-id="sec-work-in-pairs">Work in Pairs (Suggested Division)</h2>
-<p>This matches the workflow in the slides:</p>
-<p><strong>Task A: Phase Plane (Math + SciPy + NumPy)</strong></p>
-<ul>
-<li>integrate a trajectory with <code>solve_ivp</code></li>
-<li>compute nullclines (analytical if possible, or numerical on a grid)</li>
-<li>compute a fixed point with <code>fsolve</code></li>
-</ul>
-<p><strong>Task B: Plot + Animation (Matplotlib)</strong></p>
-<ul>
-<li>plot nullclines + fixed point + trajectory</li>
-<li>animate the trajectory</li>
-<li>add a second plot (bonus): <span class="math inline">\(v(t)\)</span> vs time</li>
-</ul>
-</section>
-<section id="sec-homework" class="level2">
-<h2 class="anchored" data-anchor-id="sec-homework">Homework</h2>
-<p>Implement the animation for <strong>one</strong> of the following models (your choice), in a single script:</p>
-<ul>
-<li>Van der Pol</li>
-<li>FitzHugh–Nagumo</li>
-</ul>
-<p>When you run the script, it should show a figure with:</p>
-<ul>
-<li>nullclines</li>
-<li>fixed point</li>
-<li>animated trajectory</li>
-</ul>
-<p><strong>Bonus</strong>: animate a second plot (in the same figure) with the evolution of one variable in time.</p>
-<p><strong>Extra mile</strong>: make the figure interactive so that the user can click to set the initial condition and the animation restarts.</p>
-</section>
-<section id="sec-exploration-questions" class="level2">
-<h2 class="anchored" data-anchor-id="sec-exploration-questions">Exploration Questions</h2>
-<ol type="1">
-<li>For fixed <span class="math inline">\((\alpha, \gamma, \epsilon)\)</span>, how does the qualitative behavior change as you increase <span class="math inline">\(I_{\mathrm{app}}\)</span>?</li>
-<li>Pick two initial conditions on different sides of the nullclines. Do trajectories converge to the same attractor?</li>
-<li>Use the analytical nullclines for FHN and compare them to the numerical nullclines computed on a grid. When does the numerical approximation look noisy, and how can you improve it?</li>
-</ol>
-</section>
-<section id="sec-next" class="level2">
-<h2 class="anchored" data-anchor-id="sec-next">Next Session</h2>
-<p>Next: reaction–diffusion systems (Gray–Scott), Laplacians with NumPy, Matplotlib animations, and user interactions.</p>
+<div id="cell-fig-phase-plane" class="cell" data-fig-height="4" data-fig-width="8" data-execution_count="1">
+<div class="cell-output cell-output-display">
+<div id="fig-phase-plane" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-phase-plane-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="fitzhugh-nagumo_files/figure-html/fig-phase-plane-output-1.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-phase-plane-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Phase plane of the FitzHugh–Nagumo system with epsilon = 0.01, gamma = 0.5, and I_app = 0.5. Trajectories are shown for different initial conditions (IC as v-w, marked black). Generated with <code>scipy.integrate.solve_ivp()</code> and matplotlib.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Follow the steps outline in <a href="../../modules/ode-2d/cdima.html">the CDIMA model</a> to explore how the FitzHugh–Nagumo system behaves for different initial conditions and parameters.</p>
 
 
 <!-- -->
 
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -1055,339 +766,58 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>
   </div>
 </nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="sourceCode" id="cb10" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Phase Plane, Nullclines, Animation, and Interaction (FitzHugh–Nagumo)"</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "2D Ordinary Differential Equations"</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="fu">## Introduction {#sec-introduction}</span></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>In Session 1 we studied 1D ODEs, where the geometry is simple: trajectories move along a line and equilibria are points where $\dot x = 0$.</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>In **2D**, the state is $(x(t), y(t))$ and trajectories live in the **phase plane**. This unlocks new qualitative behaviors: spirals, limit cycles, excitability, and relaxation oscillations.</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>In the course material, we will use several 2D models (CDIMA reaction, Van der Pol, FitzHugh–Nagumo). In this session we focus on the **workflow**:</span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>integrate a system with <span class="in">`scipy.integrate.solve_ivp`</span></span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>visualize trajectories in the phase plane</span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>compute **nullclines** and **fixed points**</span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>animate the trajectory with <span class="in">`matplotlib.animation`</span></span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>restart the simulation interactively using mouse clicks</span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="fu">### Learning Objectives</span></span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>By the end of this session, you will be able to:</span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Implement a 2D ODE in the signature expected by <span class="in">`solve_ivp`</span>.</span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Compute and plot phase-plane trajectories.</span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Compute nullclines (analytically when possible, numerically otherwise).</span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Locate fixed points using <span class="in">`scipy.optimize.fsolve`</span>.</span>
-<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Create a Matplotlib animation that updates plot elements per frame.</span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Add an on-click event to change initial conditions/parameters and restart the animation.</span>
-<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a><span class="fu">## What Do We Need? {#sec-what-do-we-need}</span></span>
-<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>This session uses the same stack as in the slides:</span>
-<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`scipy`</span>: <span class="in">`solve_ivp()`</span> to integrate the ODEs; <span class="in">`fsolve()`</span> to compute fixed points.</span>
-<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`matplotlib.pyplot`</span>: create the figure/axes and plot static elements.</span>
-<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`matplotlib.animation`</span>: update plot elements over time (animations).</span>
-<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`matplotlib.backend_bases`</span>: on-click events to interact with the model.</span>
-<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>We will not use Streamlit here because Matplotlib animations + click interactions are not as straightforward to embed in Streamlit (as of the time of writing).</span>
-<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a><span class="fu">## The FitzHugh–Nagumo Model {#sec-fhn-model}</span></span>
-<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a>The FitzHugh–Nagumo (FHN) model is a 2D reduction of the Hodgkin–Huxley neuron model and a classical example of an **excitable system** and **relaxation oscillator**.</span>
-<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>We will use the following nondimensional form (matching the baseline code in <span class="in">`sessions/s02_odes_2d/fitzhugh_nagumo.py`</span>):</span>
-<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
-<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a>\dot v &amp;= \frac{1}{\epsilon}\Big(v(1-v)(v-\alpha) - w + I_{\mathrm{app}}\Big)<span class="sc">\\</span></span>
-<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a>\dot w &amp;= v - \gamma w</span>
-<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
-<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a>where:</span>
-<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$v$ is the fast variable (membrane potential-like)</span>
-<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$w$ is the slow recovery variable</span>
-<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$I_{\mathrm{app}}$ is an applied current (control parameter)</span>
-<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$\epsilon \ll 1$ controls time-scale separation</span>
-<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$\alpha,\gamma$ shape the nonlinearities</span>
-<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a><span class="fu">## Implementing the ODE Function {#sec-implementing-ode-function}</span></span>
-<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a><span class="in">`solve_ivp`</span> expects a function with the signature:</span>
-<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a>f(t, y, <span class="op">*</span>args) <span class="op">-&gt;</span> dy_dt</span>
-<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a>where <span class="in">`y`</span> is a vector (here, <span class="in">`y = [v, w]`</span>). A minimal implementation is:</span>
-<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-73"><a href="#cb10-73" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-74"><a href="#cb10-74" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb10-75"><a href="#cb10-75" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-76"><a href="#cb10-76" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fitzhugh_nagumo(</span>
-<span id="cb10-78"><a href="#cb10-78" aria-hidden="true" tabindex="-1"></a>    t: <span class="bu">float</span>,</span>
-<span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a>    vw: np.ndarray,</span>
-<span id="cb10-80"><a href="#cb10-80" aria-hidden="true" tabindex="-1"></a>    i_app: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span id="cb10-81"><a href="#cb10-81" aria-hidden="true" tabindex="-1"></a>    gamma: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span id="cb10-82"><a href="#cb10-82" aria-hidden="true" tabindex="-1"></a>    alpha: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.1</span>,</span>
-<span id="cb10-83"><a href="#cb10-83" aria-hidden="true" tabindex="-1"></a>    epsilon: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.01</span>,</span>
-<span id="cb10-84"><a href="#cb10-84" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> np.ndarray:</span>
-<span id="cb10-85"><a href="#cb10-85" aria-hidden="true" tabindex="-1"></a>    v, w <span class="op">=</span> vw</span>
-<span id="cb10-86"><a href="#cb10-86" aria-hidden="true" tabindex="-1"></a>    fv <span class="op">=</span> v <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> v) <span class="op">*</span> (v <span class="op">-</span> alpha)</span>
-<span id="cb10-87"><a href="#cb10-87" aria-hidden="true" tabindex="-1"></a>    dvdt <span class="op">=</span> (fv <span class="op">-</span> w <span class="op">+</span> i_app) <span class="op">/</span> epsilon</span>
-<span id="cb10-88"><a href="#cb10-88" aria-hidden="true" tabindex="-1"></a>    dwdt <span class="op">=</span> v <span class="op">-</span> gamma <span class="op">*</span> w</span>
-<span id="cb10-89"><a href="#cb10-89" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array([dvdt, dwdt])</span>
-<span id="cb10-90"><a href="#cb10-90" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-91"><a href="#cb10-91" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-92"><a href="#cb10-92" aria-hidden="true" tabindex="-1"></a>Even if the equations do not explicitly depend on time, <span class="in">`t`</span> must be present because <span class="in">`solve_ivp`</span> will call the function as <span class="in">`fun(t, y)`</span>.</span>
-<span id="cb10-93"><a href="#cb10-93" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-94"><a href="#cb10-94" aria-hidden="true" tabindex="-1"></a><span class="fu">## Numerical Integration in 2D {#sec-numerical-integration-2d}</span></span>
-<span id="cb10-95"><a href="#cb10-95" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-96"><a href="#cb10-96" aria-hidden="true" tabindex="-1"></a>To integrate a trajectory from an initial condition $(v_0, w_0)$ over a time interval $<span class="co">[</span><span class="ot">t_0, t_f</span><span class="co">]</span>$:</span>
-<span id="cb10-97"><a href="#cb10-97" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-98"><a href="#cb10-98" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-99"><a href="#cb10-99" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb10-100"><a href="#cb10-100" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.integrate <span class="im">import</span> solve_ivp</span>
-<span id="cb10-101"><a href="#cb10-101" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-102"><a href="#cb10-102" aria-hidden="true" tabindex="-1"></a>t_span <span class="op">=</span> (<span class="fl">0.0</span>, <span class="fl">10.0</span>)</span>
-<span id="cb10-103"><a href="#cb10-103" aria-hidden="true" tabindex="-1"></a>t_eval <span class="op">=</span> np.arange(t_span[<span class="dv">0</span>], t_span[<span class="dv">1</span>], <span class="fl">0.01</span>)</span>
-<span id="cb10-104"><a href="#cb10-104" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-105"><a href="#cb10-105" aria-hidden="true" tabindex="-1"></a>y0 <span class="op">=</span> [<span class="fl">0.0</span>, <span class="fl">0.0</span>]  <span class="co"># [v0, w0]</span></span>
-<span id="cb10-106"><a href="#cb10-106" aria-hidden="true" tabindex="-1"></a>args <span class="op">=</span> (<span class="fl">0.1</span>, <span class="fl">0.5</span>, <span class="fl">0.1</span>, <span class="fl">0.01</span>)  <span class="co"># (i_app, gamma, alpha, epsilon)</span></span>
-<span id="cb10-107"><a href="#cb10-107" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-108"><a href="#cb10-108" aria-hidden="true" tabindex="-1"></a>sol <span class="op">=</span> solve_ivp(</span>
-<span id="cb10-109"><a href="#cb10-109" aria-hidden="true" tabindex="-1"></a>    fun<span class="op">=</span>fitzhugh_nagumo,</span>
-<span id="cb10-110"><a href="#cb10-110" aria-hidden="true" tabindex="-1"></a>    t_span<span class="op">=</span>t_span,</span>
-<span id="cb10-111"><a href="#cb10-111" aria-hidden="true" tabindex="-1"></a>    y0<span class="op">=</span>y0,</span>
-<span id="cb10-112"><a href="#cb10-112" aria-hidden="true" tabindex="-1"></a>    t_eval<span class="op">=</span>t_eval,</span>
-<span id="cb10-113"><a href="#cb10-113" aria-hidden="true" tabindex="-1"></a>    method<span class="op">=</span><span class="st">"RK45"</span>,</span>
-<span id="cb10-114"><a href="#cb10-114" aria-hidden="true" tabindex="-1"></a>    args<span class="op">=</span>args,</span>
-<span id="cb10-115"><a href="#cb10-115" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb10-116"><a href="#cb10-116" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-117"><a href="#cb10-117" aria-hidden="true" tabindex="-1"></a>v, w <span class="op">=</span> sol.y  <span class="co"># v = sol.y[0], w = sol.y[1]</span></span>
-<span id="cb10-118"><a href="#cb10-118" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-119"><a href="#cb10-119" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-120"><a href="#cb10-120" aria-hidden="true" tabindex="-1"></a>The output <span class="in">`sol.y`</span> is a 2-by-$N$ array, with each row being a time series for one variable.</span>
-<span id="cb10-121"><a href="#cb10-121" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-122"><a href="#cb10-122" aria-hidden="true" tabindex="-1"></a><span class="fu">## Phase Plane: Trajectories, Nullclines, Fixed Points {#sec-phase-plane}</span></span>
-<span id="cb10-123"><a href="#cb10-123" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-124"><a href="#cb10-124" aria-hidden="true" tabindex="-1"></a>In the **phase plane**, we plot $w$ versus $v$. A trajectory is the parametric curve:</span>
-<span id="cb10-125"><a href="#cb10-125" aria-hidden="true" tabindex="-1"></a>$$ (v(t), w(t)). $$</span>
-<span id="cb10-126"><a href="#cb10-126" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-127"><a href="#cb10-127" aria-hidden="true" tabindex="-1"></a>Two key geometric objects help interpret the flow:</span>
-<span id="cb10-128"><a href="#cb10-128" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-129"><a href="#cb10-129" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Nullclines**: curves where one derivative is zero.</span>
-<span id="cb10-130"><a href="#cb10-130" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>$\dot v = 0$ (the $v$-nullcline)</span>
-<span id="cb10-131"><a href="#cb10-131" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>$\dot w = 0$ (the $w$-nullcline)</span>
-<span id="cb10-132"><a href="#cb10-132" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Fixed points**: intersections of nullclines, where $\dot v = \dot w = 0$.</span>
-<span id="cb10-133"><a href="#cb10-133" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-134"><a href="#cb10-134" aria-hidden="true" tabindex="-1"></a><span class="fu">### Nullclines (Analytical) {#sec-nullclines-analytical}</span></span>
-<span id="cb10-135"><a href="#cb10-135" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-136"><a href="#cb10-136" aria-hidden="true" tabindex="-1"></a>For the FHN system we can write nullclines explicitly.</span>
-<span id="cb10-137"><a href="#cb10-137" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-138"><a href="#cb10-138" aria-hidden="true" tabindex="-1"></a>Because $\dot v = 0$ is equivalent to the numerator being zero,</span>
-<span id="cb10-139"><a href="#cb10-139" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-140"><a href="#cb10-140" aria-hidden="true" tabindex="-1"></a>$$v(1-v)(v-\alpha) - w + I_{\mathrm{app}} = 0 \quad\Rightarrow\quad w = v(1-v)(v-\alpha) + I_{\mathrm{app}}.$$</span>
-<span id="cb10-141"><a href="#cb10-141" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-142"><a href="#cb10-142" aria-hidden="true" tabindex="-1"></a>And from $\dot w = 0$:</span>
-<span id="cb10-143"><a href="#cb10-143" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-144"><a href="#cb10-144" aria-hidden="true" tabindex="-1"></a>$$v - \gamma w = 0 \quad\Rightarrow\quad w = \frac{v}{\gamma}.$$</span>
-<span id="cb10-145"><a href="#cb10-145" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-146"><a href="#cb10-146" aria-hidden="true" tabindex="-1"></a>These are often faster and cleaner than numerical approximations.</span>
-<span id="cb10-147"><a href="#cb10-147" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-148"><a href="#cb10-148" aria-hidden="true" tabindex="-1"></a><span class="fu">### Nullclines (Numerical) {#sec-nullclines-numerical}</span></span>
-<span id="cb10-149"><a href="#cb10-149" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-150"><a href="#cb10-150" aria-hidden="true" tabindex="-1"></a>In many models, nullclines are not available in closed form. A robust numerical alternative is:</span>
-<span id="cb10-151"><a href="#cb10-151" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-152"><a href="#cb10-152" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>create a grid in $(v, w)$</span>
-<span id="cb10-153"><a href="#cb10-153" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>evaluate $(\dot v, \dot w)$ on the grid</span>
-<span id="cb10-154"><a href="#cb10-154" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>find **sign changes** (zero crossings) of $\dot v$ and $\dot w$</span>
-<span id="cb10-155"><a href="#cb10-155" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-156"><a href="#cb10-156" aria-hidden="true" tabindex="-1"></a>The repository includes a general helper in <span class="in">`sessions/s02_odes_2d/cdima.py`</span> called <span class="in">`compute_nullclines`</span> that does exactly this (it is reused by the baseline FHN script).</span>
-<span id="cb10-157"><a href="#cb10-157" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-158"><a href="#cb10-158" aria-hidden="true" tabindex="-1"></a><span class="fu">### Fixed Point via `fsolve` {#sec-fixed-point}</span></span>
-<span id="cb10-159"><a href="#cb10-159" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-160"><a href="#cb10-160" aria-hidden="true" tabindex="-1"></a>To locate a fixed point, we solve</span>
-<span id="cb10-161"><a href="#cb10-161" aria-hidden="true" tabindex="-1"></a>$$F(v,w) = (\dot v, \dot w) = (0,0).$$</span>
-<span id="cb10-162"><a href="#cb10-162" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-163"><a href="#cb10-163" aria-hidden="true" tabindex="-1"></a>Numerically, <span class="in">`scipy.optimize.fsolve`</span> can find a root near an initial guess:</span>
-<span id="cb10-164"><a href="#cb10-164" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-165"><a href="#cb10-165" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-166"><a href="#cb10-166" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb10-167"><a href="#cb10-167" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.optimize <span class="im">import</span> fsolve</span>
-<span id="cb10-168"><a href="#cb10-168" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-169"><a href="#cb10-169" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-170"><a href="#cb10-170" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fixed_point(system_func, guess, args):</span>
-<span id="cb10-171"><a href="#cb10-171" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> F(x):</span>
-<span id="cb10-172"><a href="#cb10-172" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> system_func(<span class="va">None</span>, x, <span class="op">*</span>args)</span>
-<span id="cb10-173"><a href="#cb10-173" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-174"><a href="#cb10-174" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fsolve(F, guess)</span>
-<span id="cb10-175"><a href="#cb10-175" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-176"><a href="#cb10-176" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-177"><a href="#cb10-177" aria-hidden="true" tabindex="-1"></a>fp <span class="op">=</span> fixed_point(fitzhugh_nagumo, guess<span class="op">=</span>np.array([<span class="fl">0.0</span>, <span class="fl">0.0</span>]), args<span class="op">=</span>args)</span>
-<span id="cb10-178"><a href="#cb10-178" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(fp)  <span class="co"># [v*, w*]</span></span>
-<span id="cb10-179"><a href="#cb10-179" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-180"><a href="#cb10-180" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-181"><a href="#cb10-181" aria-hidden="true" tabindex="-1"></a><span class="fu">## Plotting: Static Figure {#sec-static-plot}</span></span>
-<span id="cb10-182"><a href="#cb10-182" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-183"><a href="#cb10-183" aria-hidden="true" tabindex="-1"></a>Before animating anything, build a static figure:</span>
-<span id="cb10-184"><a href="#cb10-184" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-185"><a href="#cb10-185" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>phase plane: nullclines + fixed point + trajectory</span>
-<span id="cb10-186"><a href="#cb10-186" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>time series: one variable (e.g., $v(t)$)</span>
-<span id="cb10-187"><a href="#cb10-187" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-188"><a href="#cb10-188" aria-hidden="true" tabindex="-1"></a>Typical Matplotlib keywords you will use:</span>
-<span id="cb10-189"><a href="#cb10-189" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-190"><a href="#cb10-190" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`lw`</span>: line width</span>
-<span id="cb10-191"><a href="#cb10-191" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`linestyle`</span>: <span class="in">`"-"`</span>, <span class="in">`"--"`</span>, <span class="in">`"None"`</span></span>
-<span id="cb10-192"><a href="#cb10-192" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`marker`</span>: <span class="in">`"o"`</span>, <span class="in">`"+"`</span>, <span class="in">`"*"`</span>, ...</span>
-<span id="cb10-193"><a href="#cb10-193" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`markersize`</span>: size of markers</span>
-<span id="cb10-194"><a href="#cb10-194" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`color`</span>: <span class="in">`"blue"`</span>, <span class="in">`"red"`</span>, ...</span>
-<span id="cb10-195"><a href="#cb10-195" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`label`</span>: legend label</span>
-<span id="cb10-196"><a href="#cb10-196" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-197"><a href="#cb10-197" aria-hidden="true" tabindex="-1"></a>In the baseline script you will find a multi-panel layout created via:</span>
-<span id="cb10-198"><a href="#cb10-198" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-199"><a href="#cb10-199" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-200"><a href="#cb10-200" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">5</span>), nrows<span class="op">=</span><span class="dv">2</span>, ncols<span class="op">=</span><span class="dv">2</span>, height_ratios<span class="op">=</span>[<span class="dv">5</span>, <span class="dv">1</span>])</span>
-<span id="cb10-201"><a href="#cb10-201" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-202"><a href="#cb10-202" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-203"><a href="#cb10-203" aria-hidden="true" tabindex="-1"></a>This lets you combine the phase plane, time series, and a simple parameter indicator (e.g. a vertical line showing the current $I_{\mathrm{app}}$).</span>
-<span id="cb10-204"><a href="#cb10-204" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-205"><a href="#cb10-205" aria-hidden="true" tabindex="-1"></a><span class="fu">## Plotting: Animation {#sec-animation}</span></span>
-<span id="cb10-206"><a href="#cb10-206" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-207"><a href="#cb10-207" aria-hidden="true" tabindex="-1"></a>To animate a trajectory, we initialize line objects (empty data) and update them every frame.</span>
-<span id="cb10-208"><a href="#cb10-208" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-209"><a href="#cb10-209" aria-hidden="true" tabindex="-1"></a>The core pattern is:</span>
-<span id="cb10-210"><a href="#cb10-210" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-211"><a href="#cb10-211" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-212"><a href="#cb10-212" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.animation <span class="im">as</span> animation</span>
-<span id="cb10-213"><a href="#cb10-213" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-214"><a href="#cb10-214" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-215"><a href="#cb10-215" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> animate(i: <span class="bu">int</span>, xy: np.ndarray):</span>
-<span id="cb10-216"><a href="#cb10-216" aria-hidden="true" tabindex="-1"></a>    x, y <span class="op">=</span> xy</span>
-<span id="cb10-217"><a href="#cb10-217" aria-hidden="true" tabindex="-1"></a>    line.set_data(x[:i], y[:i])</span>
-<span id="cb10-218"><a href="#cb10-218" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (line,)</span>
-<span id="cb10-219"><a href="#cb10-219" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-220"><a href="#cb10-220" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-221"><a href="#cb10-221" aria-hidden="true" tabindex="-1"></a>ani <span class="op">=</span> animation.FuncAnimation(</span>
-<span id="cb10-222"><a href="#cb10-222" aria-hidden="true" tabindex="-1"></a>    fig,</span>
-<span id="cb10-223"><a href="#cb10-223" aria-hidden="true" tabindex="-1"></a>    animate,</span>
-<span id="cb10-224"><a href="#cb10-224" aria-hidden="true" tabindex="-1"></a>    fargs<span class="op">=</span>(sol.y,),</span>
-<span id="cb10-225"><a href="#cb10-225" aria-hidden="true" tabindex="-1"></a>    frames<span class="op">=</span><span class="bu">len</span>(t_eval),</span>
-<span id="cb10-226"><a href="#cb10-226" aria-hidden="true" tabindex="-1"></a>    interval<span class="op">=</span><span class="dv">1</span>,</span>
-<span id="cb10-227"><a href="#cb10-227" aria-hidden="true" tabindex="-1"></a>    blit<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb10-228"><a href="#cb10-228" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb10-229"><a href="#cb10-229" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-230"><a href="#cb10-230" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-231"><a href="#cb10-231" aria-hidden="true" tabindex="-1"></a>Key idea: the animation function must **return the artists** that changed, otherwise <span class="in">`blit=True`</span> cannot efficiently redraw.</span>
-<span id="cb10-232"><a href="#cb10-232" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-233"><a href="#cb10-233" aria-hidden="true" tabindex="-1"></a><span class="fu">## Updating an Existing Animation {#sec-restart-animation}</span></span>
-<span id="cb10-234"><a href="#cb10-234" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-235"><a href="#cb10-235" aria-hidden="true" tabindex="-1"></a>To restart an animation after changing initial conditions or parameters (pattern used in the baseline scripts):</span>
-<span id="cb10-236"><a href="#cb10-236" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-237"><a href="#cb10-237" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-238"><a href="#cb10-238" aria-hidden="true" tabindex="-1"></a>ani.event_source.stop()</span>
-<span id="cb10-239"><a href="#cb10-239" aria-hidden="true" tabindex="-1"></a>ani.frame_seq <span class="op">=</span> ani.new_frame_seq()</span>
-<span id="cb10-240"><a href="#cb10-240" aria-hidden="true" tabindex="-1"></a>ani._args <span class="op">=</span> (new_data, ...)</span>
-<span id="cb10-241"><a href="#cb10-241" aria-hidden="true" tabindex="-1"></a>ani.event_source.start()</span>
-<span id="cb10-242"><a href="#cb10-242" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-243"><a href="#cb10-243" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-244"><a href="#cb10-244" aria-hidden="true" tabindex="-1"></a>This is equivalent to stopping, clearing frames, changing the <span class="in">`fargs`</span>, and starting again.</span>
-<span id="cb10-245"><a href="#cb10-245" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-246"><a href="#cb10-246" aria-hidden="true" tabindex="-1"></a><span class="fu">## User Interaction (On Click) {#sec-interaction}</span></span>
-<span id="cb10-247"><a href="#cb10-247" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-248"><a href="#cb10-248" aria-hidden="true" tabindex="-1"></a>Matplotlib can react to user mouse clicks via <span class="in">`mpl_connect`</span>.</span>
-<span id="cb10-249"><a href="#cb10-249" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-250"><a href="#cb10-250" aria-hidden="true" tabindex="-1"></a>Minimal pattern:</span>
-<span id="cb10-251"><a href="#cb10-251" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-252"><a href="#cb10-252" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-253"><a href="#cb10-253" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.backend_bases <span class="im">import</span> MouseEvent</span>
-<span id="cb10-254"><a href="#cb10-254" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-255"><a href="#cb10-255" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-256"><a href="#cb10-256" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mouse_click(event: MouseEvent):</span>
-<span id="cb10-257"><a href="#cb10-257" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> event.inaxes <span class="op">==</span> ax_phase:</span>
-<span id="cb10-258"><a href="#cb10-258" aria-hidden="true" tabindex="-1"></a>        v0 <span class="op">=</span> event.xdata</span>
-<span id="cb10-259"><a href="#cb10-259" aria-hidden="true" tabindex="-1"></a>        w0 <span class="op">=</span> event.ydata</span>
-<span id="cb10-260"><a href="#cb10-260" aria-hidden="true" tabindex="-1"></a>        <span class="co"># recompute trajectory, nullclines, fixed point</span></span>
-<span id="cb10-261"><a href="#cb10-261" aria-hidden="true" tabindex="-1"></a>        <span class="co"># restart animation</span></span>
-<span id="cb10-262"><a href="#cb10-262" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-263"><a href="#cb10-263" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-264"><a href="#cb10-264" aria-hidden="true" tabindex="-1"></a>fig.canvas.mpl_connect(<span class="st">"button_press_event"</span>, mouse_click)</span>
-<span id="cb10-265"><a href="#cb10-265" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-266"><a href="#cb10-266" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-267"><a href="#cb10-267" aria-hidden="true" tabindex="-1"></a>In the provided script, clicking in:</span>
-<span id="cb10-268"><a href="#cb10-268" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-269"><a href="#cb10-269" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the **phase plane** sets the new initial condition $(v_0, w_0)$</span>
-<span id="cb10-270"><a href="#cb10-270" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the **parameter axis** sets a new $I_{\mathrm{app}}$</span>
-<span id="cb10-271"><a href="#cb10-271" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-272"><a href="#cb10-272" aria-hidden="true" tabindex="-1"></a>and the animation restarts using the new data.</span>
-<span id="cb10-273"><a href="#cb10-273" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-274"><a href="#cb10-274" aria-hidden="true" tabindex="-1"></a><span class="fu">## Baseline Code to Run {#sec-baseline}</span></span>
-<span id="cb10-275"><a href="#cb10-275" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-276"><a href="#cb10-276" aria-hidden="true" tabindex="-1"></a>The repository already contains a complete interactive implementation for the FitzHugh–Nagumo model:</span>
-<span id="cb10-277"><a href="#cb10-277" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-278"><a href="#cb10-278" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`sessions/s02_odes_2d/fitzhugh_nagumo.py`</span></span>
-<span id="cb10-279"><a href="#cb10-279" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-280"><a href="#cb10-280" aria-hidden="true" tabindex="-1"></a>From the repository root, run:</span>
-<span id="cb10-281"><a href="#cb10-281" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-282"><a href="#cb10-282" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
-<span id="cb10-283"><a href="#cb10-283" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> sessions/s02_odes_2d/fitzhugh_nagumo.py</span>
-<span id="cb10-284"><a href="#cb10-284" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-285"><a href="#cb10-285" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-286"><a href="#cb10-286" aria-hidden="true" tabindex="-1"></a>Try the following interactions:</span>
-<span id="cb10-287"><a href="#cb10-287" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-288"><a href="#cb10-288" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>click in the phase plane to set $(v_0, w_0)$</span>
-<span id="cb10-289"><a href="#cb10-289" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>click in the bottom-left axis to change $I_{\mathrm{app}}$</span>
-<span id="cb10-290"><a href="#cb10-290" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>observe how the trajectory, nullclines, and fixed point update</span>
-<span id="cb10-291"><a href="#cb10-291" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-292"><a href="#cb10-292" aria-hidden="true" tabindex="-1"></a><span class="fu">## Work in Pairs (Suggested Division) {#sec-work-in-pairs}</span></span>
-<span id="cb10-293"><a href="#cb10-293" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-294"><a href="#cb10-294" aria-hidden="true" tabindex="-1"></a>This matches the workflow in the slides:</span>
-<span id="cb10-295"><a href="#cb10-295" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-296"><a href="#cb10-296" aria-hidden="true" tabindex="-1"></a>**Task A: Phase Plane (Math + SciPy + NumPy)**</span>
-<span id="cb10-297"><a href="#cb10-297" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-298"><a href="#cb10-298" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>integrate a trajectory with <span class="in">`solve_ivp`</span></span>
-<span id="cb10-299"><a href="#cb10-299" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>compute nullclines (analytical if possible, or numerical on a grid)</span>
-<span id="cb10-300"><a href="#cb10-300" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>compute a fixed point with <span class="in">`fsolve`</span></span>
-<span id="cb10-301"><a href="#cb10-301" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-302"><a href="#cb10-302" aria-hidden="true" tabindex="-1"></a>**Task B: Plot + Animation (Matplotlib)**</span>
-<span id="cb10-303"><a href="#cb10-303" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-304"><a href="#cb10-304" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>plot nullclines + fixed point + trajectory</span>
-<span id="cb10-305"><a href="#cb10-305" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>animate the trajectory</span>
-<span id="cb10-306"><a href="#cb10-306" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>add a second plot (bonus): $v(t)$ vs time</span>
-<span id="cb10-307"><a href="#cb10-307" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-308"><a href="#cb10-308" aria-hidden="true" tabindex="-1"></a><span class="fu">## Homework {#sec-homework}</span></span>
-<span id="cb10-309"><a href="#cb10-309" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-310"><a href="#cb10-310" aria-hidden="true" tabindex="-1"></a>Implement the animation for **one** of the following models (your choice), in a single script:</span>
-<span id="cb10-311"><a href="#cb10-311" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-312"><a href="#cb10-312" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Van der Pol</span>
-<span id="cb10-313"><a href="#cb10-313" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>FitzHugh–Nagumo</span>
-<span id="cb10-314"><a href="#cb10-314" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-315"><a href="#cb10-315" aria-hidden="true" tabindex="-1"></a>When you run the script, it should show a figure with:</span>
-<span id="cb10-316"><a href="#cb10-316" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-317"><a href="#cb10-317" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>nullclines</span>
-<span id="cb10-318"><a href="#cb10-318" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>fixed point</span>
-<span id="cb10-319"><a href="#cb10-319" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>animated trajectory</span>
-<span id="cb10-320"><a href="#cb10-320" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-321"><a href="#cb10-321" aria-hidden="true" tabindex="-1"></a>**Bonus**: animate a second plot (in the same figure) with the evolution of one variable in time.</span>
-<span id="cb10-322"><a href="#cb10-322" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-323"><a href="#cb10-323" aria-hidden="true" tabindex="-1"></a>**Extra mile**: make the figure interactive so that the user can click to set the initial condition and the animation restarts.</span>
-<span id="cb10-324"><a href="#cb10-324" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-325"><a href="#cb10-325" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exploration Questions {#sec-exploration-questions}</span></span>
-<span id="cb10-326"><a href="#cb10-326" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-327"><a href="#cb10-327" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>For fixed $(\alpha, \gamma, \epsilon)$, how does the qualitative behavior change as you increase $I_{\mathrm{app}}$?</span>
-<span id="cb10-328"><a href="#cb10-328" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Pick two initial conditions on different sides of the nullclines. Do trajectories converge to the same attractor?</span>
-<span id="cb10-329"><a href="#cb10-329" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Use the analytical nullclines for FHN and compare them to the numerical nullclines computed on a grid. When does the numerical approximation look noisy, and how can you improve it?</span>
-<span id="cb10-330"><a href="#cb10-330" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-331"><a href="#cb10-331" aria-hidden="true" tabindex="-1"></a><span class="fu">## Next Session {#sec-next}</span></span>
-<span id="cb10-332"><a href="#cb10-332" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-333"><a href="#cb10-333" aria-hidden="true" tabindex="-1"></a>Next: reaction–diffusion systems (Gray–Scott), Laplacians with NumPy, Matplotlib animations, and user interactions.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "FitzHugh–Nagumo Model"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "2D Ordinary Differential Equations"</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>The FitzHugh–Nagumo model is a simplified neuron model that captures key features of excitability and spiking behavior.</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>It consists of two coupled ODEs:</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>$$\begin{aligned}</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>\epsilon \dot v &amp;= f(v) - w + I_{\text{app}} <span class="sc">\\</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>\dot w &amp;= v - \gamma w</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>\end{aligned}$$</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>Where $v$ is the fast variable representing the membrane potential, $w$ is a recovery variable, $I_{\text{app}}$ is an applied current, and $\epsilon \ll 1$ controls the timescale separation between the fast variable $v$ and the slow variable $w$. $f(v)$ is a cubic nonlinearity, often taken as</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>f(v) = v (1 - v)(v - \alpha),\quad \text{for } 0 &lt; \alpha &lt; 1</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-phase-plane</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Phase plane of the FitzHugh–Nagumo system with epsilon = 0.01, gamma = 0.5, and I_app = 0.5. Trajectories are shown for different initial conditions (IC as v-w, marked black). Generated with `scipy.integrate.solve_ivp()` and matplotlib."</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 8</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 4</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.integrate <span class="im">import</span> solve_ivp</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sessions.s02_odes_2d.fitzhugh_nagumo <span class="im">import</span> fitzhugh_nagumo</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>ls_vw <span class="op">=</span> [(<span class="dv">0</span>, <span class="dv">0</span>), (<span class="fl">0.4</span>, <span class="dv">0</span>), (<span class="op">-</span><span class="fl">0.2</span>, <span class="dv">0</span>)]</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>epsilon, gamma <span class="op">=</span> <span class="fl">0.01</span>, <span class="fl">0.5</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>i_app <span class="op">=</span> <span class="fl">0.5</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>))</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> v0, w0 <span class="kw">in</span> ls_vw:</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>    sol <span class="op">=</span> solve_ivp(fitzhugh_nagumo, [<span class="dv">0</span>, <span class="dv">20</span>], [v0, w0], args<span class="op">=</span>(epsilon, gamma, i_app), t_eval<span class="op">=</span>np.linspace(<span class="dv">0</span>, <span class="dv">20</span>, <span class="dv">2000</span>))</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>    ax.plot(sol.y[<span class="dv">0</span>], sol.y[<span class="dv">1</span>], label<span class="op">=</span><span class="ss">f"IC: (</span><span class="sc">{</span>v0<span class="sc">}</span><span class="ss">, </span><span class="sc">{</span>w0<span class="sc">}</span><span class="ss">)"</span>)</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Mark the initial condition</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>    ax.plot(v0, w0, <span class="st">'o'</span>, color<span class="op">=</span><span class="st">'black'</span>)</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"v"</span>)</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"w"</span>)</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>plt.close()</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>Follow the steps outline in <span class="co">[</span><span class="ot">the CDIMA model</span><span class="co">](cdima.qmd)</span> to explore how the FitzHugh–Nagumo system behaves for different initial conditions and parameters.</span>
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 <footer class="footer">
@@ -1397,7 +827,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/ode-2d/fitzhugh-nagumo.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/ode-2d/fitzhugh-nagumo.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
       <ul class="footer-items list-unstyled">
     <li class="nav-item compact">
