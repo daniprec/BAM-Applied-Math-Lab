@@ -1,0 +1,105 @@
+---
+title: "Animations and Interactivity"
+subtitle: "ODEs in 2D"
+format: html
+---
+
+This page summarizes the core Matplotlib pattern we use to animate trajectories in the phase plane, and how to restart an animation when the user changes parameters or initial conditions.
+
+## Minimal animation pattern
+
+```python
+import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+
+# ...
+# Your code to compute trajectories, nullclines, fixed point...
+# Example: sol = solve_ivp(...)
+# ...
+
+# Open a new figure (white canvas)
+fig = plt.figure()
+ax = plt.gca()  # get current axis
+
+# Initialize the line object for animation on the phase plane
+(plot_trajectory,) = ax.plot([], [], lw=2)
+
+
+def animate(frame: int, xy):
+	"""Update function called once per frame."""
+	x, y = xy
+	plot_trajectory.set_data(x[:frame], y[:frame])
+	return (plot_trajectory,)
+
+
+ani = animation.FuncAnimation(
+	fig,
+	animate,
+	fargs=(sol.y,),
+	frames=len(sol.t),
+	interval=1,
+	blit=True,
+)
+```
+
+## What Happens in an Animation?
+
+The animation function is called once per frame:
+
+- `frame` (or `i`) is the frame index (0, 1, 2, ...)
+- `xy` is the data to plot (here, the solution `sol.y` returned by `solve_ivp`)
+- the function must **update the artists** (lines, points, text, etc.)
+- it must **return an iterable** with the updated artists when `blit=True`
+
+## The Animation Function in Detail
+
+Template:
+
+```python
+def animate_function(i: int, *args):
+	# update plot elements
+	return (artist1, artist2, ...)
+```
+
+In our case, the second input argument is the solution from `solve_ivp`. Updating a line is typically done with:
+
+```python
+line.set_data(x, y)
+```
+
+This replaces the line coordinates by the new points $(x,y)$.
+
+## Creating the Animation (`FuncAnimation`)
+
+```python
+import matplotlib.animation as animation
+
+ani = animation.FuncAnimation(
+	fig,
+	function,
+	fargs=(sol.y,),
+	interval=1,
+	blit=True,
+)
+```
+
+Arguments:
+
+- `fig`: the Matplotlib figure to animate
+- `function`: the callback that updates plot elements on each frame
+- `fargs`: extra arguments passed to `function` (everything except the frame index)
+- `interval`: delay between frames (milliseconds)
+- `blit`: if `True`, redraws only the updated artists (faster). When using `blit=True`, your animation function must return the artists that were updated.
+
+## Restarting an Animation (Interactivity)
+
+When the user clicks (new initial condition) or changes a parameter, a common pattern is:
+
+```python
+ani.event_source.stop()          # stop the current animation
+ani.frame_seq = ani.new_frame_seq()  # reset frame generator
+ani._args = (xy, ...)            # replace animation inputs (like new fargs)
+ani.event_source.start()         # start again
+```
+
+This is the mechanism used in the interactive scripts: recompute `solve_ivp(...)`, update nullclines/fixed point, then restart the animation with the new data.
