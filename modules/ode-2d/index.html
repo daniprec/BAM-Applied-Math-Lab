@@ -103,6 +103,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../../assets/styles.css">
 </head>
@@ -232,7 +261,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#case-studies" id="toc-case-studies" class="nav-link active" data-scroll-target="#case-studies">Case studies</a>
+  <ul class="collapse">
+  <li><a href="#chlorine-dioxideiodinemalonic-acid-cdima" id="toc-chlorine-dioxideiodinemalonic-acid-cdima" class="nav-link" data-scroll-target="#chlorine-dioxideiodinemalonic-acid-cdima">Chlorine Dioxide–Iodine–Malonic Acid (CDIMA)</a></li>
+  <li><a href="#van-der-pol-oscillator" id="toc-van-der-pol-oscillator" class="nav-link" data-scroll-target="#van-der-pol-oscillator">Van der Pol oscillator</a></li>
+  <li><a href="#fitzhughnagumo" id="toc-fitzhughnagumo" class="nav-link" data-scroll-target="#fitzhughnagumo">FitzHugh–Nagumo</a></li>
+  </ul></li>
+  <li><a href="#goals" id="toc-goals" class="nav-link" data-scroll-target="#goals">Goals</a></li>
+  <li><a href="#what-do-we-need" id="toc-what-do-we-need" class="nav-link" data-scroll-target="#what-do-we-need">What do we need?</a>
+  <ul class="collapse">
+  <li><a href="#scipy" id="toc-scipy" class="nav-link" data-scroll-target="#scipy"><code>scipy</code></a></li>
+  <li><a href="#solve_ivp" id="toc-solve_ivp" class="nav-link" data-scroll-target="#solve_ivp"><code>solve_ivp()</code></a></li>
+  <li><a href="#matplotlib.animation" id="toc-matplotlib.animation" class="nav-link" data-scroll-target="#matplotlib.animation"><code>matplotlib.animation</code></a></li>
+  <li><a href="#matplotlib.pyplot" id="toc-matplotlib.pyplot" class="nav-link" data-scroll-target="#matplotlib.pyplot"><code>matplotlib.pyplot</code></a></li>
+  <li><a href="#matplotlib.backend_bases" id="toc-matplotlib.backend_bases" class="nav-link" data-scroll-target="#matplotlib.backend_bases"><code>matplotlib.backend_bases</code></a></li>
+  <li><a href="#streamlit" id="toc-streamlit" class="nav-link" data-scroll-target="#streamlit"><code>streamlit</code>?</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/ode-2d/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -257,10 +307,74 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<p>In this session we move from 1D dynamics to <strong>planar systems</strong> <span class="math display">\[\dot x=f(x,y;\,\theta),\qquad \dot y=g(x,y;\,\theta),\]</span> where behavior can depend strongly on both the <strong>initial state</strong> <span class="math inline">\((x_0,y_0)\)</span> and the <strong>parameters</strong> <span class="math inline">\(\theta\)</span>.</p>
+<section id="case-studies" class="level2">
+<h2 class="anchored" data-anchor-id="case-studies">Case studies</h2>
+<section id="chlorine-dioxideiodinemalonic-acid-cdima" class="level3">
+<h3 class="anchored" data-anchor-id="chlorine-dioxideiodinemalonic-acid-cdima">Chlorine Dioxide–Iodine–Malonic Acid (CDIMA)</h3>
+<p>The CDIMA reaction is a classical example from chemical kinetics that can display rich nonlinear dynamics. We will use a reduced 2D model to explore how parameter changes can trigger qualitatively different behaviors (e.g., convergence to a steady state vs.&nbsp;sustained oscillations).</p>
+</section>
+<section id="van-der-pol-oscillator" class="level3">
+<h3 class="anchored" data-anchor-id="van-der-pol-oscillator">Van der Pol oscillator</h3>
+<p>The Van der Pol system is a prototypical <strong>self-excited oscillator</strong>: it exhibits a stable <strong>limit cycle</strong> for a wide range of initial conditions. It is a clean testbed for studying how nonlinear damping (controlled by a parameter) changes trajectories and transient dynamics.</p>
+</section>
+<section id="fitzhughnagumo" class="level3">
+<h3 class="anchored" data-anchor-id="fitzhughnagumo">FitzHugh–Nagumo</h3>
+<p>The FitzHugh–Nagumo model is a simplified neuron model capturing <strong>excitability</strong> and <strong>spiking</strong>. It’s a great example of a fast–slow 2D system, where parameters control whether trajectories relax to rest, fire spikes, or oscillate.</p>
+</section>
+</section>
+<section id="goals" class="level2">
+<h2 class="anchored" data-anchor-id="goals">Goals</h2>
+<ul>
+<li>Explore the evolution of the system depending on its initial state <span class="math inline">\((x_0,y_0)\)</span>.</li>
+<li>Study how solutions depend on equation parameters (bifurcation-style exploration).</li>
+<li>Build intuition using phase portraits, time series, and (simple) animations.</li>
+<li>Connect the simulations to the theory: oscillations/limit cycles, fast–slow dynamics, and excitability.</li>
+<li>Run the provided scripts and modify initial conditions/parameters to reproduce and explain the behaviors discussed in lecture.</li>
+</ul>
+</section>
+<section id="what-do-we-need" class="level2">
+<h2 class="anchored" data-anchor-id="what-do-we-need">What do we need?</h2>
+<section id="scipy" class="level3">
+<h3 class="anchored" data-anchor-id="scipy"><code>scipy</code></h3>
+<p>We’ll use numerical integration to evolve the ODEs forward in time. In particular, we’ll rely on <code>scipy.integrate.solve_ivp()</code> which supports explicit Runge–Kutta methods (and many other solvers). Review <a href="../../modules/ode-1d/index.html">session 1</a> for a refresher on how to use <code>solve_ivp()</code> for 1D ODEs, and we’ll extend that workflow to 2D systems here.</p>
+</section>
+<section id="solve_ivp" class="level3">
+<h3 class="anchored" data-anchor-id="solve_ivp"><code>solve_ivp()</code></h3>
+<p>Core workflow:</p>
+<ul>
+<li>define the right-hand side <span class="math inline">\((f,g)\)</span> as a Python function</li>
+<li>choose a time span and evaluation grid</li>
+<li>integrate with an RK method (or a stiff method when needed)</li>
+<li>analyze <span class="math inline">\((x(t),y(t))\)</span> in time and in phase space</li>
+</ul>
+</section>
+<section id="matplotlib.animation" class="level3">
+<h3 class="anchored" data-anchor-id="matplotlib.animation"><code>matplotlib.animation</code></h3>
+<p>To animate trajectories we update plot elements frame-by-frame (lines, markers, text), creating the illusion of motion. This is a lightweight way to visualize how trajectories “flow” through the phase plane.</p>
+</section>
+<section id="matplotlib.pyplot" class="level3">
+<h3 class="anchored" data-anchor-id="matplotlib.pyplot"><code>matplotlib.pyplot</code></h3>
+<p>Used to initialize the figure/axes and draw static plot elements:</p>
+<ul>
+<li>axes labels, titles, legends</li>
+<li>nullclines or vector fields (when included)</li>
+<li>static phase portrait scaffolding</li>
+</ul>
+</section>
+<section id="matplotlib.backend_bases" class="level3">
+<h3 class="anchored" data-anchor-id="matplotlib.backend_bases"><code>matplotlib.backend_bases</code></h3>
+<p>We’ll hook into Matplotlib’s event system (e.g.&nbsp;mouse clicks) to let the user interact with the model. For example, clicking in the phase plane can set a new initial condition <span class="math inline">\((x_0,y_0)\)</span> and re-run the integration.</p>
+</section>
+<section id="streamlit" class="level3">
+<h3 class="anchored" data-anchor-id="streamlit"><code>streamlit</code>?</h3>
+<p>At the moment, <strong>animations and interactive plots are not implemented yet</strong> in Streamlit. For this reason, we will run the code in Python scripts for now.</p>
 
 
 <!-- -->
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -717,7 +831,78 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Ordinary Differential Equations in 2D"</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Numerical Integration with SciPy"</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>In this session we move from 1D dynamics to **planar systems**</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>$$\dot x=f(x,y;\,\theta),\qquad \dot y=g(x,y;\,\theta),$$</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>where behavior can depend strongly on both the **initial state** $(x_0,y_0)$ and the **parameters** $\theta$.</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">## Case studies</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">### Chlorine Dioxide–Iodine–Malonic Acid (CDIMA)</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>The CDIMA reaction is a classical example from chemical kinetics that can display rich nonlinear dynamics.</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>We will use a reduced 2D model to explore how parameter changes can trigger qualitatively different behaviors</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>(e.g., convergence to a steady state vs. sustained oscillations).</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">### Van der Pol oscillator</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>The Van der Pol system is a prototypical **self-excited oscillator**:</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>it exhibits a stable **limit cycle** for a wide range of initial conditions.</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>It is a clean testbed for studying how nonlinear damping (controlled by a parameter) changes trajectories and transient dynamics.</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="fu">### FitzHugh–Nagumo</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>The FitzHugh–Nagumo model is a simplified neuron model capturing **excitability** and **spiking**.</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>It's a great example of a fast–slow 2D system, where parameters control whether trajectories relax to rest, fire spikes, or oscillate.</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="fu">## Goals</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Explore the evolution of the system depending on its initial state $(x_0,y_0)$.</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Study how solutions depend on equation parameters (bifurcation-style exploration).</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Build intuition using phase portraits, time series, and (simple) animations.</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Connect the simulations to the theory: oscillations/limit cycles, fast–slow dynamics, and excitability.</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Run the provided scripts and modify initial conditions/parameters to reproduce and explain the behaviors discussed in lecture.</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="fu">## What do we need?</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="fu">### `scipy`</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>We'll use numerical integration to evolve the ODEs forward in time.</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>In particular, we'll rely on <span class="in">`scipy.integrate.solve_ivp()`</span> which supports explicit Runge–Kutta methods (and many other solvers).</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>Review <span class="co">[</span><span class="ot">session 1</span><span class="co">](../ode-1d/index.qmd)</span> for a refresher on how to use <span class="in">`solve_ivp()`</span> for 1D ODEs, and we'll extend that workflow to 2D systems here.</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="fu">### `solve_ivp()`</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>Core workflow:</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>define the right-hand side $(f,g)$ as a Python function</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>choose a time span and evaluation grid</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>integrate with an RK method (or a stiff method when needed)</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>analyze $(x(t),y(t))$ in time and in phase space</span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a><span class="fu">### `matplotlib.animation`</span></span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>To animate trajectories we update plot elements frame-by-frame (lines, markers, text), creating the illusion of motion.</span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>This is a lightweight way to visualize how trajectories "flow" through the phase plane.</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a><span class="fu">### `matplotlib.pyplot`</span></span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>Used to initialize the figure/axes and draw static plot elements:</span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>axes labels, titles, legends</span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>nullclines or vector fields (when included)</span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>static phase portrait scaffolding</span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a><span class="fu">### `matplotlib.backend_bases`</span></span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a>We'll hook into Matplotlib's event system (e.g. mouse clicks) to let the user interact with the model.</span>
+<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a>For example, clicking in the phase plane can set a new initial condition $(x_0,y_0)$ and re-run the integration.</span>
+<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a><span class="fu">### `streamlit`?</span></span>
+<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a>At the moment, **animations and interactive plots are not implemented yet** in Streamlit.</span>
+<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a>For this reason, we will run the code in Python scripts for now.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 <footer class="footer">
@@ -727,7 +912,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/ode-2d/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/ode-2d/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
       <ul class="footer-items list-unstyled">
     <li class="nav-item compact">
