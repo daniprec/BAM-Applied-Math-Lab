@@ -176,120 +176,58 @@
     ]
   },
   {
-    "objectID": "modules/ode-2d/cdima.html",
-    "href": "modules/ode-2d/cdima.html",
-    "title": "CDIMA Reaction",
+    "objectID": "modules/ode-2d/fitzhugh-nagumo.html",
+    "href": "modules/ode-2d/fitzhugh-nagumo.html",
+    "title": "FitzHugh–Nagumo Model",
     "section": "",
-    "text": "The CDIMA model (Chlorine Dioxide–Iodine–Malonic Acid reaction) is a classic 2D chemical oscillator used to study phase-plane dynamics. The equations are:\n\\[\\begin{aligned}\n\\dot x &= a - x - \\frac{4xy}{1+x^2} \\\\\n\\dot y &= bx \\left( 1 - \\frac{y}{1+x^2} \\right)\n\\end{aligned}\\]\nwhere \\(x\\) and \\(y\\) represent concentrations of chemical species, and \\(a,b\\) are parameters controlling the reaction rates.",
+    "text": "The FitzHugh–Nagumo model is a simplified neuron model that captures key features of excitability and spiking behavior. It consists of two coupled ODEs:\n\\[\\begin{aligned}\n\\epsilon \\dot v &= f(v) - w + I_{\\text{app}} \\\\\n\\dot w &= v - \\gamma w\n\\end{aligned}\\]\nWhere \\(v\\) is the fast variable representing the membrane potential, \\(w\\) is a recovery variable, \\(I_{\\text{app}}\\) is an applied current, and \\(\\epsilon \\ll 1\\) controls the timescale separation between the fast variable \\(v\\) and the slow variable \\(w\\). \\(f(v)\\) is a cubic nonlinearity, often taken as\n\\[\nf(v) = v (1 - v)(v - \\alpha),\\quad \\text{for } 0 &lt; \\alpha &lt; 1\n\\]\nFigure 1: Phase plane of the FitzHugh–Nagumo system with epsilon = 0.01, gamma = 0.5, I_app = 0.5 and alpha = 0.1. Trajectories are shown for different initial conditions (IC as v-w, marked black). Generated with scipy.integrate.solve_ivp() and matplotlib.\nFollow the steps outline in the CDIMA model to explore how the FitzHugh–Nagumo system behaves for different initial conditions and parameters.",
     "crumbs": [
       "Session 2: ODEs in 2D",
-      "CDIMA Reaction"
+      "FitzHugh–Nagumo Model"
     ]
   },
   {
-    "objectID": "modules/ode-2d/cdima.html#phase-plane-analysis",
-    "href": "modules/ode-2d/cdima.html#phase-plane-analysis",
-    "title": "CDIMA Reaction",
-    "section": "Phase-Plane Analysis",
-    "text": "Phase-Plane Analysis\nTo understand the dynamics, we can analyze the phase plane. A phase plane is a 2D plot whose axes are the state variables (here, \\(x\\) and \\(y\\)). Each point \\((x,y)\\) represents the system’s state at a given time, and the differential equations define a vector field on this plane that indicates how the state evolves. Trajectories (solution curves) show how \\((x(t),y(t))\\) moves through the plane, revealing features such as equilibrium points, nullclines, limit cycles, and their stability.\n\n\n\n\n\n\n\n\nFigure 1: Phase plane of the CDIMA system with a = 10, b = 4. Trajectories are shown for different initial conditions (IC as x-y, marked black). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nGenerating this phase plane in Python is simple. We will follow the same approach as in 1D: define the right-hand side as a function, choose a time span and evaluation grid, and integrate with scipy.integrate.solve_ivp(). Follow the steps below.\n\nDefine the ODE Function\nFirst, define the cdima() function. Remeber that any ODE (in any dimension), can be written as:\ndef ode(t, state, *params):\n    # state represents the current values of the variables (e.g., x, y)\n\n    # params are any additional parameters needed to compute the derivatives\n    # each of them is separated by commas\n\n    return dstate_dt  # this should be a sequence of the same length as `state`\nCan you write the cdima() function in this format? If you need an extra hint, uncollapse the code block below.\n\n\n\n\n\n\nHint: CDIMA right-hand side (click to expand)\n\n\n\n\n\ndef cdima(t: float, state: tuple[float, float], a: int, b: int) -&gt; tuple[float, float]:\n    \"\"\"Remember the docstring and type hints!\"\"\"\n    x, y = state  # unpack the state variables\n    dxdt =  # compute dx/dt\n    dydt = # compute dy/dt\n    return (dxdt, dydt)  # return the derivatives as a list\n\n\n\n\n\nSolve the Initial Value Problem\nNext, we need to solve the initial value problem (IVP) for a given initial condition and parameters. The workflow is similar to 1D, but now we have a vector of state variables instead of a single variable. The solve_ivp() function will return the trajectories for both \\(x(t)\\) and \\(y(t)\\), which we can then plot in the phase plane.\nUsing scipy.integrate.solve_ivp() and your previously defined cdima() function, can you write the code to solve the IVP for a specific initial condition and parameters? The output should be the trajectories of \\(x(t)\\) and \\(y(t)\\), i.e. two arrays of the same length.\nIf you need a hint, uncollapse the code block below.\n\n\n\n\n\n\nHint: Solving the IVP (click to expand)\n\n\n\n\n\nfrom scipy.integrate import solve_ivp\nimport numpy as np\n\n# Define parameters\na, b = 10, 4\n# Define initial condition\nx0, y0 = 0, 3 \n# Define time span and evaluation points\nt_span = (0, 20) # Start at t=0 and end at t=20\nt_eval = np.linspace(t_span[0], t_span[1], 2000)  # Return 2000 points between t=0 and t=20\n# Solve the IVP\nsol = solve_ivp(cdima, t_span, [x0, y0], args=(a, b), t_eval=t_eval)\n# sol.y[0] will give you x(t) and sol.y[1] will give you y(t)\n\n\n\nDo you have it? Great! Try the following initial conditions: \\(a=10\\), \\(b=4\\), and \\((x_0,y_0) = (0,3)\\). You can see this trajectory in Figure 1. What will be the state of the system at \\(t=5\\)?\n\n\n\n\n\n\nSolution: State at t=20 (click to expand)\n\n\n\n\n\n\nfrom scipy.integrate import solve_ivp\nimport numpy as np\n\nfrom sessions.s02_odes_2d.cdima import cdima\n\na, b = 10, 4\nx0, y0 = 0, 3\n\nt_span = (0, 5)\nt_eval = np.linspace(t_span[0], t_span[1], 500)\nsol = solve_ivp(cdima, t_span, [x0, y0], args=(a, b), t_eval=t_eval)\nfinal_state = sol.y[:, -1]  # Get the last column of sol.y, which corresponds to the state at t=5\nprint(f\"State at t=5: x={final_state[0]:.2f}, y={final_state[1]:.2f}\")\n\nState at t=5: x=2.08, y=4.13\n\n\n\n\n\n\n\nPlotting the Phase Plane\nFinally, we can plot the trajectories in the phase plane using matplotlib.pyplot. Try to reproduce the plot in Figure 1 by plotting \\(y(t)\\) vs. \\(x(t)\\) for different initial conditions. You can also mark the initial conditions on the plot to see where the trajectories start.\n\n\n\n\n\n\nHint: Plotting the Phase Plane (click to expand)\n\n\n\n\n\nimport matplotlib.pyplot as plt \n\nfig, ax = plt.subplots(figsize=(8, 4))\nfor x0, y0 in [(0, 3), (0, 1.5), (2, 0)]:\n    sol = solve_ivp(cdima, [0, 20], [x0, y0], args=(a, b), t_eval=np.linspace(0, 20, 2000))\n    ax.plot(sol.y[0], sol.y[1], label=f\"IC: ({x0}, {y0})\")  # Plot y vs. x\n    ax.plot(x0, y0, 'o', color='black')  # Mark the initial condition\nplt.xlabel(\"x\")\nplt.ylabel(\"y\")\nplt.legend()\nplt.show()",
+    "objectID": "modules/ode-2d/fitzhugh-nagumo.html#time-series-and-excitability",
+    "href": "modules/ode-2d/fitzhugh-nagumo.html#time-series-and-excitability",
+    "title": "FitzHugh–Nagumo Model",
+    "section": "Time Series and Excitability",
+    "text": "Time Series and Excitability\nIn the excitable regime, trajectories typically stay near the resting equilibrium, but sufficiently large perturbations can trigger a large excursion (a “spike”) before returning to rest.\nBelow we plot the fast variable \\(v(t)\\) for a fixed parameter set and initial condition.\n\n\n\n\n\n\n\n\nFigure 2: Time series \\(v(t)\\) for the FitzHugh–Nagumo system (same parameters as the phase-plane plot). Depending on the initial condition, the solution may relax to rest or exhibit a spike/oscillation.\n\n\n\n\n\nTry changing the initial condition and parameters to see how the time series changes. What regimes of behavior do you observe? Can you connect these observations to the phase plane trajectories and the underlying theory of excitability?",
     "crumbs": [
       "Session 2: ODEs in 2D",
-      "CDIMA Reaction"
+      "FitzHugh–Nagumo Model"
     ]
   },
   {
-    "objectID": "modules/ode-2d/cdima.html#nullclines-in-the-phase-plane",
-    "href": "modules/ode-2d/cdima.html#nullclines-in-the-phase-plane",
-    "title": "CDIMA Reaction",
-    "section": "Nullclines in the Phase Plane",
-    "text": "Nullclines in the Phase Plane\nIn addition to trajectories, we can also plot nullclines in the phase plane. Nullclines are curves where the derivative of one of the variables is zero. They help us identify equilibrium points and understand the flow of trajectories.\n\n\n\n\n\n\n\n\nFigure 2: Nullclines of the CDIMA system with a = 10, b = 4. The x-nullcline (dx/dt=0) is shown in blue, and the y-nullcline (dy/dt=0) is shown in red. Generated with matplotlib.pyplot.\n\n\n\n\n\nHow can we find the nullclines for the CDIMA system? We have two options:\n\nAnalytical approach: Set \\(\\dot x = 0\\) and \\(\\dot y = 0\\) and solve the resulting equations for \\(y\\) as a function of \\(x\\) (or vice versa). This can be done by hand or using symbolic computation tools like SymPy.\nNumerical approach: Evaluate the derivatives on a grid of \\((x,y)\\) values and identify where they change sign (i.e., where they cross zero). This can be done using numerical methods and is often more practical for complex systems. Figure 2 shows the nullclines computed using a numerical approach.\n\nPick one of these methods to compute the nullclines for the CDIMA system, and then plot them in the phase plane. The intersection points of the nullclines correspond to equilibrium points (fixed points) of the system.\n\n\n\n\n\n\nHint: Computing Nullclines (click to expand)\n\n\n\n\n\n# Define the limits for the grid\nx_min, x_max = 0.1, 5\ny_min, y_max = 0, 10\nnum_points = 1000  # Number of points in the grid\n\n# Create a grid of points\nx_values = np.linspace(x_min, x_max, num_points)\ny_values = np.linspace(y_min, y_max, num_points)\nx_grid, y_grid = np.meshgrid(x_values, y_values)\n# meshgrid creates two 2D arrays:\n# x_grid and y_grid, where each element (i,j) corresponds to the\n# coordinates (x_values[i], y_values[j]) in the phase plane.\n\n# Evaluate the derivatives at each point\ndx_dt: np.ndarray\ndy_dt: np.ndarray\ndx_dt, dy_dt = cdima(0, [x_grid, y_grid], a, b)\n\n# Extract nullcline data:\n# Find where dx_dt changes sign (zero crossings)\ndxdt_zero_crossings = np.where(np.diff(np.sign(dx_dt), axis=0))\ndxdt_nullcline_x = x_grid[dxdt_zero_crossings]\ndxdt_nullcline_y = y_grid[dxdt_zero_crossings]\n\n# Extract nullcline data - Find where dy_dt changes sign (zero crossings)\ndydt_zero_crossings = np.where(np.diff(np.sign(dy_dt), axis=1))\ndydt_nullcline_x = x_grid[dydt_zero_crossings]\ndydt_nullcline_y = y_grid[dydt_zero_crossings]\nNow you can plot the nullclines using matplotlib Recommendation: do not join the points! There is no guarantee that the sequence of points in dxdt_nullcline_x and dxdt_nullcline_y (or dydt_nullcline_x and dydt_nullcline_y) will form a continuous curve, so it’s better to plot them as individual points (e.g., using 'o' markers) rather than trying to connect them with lines.",
-    "crumbs": [
-      "Session 2: ODEs in 2D",
-      "CDIMA Reaction"
-    ]
-  },
-  {
-    "objectID": "modules/ode-2d/cdima.html#fixed-points-on-the-phase-plane",
-    "href": "modules/ode-2d/cdima.html#fixed-points-on-the-phase-plane",
-    "title": "CDIMA Reaction",
-    "section": "Fixed Points on the Phase Plane",
-    "text": "Fixed Points on the Phase Plane\nThe intersection points of the nullclines correspond to fixed points (equilibria) of the system. In other words, they are points where both \\(\\dot x = 0\\) and \\(\\dot y = 0\\) simultaneously.\nTo find the fixed points, we can look for the coordinates where the x-nullcline and y-nullcline intersect. This can be done by checking for points that are close to each other in both nullcline datasets or by using a more systematic approach (e.g., clustering or root-finding methods).\nIn Python, we can use the scipy.optimize.fsolve() function to find the roots of the system of equations defined by the nullclines. This will give us the coordinates of the fixed points.\nfrom scipy.optimize import fsolve\n\na, b = 10, 4\n\n# We need to define a function that represents the system of\n# equations for the nullclines\ndef cdima_fixed(xy: np.ndarray) -&gt; np.ndarray:\n    return cdima(None, xy, a, b)\n\nfixed_point = fsolve(cdima_fixed, [1, 1])  # Initial guess for the fixed point\nprint(f\"Fixed point: x={fixed_point[0]:.2f}, y={fixed_point[1]:.2f}\")\nIf we have done things well, plotting the fixed point on the phase plane should show that it lies at the intersection of the nullclines.\n\n\n\n\n\n\n\n\nFigure 3: Fixed point of the CDIMA system with a = 10, b = 4. The fixed point is marked with a black dot at the intersection of the nullclines. Generated with scipy.optimize.fsolve() and matplotlib.pyplot.",
-    "crumbs": [
-      "Session 2: ODEs in 2D",
-      "CDIMA Reaction"
-    ]
-  },
-  {
-    "objectID": "modules/ode-2d/cdima.html#closing-remarks",
-    "href": "modules/ode-2d/cdima.html#closing-remarks",
-    "title": "CDIMA Reaction",
-    "section": "Closing Remarks",
-    "text": "Closing Remarks\nHave you done all the steps above? Great! You should now have a good understanding of how to analyze a 2D ODE system using phase-plane methods. You can explore how changing the parameters affects the trajectories, nullclines, and fixed points. Try different initial conditions to see how the system’s behavior changes.\nYour next steps:\n\nReproduce the phase plane and nullcline plots for other systems such as the Van der Pol oscillator and the FitzHugh–Nagumo model.\nCreate an interactive animation of the trajectories in the phase plane using matplotlib.animation. You can follow the guide showed here to get started.",
-    "crumbs": [
-      "Session 2: ODEs in 2D",
-      "CDIMA Reaction"
-    ]
-  },
-  {
-    "objectID": "modules/ode-2d/index.html",
-    "href": "modules/ode-2d/index.html",
-    "title": "Ordinary Differential Equations in 2D",
+    "objectID": "modules/ode-2d/van-der-pol.html",
+    "href": "modules/ode-2d/van-der-pol.html",
+    "title": "Van der Pol Oscillator",
     "section": "",
-    "text": "In this session we move from 1D dynamics to planar systems \\[\\dot x=f(x,y;\\,\\theta),\\qquad \\dot y=g(x,y;\\,\\theta),\\] where behavior can depend strongly on both the initial state \\((x_0,y_0)\\) and the parameters \\(\\theta\\).",
+    "text": "The Van der Pol oscillator is a prototypical nonlinear system that exhibits self-sustained oscillations. For a wide range of initial conditions, trajectories converge to a stable limit cycle.\nIn the form we will use in this course, the system is written as\n\\[\\begin{aligned}\n\\dot x &= \\mu\\,(y - f(x)) \\\\\n\\dot y &= -\\frac{x}{\\mu}\n\\end{aligned}\\]\nwhere \\(\\mu&gt;0\\) controls the strength of the nonlinearity (and the fast–slow character for large \\(\\mu\\)), and\n\\[\nf(x) = \\frac{x^3}{3} - x.\n\\]\nFigure 1: Phase plane of the Van der Pol system with mu = 3. Trajectories are shown for different initial conditions (IC as x-y, marked black). Generated with scipy.integrate.solve_ivp() and matplotlib.\nFollow the steps outline in the CDIMA model to explore how the Van der Pol system behaves for different initial conditions and parameters.",
     "crumbs": [
-      "Session 2: ODEs in 2D"
+      "Session 2: ODEs in 2D",
+      "Van der Pol Oscillator"
     ]
   },
   {
-    "objectID": "modules/ode-2d/index.html#case-studies",
-    "href": "modules/ode-2d/index.html#case-studies",
-    "title": "Ordinary Differential Equations in 2D",
-    "section": "Case studies",
-    "text": "Case studies\n\nChlorine Dioxide–Iodine–Malonic Acid (CDIMA)\nThe CDIMA reaction is a classical example from chemical kinetics that can display rich nonlinear dynamics. We will use a reduced 2D model to explore how parameter changes can trigger qualitatively different behaviors (e.g., convergence to a steady state vs. sustained oscillations).\n\n\nVan der Pol oscillator\nThe Van der Pol system is a prototypical self-excited oscillator: it exhibits a stable limit cycle for a wide range of initial conditions. It is a clean testbed for studying how nonlinear damping (controlled by a parameter) changes trajectories and transient dynamics.\n\n\nFitzHugh–Nagumo\nThe FitzHugh–Nagumo model is a simplified neuron model capturing excitability and spiking. It’s a great example of a fast–slow 2D system, where parameters control whether trajectories relax to rest, fire spikes, or oscillate.",
+    "objectID": "modules/ode-2d/van-der-pol.html#the-stable-limit-cycle",
+    "href": "modules/ode-2d/van-der-pol.html#the-stable-limit-cycle",
+    "title": "Van der Pol Oscillator",
+    "section": "The Stable Limit Cycle",
+    "text": "The Stable Limit Cycle\nThe Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions. Plot this limit cycle as a \\(x(t)-t\\) plot, and verify that it matches the phase plane trajectories.\n\n\n/tmp/ipykernel_2878/2854713749.py:14: UserWarning:\n\nNo artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.\n\n\n\n\n\n\n\n\n\nFigure 2: Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nThe amplitude and period of the limit cycle depend on \\(\\mu\\). There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with \\(\\mu\\), while the fast phase becomes more abrupt. This leads to a characteristic “relaxation oscillation” shape for large \\(\\mu\\).\nPlay with the parameter \\(\\mu\\) to see how it changes the shape of the limit cycle and the transient dynamics.",
     "crumbs": [
-      "Session 2: ODEs in 2D"
+      "Session 2: ODEs in 2D",
+      "Van der Pol Oscillator"
     ]
   },
   {
-    "objectID": "modules/ode-2d/index.html#goals",
-    "href": "modules/ode-2d/index.html#goals",
-    "title": "Ordinary Differential Equations in 2D",
-    "section": "Goals",
-    "text": "Goals\n\nExplore the evolution of the system depending on its initial state \\((x_0,y_0)\\).\nStudy how solutions depend on equation parameters (bifurcation-style exploration).\nBuild intuition using phase portraits, time series, and (simple) animations.\nConnect the simulations to the theory: oscillations/limit cycles, fast–slow dynamics, and excitability.\nRun the provided scripts and modify initial conditions/parameters to reproduce and explain the behaviors discussed in lecture.",
-    "crumbs": [
-      "Session 2: ODEs in 2D"
-    ]
-  },
-  {
-    "objectID": "modules/ode-2d/index.html#what-do-we-need",
-    "href": "modules/ode-2d/index.html#what-do-we-need",
-    "title": "Ordinary Differential Equations in 2D",
-    "section": "What do we need?",
-    "text": "What do we need?\n\nscipy\nWe’ll use numerical integration to evolve the ODEs forward in time. In particular, we’ll rely on scipy.integrate.solve_ivp() which supports explicit Runge–Kutta methods (and many other solvers). Review session 1 for a refresher on how to use solve_ivp() for 1D ODEs, and we’ll extend that workflow to 2D systems here.\n\n\nsolve_ivp()\nCore workflow:\n\ndefine the right-hand side \\((f,g)\\) as a Python function\nchoose a time span and evaluation grid\nintegrate with an RK method (or a stiff method when needed)\nanalyze \\((x(t),y(t))\\) in time and in phase space\n\n\n\nmatplotlib.animation\nTo animate trajectories we update plot elements frame-by-frame (lines, markers, text), creating the illusion of motion. This is a lightweight way to visualize how trajectories “flow” through the phase plane.\n\n\nmatplotlib.pyplot\nUsed to initialize the figure/axes and draw static plot elements:\n\naxes labels, titles, legends\nnullclines or vector fields (when included)\nstatic phase portrait scaffolding\n\n\n\nmatplotlib.backend_bases\nWe’ll hook into Matplotlib’s event system (e.g. mouse clicks) to let the user interact with the model. For example, clicking in the phase plane can set a new initial condition \\((x_0,y_0)\\) and re-run the integration.\n\n\nstreamlit?\nAt the moment, animations and interactive plots are not implemented yet in Streamlit. For this reason, we will run the code in Python scripts for now.",
-    "crumbs": [
-      "Session 2: ODEs in 2D"
-    ]
-  },
-  {
-    "objectID": "syllabus.html",
-    "href": "syllabus.html",
-    "title": "Applied Math Lab",
+    "objectID": "modules/ode-2d/assignment.html",
+    "href": "modules/ode-2d/assignment.html",
+    "title": "Assignment",
     "section": "",
-    "text": "This course has 10 live in-person sessions.\n\n\nSimulate classical one-dimensional ODE models (SIR epidemiological model, spruce budworm population model, Michaelis–Menten enzyme kinetics). Solve ODEs numerically with SciPy in Python, and build/deploy a simple Streamlit web app to explore parameter effects. Groups are assigned and remain for the whole course.\n\n\n\nExplore two-dimensional ODEs via nonlinear oscillatory systems: Van der Pol oscillator and FitzHugh–Nagumo model. Create animations with matplotlib and build interactive Python programs that let users set initial conditions via mouse clicks.\n\n\n\nIntroduce partial differential equations through reaction–diffusion models (Gierer–Meinhardt and Gray–Scott). Implement 1D and 2D Laplacians with NumPy and animate spatiotemporal evolution to study Turing instability and pattern formation.\n\n\n\nImplement coupled ODEs, focusing on the Kuramoto model. Animate multiple plots simultaneously (e.g., oscillator evolution and a bifurcation diagram).\n\n\n\nSimulate flocking behavior using the Vicsek model. Implement interaction rules for “boids” and extend the simulation by treating the mouse as a predator and coding avoidance behavior.\n\n\n\nIntroduce NetworkX: build graphs, compute structural metrics (degree distribution, clustering coefficient, centrality), and visualize different network types. Establish foundations for modeling dynamics on networks.\n\n\n\nSimulate spreading processes (fake news, epidemics) on real-world networks. Retrieve and process open-source network datasets, and investigate how network structure shapes propagation dynamics.\n\n\n\nIntroduce one-dimensional cellular automata as a framework for discrete dynamical systems. Explore deterministic and stochastic CA, and how simple local rules generate complex global behavior.\n\n\n\nApply cellular automata to traffic modeling with the Nagel–Schreckenberg model. Study congestion, flow, and phase transitions by tuning parameters such as vehicle density and maximum speed.\n\n\n\nWrap-up and support session for the final project: address remaining questions, clarify concepts, and help groups prepare deliverables.",
+    "text": "You will build a Matplotlib animation for one 2D ODE model.\nChoose a model\n\nVan der Pol\nFitzHugh–Nagumo\n\nWrite one Python script that, when executed, opens a figure showing:\n\nthe nullclines\nthe fixed point\nan animated trajectory in the phase plane (line + moving point)\n\nUse the pipeline showed for the CDIMA model as a starting point, and adapt it to the model you choose. For the animation, follow the steps outlined in the animation page.\nThen, add a second subplot that animates the time evolution of one variable (as indicated in the page for each model).\nExtra Mile (Optional): Make the figure interactive: clicking on the phase plane sets the initial condition, and the animation restarts.",
     "crumbs": [
-      "Getting Started",
-      "Syllabus"
-    ]
-  },
-  {
-    "objectID": "syllabus.html#program",
-    "href": "syllabus.html#program",
-    "title": "Applied Math Lab",
-    "section": "",
-    "text": "This course has 10 live in-person sessions.\n\n\nSimulate classical one-dimensional ODE models (SIR epidemiological model, spruce budworm population model, Michaelis–Menten enzyme kinetics). Solve ODEs numerically with SciPy in Python, and build/deploy a simple Streamlit web app to explore parameter effects. Groups are assigned and remain for the whole course.\n\n\n\nExplore two-dimensional ODEs via nonlinear oscillatory systems: Van der Pol oscillator and FitzHugh–Nagumo model. Create animations with matplotlib and build interactive Python programs that let users set initial conditions via mouse clicks.\n\n\n\nIntroduce partial differential equations through reaction–diffusion models (Gierer–Meinhardt and Gray–Scott). Implement 1D and 2D Laplacians with NumPy and animate spatiotemporal evolution to study Turing instability and pattern formation.\n\n\n\nImplement coupled ODEs, focusing on the Kuramoto model. Animate multiple plots simultaneously (e.g., oscillator evolution and a bifurcation diagram).\n\n\n\nSimulate flocking behavior using the Vicsek model. Implement interaction rules for “boids” and extend the simulation by treating the mouse as a predator and coding avoidance behavior.\n\n\n\nIntroduce NetworkX: build graphs, compute structural metrics (degree distribution, clustering coefficient, centrality), and visualize different network types. Establish foundations for modeling dynamics on networks.\n\n\n\nSimulate spreading processes (fake news, epidemics) on real-world networks. Retrieve and process open-source network datasets, and investigate how network structure shapes propagation dynamics.\n\n\n\nIntroduce one-dimensional cellular automata as a framework for discrete dynamical systems. Explore deterministic and stochastic CA, and how simple local rules generate complex global behavior.\n\n\n\nApply cellular automata to traffic modeling with the Nagel–Schreckenberg model. Study congestion, flow, and phase transitions by tuning parameters such as vehicle density and maximum speed.\n\n\n\nWrap-up and support session for the final project: address remaining questions, clarify concepts, and help groups prepare deliverables.",
-    "crumbs": [
-      "Getting Started",
-      "Syllabus"
+      "Session 2: ODEs in 2D",
+      "Assignment"
     ]
   },
   {
@@ -359,70 +297,163 @@
     ]
   },
   {
-    "objectID": "modules/ode-2d/assignment.html",
-    "href": "modules/ode-2d/assignment.html",
-    "title": "Assignment",
+    "objectID": "syllabus.html",
+    "href": "syllabus.html",
+    "title": "Applied Math Lab",
     "section": "",
-    "text": "Complete the 2D ODE session deliverables based on the models covered in this module:\n\nCDIMA Reaction\nVan der Pol Oscillator\nFitzHugh–Nagumo Model\n\nWrite a short report describing what you explored, including figures/screenshots and a brief explanation of your results.",
+    "text": "This course has 10 live in-person sessions.\n\n\nSimulate classical one-dimensional ODE models (SIR epidemiological model, spruce budworm population model, Michaelis–Menten enzyme kinetics). Solve ODEs numerically with SciPy in Python, and build/deploy a simple Streamlit web app to explore parameter effects. Groups are assigned and remain for the whole course.\n\n\n\nExplore two-dimensional ODEs via nonlinear oscillatory systems: Van der Pol oscillator and FitzHugh–Nagumo model. Create animations with matplotlib and build interactive Python programs that let users set initial conditions via mouse clicks.\n\n\n\nIntroduce partial differential equations through reaction–diffusion models (Gierer–Meinhardt and Gray–Scott). Implement 1D and 2D Laplacians with NumPy and animate spatiotemporal evolution to study Turing instability and pattern formation.\n\n\n\nImplement coupled ODEs, focusing on the Kuramoto model. Animate multiple plots simultaneously (e.g., oscillator evolution and a bifurcation diagram).\n\n\n\nSimulate flocking behavior using the Vicsek model. Implement interaction rules for “boids” and extend the simulation by treating the mouse as a predator and coding avoidance behavior.\n\n\n\nIntroduce NetworkX: build graphs, compute structural metrics (degree distribution, clustering coefficient, centrality), and visualize different network types. Establish foundations for modeling dynamics on networks.\n\n\n\nSimulate spreading processes (fake news, epidemics) on real-world networks. Retrieve and process open-source network datasets, and investigate how network structure shapes propagation dynamics.\n\n\n\nIntroduce one-dimensional cellular automata as a framework for discrete dynamical systems. Explore deterministic and stochastic CA, and how simple local rules generate complex global behavior.\n\n\n\nApply cellular automata to traffic modeling with the Nagel–Schreckenberg model. Study congestion, flow, and phase transitions by tuning parameters such as vehicle density and maximum speed.\n\n\n\nWrap-up and support session for the final project: address remaining questions, clarify concepts, and help groups prepare deliverables.",
     "crumbs": [
-      "Session 2: ODEs in 2D",
-      "Assignment"
+      "Getting Started",
+      "Syllabus"
     ]
   },
   {
-    "objectID": "modules/ode-2d/assignment.html#assignment",
-    "href": "modules/ode-2d/assignment.html#assignment",
-    "title": "Assignment",
+    "objectID": "syllabus.html#program",
+    "href": "syllabus.html#program",
+    "title": "Applied Math Lab",
     "section": "",
-    "text": "Complete the 2D ODE session deliverables based on the models covered in this module:\n\nCDIMA Reaction\nVan der Pol Oscillator\nFitzHugh–Nagumo Model\n\nWrite a short report describing what you explored, including figures/screenshots and a brief explanation of your results.",
+    "text": "This course has 10 live in-person sessions.\n\n\nSimulate classical one-dimensional ODE models (SIR epidemiological model, spruce budworm population model, Michaelis–Menten enzyme kinetics). Solve ODEs numerically with SciPy in Python, and build/deploy a simple Streamlit web app to explore parameter effects. Groups are assigned and remain for the whole course.\n\n\n\nExplore two-dimensional ODEs via nonlinear oscillatory systems: Van der Pol oscillator and FitzHugh–Nagumo model. Create animations with matplotlib and build interactive Python programs that let users set initial conditions via mouse clicks.\n\n\n\nIntroduce partial differential equations through reaction–diffusion models (Gierer–Meinhardt and Gray–Scott). Implement 1D and 2D Laplacians with NumPy and animate spatiotemporal evolution to study Turing instability and pattern formation.\n\n\n\nImplement coupled ODEs, focusing on the Kuramoto model. Animate multiple plots simultaneously (e.g., oscillator evolution and a bifurcation diagram).\n\n\n\nSimulate flocking behavior using the Vicsek model. Implement interaction rules for “boids” and extend the simulation by treating the mouse as a predator and coding avoidance behavior.\n\n\n\nIntroduce NetworkX: build graphs, compute structural metrics (degree distribution, clustering coefficient, centrality), and visualize different network types. Establish foundations for modeling dynamics on networks.\n\n\n\nSimulate spreading processes (fake news, epidemics) on real-world networks. Retrieve and process open-source network datasets, and investigate how network structure shapes propagation dynamics.\n\n\n\nIntroduce one-dimensional cellular automata as a framework for discrete dynamical systems. Explore deterministic and stochastic CA, and how simple local rules generate complex global behavior.\n\n\n\nApply cellular automata to traffic modeling with the Nagel–Schreckenberg model. Study congestion, flow, and phase transitions by tuning parameters such as vehicle density and maximum speed.\n\n\n\nWrap-up and support session for the final project: address remaining questions, clarify concepts, and help groups prepare deliverables.",
     "crumbs": [
-      "Session 2: ODEs in 2D",
-      "Assignment"
+      "Getting Started",
+      "Syllabus"
     ]
   },
   {
-    "objectID": "modules/ode-2d/van-der-pol.html",
-    "href": "modules/ode-2d/van-der-pol.html",
-    "title": "Van der Pol Oscillator",
+    "objectID": "modules/ode-2d/index.html",
+    "href": "modules/ode-2d/index.html",
+    "title": "Ordinary Differential Equations in 2D",
     "section": "",
-    "text": "The Van der Pol oscillator is a prototypical nonlinear system that exhibits self-sustained oscillations. For a wide range of initial conditions, trajectories converge to a stable limit cycle.\nIn the form we will use in this course, the system is written as\n\\[\\begin{aligned}\n\\dot x &= \\mu\\,(y - f(x)) \\\\\n\\dot y &= -\\frac{x}{\\mu}\n\\end{aligned}\\]\nwhere \\(\\mu&gt;0\\) controls the strength of the nonlinearity (and the fast–slow character for large \\(\\mu\\)), and\n\\[\nf(x) = \\frac{x^3}{3} - x.\n\\]\nFigure 1: Phase plane of the Van der Pol system with mu = 3. Trajectories are shown for different initial conditions (IC as x-y, marked black). Generated with scipy.integrate.solve_ivp() and matplotlib.\nFollow the steps outline in the CDIMA model to explore how the Van der Pol system behaves for different initial conditions and parameters.",
+    "text": "In this session we move from 1D dynamics to planar systems \\[\\dot x=f(x,y;\\,\\theta),\\qquad \\dot y=g(x,y;\\,\\theta),\\] where behavior can depend strongly on both the initial state \\((x_0,y_0)\\) and the parameters \\(\\theta\\).",
     "crumbs": [
-      "Session 2: ODEs in 2D",
-      "Van der Pol Oscillator"
+      "Session 2: ODEs in 2D"
     ]
   },
   {
-    "objectID": "modules/ode-2d/van-der-pol.html#the-stable-limit-cycle",
-    "href": "modules/ode-2d/van-der-pol.html#the-stable-limit-cycle",
-    "title": "Van der Pol Oscillator",
-    "section": "The Stable Limit Cycle",
-    "text": "The Stable Limit Cycle\nThe Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions. Plot this limit cycle as a \\(x(t)-t\\) plot, and verify that it matches the phase plane trajectories.\n\n\n/tmp/ipykernel_2875/2854713749.py:14: UserWarning:\n\nNo artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.\n\n\n\n\n\n\n\n\n\nFigure 2: Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nThe amplitude and period of the limit cycle depend on \\(\\mu\\). There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with \\(\\mu\\), while the fast phase becomes more abrupt. This leads to a characteristic “relaxation oscillation” shape for large \\(\\mu\\).\nPlay with the parameter \\(\\mu\\) to see how it changes the shape of the limit cycle and the transient dynamics.",
+    "objectID": "modules/ode-2d/index.html#case-studies",
+    "href": "modules/ode-2d/index.html#case-studies",
+    "title": "Ordinary Differential Equations in 2D",
+    "section": "Case studies",
+    "text": "Case studies\n\nChlorine Dioxide–Iodine–Malonic Acid (CDIMA)\nThe CDIMA reaction is a classical example from chemical kinetics that can display rich nonlinear dynamics. We will use a reduced 2D model to explore how parameter changes can trigger qualitatively different behaviors (e.g., convergence to a steady state vs. sustained oscillations).\n\n\nVan der Pol oscillator\nThe Van der Pol system is a prototypical self-excited oscillator: it exhibits a stable limit cycle for a wide range of initial conditions. It is a clean testbed for studying how nonlinear damping (controlled by a parameter) changes trajectories and transient dynamics.\n\n\nFitzHugh–Nagumo\nThe FitzHugh–Nagumo model is a simplified neuron model capturing excitability and spiking. It’s a great example of a fast–slow 2D system, where parameters control whether trajectories relax to rest, fire spikes, or oscillate.",
     "crumbs": [
-      "Session 2: ODEs in 2D",
-      "Van der Pol Oscillator"
+      "Session 2: ODEs in 2D"
     ]
   },
   {
-    "objectID": "modules/ode-2d/fitzhugh-nagumo.html",
-    "href": "modules/ode-2d/fitzhugh-nagumo.html",
-    "title": "FitzHugh–Nagumo Model",
+    "objectID": "modules/ode-2d/index.html#goals",
+    "href": "modules/ode-2d/index.html#goals",
+    "title": "Ordinary Differential Equations in 2D",
+    "section": "Goals",
+    "text": "Goals\n\nExplore the evolution of the system depending on its initial state \\((x_0,y_0)\\).\nStudy how solutions depend on equation parameters (bifurcation-style exploration).\nBuild intuition using phase portraits, time series, and (simple) animations.\nConnect the simulations to the theory: oscillations/limit cycles, fast–slow dynamics, and excitability.\nRun the provided scripts and modify initial conditions/parameters to reproduce and explain the behaviors discussed in lecture.",
+    "crumbs": [
+      "Session 2: ODEs in 2D"
+    ]
+  },
+  {
+    "objectID": "modules/ode-2d/index.html#what-do-we-need",
+    "href": "modules/ode-2d/index.html#what-do-we-need",
+    "title": "Ordinary Differential Equations in 2D",
+    "section": "What do we need?",
+    "text": "What do we need?\n\nscipy\nWe’ll use numerical integration to evolve the ODEs forward in time. In particular, we’ll rely on scipy.integrate.solve_ivp() which supports explicit Runge–Kutta methods (and many other solvers). Review session 1 for a refresher on how to use solve_ivp() for 1D ODEs, and we’ll extend that workflow to 2D systems here.\n\n\nsolve_ivp()\nCore workflow:\n\ndefine the right-hand side \\((f,g)\\) as a Python function\nchoose a time span and evaluation grid\nintegrate with an RK method (or a stiff method when needed)\nanalyze \\((x(t),y(t))\\) in time and in phase space\n\n\n\nmatplotlib.animation\nTo animate trajectories we update plot elements frame-by-frame (lines, markers, text), creating the illusion of motion. This is a lightweight way to visualize how trajectories “flow” through the phase plane.\n\n\nmatplotlib.pyplot\nUsed to initialize the figure/axes and draw static plot elements:\n\naxes labels, titles, legends\nnullclines or vector fields (when included)\nstatic phase portrait scaffolding\n\n\n\nmatplotlib.backend_bases\nWe’ll hook into Matplotlib’s event system (e.g. mouse clicks) to let the user interact with the model. For example, clicking in the phase plane can set a new initial condition \\((x_0,y_0)\\) and re-run the integration.\n\n\nstreamlit?\nAt the moment, animations and interactive plots are not implemented yet in Streamlit. For this reason, we will run the code in Python scripts for now.",
+    "crumbs": [
+      "Session 2: ODEs in 2D"
+    ]
+  },
+  {
+    "objectID": "modules/ode-2d/cdima.html",
+    "href": "modules/ode-2d/cdima.html",
+    "title": "CDIMA Reaction",
     "section": "",
-    "text": "The FitzHugh–Nagumo model is a simplified neuron model that captures key features of excitability and spiking behavior. It consists of two coupled ODEs:\n\\[\\begin{aligned}\n\\epsilon \\dot v &= f(v) - w + I_{\\text{app}} \\\\\n\\dot w &= v - \\gamma w\n\\end{aligned}\\]\nWhere \\(v\\) is the fast variable representing the membrane potential, \\(w\\) is a recovery variable, \\(I_{\\text{app}}\\) is an applied current, and \\(\\epsilon \\ll 1\\) controls the timescale separation between the fast variable \\(v\\) and the slow variable \\(w\\). \\(f(v)\\) is a cubic nonlinearity, often taken as\n\\[\nf(v) = v (1 - v)(v - \\alpha),\\quad \\text{for } 0 &lt; \\alpha &lt; 1\n\\]\nFigure 1: Phase plane of the FitzHugh–Nagumo system with epsilon = 0.01, gamma = 0.5, I_app = 0.5 and alpha = 0.1. Trajectories are shown for different initial conditions (IC as v-w, marked black). Generated with scipy.integrate.solve_ivp() and matplotlib.\nFollow the steps outline in the CDIMA model to explore how the FitzHugh–Nagumo system behaves for different initial conditions and parameters.",
+    "text": "The CDIMA model (Chlorine Dioxide–Iodine–Malonic Acid reaction) is a classic 2D chemical oscillator used to study phase-plane dynamics. The equations are:\n\\[\\begin{aligned}\n\\dot x &= a - x - \\frac{4xy}{1+x^2} \\\\\n\\dot y &= bx \\left( 1 - \\frac{y}{1+x^2} \\right)\n\\end{aligned}\\]\nwhere \\(x\\) and \\(y\\) represent concentrations of chemical species, and \\(a,b\\) are parameters controlling the reaction rates.",
     "crumbs": [
       "Session 2: ODEs in 2D",
-      "FitzHugh–Nagumo Model"
+      "CDIMA Reaction"
     ]
   },
   {
-    "objectID": "modules/ode-2d/fitzhugh-nagumo.html#time-series-and-excitability",
-    "href": "modules/ode-2d/fitzhugh-nagumo.html#time-series-and-excitability",
-    "title": "FitzHugh–Nagumo Model",
-    "section": "Time Series and Excitability",
-    "text": "Time Series and Excitability\nIn the excitable regime, trajectories typically stay near the resting equilibrium, but sufficiently large perturbations can trigger a large excursion (a “spike”) before returning to rest.\nBelow we plot the fast variable \\(v(t)\\) for a fixed parameter set and initial condition.\n\n\n\n\n\n\n\n\nFigure 2: Time series \\(v(t)\\) for the FitzHugh–Nagumo system (same parameters as the phase-plane plot). Depending on the initial condition, the solution may relax to rest or exhibit a spike/oscillation.\n\n\n\n\n\nTry changing the initial condition and parameters to see how the time series changes. What regimes of behavior do you observe? Can you connect these observations to the phase plane trajectories and the underlying theory of excitability?",
+    "objectID": "modules/ode-2d/cdima.html#phase-plane-analysis",
+    "href": "modules/ode-2d/cdima.html#phase-plane-analysis",
+    "title": "CDIMA Reaction",
+    "section": "Phase-Plane Analysis",
+    "text": "Phase-Plane Analysis\nTo understand the dynamics, we can analyze the phase plane. A phase plane is a 2D plot whose axes are the state variables (here, \\(x\\) and \\(y\\)). Each point \\((x,y)\\) represents the system’s state at a given time, and the differential equations define a vector field on this plane that indicates how the state evolves. Trajectories (solution curves) show how \\((x(t),y(t))\\) moves through the plane, revealing features such as equilibrium points, nullclines, limit cycles, and their stability.\n\n\n\n\n\n\n\n\nFigure 1: Phase plane of the CDIMA system with a = 10, b = 4. Trajectories are shown for different initial conditions (IC as x-y, marked black). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nGenerating this phase plane in Python is simple. We will follow the same approach as in 1D: define the right-hand side as a function, choose a time span and evaluation grid, and integrate with scipy.integrate.solve_ivp(). Follow the steps below.\n\nDefine the ODE Function\nFirst, define the cdima() function. Remeber that any ODE (in any dimension), can be written as:\ndef ode(t, state, *params):\n    # state represents the current values of the variables (e.g., x, y)\n\n    # params are any additional parameters needed to compute the derivatives\n    # each of them is separated by commas\n\n    return dstate_dt  # this should be a sequence of the same length as `state`\nCan you write the cdima() function in this format? If you need an extra hint, uncollapse the code block below.\n\n\n\n\n\n\nHint: CDIMA right-hand side (click to expand)\n\n\n\n\n\ndef cdima(t: float, state: tuple[float, float], a: int, b: int) -&gt; tuple[float, float]:\n    \"\"\"Remember the docstring and type hints!\"\"\"\n    x, y = state  # unpack the state variables\n    dxdt =  # compute dx/dt\n    dydt = # compute dy/dt\n    return (dxdt, dydt)  # return the derivatives as a list\n\n\n\n\n\nSolve the Initial Value Problem\nNext, we need to solve the initial value problem (IVP) for a given initial condition and parameters. The workflow is similar to 1D, but now we have a vector of state variables instead of a single variable. The solve_ivp() function will return the trajectories for both \\(x(t)\\) and \\(y(t)\\), which we can then plot in the phase plane.\nUsing scipy.integrate.solve_ivp() and your previously defined cdima() function, can you write the code to solve the IVP for a specific initial condition and parameters? The output should be the trajectories of \\(x(t)\\) and \\(y(t)\\), i.e. two arrays of the same length.\nIf you need a hint, uncollapse the code block below.\n\n\n\n\n\n\nHint: Solving the IVP (click to expand)\n\n\n\n\n\nfrom scipy.integrate import solve_ivp\nimport numpy as np\n\n# Define parameters\na, b = 10, 4\n# Define initial condition\nx0, y0 = 0, 3 \n# Define time span and evaluation points\nt_span = (0, 20) # Start at t=0 and end at t=20\nt_eval = np.linspace(t_span[0], t_span[1], 2000)  # Return 2000 points between t=0 and t=20\n# Solve the IVP\nsol = solve_ivp(cdima, t_span, [x0, y0], args=(a, b), t_eval=t_eval)\n# sol.y[0] will give you x(t) and sol.y[1] will give you y(t)\n\n\n\nDo you have it? Great! Try the following initial conditions: \\(a=10\\), \\(b=4\\), and \\((x_0,y_0) = (0,3)\\). You can see this trajectory in Figure 1. What will be the state of the system at \\(t=5\\)?\n\n\n\n\n\n\nSolution: State at t=20 (click to expand)\n\n\n\n\n\n\nfrom scipy.integrate import solve_ivp\nimport numpy as np\n\nfrom sessions.s02_odes_2d.cdima import cdima\n\na, b = 10, 4\nx0, y0 = 0, 3\n\nt_span = (0, 5)\nt_eval = np.linspace(t_span[0], t_span[1], 500)\nsol = solve_ivp(cdima, t_span, [x0, y0], args=(a, b), t_eval=t_eval)\nfinal_state = sol.y[:, -1]  # Get the last column of sol.y, which corresponds to the state at t=5\nprint(f\"State at t=5: x={final_state[0]:.2f}, y={final_state[1]:.2f}\")\n\nState at t=5: x=2.08, y=4.13\n\n\n\n\n\n\n\nPlotting the Phase Plane\nFinally, we can plot the trajectories in the phase plane using matplotlib.pyplot. Try to reproduce the plot in Figure 1 by plotting \\(y(t)\\) vs. \\(x(t)\\) for different initial conditions. You can also mark the initial conditions on the plot to see where the trajectories start.\n\n\n\n\n\n\nHint: Plotting the Phase Plane (click to expand)\n\n\n\n\n\nimport matplotlib.pyplot as plt \n\nfig, ax = plt.subplots(figsize=(8, 4))\nfor x0, y0 in [(0, 3), (0, 1.5), (2, 0)]:\n    sol = solve_ivp(cdima, [0, 20], [x0, y0], args=(a, b), t_eval=np.linspace(0, 20, 2000))\n    ax.plot(sol.y[0], sol.y[1], label=f\"IC: ({x0}, {y0})\")  # Plot y vs. x\n    ax.plot(x0, y0, 'o', color='black')  # Mark the initial condition\nplt.xlabel(\"x\")\nplt.ylabel(\"y\")\nplt.legend()\nplt.show()",
     "crumbs": [
       "Session 2: ODEs in 2D",
-      "FitzHugh–Nagumo Model"
+      "CDIMA Reaction"
     ]
+  },
+  {
+    "objectID": "modules/ode-2d/cdima.html#nullclines-in-the-phase-plane",
+    "href": "modules/ode-2d/cdima.html#nullclines-in-the-phase-plane",
+    "title": "CDIMA Reaction",
+    "section": "Nullclines in the Phase Plane",
+    "text": "Nullclines in the Phase Plane\nIn addition to trajectories, we can also plot nullclines in the phase plane. Nullclines are curves where the derivative of one of the variables is zero. They help us identify equilibrium points and understand the flow of trajectories.\n\n\n\n\n\n\n\n\nFigure 2: Nullclines of the CDIMA system with a = 10, b = 4. The x-nullcline (dx/dt=0) is shown in blue, and the y-nullcline (dy/dt=0) is shown in red. Generated with matplotlib.pyplot.\n\n\n\n\n\nHow can we find the nullclines for the CDIMA system? We have two options:\n\nAnalytical approach: Set \\(\\dot x = 0\\) and \\(\\dot y = 0\\) and solve the resulting equations for \\(y\\) as a function of \\(x\\) (or vice versa). This can be done by hand or using symbolic computation tools like SymPy.\nNumerical approach: Evaluate the derivatives on a grid of \\((x,y)\\) values and identify where they change sign (i.e., where they cross zero). This can be done using numerical methods and is often more practical for complex systems. Figure 2 shows the nullclines computed using a numerical approach.\n\nPick one of these methods to compute the nullclines for the CDIMA system, and then plot them in the phase plane. The intersection points of the nullclines correspond to equilibrium points (fixed points) of the system.\n\n\n\n\n\n\nHint: Computing Nullclines (click to expand)\n\n\n\n\n\n# Define the limits for the grid\nx_min, x_max = 0.1, 5\ny_min, y_max = 0, 10\nnum_points = 1000  # Number of points in the grid\n\n# Create a grid of points\nx_values = np.linspace(x_min, x_max, num_points)\ny_values = np.linspace(y_min, y_max, num_points)\nx_grid, y_grid = np.meshgrid(x_values, y_values)\n# meshgrid creates two 2D arrays:\n# x_grid and y_grid, where each element (i,j) corresponds to the\n# coordinates (x_values[i], y_values[j]) in the phase plane.\n\n# Evaluate the derivatives at each point\ndx_dt: np.ndarray\ndy_dt: np.ndarray\ndx_dt, dy_dt = cdima(0, [x_grid, y_grid], a, b)\n\n# Extract nullcline data:\n# Find where dx_dt changes sign (zero crossings)\ndxdt_zero_crossings = np.where(np.diff(np.sign(dx_dt), axis=0))\ndxdt_nullcline_x = x_grid[dxdt_zero_crossings]\ndxdt_nullcline_y = y_grid[dxdt_zero_crossings]\n\n# Extract nullcline data - Find where dy_dt changes sign (zero crossings)\ndydt_zero_crossings = np.where(np.diff(np.sign(dy_dt), axis=1))\ndydt_nullcline_x = x_grid[dydt_zero_crossings]\ndydt_nullcline_y = y_grid[dydt_zero_crossings]\nNow you can plot the nullclines using matplotlib Recommendation: do not join the points! There is no guarantee that the sequence of points in dxdt_nullcline_x and dxdt_nullcline_y (or dydt_nullcline_x and dydt_nullcline_y) will form a continuous curve, so it’s better to plot them as individual points (e.g., using 'o' markers) rather than trying to connect them with lines.",
+    "crumbs": [
+      "Session 2: ODEs in 2D",
+      "CDIMA Reaction"
+    ]
+  },
+  {
+    "objectID": "modules/ode-2d/cdima.html#fixed-points-on-the-phase-plane",
+    "href": "modules/ode-2d/cdima.html#fixed-points-on-the-phase-plane",
+    "title": "CDIMA Reaction",
+    "section": "Fixed Points on the Phase Plane",
+    "text": "Fixed Points on the Phase Plane\nThe intersection points of the nullclines correspond to fixed points (equilibria) of the system. In other words, they are points where both \\(\\dot x = 0\\) and \\(\\dot y = 0\\) simultaneously.\nTo find the fixed points, we can look for the coordinates where the x-nullcline and y-nullcline intersect. This can be done by checking for points that are close to each other in both nullcline datasets or by using a more systematic approach (e.g., clustering or root-finding methods).\nIn Python, we can use the scipy.optimize.fsolve() function to find the roots of the system of equations defined by the nullclines. This will give us the coordinates of the fixed points.\nfrom scipy.optimize import fsolve\n\na, b = 10, 4\n\n# We need to define a function that represents the system of\n# equations for the nullclines\ndef cdima_fixed(xy: np.ndarray) -&gt; np.ndarray:\n    return cdima(None, xy, a, b)\n\nfixed_point = fsolve(cdima_fixed, [1, 1])  # Initial guess for the fixed point\nprint(f\"Fixed point: x={fixed_point[0]:.2f}, y={fixed_point[1]:.2f}\")\nIf we have done things well, plotting the fixed point on the phase plane should show that it lies at the intersection of the nullclines.\n\n\n\n\n\n\n\n\nFigure 3: Fixed point of the CDIMA system with a = 10, b = 4. The fixed point is marked with a black dot at the intersection of the nullclines. Generated with scipy.optimize.fsolve() and matplotlib.pyplot.",
+    "crumbs": [
+      "Session 2: ODEs in 2D",
+      "CDIMA Reaction"
+    ]
+  },
+  {
+    "objectID": "modules/ode-2d/cdima.html#closing-remarks",
+    "href": "modules/ode-2d/cdima.html#closing-remarks",
+    "title": "CDIMA Reaction",
+    "section": "Closing Remarks",
+    "text": "Closing Remarks\nHave you done all the steps above? Great! You should now have a good understanding of how to analyze a 2D ODE system using phase-plane methods. You can explore how changing the parameters affects the trajectories, nullclines, and fixed points. Try different initial conditions to see how the system’s behavior changes.\nYour next steps:\n\nReproduce the phase plane and nullcline plots for other systems such as the Van der Pol oscillator and the FitzHugh–Nagumo model.\nCreate an interactive animation of the trajectories in the phase plane using matplotlib.animation. You can follow the guide showed here to get started.",
+    "crumbs": [
+      "Session 2: ODEs in 2D",
+      "CDIMA Reaction"
+    ]
+  },
+  {
+    "objectID": "modules/ode-2d/animation.html",
+    "href": "modules/ode-2d/animation.html",
+    "title": "Animations and Interactivity",
+    "section": "",
+    "text": "This page summarizes the core Matplotlib pattern we use to animate trajectories in the phase plane, and how to restart an animation when the user changes parameters or initial conditions."
+  },
+  {
+    "objectID": "modules/ode-2d/animation.html#minimal-animation-pattern",
+    "href": "modules/ode-2d/animation.html#minimal-animation-pattern",
+    "title": "Animations and Interactivity",
+    "section": "Minimal animation pattern",
+    "text": "Minimal animation pattern\nimport matplotlib.animation as animation\nimport matplotlib.pyplot as plt\n\n# ...\n# Your code to compute trajectories, nullclines, fixed point...\n# Example: sol = solve_ivp(...)\n# ...\n\n# Open a new figure (white canvas)\nfig = plt.figure()\nax = plt.gca()  # get current axis\n\n# Initialize the line object for animation on the phase plane\n(plot_trajectory,) = ax.plot([], [], lw=2)\n\n\ndef animate(frame: int, xy):\n    \"\"\"Update function called once per frame.\"\"\"\n    x, y = xy\n    plot_trajectory.set_data(x[:frame], y[:frame])\n    return (plot_trajectory,)\n\n\nani = animation.FuncAnimation(\n    fig,\n    animate,\n    fargs=(sol.y,),\n    frames=len(sol.t),\n    interval=1,\n    blit=True,\n)"
+  },
+  {
+    "objectID": "modules/ode-2d/animation.html#what-happens-in-an-animation",
+    "href": "modules/ode-2d/animation.html#what-happens-in-an-animation",
+    "title": "Animations and Interactivity",
+    "section": "What Happens in an Animation?",
+    "text": "What Happens in an Animation?\nThe animation function is called once per frame:\n\nframe (or i) is the frame index (0, 1, 2, …)\nxy is the data to plot (here, the solution sol.y returned by solve_ivp)\nthe function must update the artists (lines, points, text, etc.)\nit must return an iterable with the updated artists when blit=True"
+  },
+  {
+    "objectID": "modules/ode-2d/animation.html#the-animation-function-in-detail",
+    "href": "modules/ode-2d/animation.html#the-animation-function-in-detail",
+    "title": "Animations and Interactivity",
+    "section": "The Animation Function in Detail",
+    "text": "The Animation Function in Detail\nTemplate:\ndef animate_function(i: int, *args):\n    # update plot elements\n    return (artist1, artist2, ...)\nIn our case, the second input argument is the solution from solve_ivp. Updating a line is typically done with:\nline.set_data(x, y)\nThis replaces the line coordinates by the new points \\((x,y)\\)."
+  },
+  {
+    "objectID": "modules/ode-2d/animation.html#creating-the-animation-funcanimation",
+    "href": "modules/ode-2d/animation.html#creating-the-animation-funcanimation",
+    "title": "Animations and Interactivity",
+    "section": "Creating the Animation (FuncAnimation)",
+    "text": "Creating the Animation (FuncAnimation)\nimport matplotlib.animation as animation\n\nani = animation.FuncAnimation(\n    fig,\n    function,\n    fargs=(sol.y,),\n    interval=1,\n    blit=True,\n)\nArguments:\n\nfig: the Matplotlib figure to animate\nfunction: the callback that updates plot elements on each frame\nfargs: extra arguments passed to function (everything except the frame index)\ninterval: delay between frames (milliseconds)\nblit: if True, redraws only the updated artists (faster). When using blit=True, your animation function must return the artists that were updated."
+  },
+  {
+    "objectID": "modules/ode-2d/animation.html#restarting-an-animation-interactivity",
+    "href": "modules/ode-2d/animation.html#restarting-an-animation-interactivity",
+    "title": "Animations and Interactivity",
+    "section": "Restarting an Animation (Interactivity)",
+    "text": "Restarting an Animation (Interactivity)\nWhen the user clicks (new initial condition) or changes a parameter, a common pattern is:\nani.event_source.stop()          # stop the current animation\nani.frame_seq = ani.new_frame_seq()  # reset frame generator\nani._args = (xy, ...)            # replace animation inputs (like new fargs)\nani.event_source.start()         # start again\nThis is the mechanism used in the interactive scripts: recompute solve_ivp(...), update nullclines/fixed point, then restart the animation with the new data."
   },
   {
     "objectID": "modules/ode-1d/index.html",
