@@ -20,7 +20,7 @@ $$
 
 ```{python}
 #| label: fig-phase-plane
-#| fig-cap: "Phase plane of the FitzHugh–Nagumo system with epsilon = 0.01, gamma = 0.5, and I_app = 0.5. Trajectories are shown for different initial conditions (IC as v-w, marked black). Generated with `scipy.integrate.solve_ivp()` and matplotlib."
+#| fig-cap: "Phase plane of the FitzHugh–Nagumo system with epsilon = 0.01, gamma = 0.5, I_app = 0.5 and alpha = 0.1. Trajectories are shown for different initial conditions (IC as v-w, marked black). Generated with `scipy.integrate.solve_ivp()` and matplotlib."
 #| fig-width: 8
 #| fig-height: 4
 #| echo: false
@@ -31,13 +31,15 @@ from scipy.integrate import solve_ivp
 
 from sessions.s02_odes_2d.fitzhugh_nagumo import fitzhugh_nagumo
 
-ls_vw = [(0, 0), (0.4, 0), (-0.2, 0)]
-epsilon, gamma = 0.01, 0.5
+ls_vw = [(0, 0), (0.4, 0.2), (-0.2, -0.05)]
 i_app = 0.5
+gamma = 0.5
+alpha = 0.1
+epsilon = 0.01
 
 fig, ax = plt.subplots(figsize=(8, 4))
 for v0, w0 in ls_vw:
-    sol = solve_ivp(fitzhugh_nagumo, [0, 20], [v0, w0], args=(epsilon, gamma, i_app), t_eval=np.linspace(0, 20, 2000))
+    sol = solve_ivp(fitzhugh_nagumo, [0, 20], [v0, w0], args=(i_app, gamma, alpha, epsilon), t_eval=np.linspace(0, 20, 2000))
     ax.plot(sol.y[0], sol.y[1], label=f"IC: ({v0}, {w0})")
     # Mark the initial condition
     ax.plot(v0, w0, 'o', color='black')
