@@ -1,0 +1,62 @@
+---
+title: "Kuramoto Full Simulation"
+subtitle: "Order Parameter and Sliders"
+format: html
+---
+
+The full simulation adds the order parameter $r(t)$ and a live $r$ vs $K$ plot, plus sliders for coupling strength, population size, and distribution scale.
+
+Start from the template in [sessions/s05_odes_coupled/kuramoto_template.py](../../sessions/s05_odes_coupled/kuramoto_template.py) and implement the missing parts.
+
+## Order parameter
+
+Complete the function that computes the order parameter:
+
+```python
+def kuramoto_order_parameter(theta: np.ndarray) -> tuple:
+    # TODO: compute r * exp(i * phi)
+    order_param =  # replace this line
+    r = np.abs(order_param)
+    phi = np.angle(order_param)
+    rcosphi = np.real(order_param)
+    rsinphi = np.imag(order_param)
+    return r, phi, rcosphi, rsinphi
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: Order parameter (click to expand)
+
+```python
+def kuramoto_order_parameter(theta: np.ndarray) -> tuple:
+    order_param = np.mean(np.exp(1j * theta), axis=0)
+    r = np.abs(order_param)
+    phi = np.angle(order_param)
+    rcosphi = np.real(order_param)
+    rsinphi = np.imag(order_param)
+    return r, phi, rcosphi, rsinphi
+```
+:::
+
+## Sliders
+
+Use sliders to update the coupling strength, number of oscillators, and the distribution scale. The template shows how to restart the animation when values change.
+
+```python
+# TODO: create sliders for K, N, sigma
+# TODO: update parameters and reinitialize oscillators
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: Slider update (click to expand)
+
+```python
+def update_sliders(_):
+    nonlocal coupling_strength, num_oscillators, sigma, theta, omega
+    coupling_strength = slider_coupling.val
+    num_oscillators = int(slider_num_oscillators.val)
+    sigma = slider_sigma.val
+    theta, omega = initialize_oscillators(num_oscillators, sigma=sigma)
+```
+:::
+
+When you finish, run the full simulation and explore how synchronization changes as you vary $K$.
