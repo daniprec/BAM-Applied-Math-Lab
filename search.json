@@ -180,7 +180,7 @@
     "href": "modules/pde-1d/turing-instability.html",
     "title": "Turing Instability",
     "section": "",
-    "text": "Turing instability explains when a uniform steady state becomes unstable to spatial perturbations, leading to patterns. We analyze it for the Gierer-Meinhardt system by checking conditions on the Jacobian and diffusion ratio.\nFigure 1: Turing space for the Gierer-Meinhardt model (a vs d).",
+    "text": "Turing instability explains when a uniform steady state becomes unstable to spatial perturbations, leading to patterns. We will implement the checks and visualize the instability region.\nFigure 1: Turing space for the Gierer-Meinhardt model (a vs d).",
     "crumbs": [
       "Session 3: PDEs in 1D",
       "Turing Instability"
@@ -198,22 +198,22 @@
     ]
   },
   {
-    "objectID": "modules/pde-1d/turing-instability.html#exercise-implement-a-turing-test",
-    "href": "modules/pde-1d/turing-instability.html#exercise-implement-a-turing-test",
+    "objectID": "modules/pde-1d/turing-instability.html#implement-a-turing-test",
+    "href": "modules/pde-1d/turing-instability.html#implement-a-turing-test",
     "title": "Turing Instability",
-    "section": "Exercise: Implement a Turing test",
-    "text": "Exercise: Implement a Turing test\nCreate a function that returns True if all conditions are satisfied. In the reference script the Jacobian entries are hard-coded at the fixed point.\ndef giere_meinhardt_jacobian(a=0.40, b=1.00):\n    # TODO: compute fu, fv, gu, gv at the fixed point\n    return fu, fv, gu, gv\n\n\ndef is_turing_instability(a, b, d):\n    fu, fv, gu, gv = giere_meinhardt_jacobian(a, b)\n    # TODO: implement the three conditions\n    return cond1 & cond2 & cond3\n\n\n\n\n\n\nHint: Turing instability functions (click to expand)\n\n\n\n\n\ndef giere_meinhardt_jacobian(a=0.40, b=1.00):\n    fu = 2 * b / (a + 1) - b\n    fv = -((b / (a + 1)) ** 2)\n    gu = 2 * (a + 1) / b\n    gv = -1.0\n    return fu, fv, gu, gv\n\n\ndef is_turing_instability(a, b, d):\n    fu, fv, gu, gv = giere_meinhardt_jacobian(a, b)\n    nabla = fu * gv - fv * gu\n    cond1 = (fu + gv) &lt; 0\n    cond2 = nabla &gt; 0\n    cond3 = (gv + d * fu) &gt; (2 * np.sqrt(d) * np.sqrt(nabla))\n    return cond1 & cond2 & cond3",
+    "section": "Implement a Turing test",
+    "text": "Implement a Turing test\nCreate a function that returns True if all conditions are satisfied. In the reference script the Jacobian entries are hard-coded at the fixed point.\ndef giere_meinhardt_jacobian(a=0.40, b=1.00):\n    # TODO: compute fu, fv, gu, gv at the fixed point\n    return fu, fv, gu, gv\n\n\ndef is_turing_instability(a, b, d):\n    fu, fv, gu, gv = giere_meinhardt_jacobian(a, b)\n    # TODO: implement the three conditions\n    return cond1 & cond2 & cond3\n\n\n\n\n\n\nHint: Turing instability functions (click to expand)\n\n\n\n\n\ndef giere_meinhardt_jacobian(a=0.40, b=1.00):\n    fu = 2 * b / (a + 1) - b\n    fv = -((b / (a + 1)) ** 2)\n    gu = 2 * (a + 1) / b\n    gv = -1.0\n    return fu, fv, gu, gv\n\n\ndef is_turing_instability(a, b, d):\n    fu, fv, gu, gv = giere_meinhardt_jacobian(a, b)\n    nabla = fu * gv - fv * gu\n    cond1 = (fu + gv) &lt; 0\n    cond2 = nabla &gt; 0\n    cond3 = (gv + d * fu) &gt; (2 * np.sqrt(d) * np.sqrt(nabla))\n    return cond1 & cond2 & cond3",
     "crumbs": [
       "Session 3: PDEs in 1D",
       "Turing Instability"
     ]
   },
   {
-    "objectID": "modules/pde-1d/turing-instability.html#turing-space-diagram",
-    "href": "modules/pde-1d/turing-instability.html#turing-space-diagram",
+    "objectID": "modules/pde-1d/turing-instability.html#plot-the-turing-space",
+    "href": "modules/pde-1d/turing-instability.html#plot-the-turing-space",
     "title": "Turing Instability",
-    "section": "Turing Space Diagram",
-    "text": "Turing Space Diagram\nPlot the region of \\((a, d)\\) where the instability holds.\nimport numpy as np\nimport matplotlib.pyplot as plt\n\narr_a = np.linspace(0, 1, 1000)\narr_d = np.linspace(0, 100, 1000)\nmesh_a, mesh_d = np.meshgrid(arr_a, arr_d)\nmask_turing = is_turing_instability(mesh_a, b, mesh_d)\n\nfig, ax = plt.subplots(figsize=(6, 4))\nax.contourf(mesh_a, mesh_d, mask_turing)\nax.set_xlabel(\"a\")\nax.set_ylabel(\"d\")\nax.set_title(\"Turing Space\")\nEnsure your function works with arrays.",
+    "section": "Plot the Turing space",
+    "text": "Plot the Turing space\nPlot the region of \\((a, d)\\) where the instability holds.\nimport numpy as np\nimport matplotlib.pyplot as plt\n\narr_a = np.linspace(0, 1, 1000)\narr_d = np.linspace(0, 100, 1000)\nmesh_a, mesh_d = np.meshgrid(arr_a, arr_d)\nmask_turing = is_turing_instability(mesh_a, b, mesh_d)\n\nfig, ax = plt.subplots(figsize=(6, 4))\nax.contourf(mesh_a, mesh_d, mask_turing)\nax.set_xlabel(\"a\")\nax.set_ylabel(\"d\")\nax.set_title(\"Turing Space\")\nEnsure your function works with arrays.",
     "crumbs": [
       "Session 3: PDEs in 1D",
       "Turing Instability"
@@ -223,19 +223,19 @@
     "objectID": "modules/pde-1d/turing-instability.html#unstable-spatial-modes",
     "href": "modules/pde-1d/turing-instability.html#unstable-spatial-modes",
     "title": "Turing Instability",
-    "section": "Unstable Spatial Modes",
-    "text": "Unstable Spatial Modes\nThe temporal eigenvalues for spatial mode \\(\\lambda_n\\) are the eigenvalues of\n\\[A_n = J - \\lambda_n \\;\\mathrm{diag}(1, d).\\]\nYou can scan modes to find which ones are unstable:\nimport numpy as np\n\ndef find_unstable_spatial_modes(a=0.40, b=1.00, d=30.0, length=40.0, num_modes=10):\n    # TODO: build Jacobian and scan spatial modes\n    return unstable_modes\n\n\n\n\n\n\nHint: Spatial mode scan (click to expand)\n\n\n\n\n\ndef find_unstable_spatial_modes(a=0.40, b=1.00, d=30.0, length=40.0, num_modes=10):\n    fu, fv, gu, gv = giere_meinhardt_jacobian(a, b)\n    jac = np.array([[fu, fv], [gu, gv]])\n    n_values = np.arange(num_modes)\n    max_eigs = np.zeros(num_modes)\n\n    for n in n_values:\n        lambda_n = (n * np.pi / length) ** 2\n        a_n = jac - lambda_n * np.diag([1, d])\n        sigma1, sigma2 = np.linalg.eigvals(a_n)\n        max_eigs[n] = max(sigma1.real, sigma2.real)\n\n    sorted_indices = np.argsort(max_eigs)[::-1]\n    unstable_modes = sorted_indices[max_eigs[sorted_indices] &gt; 0]\n    return unstable_modes",
+    "section": "Unstable spatial modes",
+    "text": "Unstable spatial modes\nThe temporal eigenvalues for spatial mode \\(\\lambda_n\\) are the eigenvalues of\n\\[A_n = J - \\lambda_n \\;\\mathrm{diag}(1, d).\\]\nYou can scan modes to find which ones are unstable:\nimport numpy as np\n\ndef find_unstable_spatial_modes(a=0.40, b=1.00, d=30.0, length=40.0, num_modes=10):\n    # TODO: build Jacobian and scan spatial modes\n    return unstable_modes\n\n\n\n\n\n\nHint: Spatial mode scan (click to expand)\n\n\n\n\n\ndef find_unstable_spatial_modes(a=0.40, b=1.00, d=30.0, length=40.0, num_modes=10):\n    fu, fv, gu, gv = giere_meinhardt_jacobian(a, b)\n    jac = np.array([[fu, fv], [gu, gv]])\n    n_values = np.arange(num_modes)\n    max_eigs = np.zeros(num_modes)\n\n    for n in n_values:\n        lambda_n = (n * np.pi / length) ** 2\n        a_n = jac - lambda_n * np.diag([1, d])\n        sigma1, sigma2 = np.linalg.eigvals(a_n)\n        max_eigs[n] = max(sigma1.real, sigma2.real)\n\n    sorted_indices = np.argsort(max_eigs)[::-1]\n    unstable_modes = sorted_indices[max_eigs[sorted_indices] &gt; 0]\n    return unstable_modes",
     "crumbs": [
       "Session 3: PDEs in 1D",
       "Turing Instability"
     ]
   },
   {
-    "objectID": "modules/pde-1d/turing-instability.html#interaction-extension",
-    "href": "modules/pde-1d/turing-instability.html#interaction-extension",
+    "objectID": "modules/pde-1d/turing-instability.html#interaction-extension-optional",
+    "href": "modules/pde-1d/turing-instability.html#interaction-extension-optional",
     "title": "Turing Instability",
-    "section": "Interaction Extension",
-    "text": "Interaction Extension\nMake the plot interactive: clicking on the Turing diagram updates \\((a, d)\\) and restarts the animation of \\(v(x)\\).\nfrom matplotlib.backend_bases import MouseEvent\n\ndef mouse_click(event: MouseEvent):\n    if event.inaxes == ax_turing:\n        a = event.xdata\n        d = event.ydata\n        # TODO: reset u,v and restart the animation\n\nfig.canvas.mpl_connect(\"button_press_event\", mouse_click)\n\n\n\n\n\n\nTip\n\n\n\nYou can find a complete interactive implementation in sessions/s03_pdes_1d.",
+    "section": "Interaction extension (optional)",
+    "text": "Interaction extension (optional)\nMake the plot interactive: clicking on the Turing diagram updates \\((a, d)\\) and restarts the animation of \\(v(x)\\).\nfrom matplotlib.backend_bases import MouseEvent\n\ndef mouse_click(event: MouseEvent):\n    if event.inaxes == ax_turing:\n        a = event.xdata\n        d = event.ydata\n        # TODO: reset u,v and restart the animation\n\nfig.canvas.mpl_connect(\"button_press_event\", mouse_click)\n\n\n\n\n\n\nTip\n\n\n\nYou can find a complete interactive implementation in sessions/s03_pdes_1d.",
     "crumbs": [
       "Session 3: PDEs in 1D",
       "Turing Instability"
@@ -345,7 +345,7 @@
     "href": "modules/ode-2d/van-der-pol.html#the-stable-limit-cycle",
     "title": "Van der Pol Oscillator",
     "section": "The Stable Limit Cycle",
-    "text": "The Stable Limit Cycle\nThe Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions. Plot this limit cycle as a \\(x(t)-t\\) plot, and verify that it matches the phase plane trajectories.\n\n\n/tmp/ipykernel_2875/2854713749.py:14: UserWarning:\n\nNo artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.\n\n\n\n\n\n\n\n\n\nFigure 2: Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nThe amplitude and period of the limit cycle depend on \\(\\mu\\). There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with \\(\\mu\\), while the fast phase becomes more abrupt. This leads to a characteristic “relaxation oscillation” shape for large \\(\\mu\\).\nPlay with the parameter \\(\\mu\\) to see how it changes the shape of the limit cycle and the transient dynamics.",
+    "text": "The Stable Limit Cycle\nThe Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions. Plot this limit cycle as a \\(x(t)-t\\) plot, and verify that it matches the phase plane trajectories.\n\n\n/tmp/ipykernel_2841/2854713749.py:14: UserWarning:\n\nNo artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.\n\n\n\n\n\n\n\n\n\nFigure 2: Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nThe amplitude and period of the limit cycle depend on \\(\\mu\\). There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with \\(\\mu\\), while the fast phase becomes more abrupt. This leads to a characteristic “relaxation oscillation” shape for large \\(\\mu\\).\nPlay with the parameter \\(\\mu\\) to see how it changes the shape of the limit cycle and the transient dynamics.",
     "crumbs": [
       "Session 2: ODEs in 2D",
       "Van der Pol Oscillator"
@@ -688,7 +688,7 @@
     "href": "modules/pde-1d/gierer-meinhardt.html",
     "title": "Gierer-Meinhardt Model (1D)",
     "section": "",
-    "text": "The Gierer-Meinhardt model is a classical reaction-diffusion system that can generate spatial patterns. In 1D it reads\n\\[\n\\begin{aligned}\n\\frac{\\partial u}{\\partial t} &= \\Delta u + \\gamma \\left(a - b u + \\frac{u^2}{v}\\right), \\\\\n\\frac{\\partial v}{\\partial t} &= d\\,\\Delta v + \\gamma \\left(u^2 - v\\right),\n\\end{aligned}\n\\]\nwhere \\(u(x,t)\\) and \\(v(x,t)\\) are concentrations, \\(a,b,\\gamma\\) are reaction parameters, and \\(d\\) is the diffusion ratio for \\(v\\).\nFigure 1: Gierer-Meinhardt 1D: example profile of \\(v(x)\\) after explicit Euler integration with \\(L=40\\), \\(dx=0.5\\), \\(a=0.40\\), \\(b=1.00\\), \\(d=20\\), \\(\\gamma=1\\).",
+    "text": "The Gierer-Meinhardt model is a classical reaction-diffusion system that can generate spatial patterns. We will build a 1D solver from scratch and visualize \\(v(x)\\).\nIn 1D it reads\n\\[\n\\begin{aligned}\n\\frac{\\partial u}{\\partial t} &= \\Delta u + \\gamma \\left(a - b u + \\frac{u^2}{v}\\right), \\\\\n\\frac{\\partial v}{\\partial t} &= d\\,\\Delta v + \\gamma \\left(u^2 - v\\right),\n\\end{aligned}\n\\]\nwhere \\(u(x,t)\\) and \\(v(x,t)\\) are concentrations, \\(a,b,\\gamma\\) are reaction parameters, and \\(d\\) is the diffusion ratio for \\(v\\).\nFigure 1: Gierer-Meinhardt 1D: example profile of \\(v(x)\\) after explicit Euler integration with \\(L=40\\), \\(dx=0.5\\), \\(a=0.40\\), \\(b=1.00\\), \\(d=20\\), \\(\\gamma=1\\).",
     "crumbs": [
       "Session 3: PDEs in 1D",
       "Gierer-Meinhardt 1D"
@@ -699,7 +699,7 @@
     "href": "modules/pde-1d/gierer-meinhardt.html#laplacian-in-1d",
     "title": "Gierer-Meinhardt Model (1D)",
     "section": "Laplacian in 1D",
-    "text": "Laplacian in 1D\nIn one dimension, the Laplacian is the second derivative:\n\\[\n\\Delta u = \\frac{d^2 u}{dx^2}.\n\\]\nUsing a centered finite difference on a grid with spacing \\(h\\):\n\\[\n\\Delta u(x) \\approx \\frac{u(x+h) - 2u(x) + u(x-h)}{h^2} + \\mathcal{O}(h^2).\n\\]\nThis is easy to implement with np.roll() to access neighbors on a grid.",
+    "text": "Laplacian in 1D\nIn one dimension, the Laplacian is the second derivative:\n\\[\n\\Delta u = \\frac{d^2 u}{dx^2}.\n\\]\nUsing a centered finite difference on a grid with spacing \\(h\\):\n\\[\n\\Delta u(x) \\approx \\frac{u(x+h) - 2u(x) + u(x-h)}{h^2} + \\mathcal{O}(h^2).\n\\]\nThis is easy to implement with np.roll() to access neighbors on a grid. We will assume \\(h = dx\\) and use the second-order centered difference.",
     "crumbs": [
       "Session 3: PDEs in 1D",
       "Gierer-Meinhardt 1D"
@@ -721,7 +721,7 @@
     "href": "modules/pde-1d/gierer-meinhardt.html#exercise-simulate-the-pde",
     "title": "Gierer-Meinhardt Model (1D)",
     "section": "Exercise: Simulate the PDE",
-    "text": "Exercise: Simulate the PDE\nThe reference script uses \\(L=40\\), \\(dx=0.5\\), \\(dt=0.001\\), \\(a=0.40\\), \\(b=1.00\\), \\(d=20\\), and \\(\\gamma=1\\). We initialize \\(u(x)\\) and \\(v(x)\\) at 1, add 1% noise, integrate with Euler’s method, apply Neumann boundary conditions, and visualize \\(v(x)\\).\n\nStep 1: Initialize\nimport numpy as np\n\nlength = 40\ndx = 0.5\nlenx = int(length / dx)\n\nuv = np.ones((2, lenx))\nuv += uv * np.random.randn(2, lenx) / 100\n\n\nStep 2: Define the PDE\ndef gierer_meinhardt_pde(t, uv, gamma=1, a=0.40, b=1.00, d=20, dx=1):\n    # Laplacian via finite differences (np.roll handles neighbors)\n    lap = -2 * uv\n    lap += np.roll(uv, shift=1, axis=1)\n    lap += np.roll(uv, shift=-1, axis=1)\n    lap /= dx**2\n\n    u, v = uv\n    lu, lv = lap\n\n    # TODO: implement the reaction terms f(u, v) and g(u, v)\n    # TODO: combine diffusion + reaction to build du_dt and dv_dt\n    return du_dt, dv_dt\n\n\n\n\n\n\nHint: Gierer-Meinhardt PDE (click to expand)\n\n\n\n\n\ndef gierer_meinhardt_pde(t, uv, gamma=1, a=0.40, b=1.00, d=20, dx=1):\n    lap = -2 * uv\n    lap += np.roll(uv, shift=1, axis=1)\n    lap += np.roll(uv, shift=-1, axis=1)\n    lap /= dx**2\n\n    u, v = uv\n    lu, lv = lap\n\n    f = a - b * u + (u**2) / v\n    g = u**2 - v\n    du_dt = lu + gamma * f\n    dv_dt = d * lv + gamma * g\n    return du_dt, dv_dt\n\n\n\n\n\nStep 3: Time stepping\nnum_iter = 50000\ndt = 0.001\n\nfor _ in range(num_iter):\n    dudt, dvdt = gierer_meinhardt_pde(0, uv, dx=dx)\n    uv[0] = uv[0] + dudt * dt\n    uv[1] = uv[1] + dvdt * dt\n\n    # Neumann boundary conditions\n    uv[:, 0] = uv[:, 1]\n    uv[:, -1] = uv[:, -2]\n\n\nStep 4: Plot\nimport matplotlib.pyplot as plt\n\nx = np.linspace(0, length, lenx)\nfig, ax = plt.subplots()\nax.plot(x, uv[1])\nplt.show()\n\n\nExplore\nRe-run with \\(d=30\\) and compare the pattern. Try other \\((a, d)\\) pairs and share your observations.",
+    "text": "Exercise: Simulate the PDE\nWe will use \\(L=40\\), \\(dx=0.5\\), \\(dt=0.001\\), \\(a=0.40\\), \\(b=1.00\\), \\(d=20\\), and \\(\\gamma=1\\). Follow the steps below and compare your result with Figure 1.\n\nInitialize the fields\nimport numpy as np\n\nlength = 40\ndx = 0.5\nlenx = int(length / dx)\n\nuv = np.ones((2, lenx))\nuv += uv * np.random.randn(2, lenx) / 100\nWhy add noise? A perfectly uniform initial condition can hide instabilities. Small perturbations reveal pattern-forming behavior.\n\n\nDefine the PDE (template)\ndef gierer_meinhardt_pde(t, uv, gamma=1, a=0.40, b=1.00, d=20, dx=1):\n    # Laplacian via finite differences (np.roll handles neighbors)\n    lap = -2 * uv\n    lap += np.roll(uv, shift=1, axis=1)\n    lap += np.roll(uv, shift=-1, axis=1)\n    lap /= dx**2\n\n    u, v = uv\n    lu, lv = lap\n\n    # TODO: implement the reaction terms f(u, v) and g(u, v)\n    # TODO: combine diffusion + reaction to build du_dt and dv_dt\n    return du_dt, dv_dt\n\n\n\n\n\n\nHint: Gierer-Meinhardt PDE (click to expand)\n\n\n\n\n\ndef gierer_meinhardt_pde(t, uv, gamma=1, a=0.40, b=1.00, d=20, dx=1):\n    lap = -2 * uv\n    lap += np.roll(uv, shift=1, axis=1)\n    lap += np.roll(uv, shift=-1, axis=1)\n    lap /= dx**2\n\n    u, v = uv\n    lu, lv = lap\n\n    f = a - b * u + (u**2) / v\n    g = u**2 - v\n    du_dt = lu + gamma * f\n    dv_dt = d * lv + gamma * g\n    return du_dt, dv_dt\n\n\n\n\n\nTime stepping (template)\nnum_iter = 50000\ndt = 0.001\n\nfor _ in range(num_iter):\n    dudt, dvdt = gierer_meinhardt_pde(0, uv, dx=dx)\n    # TODO: update u and v with Euler's method\n\n    # TODO: enforce Neumann boundary conditions\n\n\nPlot the final profile (template)\nimport matplotlib.pyplot as plt\n\nx = np.linspace(0, length, lenx)\nfig, ax = plt.subplots()\nax.plot(x, uv[1])\nax.set_xlabel(\"x\")\nax.set_ylabel(\"v(x)\")\nax.set_title(\"Gierer-Meinhardt 1D\")\nplt.show()\n\n\nExplore\nRe-run with \\(d=30\\) and compare the pattern. Try other \\((a, d)\\) pairs and share your observations.",
     "crumbs": [
       "Session 3: PDEs in 1D",
       "Gierer-Meinhardt 1D"
@@ -732,7 +732,7 @@
     "href": "modules/pde-1d/gierer-meinhardt.html#animation-extension",
     "title": "Gierer-Meinhardt Model (1D)",
     "section": "Animation Extension",
-    "text": "Animation Extension\nInstead of plotting only the final state, update the line at every frame:\nimport matplotlib.animation as animation\n\n(plot_v,) = ax.plot(x, uv[1])\n\ndef animate(frame):\n    nonlocal uv\n    dudt, dvdt = gierer_meinhardt_pde(frame, uv, dx=dx)\n    uv[0] = uv[0] + dudt * dt\n    uv[1] = uv[1] + dvdt * dt\n    plot_v.set_data(x, uv[1])\n    return (plot_v,)\n\nani = animation.FuncAnimation(fig, animate, interval=1, blit=True)\nIf the system stays flat for some parameters and forms waves for others, you are seeing the onset of Turing instability. Proceed to the next page to analyze it.\n\n\n\n\n\n\nTip\n\n\n\nFull reference code is available in sessions/s03_pdes_1d.",
+    "text": "Animation Extension\nInstead of plotting only the final state, update the line at every frame:\nimport matplotlib.animation as animation\n\n(plot_v,) = ax.plot(x, uv[1])\n\ndef animate(frame):\n    nonlocal uv\n    # TODO: compute dudt, dvdt and update uv\n    # TODO: update the line data\n    return (plot_v,)\n\nani = animation.FuncAnimation(fig, animate, interval=1, blit=True)\n\n\n\n\n\n\nHint: Animation update (click to expand)\n\n\n\n\n\ndef animate(frame):\n    nonlocal uv\n    dudt, dvdt = gierer_meinhardt_pde(frame, uv, dx=dx)\n    uv[0] = uv[0] + dudt * dt\n    uv[1] = uv[1] + dvdt * dt\n    plot_v.set_data(x, uv[1])\n    return (plot_v,)\n\n\n\nIf the system stays flat for some parameters and forms waves for others, you are seeing the onset of Turing instability. Proceed to the next page to analyze it.\n\n\n\n\n\n\nTip\n\n\n\nFull reference code is available in sessions/s03_pdes_1d.",
     "crumbs": [
       "Session 3: PDEs in 1D",
       "Gierer-Meinhardt 1D"
