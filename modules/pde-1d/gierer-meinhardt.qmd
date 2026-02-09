@@ -4,7 +4,9 @@ subtitle: "Reaction-Diffusion PDE"
 format: html
 ---
 
-The Gierer-Meinhardt model is a classical reaction-diffusion system that can generate spatial patterns. In 1D it reads
+The Gierer-Meinhardt model is a classical reaction-diffusion system that can generate spatial patterns. We will build a 1D solver from scratch and visualize $v(x)$.
+
+In 1D it reads
 
 $$
 \begin{aligned}
@@ -65,7 +67,7 @@ $$
 \Delta u(x) \approx \frac{u(x+h) - 2u(x) + u(x-h)}{h^2} + \mathcal{O}(h^2).
 $$
 
-This is easy to implement with `np.roll()` to access neighbors on a grid.
+This is easy to implement with `np.roll()` to access neighbors on a grid. We will assume $h = dx$ and use the second-order centered difference.
 
 ## Boundary Conditions
 
@@ -83,9 +85,9 @@ $$u(0)=u(L)$$
 
 ## Exercise: Simulate the PDE
 
-The reference script uses $L=40$, $dx=0.5$, $dt=0.001$, $a=0.40$, $b=1.00$, $d=20$, and $\gamma=1$. We initialize $u(x)$ and $v(x)$ at 1, add 1% noise, integrate with Euler's method, apply Neumann boundary conditions, and visualize $v(x)$.
+We will use $L=40$, $dx=0.5$, $dt=0.001$, $a=0.40$, $b=1.00$, $d=20$, and $\gamma=1$. Follow the steps below and compare your result with @fig-gm-1d.
 
-### Step 1: Initialize
+### Initialize the fields
 
 ```python
 import numpy as np
@@ -96,9 +98,12 @@ lenx = int(length / dx)
 
 uv = np.ones((2, lenx))
 uv += uv * np.random.randn(2, lenx) / 100
+
 ```
 
-### Step 2: Define the PDE
+Why add noise? A perfectly uniform initial condition can hide instabilities. Small perturbations reveal pattern-forming behavior.
+
+### Define the PDE (template)
 
 ```python
 def gierer_meinhardt_pde(t, uv, gamma=1, a=0.40, b=1.00, d=20, dx=1):
@@ -137,7 +142,7 @@ def gierer_meinhardt_pde(t, uv, gamma=1, a=0.40, b=1.00, d=20, dx=1):
 ```
 :::
 
-### Step 3: Time stepping
+### Time stepping (template)
 
 ```python
 num_iter = 50000
@@ -145,15 +150,12 @@ dt = 0.001
 
 for _ in range(num_iter):
     dudt, dvdt = gierer_meinhardt_pde(0, uv, dx=dx)
-    uv[0] = uv[0] + dudt * dt
-    uv[1] = uv[1] + dvdt * dt
+    # TODO: update u and v with Euler's method
 
-    # Neumann boundary conditions
-    uv[:, 0] = uv[:, 1]
-    uv[:, -1] = uv[:, -2]
+    # TODO: enforce Neumann boundary conditions
 ```
 
-### Step 4: Plot
+### Plot the final profile (template)
 
 ```python
 import matplotlib.pyplot as plt
@@ -161,6 +163,9 @@ import matplotlib.pyplot as plt
 x = np.linspace(0, length, lenx)
 fig, ax = plt.subplots()
 ax.plot(x, uv[1])
+ax.set_xlabel("x")
+ax.set_ylabel("v(x)")
+ax.set_title("Gierer-Meinhardt 1D")
 plt.show()
 ```
 
@@ -179,14 +184,26 @@ import matplotlib.animation as animation
 
 def animate(frame):
     nonlocal uv
+    # TODO: compute dudt, dvdt and update uv
+    # TODO: update the line data
+    return (plot_v,)
+
+ani = animation.FuncAnimation(fig, animate, interval=1, blit=True)
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: Animation update (click to expand)
+
+```python
+def animate(frame):
+    nonlocal uv
     dudt, dvdt = gierer_meinhardt_pde(frame, uv, dx=dx)
     uv[0] = uv[0] + dudt * dt
     uv[1] = uv[1] + dvdt * dt
     plot_v.set_data(x, uv[1])
     return (plot_v,)
-
-ani = animation.FuncAnimation(fig, animate, interval=1, blit=True)
 ```
+:::
 
 If the system stays flat for some parameters and forms waves for others, you are seeing the onset of **Turing instability**. Proceed to the next page to analyze it.
 
