@@ -1,5 +1,104 @@
 [
   {
+    "objectID": "modules/flocking/vicsek.html",
+    "href": "modules/flocking/vicsek.html",
+    "title": "Vicsek Model",
+    "section": "",
+    "text": "The Vicsek model describes \\(N\\) self-propelled particles that align with neighbors within a radius \\(r\\), plus noise. Each particle has position \\(\\mathbf{r}_i(t)\\) and heading \\(\\theta_i(t)\\).\nFigure 1: Vicsek model: boids on a square with heading arrows.",
+    "crumbs": [
+      "Session 6: Flocking",
+      "Vicsek Model"
+    ]
+  },
+  {
+    "objectID": "modules/flocking/vicsek.html#initialize-particles",
+    "href": "modules/flocking/vicsek.html#initialize-particles",
+    "title": "Vicsek Model",
+    "section": "Initialize particles",
+    "text": "Initialize particles\nCreate the initial positions and headings. Positions are uniform on the box and headings are uniform on \\([0, 2\\pi]\\).\ndef initialize_particles(num_boids, box_size):\n    # Random initial theta, shape (N)\n    theta =\n\n    # Random initial x, y - shape (2, N)\n    xy =\n    return xy, theta\n\n\n\n\n\n\nHint: Initialization (click to expand)\n\n\n\n\n\ndef initialize_particles(num_boids, box_size):\n    theta = np.random.uniform(0, 2 * np.pi, num_boids)\n    xy = np.random.uniform(0, box_size, (2, num_boids))\n    return xy, theta",
+    "crumbs": [
+      "Session 6: Flocking",
+      "Vicsek Model"
+    ]
+  },
+  {
+    "objectID": "modules/flocking/vicsek.html#implement-the-vicsek-equations",
+    "href": "modules/flocking/vicsek.html#implement-the-vicsek-equations",
+    "title": "Vicsek Model",
+    "section": "Implement the Vicsek equations",
+    "text": "Implement the Vicsek equations\nEach time step, every boid aligns with neighbors within radius \\(r\\) and then moves at constant speed.\ndef vicsek_equations(xy, theta, dt, eta, box_size, radius_interaction, v0):\n    xy_new = xy.copy()\n    theta_new = theta.copy()\n    num_boids = len(theta)\n    for i in range(num_boids):\n        ls_theta_neighbors = []\n        for j in range(num_boids):\n            # TODO: compute distance between i and j\n            # TODO: if within radius, add theta[j]\n            pass\n        # TODO: average neighbor angles\n        # TODO: add noise\n\n        # TODO: compute velocity and update position\n        pass\n\n    # Periodic boundary conditions\n    xy_new = np.mod(xy_new, box_size)\n    return xy_new, theta_new\n\n\n\n\n\n\nHint: Loop version (click to expand)\n\n\n\n\n\ndef vicsek_equations(xy, theta, dt, eta, box_size, radius_interaction, v0):\n    xy_new = xy.copy()\n    theta_new = theta.copy()\n    num_boids = len(theta)\n    for i in range(num_boids):\n        ls_theta_neighbors = []\n        for j in range(num_boids):\n            dist = np.linalg.norm(xy[:, i] - xy[:, j])\n            if dist &lt;= radius_interaction:\n                ls_theta_neighbors.append(theta[j])\n        theta_new[i] = np.mean(ls_theta_neighbors)\n        theta_new[i] += eta * np.pi * np.random.uniform(-1, 1)\n\n        v = v0 * np.array([np.cos(theta_new[i]), np.sin(theta_new[i])])\n        xy_new[:, i] = xy_new[:, i] + dt * v\n\n    xy_new = np.mod(xy_new, box_size)\n    return xy_new, theta_new",
+    "crumbs": [
+      "Session 6: Flocking",
+      "Vicsek Model"
+    ]
+  },
+  {
+    "objectID": "modules/flocking/vicsek.html#vectorized-version-optional",
+    "href": "modules/flocking/vicsek.html#vectorized-version-optional",
+    "title": "Vicsek Model",
+    "section": "Vectorized version (optional)",
+    "text": "Vectorized version (optional)\nLoops are expensive. You can compute neighbor averages with a distance matrix.\ndef vicsek_equations(xy, theta, dt, eta, box_size, radius_interaction, v0):\n    # TODO: compute distance matrix\n    # TODO: build neighbor mask\n    # TODO: average neighbor angles\n    # TODO: add noise, update positions\n    return xy, theta\nIf you want to use a template, start from sessions/s06_flocking/vicsek_template.py.",
+    "crumbs": [
+      "Session 6: Flocking",
+      "Vicsek Model"
+    ]
+  },
+  {
+    "objectID": "modules/flocking/vicsek.html#animate-the-boids",
+    "href": "modules/flocking/vicsek.html#animate-the-boids",
+    "title": "Vicsek Model",
+    "section": "Animate the boids",
+    "text": "Animate the boids\nUse a quiver plot for headings and update it each frame.\nimport matplotlib.animation as animation\n\nplt_particles = ax.quiver(\n    xy[0],\n    xy[1],\n    np.cos(theta),\n    np.sin(theta),\n    angles=\"xy\",\n)\n\n# Inside update:\nplt_particles.set_offsets(xy.T)\nplt_particles.set_UVC(np.cos(theta), np.sin(theta))",
+    "crumbs": [
+      "Session 6: Flocking",
+      "Vicsek Model"
+    ]
+  },
+  {
+    "objectID": "modules/flocking/vicsek.html#order-parameter",
+    "href": "modules/flocking/vicsek.html#order-parameter",
+    "title": "Vicsek Model",
+    "section": "Order parameter",
+    "text": "Order parameter\nThe order parameter is the average normalized velocity:\n\\[r = \\left|\\frac{1}{N} \\sum_{j=1}^N e^{i\\theta_j} \\right|.\\]\nImplement it as:\ndef vicsek_order_parameter(theta):\n    # TODO: compute mean of exp(i*theta)\n    return r\n\n\n\n\n\n\nHint: Order parameter (click to expand)\n\n\n\n\n\ndef vicsek_order_parameter(theta):\n    return np.abs(np.mean(np.exp(1j * theta)))",
+    "crumbs": [
+      "Session 6: Flocking",
+      "Vicsek Model"
+    ]
+  },
+  {
+    "objectID": "modules/flocking/vicsek-predator.html",
+    "href": "modules/flocking/vicsek-predator.html",
+    "title": "Vicsek Model with Predator",
+    "section": "",
+    "text": "Now add a predator that boids avoid. The predator position is controlled by the mouse, and boids change their angle when they are within a predator radius.\nThe repulsion angle is\n\\[\\Theta_{\\text{rep}, i} = \\tan^{-1}\\left(\\frac{y_i - y_{\\text{pred}}}{x_i - x_{\\text{pred}}}\\right).\\]\nWe blend alignment and repulsion with strength \\(k\\):\n\\[\\Theta_i = (1-k)\\left(\\langle \\Theta_j \\rangle + \\eta_i\\right) + k\\,\\Theta_{\\text{rep}, i}.\\]",
+    "crumbs": [
+      "Session 6: Flocking",
+      "Predator Effect"
+    ]
+  },
+  {
+    "objectID": "modules/flocking/vicsek-predator.html#track-the-predator",
+    "href": "modules/flocking/vicsek-predator.html#track-the-predator",
+    "title": "Vicsek Model with Predator",
+    "section": "Track the predator",
+    "text": "Track the predator\nfrom matplotlib.backend_bases import MouseEvent\n\n# Inside run_simulation\nxy_pred = np.array([-1000, -1000])\nradius_predator = 1.0\nstrength_predator = 0.1\n\n\ndef on_mouse_move(event: MouseEvent):\n    nonlocal xy_pred\n    if event.inaxes == ax_plane:\n        xy_pred = np.array([event.xdata, event.ydata])\n    else:\n        xy_pred = np.array([-1000, -1000])\n\nfig.canvas.mpl_connect(\"motion_notify_event\", on_mouse_move)",
+    "crumbs": [
+      "Session 6: Flocking",
+      "Predator Effect"
+    ]
+  },
+  {
+    "objectID": "modules/flocking/vicsek-predator.html#update-the-equations",
+    "href": "modules/flocking/vicsek-predator.html#update-the-equations",
+    "title": "Vicsek Model with Predator",
+    "section": "Update the equations",
+    "text": "Update the equations\nAdd the predator terms inside your Vicsek update.\ndef vicsek_equations(\n    xy, theta, dt, eta, box_size, radius_interaction, v0,\n    xy_pred, radius_predator, strength_predator,\n):\n    # TODO: compute alignment as usual\n\n    # TODO: compute repulsion angle and blend with k\n    return xy, theta\n\n\n\n\n\n\nHint: Predator update (click to expand)\n\n\n\n\n\n# Distances to predator\n d_pred = np.linalg.norm(xy - xy_pred[:, np.newaxis], axis=0)\n affected = d_pred &lt;= radius_predator\n repulsion_angle = np.arctan2(xy[1] - xy_pred[1], xy[0] - xy_pred[0])\n term_pred = strength_predator * (repulsion_angle - theta) * affected\n theta = np.mod(theta + term_pred, 2 * np.pi)\n\n\n\nIf you want a full working reference, check sessions/s06_flocking/vicsek_predator.py.",
+    "crumbs": [
+      "Session 6: Flocking",
+      "Predator Effect"
+    ]
+  },
+  {
     "objectID": "modules/ode-1d/spruce-budworm.html",
     "href": "modules/ode-1d/spruce-budworm.html",
     "title": "Spruce Budworm Model",
@@ -488,7 +587,7 @@
     "href": "modules/ode-2d/van-der-pol.html#the-stable-limit-cycle",
     "title": "Van der Pol Oscillator",
     "section": "The Stable Limit Cycle",
-    "text": "The Stable Limit Cycle\nThe Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions. Plot this limit cycle as a \\(x(t)-t\\) plot, and verify that it matches the phase plane trajectories.\n\n\n/tmp/ipykernel_2937/2854713749.py:14: UserWarning:\n\nNo artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.\n\n\n\n\n\n\n\n\n\nFigure 2: Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nThe amplitude and period of the limit cycle depend on \\(\\mu\\). There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with \\(\\mu\\), while the fast phase becomes more abrupt. This leads to a characteristic “relaxation oscillation” shape for large \\(\\mu\\).\nPlay with the parameter \\(\\mu\\) to see how it changes the shape of the limit cycle and the transient dynamics.",
+    "text": "The Stable Limit Cycle\nThe Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions. Plot this limit cycle as a \\(x(t)-t\\) plot, and verify that it matches the phase plane trajectories.\n\n\n/tmp/ipykernel_2926/2854713749.py:14: UserWarning:\n\nNo artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.\n\n\n\n\n\n\n\n\n\nFigure 2: Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nThe amplitude and period of the limit cycle depend on \\(\\mu\\). There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with \\(\\mu\\), while the fast phase becomes more abrupt. This leads to a characteristic “relaxation oscillation” shape for large \\(\\mu\\).\nPlay with the parameter \\(\\mu\\) to see how it changes the shape of the limit cycle and the transient dynamics.",
     "crumbs": [
       "Session 2: ODEs in 2D",
       "Van der Pol Oscillator"
@@ -686,7 +785,7 @@
     "href": "index.html#where-to-go-next",
     "title": "Applied Math Modeling (Python)",
     "section": "Where to go next",
-    "text": "Where to go next\n\nStart with Session 1: ODEs in 1D\nContinue with Session 3: PDEs in 1D\nMove on to Session 4: PDEs in 2D\nContinue with Session 5: Coupled ODEs\nReview the full schedule in the Syllabus",
+    "text": "Where to go next\n\nStart with Session 1: ODEs in 1D\nContinue with Session 3: PDEs in 1D\nMove on to Session 4: PDEs in 2D\nContinue with Session 5: Coupled ODEs\nContinue with Session 6: Flocking\nReview the full schedule in the Syllabus",
     "crumbs": [
       "Getting Started",
       "Home"
@@ -1349,6 +1448,69 @@
     "crumbs": [
       "Session 1: ODEs in 1D",
       "Michaelis–Menten Kinetics"
+    ]
+  },
+  {
+    "objectID": "modules/flocking/assignment.html",
+    "href": "modules/flocking/assignment.html",
+    "title": "Assignment",
+    "section": "",
+    "text": "Simulate the Vicsek model and report your findings.",
+    "crumbs": [
+      "Session 6: Flocking",
+      "Assignment"
+    ]
+  },
+  {
+    "objectID": "modules/flocking/assignment.html#required",
+    "href": "modules/flocking/assignment.html#required",
+    "title": "Assignment",
+    "section": "Required",
+    "text": "Required\n\nImplement the Vicsek equations and animate the boids on a box of size 25.\nCompute and plot the order parameter \\(r(t)\\).\nShow how \\(r\\) changes with noise \\(\\eta\\).",
+    "crumbs": [
+      "Session 6: Flocking",
+      "Assignment"
+    ]
+  },
+  {
+    "objectID": "modules/flocking/assignment.html#extra-mile-optional",
+    "href": "modules/flocking/assignment.html#extra-mile-optional",
+    "title": "Assignment",
+    "section": "Extra Mile (Optional)",
+    "text": "Extra Mile (Optional)\n\nAdd sliders for \\(v_0\\), \\(\\eta\\), \\(r\\), and box size.\nAdd a predator controlled by the mouse.\nImplement a repulsion force between boids.\n\nGood luck and enjoy your coding!",
+    "crumbs": [
+      "Session 6: Flocking",
+      "Assignment"
+    ]
+  },
+  {
+    "objectID": "modules/flocking/index.html",
+    "href": "modules/flocking/index.html",
+    "title": "Flocking Models",
+    "section": "",
+    "text": "In this session we study flocking: how local alignment rules create global order. The main example is the Vicsek model, with optional predator interaction.",
+    "crumbs": [
+      "Session 6: Flocking"
+    ]
+  },
+  {
+    "objectID": "modules/flocking/index.html#case-studies",
+    "href": "modules/flocking/index.html#case-studies",
+    "title": "Flocking Models",
+    "section": "Case Studies",
+    "text": "Case Studies\nVicsek Model Predator Effect Assignment",
+    "crumbs": [
+      "Session 6: Flocking"
+    ]
+  },
+  {
+    "objectID": "modules/flocking/index.html#what-do-we-need",
+    "href": "modules/flocking/index.html#what-do-we-need",
+    "title": "Flocking Models",
+    "section": "What do we need?",
+    "text": "What do we need?\n\nmatplotlib.pyplot\nInitialize the figure and axes and draw static elements.\n\n\nmatplotlib.animation\nUpdate plot elements in real time for animations.\n\n\nmatplotlib.Slider\nAdd sliders so users can interact with parameters.\n\n\nmatplotlib.backend_bases\nTrack mouse position and clicks for interactive behavior.",
+    "crumbs": [
+      "Session 6: Flocking"
     ]
   }
 ]
