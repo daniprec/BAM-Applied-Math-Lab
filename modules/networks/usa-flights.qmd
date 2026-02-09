@@ -1,0 +1,86 @@
+---
+title: "USA Flights"
+subtitle: "Transportation Network"
+format: html
+---
+
+The OpenFlights USA dataset represents airports as nodes and flight routes as edges. It is commonly used to study connectivity, robustness, and hub structure.
+
+```{python}
+#| label: fig-usa-flights
+#| fig-cap: 'USA flights: subgraph snapshot (random sample of airports).'
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+
+import random
+
+import matplotlib.pyplot as plt
+import networkx as nx
+
+path = "data/openflights/openflights_usa.graphml.gz"
+G = nx.read_graphml(path)
+G = nx.Graph(G)
+
+# Sample a manageable subgraph for visualization
+nodes = list(G.nodes)
+random.seed(1)
+sub_nodes = random.sample(nodes, k=min(250, len(nodes)))
+H = G.subgraph(sub_nodes).copy()
+
+pos = nx.spring_layout(H, seed=1)
+fig, ax = plt.subplots(figsize=(7, 4))
+nx.draw(H, pos=pos, node_size=10, edge_color="#999", node_color="#1f77b4", ax=ax)
+ax.set_title("OpenFlights USA (sample)")
+plt.show()
+plt.close()
+```
+
+## Load the graph
+
+The dataset is provided as GraphML and edge lists under [data/openflights](../../data/openflights/).
+
+```python
+import networkx as nx
+
+G = nx.read_graphml("data/openflights/openflights_usa.graphml.gz")
+```
+
+## Basic checks
+
+Try these metrics:
+
+```python
+num_nodes = G.number_of_nodes()
+num_edges = G.number_of_edges()
+avg_degree = sum(dict(G.degree()).values()) / num_nodes
+
+print(num_nodes, num_edges, avg_degree)
+```
+
+## Explore hubs
+
+Compute the top airports by degree centrality.
+
+```python
+import networkx as nx
+
+centrality = nx.degree_centrality(G)
+# TODO: sort and print top 10 airports
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: Top 10 by degree (click to expand)
+
+```python
+centrality = nx.degree_centrality(G)
+top10 = sorted(centrality.items(), key=lambda x: x[1], reverse=True)[:10]
+print(top10)
+```
+:::
+
+## Questions to explore
+
+- Which airports act as hubs?
+- How does the network change if you remove the top hub?
+- Is the graph connected, or are there isolated components?

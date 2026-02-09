@@ -1,0 +1,66 @@
+---
+title: "Enron Email Network"
+subtitle: "Communication Graph"
+format: html
+---
+
+The Enron email dataset can be represented as a graph where nodes are email addresses and edges represent communication. It is widely used to study centrality, communities, and robustness.
+
+```{python}
+#| label: fig-enron-degree
+#| fig-cap: 'Enron network: degree histogram (log scale).'
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+
+import matplotlib.pyplot as plt
+import networkx as nx
+
+path = "data/ia-enron-only/ia-enron-only.edges"
+G = nx.read_edgelist(path)
+
+degrees = [d for _, d in G.degree()]
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.hist(degrees, bins=50)
+ax.set_xlabel("Degree")
+ax.set_ylabel("Count")
+ax.set_yscale("log")
+ax.set_title("Enron degree distribution")
+plt.show()
+plt.close()
+```
+
+## Load the graph
+
+```python
+import networkx as nx
+
+G = nx.read_edgelist("data/ia-enron-only/ia-enron-only.edges")
+```
+
+## Centrality metrics
+
+Compute the top nodes by betweenness centrality.
+
+```python
+import networkx as nx
+
+bc = nx.betweenness_centrality(G)
+# TODO: sort and print top 10 nodes
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: Top 10 by betweenness (click to expand)
+
+```python
+bc = nx.betweenness_centrality(G)
+top10 = sorted(bc.items(), key=lambda x: x[1], reverse=True)[:10]
+print(top10)
+```
+:::
+
+## Questions to explore
+
+- Which nodes act as brokers in the network?
+- How does the graph change if you remove high-betweenness nodes?
+- Can you detect communities with a simple algorithm?

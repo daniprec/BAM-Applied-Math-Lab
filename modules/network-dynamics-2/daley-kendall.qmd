@@ -1,0 +1,114 @@
+---
+title: "Daley-Kendall Model"
+subtitle: "Fake News Spreading"
+format: html
+---
+
+The Daley-Kendall model uses three states:
+
+- Ignorant (I): has not heard the rumor
+- Spreader (S): actively spreading
+- Stifler (R): no longer spreading
+
+At each step:
+
+- Ignorant nodes become spreaders with probability $\beta$ per spreader neighbor.
+- Spreader nodes become stiflers with probability $\gamma$ when they contact another spreader or stifler.
+
+```{python}
+#| label: fig-dk
+#| fig-cap: 'Daley-Kendall: example graph with states I, S, R.'
+#| fig-width: 6
+#| fig-height: 4
+#| echo: false
+
+import matplotlib.pyplot as plt
+import networkx as nx
+
+G = nx.gnm_random_graph(n=30, m=60, seed=2)
+state = {node: "I" for node in G.nodes}
+state[0] = "S"
+
+colors = {"I": "blue", "S": "red", "R": "green"}
+node_colors = [colors[state[n]] for n in G.nodes]
+
+pos = nx.spring_layout(G, seed=2)
+fig, ax = plt.subplots(figsize=(6, 4))
+nx.draw(G, pos, node_color=node_colors, with_labels=False, ax=ax)
+plt.show()
+plt.close()
+```
+
+## Load a real graph
+
+Download the Facebook edge list from SNAP and load it with pandas.
+
+```python
+import pandas as pd
+import networkx as nx
+
+facebook = pd.read_csv(
+    "./data/facebook_combined.txt.gz",
+    compression="gzip",
+    sep=" ",
+    names=["start_node", "end_node"],
+)
+G = nx.from_pandas_edgelist(facebook, "start_node", "end_node")
+```
+
+Download: <https://snap.stanford.edu/data/ego-Facebook.html>
+
+## Implement Daley-Kendall transitions
+
+Reuse the simulation framework from session 8 and replace the transition rule.
+
+```python
+def state_transition(G, current_state, gamma=0.1, beta=0.2):
+    next_state = current_state.copy()
+
+    for node in G.nodes:
+        state = current_state[node]
+
+        if state == "I":
+            # TODO: if any neighbor is a spreader, become S with prob beta
+            pass
+        elif state == "S":
+            # TODO: if any neighbor is S or R, become R with prob gamma
+            pass
+
+    return next_state
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: Transition rule (click to expand)
+
+```python
+import random
+
+def state_transition(G, current_state, gamma=0.1, beta=0.2):
+    next_state = current_state.copy()
+    for node in G.nodes:
+        state = current_state[node]
+
+        if state == "I":
+            for neighbor in G.neighbors(node):
+                if current_state[neighbor] == "S" and random.random() < beta:
+                    next_state[node] = "S"
+                    break
+        elif state == "S":
+            for neighbor in G.neighbors(node):
+                if current_state[neighbor] in ("S", "R") and random.random() < gamma:
+                    next_state[node] = "R"
+                    break
+
+    return next_state
+```
+:::
+
+## Extra challenges
+
+- Add key press controls (SPACE to pause, ENTER to reset).
+- Add sliders for $\beta$ and $\gamma$.
+- Implement network attacks by forcing high-centrality nodes to stifle.
+
+Reference code: [sessions/s09_networkx_data/simulation.py](../../sessions/s09_networkx_data/simulation.py).
