@@ -1,0 +1,172 @@
+---
+title: "Vicsek Model"
+subtitle: "Flocking on a Box"
+format: html
+---
+
+The Vicsek model describes $N$ self-propelled particles that align with neighbors within a radius $r$, plus noise. Each particle has position $\mathbf{r}_i(t)$ and heading $\theta_i(t)$.
+
+```{python}
+#| label: fig-vicsek
+#| fig-cap: 'Vicsek model: boids on a square with heading arrows.'
+#| fig-width: 6
+#| fig-height: 6
+#| echo: false
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sessions.s06_flocking.vicsek import initialize_particles
+
+num_boids = 200
+box_size = 25
+xy, theta = initialize_particles(num_boids, box_size=box_size)
+
+fig, ax = plt.subplots(figsize=(6, 6))
+ax.set_xlim(0, box_size)
+ax.set_ylim(0, box_size)
+ax.set_aspect("equal")
+ax.quiver(
+    xy[0],
+    xy[1],
+    np.cos(theta),
+    np.sin(theta),
+    angles="xy",
+)
+plt.show()
+plt.close()
+```
+
+## Initialize particles
+
+Create the initial positions and headings. Positions are uniform on the box and headings are uniform on $[0, 2\pi]$.
+
+```python
+def initialize_particles(num_boids, box_size):
+    # Random initial theta, shape (N)
+    theta =
+
+    # Random initial x, y - shape (2, N)
+    xy =
+    return xy, theta
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: Initialization (click to expand)
+
+```python
+def initialize_particles(num_boids, box_size):
+    theta = np.random.uniform(0, 2 * np.pi, num_boids)
+    xy = np.random.uniform(0, box_size, (2, num_boids))
+    return xy, theta
+```
+:::
+
+## Implement the Vicsek equations
+
+Each time step, every boid aligns with neighbors within radius $r$ and then moves at constant speed.
+
+```python
+def vicsek_equations(xy, theta, dt, eta, box_size, radius_interaction, v0):
+    xy_new = xy.copy()
+    theta_new = theta.copy()
+    num_boids = len(theta)
+    for i in range(num_boids):
+        ls_theta_neighbors = []
+        for j in range(num_boids):
+            # TODO: compute distance between i and j
+            # TODO: if within radius, add theta[j]
+            pass
+        # TODO: average neighbor angles
+        # TODO: add noise
+
+        # TODO: compute velocity and update position
+        pass
+
+    # Periodic boundary conditions
+    xy_new = np.mod(xy_new, box_size)
+    return xy_new, theta_new
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: Loop version (click to expand)
+
+```python
+def vicsek_equations(xy, theta, dt, eta, box_size, radius_interaction, v0):
+    xy_new = xy.copy()
+    theta_new = theta.copy()
+    num_boids = len(theta)
+    for i in range(num_boids):
+        ls_theta_neighbors = []
+        for j in range(num_boids):
+            dist = np.linalg.norm(xy[:, i] - xy[:, j])
+            if dist <= radius_interaction:
+                ls_theta_neighbors.append(theta[j])
+        theta_new[i] = np.mean(ls_theta_neighbors)
+        theta_new[i] += eta * np.pi * np.random.uniform(-1, 1)
+
+        v = v0 * np.array([np.cos(theta_new[i]), np.sin(theta_new[i])])
+        xy_new[:, i] = xy_new[:, i] + dt * v
+
+    xy_new = np.mod(xy_new, box_size)
+    return xy_new, theta_new
+```
+:::
+
+## Vectorized version (optional)
+
+Loops are expensive. You can compute neighbor averages with a distance matrix.
+
+```python
+def vicsek_equations(xy, theta, dt, eta, box_size, radius_interaction, v0):
+    # TODO: compute distance matrix
+    # TODO: build neighbor mask
+    # TODO: average neighbor angles
+    # TODO: add noise, update positions
+    return xy, theta
+```
+
+If you want to use a template, start from [sessions/s06_flocking/vicsek_template.py](../../sessions/s06_flocking/vicsek_template.py).
+
+## Animate the boids
+
+Use a quiver plot for headings and update it each frame.
+
+```python
+import matplotlib.animation as animation
+
+plt_particles = ax.quiver(
+    xy[0],
+    xy[1],
+    np.cos(theta),
+    np.sin(theta),
+    angles="xy",
+)
+
+# Inside update:
+plt_particles.set_offsets(xy.T)
+plt_particles.set_UVC(np.cos(theta), np.sin(theta))
+```
+
+## Order parameter
+
+The order parameter is the average normalized velocity:
+
+$$r = \left|\frac{1}{N} \sum_{j=1}^N e^{i\theta_j} \right|.$$
+
+Implement it as:
+
+```python
+def vicsek_order_parameter(theta):
+    # TODO: compute mean of exp(i*theta)
+    return r
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: Order parameter (click to expand)
+
+```python
+def vicsek_order_parameter(theta):
+    return np.abs(np.mean(np.exp(1j * theta)))
+```
+:::

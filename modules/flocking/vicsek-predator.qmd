@@ -1,0 +1,66 @@
+---
+title: "Vicsek Model with Predator"
+subtitle: "Mouse-Controlled Repulsion"
+format: html
+---
+
+Now add a predator that boids avoid. The predator position is controlled by the mouse, and boids change their angle when they are within a predator radius.
+
+The repulsion angle is
+
+$$\Theta_{\text{rep}, i} = \tan^{-1}\left(\frac{y_i - y_{\text{pred}}}{x_i - x_{\text{pred}}}\right).$$
+
+We blend alignment and repulsion with strength $k$:
+
+$$\Theta_i = (1-k)\left(\langle \Theta_j \rangle + \eta_i\right) + k\,\Theta_{\text{rep}, i}.$$
+
+## Track the predator
+
+```python
+from matplotlib.backend_bases import MouseEvent
+
+# Inside run_simulation
+xy_pred = np.array([-1000, -1000])
+radius_predator = 1.0
+strength_predator = 0.1
+
+
+def on_mouse_move(event: MouseEvent):
+    nonlocal xy_pred
+    if event.inaxes == ax_plane:
+        xy_pred = np.array([event.xdata, event.ydata])
+    else:
+        xy_pred = np.array([-1000, -1000])
+
+fig.canvas.mpl_connect("motion_notify_event", on_mouse_move)
+```
+
+## Update the equations
+
+Add the predator terms inside your Vicsek update.
+
+```python
+def vicsek_equations(
+    xy, theta, dt, eta, box_size, radius_interaction, v0,
+    xy_pred, radius_predator, strength_predator,
+):
+    # TODO: compute alignment as usual
+
+    # TODO: compute repulsion angle and blend with k
+    return xy, theta
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: Predator update (click to expand)
+
+```python
+# Distances to predator
+ d_pred = np.linalg.norm(xy - xy_pred[:, np.newaxis], axis=0)
+ affected = d_pred <= radius_predator
+ repulsion_angle = np.arctan2(xy[1] - xy_pred[1], xy[0] - xy_pred[0])
+ term_pred = strength_predator * (repulsion_angle - theta) * affected
+ theta = np.mod(theta + term_pred, 2 * np.pi)
+```
+:::
+
+If you want a full working reference, check [sessions/s06_flocking/vicsek_predator.py](../../sessions/s06_flocking/vicsek_predator.py).
