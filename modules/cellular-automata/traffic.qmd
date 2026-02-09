@@ -1,0 +1,99 @@
+---
+title: "Traffic Models with CA"
+subtitle: "Nagel-Schreckenberg"
+format: html
+---
+
+Traffic flow can be modeled with a 1D cellular automaton. Cars occupy cells and move forward each step according to simple rules.
+
+```{python}
+#| label: fig-traffic
+#| fig-cap: 'Traffic CA space-time diagram (cars as black pixels).'
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+
+import matplotlib.pyplot as plt
+
+from sessions.s10_cellular_automata.traffic import simulate
+
+grid = simulate(steps=200, length=100, density=0.2, vmax=5, p_slow=0.3, seed=1)
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.imshow(grid, cmap="binary", interpolation="nearest", aspect="auto")
+ax.set_xlabel("Road position")
+ax.set_ylabel("Time")
+plt.show()
+plt.close()
+```
+
+## Model rules
+
+At each step:
+
+1. Accelerate up to $v_{\max}$.
+2. Brake to avoid collisions.
+3. Random slowdown with probability $p$.
+4. Move forward.
+
+## Initialize the road
+
+```python
+occupied, speeds = initialize_road(length=100, density=0.2, vmax=5)
+```
+
+## Update one step (template)
+
+```python
+def step(occupied, speeds, vmax=5, p_slow=0.3):
+    # TODO: accelerate
+    # TODO: brake to avoid collisions
+    # TODO: random slowdown
+    # TODO: move cars
+    return new_occupied, new_speeds
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: Update step (click to expand)
+
+```python
+def step(occupied, speeds, vmax=5, p_slow=0.3):
+    length = len(occupied)
+    positions = np.where(occupied)[0]
+    speeds_new = speeds.copy()
+
+    speeds_new[positions] = np.minimum(speeds_new[positions] + 1, vmax)
+
+    gaps = np.zeros_like(positions)
+    for idx, pos in enumerate(positions):
+        next_pos = positions[(idx + 1) % len(positions)]
+        gaps[idx] = (next_pos - pos - 1) % length
+    speeds_new[positions] = np.minimum(speeds_new[positions], gaps)
+
+    rng = np.random.default_rng()
+    slow_mask = rng.random(len(positions)) < p_slow
+    speeds_new[positions[slow_mask]] = np.maximum(
+        speeds_new[positions[slow_mask]] - 1, 0
+    )
+
+    new_occupied = np.zeros_like(occupied)
+    new_speeds = np.zeros_like(speeds)
+    new_positions = (positions + speeds_new[positions]) % length
+    new_occupied[new_positions] = True
+    new_speeds[new_positions] = speeds_new[positions]
+
+    return new_occupied, new_speeds
+```
+:::
+
+## Space-time diagram
+
+Run the model for many steps and plot the grid.
+
+```python
+grid = simulate(steps=200, length=100, density=0.2, vmax=5, p_slow=0.3)
+plt.imshow(grid, cmap="binary", interpolation="nearest", aspect="auto")
+plt.show()
+```
+
+Full reference: [sessions/s10_cellular_automata/traffic.py](../../sessions/s10_cellular_automata/traffic.py).

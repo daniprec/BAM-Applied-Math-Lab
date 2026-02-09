@@ -1,0 +1,80 @@
+---
+title: "Intro to 1D Cellular Automata"
+subtitle: "Rules and Space-Time Diagrams"
+format: html
+---
+
+A 1D cellular automaton updates each cell using its local neighborhood. We will use elementary 3-cell rules, such as Rule 30.
+
+```{python}
+#| label: fig-ca-rule30
+#| fig-cap: 'Rule 30 space-time diagram.'
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sessions.s10_cellular_automata.cellular import apply_rule
+
+rule_number = 30
+rule_bin = np.array([int(x) for x in f"{rule_number:08b}"])
+
+iterations = 60
+grid_size = 101
+
+grid = np.zeros((iterations, grid_size), dtype=int)
+grid[0, grid_size // 2] = 1
+
+for t in range(1, iterations):
+    grid[t] = apply_rule(grid[t - 1], rule_bin)
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.imshow(grid, cmap="binary", interpolation="nearest", aspect="auto")
+ax.set_xlabel("Cell index")
+ax.set_ylabel("Time")
+plt.show()
+plt.close()
+```
+
+## Define the rule
+
+A rule is an 8-bit binary table that maps each neighborhood to a new cell value.
+
+```python
+rule_number = 30
+rule_bin = np.array([int(x) for x in f"{rule_number:08b}"])
+```
+
+## Apply the rule (template)
+
+```python
+def apply_rule(state, rule_bin):
+    new_state = np.zeros_like(state)
+    for i in range(1, len(state) - 1):
+        neighborhood = state[i - 1 : i + 2]
+        index = 7 - int("".join(neighborhood.astype(str)), 2)
+        new_state[i] = rule_bin[index]
+    return new_state
+```
+
+## Build a space-time diagram
+
+```python
+iterations = 60
+grid_size = 101
+
+grid = np.zeros((iterations, grid_size), dtype=int)
+grid[0, grid_size // 2] = 1
+
+for t in range(1, iterations):
+    grid[t] = apply_rule(grid[t - 1], rule_bin)
+
+plt.imshow(grid, cmap="binary", interpolation="nearest", aspect="auto")
+plt.show()
+```
+
+## Interactive initial row
+
+The script [sessions/s10_cellular_automata/cellular.py](../../sessions/s10_cellular_automata/cellular.py) lets you click on the first row to toggle cells and recompute the automaton.
