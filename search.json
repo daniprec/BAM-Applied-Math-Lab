@@ -297,6 +297,149 @@
     ]
   },
   {
+    "objectID": "modules/pde-2d/gierer-meinhardt.html",
+    "href": "modules/pde-2d/gierer-meinhardt.html",
+    "title": "Gierer-Meinhardt Model (2D)",
+    "section": "",
+    "text": "The 2D Gierer-Meinhardt model is a pattern-forming reaction-diffusion system. We will extend the 1D solver to a rectangular domain \\(\\Omega = (0, L_1) \\times (0, L_2)\\) and visualize \\(v(x,y)\\).\nIn 2D the model is\n\\[\n\\begin{aligned}\n\\frac{\\partial u}{\\partial t} &= \\Delta u + \\gamma \\left(a - b u + \\frac{u^2}{v}\\right), \\\\\n\\frac{\\partial v}{\\partial t} &= d\\,\\Delta v + \\gamma \\left(u^2 - v\\right),\n\\end{aligned}\n\\]\nwhere \\(u(x,y,t)\\) and \\(v(x,y,t)\\) are concentrations.\nFigure 1: Gierer-Meinhardt 2D: example snapshot of \\(v(x,y)\\) with \\(L_1=20\\), \\(L_2=50\\), \\(dx=1\\), \\(a=0.40\\), \\(b=1.00\\), \\(d=20\\), \\(\\gamma=1\\).",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Gierer-Meinhardt 2D"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/gierer-meinhardt.html#laplacian-in-2d",
+    "href": "modules/pde-2d/gierer-meinhardt.html#laplacian-in-2d",
+    "title": "Gierer-Meinhardt Model (2D)",
+    "section": "Laplacian in 2D",
+    "text": "Laplacian in 2D\nIn two dimensions the Laplacian is\n\\[\n\\Delta u = \\frac{\\partial^2 u}{\\partial x^2} + \\frac{\\partial^2 u}{\\partial y^2}.\n\\]\nUsing a 5-point stencil with spacing \\(h\\):\n\\[\n\\Delta u(x,y) \\approx \\frac{u(x+h,y) + u(x-h,y) + u(x,y+h) + u(x,y-h) - 4u(x,y)}{h^2}.\n\\]\nA 9-point stencil improves accuracy by including diagonal neighbors:\n\\[\n\\Delta u(x,y) \\approx \\frac{-20u(x,y) + 4\\sum_{\\text{cardinal}} u + \\sum_{\\text{diagonal}} u}{6h^2}.\n\\]",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Gierer-Meinhardt 2D"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/gierer-meinhardt.html#exercise-simulate-the-pde",
+    "href": "modules/pde-2d/gierer-meinhardt.html#exercise-simulate-the-pde",
+    "title": "Gierer-Meinhardt Model (2D)",
+    "section": "Exercise: Simulate the PDE",
+    "text": "Exercise: Simulate the PDE\nWe will use \\(L_1=20\\), \\(L_2=50\\), \\(dx=1\\), \\(dt=0.001\\), \\(a=0.40\\), \\(b=1.00\\), \\(d=20\\), and \\(\\gamma=1\\). Follow the steps below and compare your output to Figure 1.\n\nInitialize the fields\nimport numpy as np\n\nlength_x = 20\nlength_y = 50\ndx = 1\nlenx = int(length_x / dx)\nleny = int(length_y / dx)\n\nuv = np.ones((2, lenx, leny))\nuv += uv * np.random.uniform(0, 1, uv.shape) / 100\n\n\nDefine the PDE (template)\ndef gierer_meinhardt_pde(t, uv, gamma=1, a=0.40, b=1.00, d=20, dx=1):\n    # TODO: compute the 2D Laplacian with np.roll\n\n    # TODO: implement the reaction terms f(u, v) and g(u, v)\n    # TODO: combine diffusion + reaction to build du_dt and dv_dt\n    return du_dt, dv_dt\n\n\n\n\n\n\nHint: Gierer-Meinhardt 2D PDE (click to expand)\n\n\n\n\n\ndef gierer_meinhardt_pde(t, uv, gamma=1, a=0.40, b=1.00, d=20, dx=1):\n    lap = -4 * uv\n    lap += np.roll(uv, shift=1, axis=1)\n    lap += np.roll(uv, shift=-1, axis=1)\n    lap += np.roll(uv, shift=1, axis=2)\n    lap += np.roll(uv, shift=-1, axis=2)\n    lap /= dx**2\n\n    u, v = uv\n    lu, lv = lap\n\n    f = a - b * u + (u**2) / v\n    g = u**2 - v\n    du_dt = lu + gamma * f\n    dv_dt = d * lv + gamma * g\n    return du_dt, dv_dt\n\n\n\n\n\nTime stepping (template)\nnum_iter = 50000\ndt = 0.001\n\nfor _ in range(num_iter):\n    dudt, dvdt = gierer_meinhardt_pde(0, uv, dx=dx)\n    # TODO: update u and v with Euler's method\n\n    # TODO: enforce Neumann boundary conditions in both directions\n\n\nPlot the image (template)\nimport matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nim = ax.imshow(\n    uv[1],\n    interpolation=\"bilinear\",\n    origin=\"lower\",\n    extent=[0, length_y, 0, length_x],\n)\nplt.show()\n\n\nAnimation\nInstead of running a long loop, move the Euler updates inside the animation callback.\nimport matplotlib.animation as animation\nimport matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nim = ax.imshow(uv[1], origin=\"lower\", extent=[0, length_y, 0, length_x])\n\ndef update_animation(frame):\n    # TODO: update uv via Euler steps\n    # TODO: apply Neumann boundary conditions\n    im.set_array(uv[1])\n    im.set_clim(vmin=uv[1].min(), vmax=uv[1].max() + 0.1)\n    return (im,)\n\nani = animation.FuncAnimation(fig, update_animation, interval=1, blit=True)\n\n\n\n\n\n\nHint: Animation update (click to expand)\n\n\n\n\n\ndef update_animation(frame):\n    global uv\n    for _ in range(anim_speed):\n        dudt = gierer_meinhardt_pde(0, uv, gamma=gamma, a=a, b=b, d=d, dx=dx)\n        uv = uv + dudt * dt\n        uv[:, 0, :] = uv[:, 1, :]\n        uv[:, -1, :] = uv[:, -2, :]\n        uv[:, :, 0] = uv[:, :, 1]\n        uv[:, :, -1] = uv[:, :, -2]\n\n    im.set_array(uv[1])\n    im.set_clim(vmin=uv[1].min(), vmax=uv[1].max() + 0.1)\n    return (im,)",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Gierer-Meinhardt 2D"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/gierer-meinhardt.html#explore",
+    "href": "modules/pde-2d/gierer-meinhardt.html#explore",
+    "title": "Gierer-Meinhardt Model (2D)",
+    "section": "Explore",
+    "text": "Explore\nTry different parameter values for \\((a, d)\\) and describe the pattern. What changes when you increase \\(d\\)?",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Gierer-Meinhardt 2D"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/gray-scott-art.html",
+    "href": "modules/pde-2d/gray-scott-art.html",
+    "title": "Gray-Scott: Interaction",
+    "section": "",
+    "text": "This page adds interaction to the Gray-Scott simulation: draw sources of \\(v\\), pause/resume, and adjust parameters with sliders. The reference implementation is in sessions/s04_pdes_2d/gray_scott.py.",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Gray-Scott: Interaction"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/gray-scott-art.html#draw-on-the-plot",
+    "href": "modules/pde-2d/gray-scott-art.html#draw-on-the-plot",
+    "title": "Gray-Scott: Interaction",
+    "section": "Draw on the plot",
+    "text": "Draw on the plot\nLeft click adds a small perturbation near \\((u,v)=(0.5,0.5)\\), right click resets to \\((1,0)\\). Implement an update function and wire the events.\nfrom matplotlib.backend_bases import MouseEvent\n\ndef update_uv(event: MouseEvent, r: int = 3):\n    # TODO: check if event is inside the axes\n    # TODO: compute (x, y) indices\n    # TODO: left click adds noise around (0.5, 0.5)\n    # TODO: right click resets to (1, 0)\n    # TODO: update a (2r x 2r) patch in uv\n    # TODO: refresh the image\n\n\n\n\n\n\nHint: update_uv (click to expand)\n\n\n\n\n\ndef update_uv(event: MouseEvent, r: int = 3):\n    if event.inaxes != ax_uv:\n        return\n    if event.xdata is None or event.ydata is None:\n        return\n    x = int(event.xdata)\n    y = int(event.ydata)\n\n    if event.button == 1:\n        u_new = 0.5 * (1 + 0.1 * np.random.randn())\n        v_new = 0.5 * (1 + 0.1 * np.random.randn())\n    elif event.button == 3:\n        u_new = 1.0\n        v_new = 0.0\n    else:\n        return\n\n    uv[0, y - r : y + r, x - r : x + r] = u_new\n    uv[1, y - r : y + r, x - r : x + r] = v_new\n    im.set_array(uv[1])\n\n\n\nNow allow continuous drawing while the mouse button is pressed.\ndef on_click(event: MouseEvent):\n    # TODO: enable drawing and update_uv(event)\n\ndef on_release(event: MouseEvent):\n    # TODO: disable drawing\n\ndef on_motion(event: MouseEvent):\n    # TODO: if drawing, call update_uv(event)\n\nfig.canvas.mpl_connect(\"button_press_event\", on_click)\nfig.canvas.mpl_connect(\"button_release_event\", on_release)\nfig.canvas.mpl_connect(\"motion_notify_event\", on_motion)\n\n\n\n\n\n\nHint: mouse handlers (click to expand)\n\n\n\n\n\ndef on_click(event: MouseEvent):\n    if event.inaxes != ax_uv:\n        return\n    if event.xdata is None or event.ydata is None:\n        return\n    nonlocal drawing\n    drawing = True\n    update_uv(event)\n\n\ndef on_release(event: MouseEvent):\n    nonlocal drawing\n    drawing = False\n\n\ndef on_motion(event: MouseEvent):\n    if drawing:\n        update_uv(event)",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Gray-Scott: Interaction"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/gray-scott-art.html#pause-and-resume",
+    "href": "modules/pde-2d/gray-scott-art.html#pause-and-resume",
+    "title": "Gray-Scott: Interaction",
+    "section": "Pause and resume",
+    "text": "Pause and resume\nUse the space bar to pause/resume the simulation.\nfrom matplotlib.backend_bases import KeyEvent\n\npause = False\n\ndef on_keypress(event: KeyEvent):\n    # TODO: toggle pause when space bar is pressed\n\nfig.canvas.mpl_connect(\"key_press_event\", on_keypress)\n\n\n\n\n\n\nHint: pause handler (click to expand)\n\n\n\n\n\ndef on_keypress(event: KeyEvent):\n    nonlocal pause\n    if event.key == \" \":\n        pause ^= True",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Gray-Scott: Interaction"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/gray-scott-art.html#sliders",
+    "href": "modules/pde-2d/gray-scott-art.html#sliders",
+    "title": "Gray-Scott: Interaction",
+    "section": "Sliders",
+    "text": "Sliders\nCreate sliders to update \\(d_1, d_2, f, k\\) while the animation runs.\nfrom matplotlib.widgets import Slider\n\n# Create axes for sliders on the right\nax_d1 = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])\nax_d2 = ax_sliders.inset_axes([0.0, 0.6, 0.8, 0.1])\nax_f = ax_sliders.inset_axes([0.0, 0.4, 0.8, 0.1])\nax_k = ax_sliders.inset_axes([0.0, 0.2, 0.8, 0.1])\n\nslider_d1 = Slider(ax_d1, \"D1\", 0.01, 0.2, valinit=d1, valstep=0.01)\nslider_d2 = Slider(ax_d2, \"D2\", 0.01, 0.2, valinit=d2, valstep=0.01)\nslider_f = Slider(ax_f, \"F\", 0.01, 0.09, valinit=f, valstep=0.001)\nslider_k = Slider(ax_k, \"k\", 0.04, 0.07, valinit=k, valstep=0.001)\n\n# TODO: update parameters when sliders change\n\n\n\n\n\n\nHint: slider update (click to expand)\n\n\n\n\n\ndef update_sliders(_):\n    nonlocal d1, d2, f, k, pause\n    d1 = slider_d1.val\n    d2 = slider_d2.val\n    f = slider_f.val\n    k = slider_k.val\n    pause = True\n\nslider_d1.on_changed(update_sliders)\nslider_d2.on_changed(update_sliders)\nslider_f.on_changed(update_sliders)\nslider_k.on_changed(update_sliders)",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Gray-Scott: Interaction"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/assignment.html",
+    "href": "modules/pde-2d/assignment.html",
+    "title": "Assignment",
+    "section": "",
+    "text": "Complete a 2D reaction-diffusion simulation and report your findings.",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Assignment"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/assignment.html#required",
+    "href": "modules/pde-2d/assignment.html#required",
+    "title": "Assignment",
+    "section": "Required",
+    "text": "Required\n\nImplement the 2D Gierer-Meinhardt PDE with a 5-point stencil.\nUse \\(L_1=20\\), \\(L_2=50\\), \\(dx=1\\), \\(dt=0.001\\), \\(a=0.40\\), \\(b=1.00\\), \\(d=20\\), \\(\\gamma=1\\).\nPlot a snapshot of \\(v(x,y)\\) after a long integration.\nCreate an animation that updates \\(v(x,y)\\) in real time.",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Assignment"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/assignment.html#turing-instability",
+    "href": "modules/pde-2d/assignment.html#turing-instability",
+    "title": "Assignment",
+    "section": "Turing Instability",
+    "text": "Turing Instability\n\nImplement find_unstable_spatial_modes() and report the leading mode for \\(d=20\\) and \\(d=30\\).\nState whether each case exhibits Turing instability.",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Assignment"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/assignment.html#gray-scott-optional",
+    "href": "modules/pde-2d/assignment.html#gray-scott-optional",
+    "title": "Assignment",
+    "section": "Gray-Scott (Optional)",
+    "text": "Gray-Scott (Optional)\n\nImplement the Gray-Scott model and reproduce one of the parameter sets (A-E).\nAdd interaction: draw perturbations and pause/resume the simulation.",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Assignment"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/assignment.html#tips-for-success",
+    "href": "modules/pde-2d/assignment.html#tips-for-success",
+    "title": "Assignment",
+    "section": "Tips for Success",
+    "text": "Tips for Success\n\nStart small: use a smaller grid to debug the update function.\nCheck dt: if the simulation explodes, reduce \\(dt\\) or increase \\(dx\\).\nValidate: compare your pattern to ?@fig-gm-2d in the module notes.\n\nGood luck and enjoy your coding!",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Assignment"
+    ]
+  },
+  {
     "objectID": "modules/ode-2d/fitzhugh-nagumo.html",
     "href": "modules/ode-2d/fitzhugh-nagumo.html",
     "title": "FitzHugh–Nagumo Model",
@@ -345,7 +488,7 @@
     "href": "modules/ode-2d/van-der-pol.html#the-stable-limit-cycle",
     "title": "Van der Pol Oscillator",
     "section": "The Stable Limit Cycle",
-    "text": "The Stable Limit Cycle\nThe Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions. Plot this limit cycle as a \\(x(t)-t\\) plot, and verify that it matches the phase plane trajectories.\n\n\n/tmp/ipykernel_2842/2854713749.py:14: UserWarning:\n\nNo artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.\n\n\n\n\n\n\n\n\n\nFigure 2: Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nThe amplitude and period of the limit cycle depend on \\(\\mu\\). There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with \\(\\mu\\), while the fast phase becomes more abrupt. This leads to a characteristic “relaxation oscillation” shape for large \\(\\mu\\).\nPlay with the parameter \\(\\mu\\) to see how it changes the shape of the limit cycle and the transient dynamics.",
+    "text": "The Stable Limit Cycle\nThe Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions. Plot this limit cycle as a \\(x(t)-t\\) plot, and verify that it matches the phase plane trajectories.\n\n\n/tmp/ipykernel_2894/2854713749.py:14: UserWarning:\n\nNo artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.\n\n\n\n\n\n\n\n\n\nFigure 2: Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nThe amplitude and period of the limit cycle depend on \\(\\mu\\). There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with \\(\\mu\\), while the fast phase becomes more abrupt. This leads to a characteristic “relaxation oscillation” shape for large \\(\\mu\\).\nPlay with the parameter \\(\\mu\\) to see how it changes the shape of the limit cycle and the transient dynamics.",
     "crumbs": [
       "Session 2: ODEs in 2D",
       "Van der Pol Oscillator"
@@ -444,7 +587,7 @@
     "href": "index.html#where-to-go-next",
     "title": "Applied Math Modeling (Python)",
     "section": "Where to go next",
-    "text": "Where to go next\n\nStart with Session 1: ODEs in 1D\nContinue with Session 3: PDEs in 1D\nReview the full schedule in the Syllabus",
+    "text": "Where to go next\n\nStart with Session 1: ODEs in 1D\nContinue with Session 3: PDEs in 1D\nMove on to Session 4: PDEs in 2D\nReview the full schedule in the Syllabus",
     "crumbs": [
       "Getting Started",
       "Home"
@@ -641,6 +784,157 @@
     "crumbs": [
       "Session 2: ODEs in 2D",
       "Animation Template"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/index.html",
+    "href": "modules/pde-2d/index.html",
+    "title": "Partial Differential Equations in 2D",
+    "section": "",
+    "text": "In this session we extend the 1D reaction-diffusion workflow to two spatial dimensions. We will use finite differences, explicit Euler time stepping, and Matplotlib animations to explore pattern formation.",
+    "crumbs": [
+      "Session 4: PDEs in 2D"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/index.html#case-studies",
+    "href": "modules/pde-2d/index.html#case-studies",
+    "title": "Partial Differential Equations in 2D",
+    "section": "Case Studies",
+    "text": "Case Studies\nGierer-Meinhardt 2D Turing Instability (2D) Gray-Scott Assignment",
+    "crumbs": [
+      "Session 4: PDEs in 2D"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/index.html#what-do-we-need",
+    "href": "modules/pde-2d/index.html#what-do-we-need",
+    "title": "Partial Differential Equations in 2D",
+    "section": "What do we need?",
+    "text": "What do we need?\n\nnumpy\nWe use NumPy arrays to store 2D fields and np.roll() to compute discrete Laplacians.\n\n\nmatplotlib.pyplot\nInitialize figures, axes, and static plot elements.\n\n\nmatplotlib.animation\nUpdate image data frame-by-frame to animate the dynamics.\n\n\nmatplotlib.backend_bases\nHandle user interaction (mouse clicks and key presses).\n\n\nscipy\nGreat for ODEs, but we will not use it for PDEs in this session.",
+    "crumbs": [
+      "Session 4: PDEs in 2D"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/turing-instability.html",
+    "href": "modules/pde-2d/turing-instability.html",
+    "title": "Turing Instability in 2D",
+    "section": "",
+    "text": "Turing instability predicts when small spatial perturbations grow into patterns. We will check the instability conditions and compute unstable spatial modes on a 2D rectangle.\nFigure 1: Turing space for the Gierer-Meinhardt model (a vs d).",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Turing Instability (2D)"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/turing-instability.html#conditions",
+    "href": "modules/pde-2d/turing-instability.html#conditions",
+    "title": "Turing Instability in 2D",
+    "section": "Conditions",
+    "text": "Conditions\nLet the Jacobian at the fixed point be\n\\[J=\\begin{pmatrix} f_u & f_v \\\\ g_u & g_v \\end{pmatrix}.\\]\nA common set of conditions for Turing instability is:\n\\[\n\\begin{aligned}\n&f_u + g_v &lt; 0, \\\\\n&f_u g_v - f_v g_u &gt; 0, \\\\\n&g_v + d f_u &gt; 2\\sqrt{d\\,(f_u g_v - f_v g_u)}.\n\\end{aligned}\n\\]",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Turing Instability (2D)"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/turing-instability.html#implement-a-turing-test",
+    "href": "modules/pde-2d/turing-instability.html#implement-a-turing-test",
+    "title": "Turing Instability in 2D",
+    "section": "Implement a Turing test",
+    "text": "Implement a Turing test\nCreate a function that returns True if all conditions are satisfied. In the reference script the Jacobian entries are hard-coded at the fixed point.\ndef giere_meinhardt_jacobian(a=0.40, b=1.00):\n    # TODO: compute fu, fv, gu, gv at the fixed point\n    return fu, fv, gu, gv\n\n\ndef is_turing_instability(a, b, d):\n    fu, fv, gu, gv = giere_meinhardt_jacobian(a, b)\n    # TODO: implement the three conditions\n    return cond1 & cond2 & cond3\n\n\n\n\n\n\nHint: Turing instability functions (click to expand)\n\n\n\n\n\ndef giere_meinhardt_jacobian(a=0.40, b=1.00):\n    fu = 2 * b / (a + 1) - b\n    fv = -((b / (a + 1)) ** 2)\n    gu = 2 * (a + 1) / b\n    gv = -1.0\n    return fu, fv, gu, gv\n\n\ndef is_turing_instability(a, b, d):\n    fu, fv, gu, gv = giere_meinhardt_jacobian(a, b)\n    nabla = fu * gv - fv * gu\n    cond1 = (fu + gv) &lt; 0\n    cond2 = nabla &gt; 0\n    cond3 = (gv + d * fu) &gt; (2 * np.sqrt(d) * np.sqrt(nabla))\n    return cond1 & cond2 & cond3",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Turing Instability (2D)"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/turing-instability.html#unstable-spatial-modes-2d",
+    "href": "modules/pde-2d/turing-instability.html#unstable-spatial-modes-2d",
+    "title": "Turing Instability in 2D",
+    "section": "Unstable spatial modes (2D)",
+    "text": "Unstable spatial modes (2D)\nThe unstable modes are now pairs \\((n_x, n_y)\\). The temporal eigenvalues for spatial mode \\((\\lambda_x, \\lambda_y)\\) are the eigenvalues of\n\\[A_n = J - (\\lambda_x + \\lambda_y)\\,\\mathrm{diag}(1, d).\\]\nimport numpy as np\n\ndef find_unstable_spatial_modes(a=0.40, b=1.00, d=30.0, length_x=20.0, length_y=50.0, num_modes=10):\n    # TODO: build the Jacobian and scan 2D spatial modes\n    return unstable_modes\n\n\n\n\n\n\nHint: Spatial mode scan (click to expand)\n\n\n\n\n\ndef find_unstable_spatial_modes(a=0.40, b=1.00, d=30.0, length_x=20.0, length_y=50.0, num_modes=10):\n    fu, fv, gu, gv = giere_meinhardt_jacobian(a, b)\n    jac = np.array([[fu, fv], [gu, gv]])\n    n_values = np.arange(1, num_modes)\n    max_eigs = np.zeros((num_modes, num_modes))\n\n    for x in n_values:\n        for y in n_values:\n            lambda_x = (x * np.pi / length_x) ** 2\n            lambda_y = (y * np.pi / length_y) ** 2\n            a_n = jac - (lambda_x + lambda_y) * np.diag([1, d])\n            sigma1, sigma2 = np.linalg.eigvals(a_n)\n            max_eigs[x, y] = max(sigma1.real, sigma2.real)\n\n    idx, idy = np.unravel_index(np.argsort(max_eigs, axis=None), max_eigs.shape)\n    num_positives = (max_eigs &gt; 0).sum()\n    idx, idy = idx[-1:-num_positives:-1], idy[-1:-num_positives:-1]\n    unstable_modes = [(i, j) for i, j in zip(idx, idy)]\n    return unstable_modes",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Turing Instability (2D)"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/turing-instability.html#exercises",
+    "href": "modules/pde-2d/turing-instability.html#exercises",
+    "title": "Turing Instability in 2D",
+    "section": "Exercises",
+    "text": "Exercises\n\nCheck whether these parameter values lead to Turing instability: \\(\\gamma=1\\), \\(a=0.4\\), \\(b=1\\), \\(d=30\\).\nRepeat for \\(\\gamma=1\\), \\(a=0.4\\), \\(b=1\\), \\(d=20\\).\nUse \\(L_1=20\\), \\(L_2=50\\) and report the number of unstable modes and the leading mode for each case.",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Turing Instability (2D)"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/gray-scott.html",
+    "href": "modules/pde-2d/gray-scott.html",
+    "title": "Gray-Scott Model",
+    "section": "",
+    "text": "Gray-Scott is an autocatalytic reaction-diffusion model for two substances \\(u\\) and \\(v\\). It produces rich patterns and is ideal for interactive exploration.\nThe equations are\n\\[\n\\begin{aligned}\n\\frac{\\partial u}{\\partial t} &= d_1 \\Delta u - u v^2 + f(1-u), \\\\\n\\frac{\\partial v}{\\partial t} &= d_2 \\Delta v + u v^2 - (f+k) v,\n\\end{aligned}\n\\]\nwhere \\(d_1, d_2\\) are diffusion coefficients and \\(f, k\\) control the feed and kill rates.\nFigure 1: Gray-Scott: example snapshot of \\(v(x,y)\\) for \\(d_1=0.1\\), \\(d_2=0.05\\), \\(f=0.040\\), \\(k=0.060\\).",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Gray-Scott"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/gray-scott.html#laplacian-in-2d",
+    "href": "modules/pde-2d/gray-scott.html#laplacian-in-2d",
+    "title": "Gray-Scott Model",
+    "section": "Laplacian in 2D",
+    "text": "Laplacian in 2D\nWe will reuse the 5-point stencil (and optionally the 9-point stencil). The reference script contains both.",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Gray-Scott"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/gray-scott.html#implement-the-pde",
+    "href": "modules/pde-2d/gray-scott.html#implement-the-pde",
+    "title": "Gray-Scott Model",
+    "section": "Implement the PDE",
+    "text": "Implement the PDE\nStart from a template and fill in the missing parts.\ndef laplacian(uv):\n    # TODO: implement 5-point stencil with np.roll\n    return lap\n\n\ndef gray_scott_pde(t, uv, d1=0.1, d2=0.05, f=0.040, k=0.060, stencil=5):\n    # TODO: compute laplacian (5 or 9 point)\n    # TODO: compute du_dt and dv_dt\n    return du_dt, dv_dt\n\n\n\n\n\n\nHint: Laplacian and PDE (click to expand)\n\n\n\n\n\ndef laplacian(uv):\n    lap = -4 * uv\n    lap += np.roll(uv, shift=1, axis=1)\n    lap += np.roll(uv, shift=-1, axis=1)\n    lap += np.roll(uv, shift=1, axis=2)\n    lap += np.roll(uv, shift=-1, axis=2)\n    return lap\n\n\ndef gray_scott_pde(t, uv, d1=0.1, d2=0.05, f=0.040, k=0.060, stencil=5):\n    u, v = uv\n    lap = laplacian(uv)\n    lu, lv = lap\n    uv2 = u * v * v\n    du_dt = d1 * lu - uv2 + f * (1 - u)\n    dv_dt = d2 * lv + uv2 - (f + k) * v\n    return du_dt, dv_dt",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Gray-Scott"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/gray-scott.html#simulation-setup",
+    "href": "modules/pde-2d/gray-scott.html#simulation-setup",
+    "title": "Gray-Scott Model",
+    "section": "Simulation setup",
+    "text": "Simulation setup\nUse \\(N=250\\) with \\(dx=1\\) (so \\(L=250\\)). Start from the homogeneous steady state \\((u^*, v^*)=(1,0)\\), then perturb a region with \\((u,v)=(0.5,0.5)\\) plus 10% noise. Apply periodic boundary conditions and integrate with \\(dt=2\\).\nn = 250\ndx = 1\ndt = 2\nuv = np.ones((2, n, n), dtype=np.float32)\nuv[1] = 0\n\n# TODO: add a perturbation block and noise",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Gray-Scott"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/gray-scott.html#animation",
+    "href": "modules/pde-2d/gray-scott.html#animation",
+    "title": "Gray-Scott Model",
+    "section": "Animation",
+    "text": "Animation\nimport matplotlib.animation as animation\n\nim = ax.imshow(uv[1], cmap=\"jet\", interpolation=\"bilinear\")\n\ndef update_frame(_):\n    # TODO: advance uv with Euler steps\n    # TODO: apply periodic boundary conditions\n    im.set_array(uv[1])\n    return [im]\n\nani = animation.FuncAnimation(fig, update_frame, interval=1, blit=True)",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Gray-Scott"
+    ]
+  },
+  {
+    "objectID": "modules/pde-2d/gray-scott.html#parameter-sets",
+    "href": "modules/pde-2d/gray-scott.html#parameter-sets",
+    "title": "Gray-Scott Model",
+    "section": "Parameter sets",
+    "text": "Parameter sets\nTry the following Gray-Scott parameter sets (with \\(d_1=0.1\\), \\(d_2=0.05\\)):\n\nType A: \\(f=0.040\\), \\(k=0.060\\)\nType B: \\(f=0.014\\), \\(k=0.047\\)\nType C: \\(f=0.062\\), \\(k=0.065\\)\nType D: \\(f=0.078\\), \\(k=0.061\\)\nType E: \\(f=0.082\\), \\(k=0.059\\)\n\nIf you want interactive drawing and sliders, continue to the next page.",
+    "crumbs": [
+      "Session 4: PDEs in 2D",
+      "Gray-Scott"
     ]
   },
   {
