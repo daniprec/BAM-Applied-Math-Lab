@@ -1,0 +1,158 @@
+---
+title: "Gray-Scott: Interaction"
+subtitle: "Drawing, Sliders, and Pause"
+format: html
+---
+
+This page adds interaction to the Gray-Scott simulation: draw sources of $v$, pause/resume, and adjust parameters with sliders. The reference implementation is in [sessions/s04_pdes_2d/gray_scott.py](../../sessions/s04_pdes_2d/gray_scott.py).
+
+## Draw on the plot
+
+Left click adds a small perturbation near $(u,v)=(0.5,0.5)$, right click resets to $(1,0)$. Implement an update function and wire the events.
+
+```python
+from matplotlib.backend_bases import MouseEvent
+
+def update_uv(event: MouseEvent, r: int = 3):
+    # TODO: check if event is inside the axes
+    # TODO: compute (x, y) indices
+    # TODO: left click adds noise around (0.5, 0.5)
+    # TODO: right click resets to (1, 0)
+    # TODO: update a (2r x 2r) patch in uv
+    # TODO: refresh the image
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: update_uv (click to expand)
+
+```python
+def update_uv(event: MouseEvent, r: int = 3):
+    if event.inaxes != ax_uv:
+        return
+    if event.xdata is None or event.ydata is None:
+        return
+    x = int(event.xdata)
+    y = int(event.ydata)
+
+    if event.button == 1:
+        u_new = 0.5 * (1 + 0.1 * np.random.randn())
+        v_new = 0.5 * (1 + 0.1 * np.random.randn())
+    elif event.button == 3:
+        u_new = 1.0
+        v_new = 0.0
+    else:
+        return
+
+    uv[0, y - r : y + r, x - r : x + r] = u_new
+    uv[1, y - r : y + r, x - r : x + r] = v_new
+    im.set_array(uv[1])
+```
+:::
+
+Now allow continuous drawing while the mouse button is pressed.
+
+```python
+def on_click(event: MouseEvent):
+    # TODO: enable drawing and update_uv(event)
+
+def on_release(event: MouseEvent):
+    # TODO: disable drawing
+
+def on_motion(event: MouseEvent):
+    # TODO: if drawing, call update_uv(event)
+
+fig.canvas.mpl_connect("button_press_event", on_click)
+fig.canvas.mpl_connect("button_release_event", on_release)
+fig.canvas.mpl_connect("motion_notify_event", on_motion)
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: mouse handlers (click to expand)
+
+```python
+def on_click(event: MouseEvent):
+    if event.inaxes != ax_uv:
+        return
+    if event.xdata is None or event.ydata is None:
+        return
+    nonlocal drawing
+    drawing = True
+    update_uv(event)
+
+
+def on_release(event: MouseEvent):
+    nonlocal drawing
+    drawing = False
+
+
+def on_motion(event: MouseEvent):
+    if drawing:
+        update_uv(event)
+```
+:::
+
+## Pause and resume
+
+Use the space bar to pause/resume the simulation.
+
+```python
+from matplotlib.backend_bases import KeyEvent
+
+pause = False
+
+def on_keypress(event: KeyEvent):
+    # TODO: toggle pause when space bar is pressed
+
+fig.canvas.mpl_connect("key_press_event", on_keypress)
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: pause handler (click to expand)
+
+```python
+def on_keypress(event: KeyEvent):
+    nonlocal pause
+    if event.key == " ":
+        pause ^= True
+```
+:::
+
+## Sliders
+
+Create sliders to update $d_1, d_2, f, k$ while the animation runs.
+
+```python
+from matplotlib.widgets import Slider
+
+# Create axes for sliders on the right
+ax_d1 = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])
+ax_d2 = ax_sliders.inset_axes([0.0, 0.6, 0.8, 0.1])
+ax_f = ax_sliders.inset_axes([0.0, 0.4, 0.8, 0.1])
+ax_k = ax_sliders.inset_axes([0.0, 0.2, 0.8, 0.1])
+
+slider_d1 = Slider(ax_d1, "D1", 0.01, 0.2, valinit=d1, valstep=0.01)
+slider_d2 = Slider(ax_d2, "D2", 0.01, 0.2, valinit=d2, valstep=0.01)
+slider_f = Slider(ax_f, "F", 0.01, 0.09, valinit=f, valstep=0.001)
+slider_k = Slider(ax_k, "k", 0.04, 0.07, valinit=k, valstep=0.001)
+
+# TODO: update parameters when sliders change
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: slider update (click to expand)
+
+```python
+def update_sliders(_):
+    nonlocal d1, d2, f, k, pause
+    d1 = slider_d1.val
+    d2 = slider_d2.val
+    f = slider_f.val
+    k = slider_k.val
+    pause = True
+
+slider_d1.on_changed(update_sliders)
+slider_d2.on_changed(update_sliders)
+slider_f.on_changed(update_sliders)
+slider_k.on_changed(update_sliders)
+```
+:::

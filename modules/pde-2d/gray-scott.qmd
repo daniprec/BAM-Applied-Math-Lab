@@ -1,0 +1,136 @@
+---
+title: "Gray-Scott Model"
+subtitle: "2D Reaction-Diffusion"
+format: html
+---
+
+Gray-Scott is an autocatalytic reaction-diffusion model for two substances $u$ and $v$. It produces rich patterns and is ideal for interactive exploration.
+
+The equations are
+
+$$
+\begin{aligned}
+\frac{\partial u}{\partial t} &= d_1 \Delta u - u v^2 + f(1-u), \\
+\frac{\partial v}{\partial t} &= d_2 \Delta v + u v^2 - (f+k) v,
+\end{aligned}
+$$
+
+where $d_1, d_2$ are diffusion coefficients and $f, k$ control the feed and kill rates.
+
+```{python}
+#| label: fig-gray-scott
+#| fig-cap: 'Gray-Scott: example snapshot of $v(x,y)$ for $d_1=0.1$, $d_2=0.05$, $f=0.040$, $k=0.060$.'
+#| fig-width: 6
+#| fig-height: 6
+#| echo: false
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sessions.s04_pdes_2d.gray_scott import gray_scott_pde
+
+n = 120
+uv = np.ones((2, n, n), dtype=np.float32)
+uv[1] = 0
+
+# Add a small perturbation in the center
+r = 10
+c = n // 2
+uv[0, c - r : c + r, c - r : c + r] = 0.5
+uv[1, c - r : c + r, c - r : c + r] = 0.25
+
+for _ in range(400):
+    uv = uv + gray_scott_pde(0, uv, d1=0.1, d2=0.05, f=0.040, k=0.060) * 1.0
+
+fig, ax = plt.subplots(figsize=(6, 6))
+ax.imshow(uv[1], cmap="jet", interpolation="bilinear")
+ax.axis("off")
+plt.show()
+plt.close()
+```
+
+## Laplacian in 2D
+
+We will reuse the 5-point stencil (and optionally the 9-point stencil). The reference script contains both.
+
+## Implement the PDE
+
+Start from a template and fill in the missing parts.
+
+```python
+def laplacian(uv):
+    # TODO: implement 5-point stencil with np.roll
+    return lap
+
+
+def gray_scott_pde(t, uv, d1=0.1, d2=0.05, f=0.040, k=0.060, stencil=5):
+    # TODO: compute laplacian (5 or 9 point)
+    # TODO: compute du_dt and dv_dt
+    return du_dt, dv_dt
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: Laplacian and PDE (click to expand)
+
+```python
+def laplacian(uv):
+    lap = -4 * uv
+    lap += np.roll(uv, shift=1, axis=1)
+    lap += np.roll(uv, shift=-1, axis=1)
+    lap += np.roll(uv, shift=1, axis=2)
+    lap += np.roll(uv, shift=-1, axis=2)
+    return lap
+
+
+def gray_scott_pde(t, uv, d1=0.1, d2=0.05, f=0.040, k=0.060, stencil=5):
+    u, v = uv
+    lap = laplacian(uv)
+    lu, lv = lap
+    uv2 = u * v * v
+    du_dt = d1 * lu - uv2 + f * (1 - u)
+    dv_dt = d2 * lv + uv2 - (f + k) * v
+    return du_dt, dv_dt
+```
+:::
+
+## Simulation setup
+
+Use $N=250$ with $dx=1$ (so $L=250$). Start from the homogeneous steady state $(u^*, v^*)=(1,0)$, then perturb a region with $(u,v)=(0.5,0.5)$ plus 10% noise. Apply periodic boundary conditions and integrate with $dt=2$.
+
+```python
+n = 250
+dx = 1
+dt = 2
+uv = np.ones((2, n, n), dtype=np.float32)
+uv[1] = 0
+
+# TODO: add a perturbation block and noise
+```
+
+## Animation
+
+```python
+import matplotlib.animation as animation
+
+im = ax.imshow(uv[1], cmap="jet", interpolation="bilinear")
+
+def update_frame(_):
+    # TODO: advance uv with Euler steps
+    # TODO: apply periodic boundary conditions
+    im.set_array(uv[1])
+    return [im]
+
+ani = animation.FuncAnimation(fig, update_frame, interval=1, blit=True)
+```
+
+## Parameter sets
+
+Try the following Gray-Scott parameter sets (with $d_1=0.1$, $d_2=0.05$):
+
+- Type A: $f=0.040$, $k=0.060$
+- Type B: $f=0.014$, $k=0.047$
+- Type C: $f=0.062$, $k=0.065$
+- Type D: $f=0.078$, $k=0.061$
+- Type E: $f=0.082$, $k=0.059$
+
+If you want interactive drawing and sliders, continue to the next page.
