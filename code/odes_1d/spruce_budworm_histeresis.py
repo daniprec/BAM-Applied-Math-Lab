@@ -8,7 +8,7 @@ from scipy.integrate import solve_ivp
 
 # ensure repo root on path so we can import the provided model
 sys.path.append(".")
-from sessions.s01_odes_1d.spruce_budworm import spruce_budworm
+from spruce_budworm import spruce_budworm
 
 
 def k_func(t, k0: float = 6.0, amp: float = 4.0, freq: float = 0.01):

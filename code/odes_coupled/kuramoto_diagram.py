@@ -1,18 +1,12 @@
-import sys
-
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.integrate import solve_ivp
-from scipy.stats import cauchy
-
-# I will import several functions from the script "kuramoto.py"
-sys.path.append(".")
-
-from sessions.s05_odes_coupled.kuramoto import (
+from kuramoto import (
     initialize_oscillators,
     kuramoto_ode_meanfield,
     kuramoto_order_parameter,
 )
+from scipy.integrate import solve_ivp
+from scipy.stats import cauchy
 
 
 def kuramoto_critical_coupling(
