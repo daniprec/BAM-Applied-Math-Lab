@@ -20,8 +20,7 @@ At a high level:
 ├─ modules/
 ├─ projects/
 ├─ references/
-├─ resources/
-├─ sessions/
+├─ amlab/
 ├─ streamlit/
 └─ tex/
 ```
@@ -39,8 +38,8 @@ Brief explanation:
 - **modules/**: Guided learning modules written in Quarto (notes, explanations, exercises).
 - **projects/**: Project-specific data, notebooks, and experiments for group projects.
 - **references/**: External reference materials (e.g., NetworkX tutorial notebooks, datasets).
-- **resources/**: Reusable helpers and utilities (e.g., event handlers, solvers) used by scripts.
-- **sessions/**: Code used during live sessions (scripts and examples by topic/session).
+- **amlab/utils/**: Reusable helpers and utilities (e.g., event handlers, solvers) used by scripts.
+- **amlab/**: Code used during live sessions (scripts and examples by topic/session).
 - **streamlit/**: Streamlit app(s) used for interactive demonstrations and student exploration.
 - **tex/**: LaTeX assets and builds (style files, bibliography, generated PDFs/aux files).
 
@@ -116,23 +115,23 @@ streamlit run ./streamlit/home.py
 
 ## SESSION 3 (LIVE IN-PERSON)
 
-- Reaction-diffusion equations and pattern formation in 2D
-- Using Python for numerical integration of reaction-diffusion equations, based on a finite differences scheme.
-- Creating animations to visualize pattern formation.
-- Exploring parameter space to observe different patterns.
+- Exploring synchronization with multiple coupled ODEs.
+- Implementing the Kuramoto model in Python.
+- Visualizing synchronization and analyzing the effects of coupling strength and initial conditions. This might include visual animations.
 
 ## SESSION 4 (LIVE IN-PERSON)
 
-- Reaction-diffusion equations in 1D.
+- Reaction-diffusion equations and pattern formation in 2D
 - Using Python for numerical integration of reaction-diffusion equations, based on a finite differences scheme.
 - Creating animations to visualize pattern formation.
 - Exploring parameter space to observe different patterns.
 
 ## SESSION 5 (LIVE IN-PERSON)
 
-- Exploring synchronization with multiple coupled ODEs.
-- Implementing the Kuramoto model in Python.
-- Visualizing synchronization and analyzing the effects of coupling strength and initial conditions. This might include visual animations.
+- Reaction-diffusion equations in 1D.
+- Using Python for numerical integration of reaction-diffusion equations, based on a finite differences scheme.
+- Creating animations to visualize pattern formation.
+- Exploring parameter space to observe different patterns.
 
 ## SESSION 6 (LIVE IN-PERSON)
 
