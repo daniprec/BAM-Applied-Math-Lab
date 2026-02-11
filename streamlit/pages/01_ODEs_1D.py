@@ -8,9 +8,9 @@ import streamlit as st
 # (allowing the import of the utils module)
 sys.path.append(".")
 
-from code.odes_1d.michaelis_menten import plot_michaelis_menten
-from code.odes_1d.sir_model import plot_sir_model
-from code.odes_1d.spruce_budworm import (
+from amlab.odes_1d.michaelis_menten import plot_michaelis_menten
+from amlab.odes_1d.sir_model import plot_sir_model
+from amlab.odes_1d.spruce_budworm import (
     evolve_spruce_budworm,
     plot_spruce_budworm,
     plot_spruce_budworm_rate,
