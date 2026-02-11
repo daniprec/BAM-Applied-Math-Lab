@@ -465,7 +465,7 @@
     "section": "",
     "text": "The Gierer-Meinhardt model is a classical reaction-diffusion system that can generate spatial patterns. We will build a 1D solver from scratch and visualize \\(v(x)\\).\nIn 1D it reads\n\\[\n\\begin{aligned}\n\\frac{\\partial u}{\\partial t} &= \\Delta u + \\gamma \\left(a - b u + \\frac{u^2}{v}\\right), \\\\\n\\frac{\\partial v}{\\partial t} &= d\\,\\Delta v + \\gamma \\left(u^2 - v\\right),\n\\end{aligned}\n\\]\nwhere \\(u(x,t)\\) and \\(v(x,t)\\) are concentrations, \\(a,b,\\gamma\\) are reaction parameters, and \\(d\\) is the diffusion ratio for \\(v\\).\nFigure 1: Gierer-Meinhardt 1D: example profile of \\(v(x)\\) after explicit Euler integration with \\(L=40\\), \\(dx=0.5\\), \\(a=0.40\\), \\(b=1.00\\), \\(d=20\\), \\(\\gamma=1\\).",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Gierer-Meinhardt 1D"
     ]
   },
@@ -476,7 +476,7 @@
     "section": "Laplacian in 1D",
     "text": "Laplacian in 1D\nIn one dimension, the Laplacian is the second derivative:\n\\[\n\\Delta u = \\frac{d^2 u}{dx^2}.\n\\]\nUsing a centered finite difference on a grid with spacing \\(h\\):\n\\[\n\\Delta u(x) \\approx \\frac{u(x+h) - 2u(x) + u(x-h)}{h^2} + \\mathcal{O}(h^2).\n\\]\nThis is easy to implement with np.roll() to access neighbors on a grid. We will assume \\(h = dx\\) and use the second-order centered difference.",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Gierer-Meinhardt 1D"
     ]
   },
@@ -487,7 +487,7 @@
     "section": "Boundary Conditions",
     "text": "Boundary Conditions\n\nNeumann (zero flux)\n\\[u_x(0)=0,\\quad u(0)=u(h)\\]\n\n\nDirichlet (fixed values)\n\\[u(0)=\\alpha,\\quad u(L)=\\beta\\]\n\n\nPeriodic\n\\[u(0)=u(L)\\]",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Gierer-Meinhardt 1D"
     ]
   },
@@ -498,7 +498,7 @@
     "section": "Exercise: Simulate the PDE",
     "text": "Exercise: Simulate the PDE\nWe will use \\(L=40\\), \\(dx=0.5\\), \\(dt=0.001\\), \\(a=0.40\\), \\(b=1.00\\), \\(d=20\\), and \\(\\gamma=1\\). Follow the steps below and compare your result with Figure 1.\n\nInitialize the fields\nimport numpy as np\n\nlength = 40\ndx = 0.5\nlenx = int(length / dx)\n\nuv = np.ones((2, lenx))\nuv += uv * np.random.randn(2, lenx) / 100\nWhy add noise? A perfectly uniform initial condition can hide instabilities. Small perturbations reveal pattern-forming behavior.\n\n\nDefine the PDE (template)\ndef gierer_meinhardt_pde(t, uv, gamma=1, a=0.40, b=1.00, d=20, dx=1):\n    # Laplacian via finite differences (np.roll handles neighbors)\n    lap = -2 * uv\n    lap += np.roll(uv, shift=1, axis=1)\n    lap += np.roll(uv, shift=-1, axis=1)\n    lap /= dx**2\n\n    u, v = uv\n    lu, lv = lap\n\n    # TODO: implement the reaction terms f(u, v) and g(u, v)\n    # TODO: combine diffusion + reaction to build du_dt and dv_dt\n    return du_dt, dv_dt\n\n\n\n\n\n\nHint: Gierer-Meinhardt PDE (click to expand)\n\n\n\n\n\ndef gierer_meinhardt_pde(t, uv, gamma=1, a=0.40, b=1.00, d=20, dx=1):\n    lap = -2 * uv\n    lap += np.roll(uv, shift=1, axis=1)\n    lap += np.roll(uv, shift=-1, axis=1)\n    lap /= dx**2\n\n    u, v = uv\n    lu, lv = lap\n\n    f = a - b * u + (u**2) / v\n    g = u**2 - v\n    du_dt = lu + gamma * f\n    dv_dt = d * lv + gamma * g\n    return du_dt, dv_dt\n\n\n\n\n\nTime stepping (template)\nnum_iter = 50000\ndt = 0.001\n\nfor _ in range(num_iter):\n    dudt, dvdt = gierer_meinhardt_pde(0, uv, dx=dx)\n    # TODO: update u and v with Euler's method\n\n    # TODO: enforce Neumann boundary conditions\n\n\nPlot the final profile (template)\nimport matplotlib.pyplot as plt\n\nx = np.linspace(0, length, lenx)\nfig, ax = plt.subplots()\nax.plot(x, uv[1])\nax.set_xlabel(\"x\")\nax.set_ylabel(\"v(x)\")\nax.set_title(\"Gierer-Meinhardt 1D\")\nplt.show()\n\n\nExplore\nRe-run with \\(d=30\\) and compare the pattern. Try other \\((a, d)\\) pairs and share your observations.",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Gierer-Meinhardt 1D"
     ]
   },
@@ -509,7 +509,7 @@
     "section": "Animation Extension",
     "text": "Animation Extension\nInstead of plotting only the final state, update the line at every frame:\nimport matplotlib.animation as animation\n\n(plot_v,) = ax.plot(x, uv[1])\n\ndef animate(frame):\n    nonlocal uv\n    # TODO: compute dudt, dvdt and update uv\n    # TODO: update the line data\n    return (plot_v,)\n\nani = animation.FuncAnimation(fig, animate, interval=1, blit=True)\n\n\n\n\n\n\nHint: Animation update (click to expand)\n\n\n\n\n\ndef animate(frame):\n    nonlocal uv\n    dudt, dvdt = gierer_meinhardt_pde(frame, uv, dx=dx)\n    uv[0] = uv[0] + dudt * dt\n    uv[1] = uv[1] + dvdt * dt\n    plot_v.set_data(x, uv[1])\n    return (plot_v,)\n\n\n\nIf the system stays flat for some parameters and forms waves for others, you are seeing the onset of Turing instability. Proceed to the next page to analyze it.\n\n\n\n\n\n\nTip\n\n\n\nFull reference code is available in sessions/s03_pdes_1d.",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Gierer-Meinhardt 1D"
     ]
   },
@@ -520,7 +520,7 @@
     "section": "",
     "text": "In this session we move from ODEs to reaction-diffusion PDEs in one spatial dimension. We will discretize space with finite differences, advance in time with Euler’s method, and visualize pattern formation.",
     "crumbs": [
-      "Session 3: PDEs"
+      "Session 4: PDEs"
     ]
   },
   {
@@ -530,7 +530,7 @@
     "section": "Case Studies",
     "text": "Case Studies\nGierer-Meinhardt 1D Turing Instability Assignment",
     "crumbs": [
-      "Session 3: PDEs"
+      "Session 4: PDEs"
     ]
   },
   {
@@ -540,7 +540,7 @@
     "section": "Goals",
     "text": "Goals\n\nImplement the 1D Laplacian with finite differences.\nSimulate a reaction-diffusion system with explicit time stepping.\nVisualize patterns and understand when they emerge.\nConnect parameter choices to stability and pattern formation.\nBuild animations and add simple user interaction.",
     "crumbs": [
-      "Session 3: PDEs"
+      "Session 4: PDEs"
     ]
   },
   {
@@ -550,7 +550,7 @@
     "section": "What do we need?",
     "text": "What do we need?\n\nnumpy\nWe use NumPy arrays to represent spatial fields and np.roll() to compute the discrete Laplacian.\n\n\nmatplotlib.pyplot\nInitialize the figure and axes and plot static elements (labels, titles, limits).\n\n\nmatplotlib.animation\nUpdate line objects frame-by-frame to create animations.\n\n\nmatplotlib.backend_bases\nHandle mouse clicks to let the user interact with the simulation.\n\n\nscipy\nGreat for ODEs, but we will not use it for PDEs in this session. We need to enforce boundary conditions at every step.",
     "crumbs": [
-      "Session 3: PDEs"
+      "Session 4: PDEs"
     ]
   },
   {
@@ -560,7 +560,7 @@
     "section": "",
     "text": "Gray-Scott is an autocatalytic reaction-diffusion model for two substances \\(u\\) and \\(v\\). It produces rich patterns and is ideal for interactive exploration.\nThe equations are\n\\[\n\\begin{aligned}\n\\frac{\\partial u}{\\partial t} &= d_1 \\Delta u - u v^2 + f(1-u), \\\\\n\\frac{\\partial v}{\\partial t} &= d_2 \\Delta v + u v^2 - (f+k) v,\n\\end{aligned}\n\\]\nwhere \\(d_1, d_2\\) are diffusion coefficients and \\(f, k\\) control the feed and kill rates.\nFigure 1: Gray-Scott: example snapshot of \\(v(x,y)\\) for \\(d_1=0.1\\), \\(d_2=0.05\\), \\(f=0.040\\), \\(k=0.060\\).",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Gray-Scott"
     ]
   },
@@ -571,7 +571,7 @@
     "section": "Laplacian in 2D",
     "text": "Laplacian in 2D\nWe will reuse the 5-point stencil (and optionally the 9-point stencil). The reference script contains both.",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Gray-Scott"
     ]
   },
@@ -582,7 +582,7 @@
     "section": "Implement the PDE",
     "text": "Implement the PDE\nStart from a template and fill in the missing parts.\ndef laplacian(uv):\n    # TODO: implement 5-point stencil with np.roll\n    return lap\n\n\ndef gray_scott_pde(t, uv, d1=0.1, d2=0.05, f=0.040, k=0.060, stencil=5):\n    # TODO: compute laplacian (5 or 9 point)\n    # TODO: compute du_dt and dv_dt\n    return du_dt, dv_dt\n\n\n\n\n\n\nHint: Laplacian and PDE (click to expand)\n\n\n\n\n\ndef laplacian(uv):\n    lap = -4 * uv\n    lap += np.roll(uv, shift=1, axis=1)\n    lap += np.roll(uv, shift=-1, axis=1)\n    lap += np.roll(uv, shift=1, axis=2)\n    lap += np.roll(uv, shift=-1, axis=2)\n    return lap\n\n\ndef gray_scott_pde(t, uv, d1=0.1, d2=0.05, f=0.040, k=0.060, stencil=5):\n    u, v = uv\n    lap = laplacian(uv)\n    lu, lv = lap\n    uv2 = u * v * v\n    du_dt = d1 * lu - uv2 + f * (1 - u)\n    dv_dt = d2 * lv + uv2 - (f + k) * v\n    return du_dt, dv_dt",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Gray-Scott"
     ]
   },
@@ -593,7 +593,7 @@
     "section": "Simulation setup",
     "text": "Simulation setup\nUse \\(N=250\\) with \\(dx=1\\) (so \\(L=250\\)). Start from the homogeneous steady state \\((u^*, v^*)=(1,0)\\), then perturb a region with \\((u,v)=(0.5,0.5)\\) plus 10% noise. Apply periodic boundary conditions and integrate with \\(dt=2\\).\nn = 250\ndx = 1\ndt = 2\nuv = np.ones((2, n, n), dtype=np.float32)\nuv[1] = 0\n\n# TODO: add a perturbation block and noise",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Gray-Scott"
     ]
   },
@@ -604,7 +604,7 @@
     "section": "Animation",
     "text": "Animation\nimport matplotlib.animation as animation\n\nim = ax.imshow(uv[1], cmap=\"jet\", interpolation=\"bilinear\")\n\ndef update_frame(_):\n    # TODO: advance uv with Euler steps\n    # TODO: apply periodic boundary conditions\n    im.set_array(uv[1])\n    return [im]\n\nani = animation.FuncAnimation(fig, update_frame, interval=1, blit=True)",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Gray-Scott"
     ]
   },
@@ -615,7 +615,7 @@
     "section": "Parameter sets",
     "text": "Parameter sets\nTry the following Gray-Scott parameter sets (with \\(d_1=0.1\\), \\(d_2=0.05\\)):\n\nType A: \\(f=0.040\\), \\(k=0.060\\)\nType B: \\(f=0.014\\), \\(k=0.047\\)\nType C: \\(f=0.062\\), \\(k=0.065\\)\nType D: \\(f=0.078\\), \\(k=0.061\\)\nType E: \\(f=0.082\\), \\(k=0.059\\)\n\nIf you want interactive drawing and sliders, continue to the next page.",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Gray-Scott"
     ]
   },
@@ -626,7 +626,7 @@
     "section": "",
     "text": "Turing instability predicts when small spatial perturbations grow into patterns. We will check the instability conditions and compute unstable spatial modes on a 2D rectangle.\nFigure 1: Turing space for the Gierer-Meinhardt model (a vs d).",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Turing Instability (2D)"
     ]
   },
@@ -637,7 +637,7 @@
     "section": "Conditions",
     "text": "Conditions\nLet the Jacobian at the fixed point be\n\\[J=\\begin{pmatrix} f_u & f_v \\\\ g_u & g_v \\end{pmatrix}.\\]\nA common set of conditions for Turing instability is:\n\\[\n\\begin{aligned}\n&f_u + g_v &lt; 0, \\\\\n&f_u g_v - f_v g_u &gt; 0, \\\\\n&g_v + d f_u &gt; 2\\sqrt{d\\,(f_u g_v - f_v g_u)}.\n\\end{aligned}\n\\]",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Turing Instability (2D)"
     ]
   },
@@ -648,7 +648,7 @@
     "section": "Implement a Turing test",
     "text": "Implement a Turing test\nCreate a function that returns True if all conditions are satisfied. In the reference script the Jacobian entries are hard-coded at the fixed point.\ndef giere_meinhardt_jacobian(a=0.40, b=1.00):\n    # TODO: compute fu, fv, gu, gv at the fixed point\n    return fu, fv, gu, gv\n\n\ndef is_turing_instability(a, b, d):\n    fu, fv, gu, gv = giere_meinhardt_jacobian(a, b)\n    # TODO: implement the three conditions\n    return cond1 & cond2 & cond3\n\n\n\n\n\n\nHint: Turing instability functions (click to expand)\n\n\n\n\n\ndef giere_meinhardt_jacobian(a=0.40, b=1.00):\n    fu = 2 * b / (a + 1) - b\n    fv = -((b / (a + 1)) ** 2)\n    gu = 2 * (a + 1) / b\n    gv = -1.0\n    return fu, fv, gu, gv\n\n\ndef is_turing_instability(a, b, d):\n    fu, fv, gu, gv = giere_meinhardt_jacobian(a, b)\n    nabla = fu * gv - fv * gu\n    cond1 = (fu + gv) &lt; 0\n    cond2 = nabla &gt; 0\n    cond3 = (gv + d * fu) &gt; (2 * np.sqrt(d) * np.sqrt(nabla))\n    return cond1 & cond2 & cond3",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Turing Instability (2D)"
     ]
   },
@@ -659,7 +659,7 @@
     "section": "Unstable spatial modes (2D)",
     "text": "Unstable spatial modes (2D)\nThe unstable modes are now pairs \\((n_x, n_y)\\). The temporal eigenvalues for spatial mode \\((\\lambda_x, \\lambda_y)\\) are the eigenvalues of\n\\[A_n = J - (\\lambda_x + \\lambda_y)\\,\\mathrm{diag}(1, d).\\]\nimport numpy as np\n\ndef find_unstable_spatial_modes(a=0.40, b=1.00, d=30.0, length_x=20.0, length_y=50.0, num_modes=10):\n    # TODO: build the Jacobian and scan 2D spatial modes\n    return unstable_modes\n\n\n\n\n\n\nHint: Spatial mode scan (click to expand)\n\n\n\n\n\ndef find_unstable_spatial_modes(a=0.40, b=1.00, d=30.0, length_x=20.0, length_y=50.0, num_modes=10):\n    fu, fv, gu, gv = giere_meinhardt_jacobian(a, b)\n    jac = np.array([[fu, fv], [gu, gv]])\n    n_values = np.arange(1, num_modes)\n    max_eigs = np.zeros((num_modes, num_modes))\n\n    for x in n_values:\n        for y in n_values:\n            lambda_x = (x * np.pi / length_x) ** 2\n            lambda_y = (y * np.pi / length_y) ** 2\n            a_n = jac - (lambda_x + lambda_y) * np.diag([1, d])\n            sigma1, sigma2 = np.linalg.eigvals(a_n)\n            max_eigs[x, y] = max(sigma1.real, sigma2.real)\n\n    idx, idy = np.unravel_index(np.argsort(max_eigs, axis=None), max_eigs.shape)\n    num_positives = (max_eigs &gt; 0).sum()\n    idx, idy = idx[-1:-num_positives:-1], idy[-1:-num_positives:-1]\n    unstable_modes = [(i, j) for i, j in zip(idx, idy)]\n    return unstable_modes",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Turing Instability (2D)"
     ]
   },
@@ -670,7 +670,7 @@
     "section": "Exercises",
     "text": "Exercises\n\nCheck whether these parameter values lead to Turing instability: \\(\\gamma=1\\), \\(a=0.4\\), \\(b=1\\), \\(d=30\\).\nRepeat for \\(\\gamma=1\\), \\(a=0.4\\), \\(b=1\\), \\(d=20\\).\nUse \\(L_1=20\\), \\(L_2=50\\) and report the number of unstable modes and the leading mode for each case.",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Turing Instability (2D)"
     ]
   },
@@ -1024,7 +1024,7 @@
     "section": "",
     "text": "The full simulation adds the order parameter \\(r(t)\\) and a live \\(r\\) vs \\(K\\) plot, plus sliders for coupling strength, population size, and distribution scale.\nStart from the template in sessions/s05_odes_coupled/kuramoto_template.py and implement the missing parts.",
     "crumbs": [
-      "Session 4: Coupled ODEs",
+      "Session 3: Coupled ODEs",
       "Full Simulation"
     ]
   },
@@ -1035,7 +1035,7 @@
     "section": "Order parameter",
     "text": "Order parameter\nComplete the function that computes the order parameter:\ndef kuramoto_order_parameter(theta: np.ndarray) -&gt; tuple:\n    # TODO: compute r * exp(i * phi)\n    order_param =  # replace this line\n    r = np.abs(order_param)\n    phi = np.angle(order_param)\n    rcosphi = np.real(order_param)\n    rsinphi = np.imag(order_param)\n    return r, phi, rcosphi, rsinphi\n\n\n\n\n\n\nHint: Order parameter (click to expand)\n\n\n\n\n\ndef kuramoto_order_parameter(theta: np.ndarray) -&gt; tuple:\n    order_param = np.mean(np.exp(1j * theta), axis=0)\n    r = np.abs(order_param)\n    phi = np.angle(order_param)\n    rcosphi = np.real(order_param)\n    rsinphi = np.imag(order_param)\n    return r, phi, rcosphi, rsinphi",
     "crumbs": [
-      "Session 4: Coupled ODEs",
+      "Session 3: Coupled ODEs",
       "Full Simulation"
     ]
   },
@@ -1046,7 +1046,7 @@
     "section": "Sliders",
     "text": "Sliders\nUse sliders to update the coupling strength, number of oscillators, and the distribution scale. The template shows how to restart the animation when values change.\n# TODO: create sliders for K, N, sigma\n# TODO: update parameters and reinitialize oscillators\n\n\n\n\n\n\nHint: Slider update (click to expand)\n\n\n\n\n\ndef update_sliders(_):\n    nonlocal coupling_strength, num_oscillators, sigma, theta, omega\n    coupling_strength = slider_coupling.val\n    num_oscillators = int(slider_num_oscillators.val)\n    sigma = slider_sigma.val\n    theta, omega = initialize_oscillators(num_oscillators, sigma=sigma)\n\n\n\nWhen you finish, run the full simulation and explore how synchronization changes as you vary \\(K\\).",
     "crumbs": [
-      "Session 4: Coupled ODEs",
+      "Session 3: Coupled ODEs",
       "Full Simulation"
     ]
   },
@@ -1057,7 +1057,7 @@
     "section": "",
     "text": "The Kuramoto model describes a population of weakly coupled oscillators. Each oscillator has a phase \\(\\theta_i\\) and a natural frequency \\(\\omega_i\\).\nTo visualize the dynamics, imagine points moving on the unit circle. Synchronization corresponds to points clustering around a common phase.\nFigure 1: Kuramoto model: oscillators on the unit circle and the order-parameter vector.",
     "crumbs": [
-      "Session 4: Coupled ODEs",
+      "Session 3: Coupled ODEs",
       "Kuramoto Model"
     ]
   },
@@ -1068,7 +1068,7 @@
     "section": "Initialize oscillators",
     "text": "Initialize oscillators\nThe phases \\(\\theta_i\\) are sampled uniformly on \\([0, 2\\pi]\\) and the natural frequencies \\(\\omega_i\\) from a normal distribution with standard deviation \\(\\sigma\\).\ndef initialize_oscillators(num_oscillators: int, sigma: float = 1.0):\n    # Assign a random initial phase to each oscillator\n    theta =  # draw from uniform distribution\n\n    # Assign a random natural frequency to each oscillator\n    omega =  # draw from normal distribution\n    return theta, omega\n\n\n\n\n\n\nHint: Initialization (click to expand)\n\n\n\n\n\ndef initialize_oscillators(num_oscillators: int, sigma: float = 1.0):\n    theta = np.random.uniform(0, 2 * np.pi, num_oscillators)\n    omega = np.random.normal(0, sigma, num_oscillators)\n    return theta, omega",
     "crumbs": [
-      "Session 4: Coupled ODEs",
+      "Session 3: Coupled ODEs",
       "Kuramoto Model"
     ]
   },
@@ -1079,7 +1079,7 @@
     "section": "Define the ODE",
     "text": "Define the ODE\nWe will implement the mean-field form. Remember: solve_ivp() requires the time argument even if it is not used.\ndef kuramoto_ode(t, theta, omega, coupling_strength=1.0):\n    theta = np.mod(theta, 2 * np.pi)\n\n    # TODO: compute the order parameter (r, phi)\n    # TODO: implement mean-field coupling\n    return dtheta_dt\n\n\n\n\n\n\nHint: Mean-field ODE (click to expand)\n\n\n\n\n\ndef kuramoto_ode(t, theta, omega, coupling_strength=1.0):\n    theta = np.mod(theta, 2 * np.pi)\n    order_param = np.mean(np.exp(1j * theta))\n    r = np.abs(order_param)\n    phi = np.angle(order_param)\n    dtheta_dt = omega + coupling_strength * r * np.sin(phi - theta)\n    return dtheta_dt",
     "crumbs": [
-      "Session 4: Coupled ODEs",
+      "Session 3: Coupled ODEs",
       "Kuramoto Model"
     ]
   },
@@ -1090,7 +1090,7 @@
     "section": "Animate the phases",
     "text": "Animate the phases\nFollow the same animation loop used in the template. The update function solves one small IVP and updates the scatter plot.\nfrom scipy.integrate import solve_ivp\nimport matplotlib.animation as animation\n\n# Parameters\ncoupling_strength = 1.0\nnum_oscillators = 100\nsigma = 1.0\ndt = 0.01\n\n# Initialize oscillators\ntheta, omega = initialize_oscillators(num_oscillators, sigma=sigma)\n\n# Figure setup\nfig, ax_phase = plt.subplots(1, 1, figsize=(12, 6))\nax_phase.set_title(\"Kuramoto Model\")\nax_phase.set_xlabel(\"Cos(theta)\")\nax_phase.set_ylabel(\"Sin(theta)\")\nax_phase.set_xlim(-1.1, 1.1)\nax_phase.set_ylim(-1.1, 1.1)\nax_phase.set_aspect(\"equal\")\nax_phase.grid(True)\n\ncircle = plt.Circle((0, 0), 1, color=\"lightgray\", fill=False)\nax_phase.add_artist(circle)\nscatter = ax_phase.scatter([], [], s=50, color=\"blue\", alpha=0.5)\n\n# Animation update\n\ndef update(frame: int):\n    global theta\n    sol = solve_ivp(kuramoto_ode, (0, dt), theta, args=(omega, coupling_strength))\n    theta = sol.y[..., -1]\n    theta = np.mod(theta, 2 * np.pi)\n\n    x = np.cos(theta)\n    y = np.sin(theta)\n    scatter.set_offsets(np.vstack((x, y)).T)\n    return [scatter]\n\nani = animation.FuncAnimation(fig, update, blit=True, interval=1)\nplt.tight_layout()\nplt.show()\nIf you get stuck, see the mini template in sessions/s05_odes_coupled/kuramoto_template_mini.py.",
     "crumbs": [
-      "Session 4: Coupled ODEs",
+      "Session 3: Coupled ODEs",
       "Kuramoto Model"
     ]
   },
@@ -1099,7 +1099,7 @@
     "href": "syllabus.html",
     "title": "Applied Math Lab",
     "section": "",
-    "text": "This course has 10 live in-person sessions.\n\n\nSimulate classical one-dimensional ODE models (SIR epidemiological model, spruce budworm population model, Michaelis–Menten enzyme kinetics). Solve ODEs numerically with SciPy in Python, and build/deploy a simple Streamlit web app to explore parameter effects. Groups are assigned and remain for the whole course.\n\n\n\nExplore two-dimensional ODEs via nonlinear oscillatory systems: Van der Pol oscillator and FitzHugh–Nagumo model. Create animations with matplotlib and build interactive Python programs that let users set initial conditions via mouse clicks.\n\n\n\nIntroduce partial differential equations through reaction–diffusion models (Gierer–Meinhardt and Gray–Scott). Implement 1D and 2D Laplacians with NumPy and animate spatiotemporal evolution to study Turing instability and pattern formation.\n\n\n\nImplement coupled ODEs, focusing on the Kuramoto model. Animate multiple plots simultaneously (e.g., oscillator evolution and a bifurcation diagram).\n\n\n\nSimulate flocking behavior using the Vicsek model. Implement interaction rules for “boids” and extend the simulation by treating the mouse as a predator and coding avoidance behavior.\n\n\n\nIntroduce NetworkX: build graphs, compute structural metrics (degree distribution, clustering coefficient, centrality), and visualize different network types. Establish foundations for modeling dynamics on networks.\n\n\n\nSimulate spreading processes (fake news, epidemics) on real-world networks. Retrieve and process open-source network datasets, and investigate how network structure shapes propagation dynamics.\n\n\n\nIntroduce one-dimensional cellular automata as a framework for discrete dynamical systems. Explore deterministic and stochastic CA, and how simple local rules generate complex global behavior.\n\n\n\nApply cellular automata to traffic modeling with the Nagel–Schreckenberg model. Study congestion, flow, and phase transitions by tuning parameters such as vehicle density and maximum speed.\n\n\n\nWrap-up and support session for the final project: address remaining questions, clarify concepts, and help groups prepare deliverables.",
+    "text": "This course has 10 live in-person sessions.\n\n\nSimulate classical one-dimensional ODE models (SIR epidemiological model, spruce budworm population model, Michaelis–Menten enzyme kinetics). Solve ODEs numerically with SciPy in Python, and build/deploy a simple Streamlit web app to explore parameter effects. Groups are assigned and remain for the whole course.\n\n\n\nExplore two-dimensional ODEs via nonlinear oscillatory systems: Van der Pol oscillator and FitzHugh–Nagumo model. Create animations with matplotlib and build interactive Python programs that let users set initial conditions via mouse clicks.\n\n\n\nImplement coupled ODEs, focusing on the Kuramoto model. Animate multiple plots simultaneously (e.g., oscillator evolution and a bifurcation diagram).\n\n\n\nIntroduce partial differential equations through reaction–diffusion models (Gierer–Meinhardt and Gray–Scott). Implement 1D and 2D Laplacians with NumPy and animate spatiotemporal evolution to study Turing instability and pattern formation.\n\n\n\nSimulate flocking behavior using the Vicsek model. Implement interaction rules for “boids” and extend the simulation by treating the mouse as a predator and coding avoidance behavior.\n\n\n\nIntroduce NetworkX: build graphs, compute structural metrics (degree distribution, clustering coefficient, centrality), and visualize different network types. Establish foundations for modeling dynamics on networks.\n\n\n\nSimulate spreading processes (fake news, epidemics) on real-world networks. Retrieve and process open-source network datasets, and investigate how network structure shapes propagation dynamics.\n\n\n\nIntroduce one-dimensional cellular automata as a framework for discrete dynamical systems. Explore deterministic and stochastic CA, and how simple local rules generate complex global behavior.\n\n\n\nApply cellular automata to traffic modeling with the Nagel–Schreckenberg model. Study congestion, flow, and phase transitions by tuning parameters such as vehicle density and maximum speed.\n\n\n\nWrap-up and support session for the final project: address remaining questions, clarify concepts, and help groups prepare deliverables.",
     "crumbs": [
       "Getting Started",
       "Syllabus"
@@ -1110,7 +1110,7 @@
     "href": "syllabus.html#program",
     "title": "Applied Math Lab",
     "section": "",
-    "text": "This course has 10 live in-person sessions.\n\n\nSimulate classical one-dimensional ODE models (SIR epidemiological model, spruce budworm population model, Michaelis–Menten enzyme kinetics). Solve ODEs numerically with SciPy in Python, and build/deploy a simple Streamlit web app to explore parameter effects. Groups are assigned and remain for the whole course.\n\n\n\nExplore two-dimensional ODEs via nonlinear oscillatory systems: Van der Pol oscillator and FitzHugh–Nagumo model. Create animations with matplotlib and build interactive Python programs that let users set initial conditions via mouse clicks.\n\n\n\nIntroduce partial differential equations through reaction–diffusion models (Gierer–Meinhardt and Gray–Scott). Implement 1D and 2D Laplacians with NumPy and animate spatiotemporal evolution to study Turing instability and pattern formation.\n\n\n\nImplement coupled ODEs, focusing on the Kuramoto model. Animate multiple plots simultaneously (e.g., oscillator evolution and a bifurcation diagram).\n\n\n\nSimulate flocking behavior using the Vicsek model. Implement interaction rules for “boids” and extend the simulation by treating the mouse as a predator and coding avoidance behavior.\n\n\n\nIntroduce NetworkX: build graphs, compute structural metrics (degree distribution, clustering coefficient, centrality), and visualize different network types. Establish foundations for modeling dynamics on networks.\n\n\n\nSimulate spreading processes (fake news, epidemics) on real-world networks. Retrieve and process open-source network datasets, and investigate how network structure shapes propagation dynamics.\n\n\n\nIntroduce one-dimensional cellular automata as a framework for discrete dynamical systems. Explore deterministic and stochastic CA, and how simple local rules generate complex global behavior.\n\n\n\nApply cellular automata to traffic modeling with the Nagel–Schreckenberg model. Study congestion, flow, and phase transitions by tuning parameters such as vehicle density and maximum speed.\n\n\n\nWrap-up and support session for the final project: address remaining questions, clarify concepts, and help groups prepare deliverables.",
+    "text": "This course has 10 live in-person sessions.\n\n\nSimulate classical one-dimensional ODE models (SIR epidemiological model, spruce budworm population model, Michaelis–Menten enzyme kinetics). Solve ODEs numerically with SciPy in Python, and build/deploy a simple Streamlit web app to explore parameter effects. Groups are assigned and remain for the whole course.\n\n\n\nExplore two-dimensional ODEs via nonlinear oscillatory systems: Van der Pol oscillator and FitzHugh–Nagumo model. Create animations with matplotlib and build interactive Python programs that let users set initial conditions via mouse clicks.\n\n\n\nImplement coupled ODEs, focusing on the Kuramoto model. Animate multiple plots simultaneously (e.g., oscillator evolution and a bifurcation diagram).\n\n\n\nIntroduce partial differential equations through reaction–diffusion models (Gierer–Meinhardt and Gray–Scott). Implement 1D and 2D Laplacians with NumPy and animate spatiotemporal evolution to study Turing instability and pattern formation.\n\n\n\nSimulate flocking behavior using the Vicsek model. Implement interaction rules for “boids” and extend the simulation by treating the mouse as a predator and coding avoidance behavior.\n\n\n\nIntroduce NetworkX: build graphs, compute structural metrics (degree distribution, clustering coefficient, centrality), and visualize different network types. Establish foundations for modeling dynamics on networks.\n\n\n\nSimulate spreading processes (fake news, epidemics) on real-world networks. Retrieve and process open-source network datasets, and investigate how network structure shapes propagation dynamics.\n\n\n\nIntroduce one-dimensional cellular automata as a framework for discrete dynamical systems. Explore deterministic and stochastic CA, and how simple local rules generate complex global behavior.\n\n\n\nApply cellular automata to traffic modeling with the Nagel–Schreckenberg model. Study congestion, flow, and phase transitions by tuning parameters such as vehicle density and maximum speed.\n\n\n\nWrap-up and support session for the final project: address remaining questions, clarify concepts, and help groups prepare deliverables.",
     "crumbs": [
       "Getting Started",
       "Syllabus"
@@ -1189,7 +1189,7 @@
     "section": "",
     "text": "Complete the Kuramoto model workflow and report your findings.",
     "crumbs": [
-      "Session 4: Coupled ODEs",
+      "Session 3: Coupled ODEs",
       "Assignment"
     ]
   },
@@ -1200,7 +1200,7 @@
     "section": "Required",
     "text": "Required\n\nImplement the Kuramoto ODE and animate oscillators on the unit circle.\nUse \\(N=100\\), \\(dt=0.01\\), and \\(\\sigma=1.0\\). Show a screenshot of the unit-circle plot.\nIdentify a coupling strength \\(K\\) where synchronization starts.",
     "crumbs": [
-      "Session 4: Coupled ODEs",
+      "Session 3: Coupled ODEs",
       "Assignment"
     ]
   },
@@ -1211,7 +1211,7 @@
     "section": "Bifurcation Diagram",
     "text": "Bifurcation Diagram\n\nDraw the theoretical curve for \\(0 &lt; K &lt; 5\\).\nOverlay empirical points using \\(N=1000\\), \\(dt=0.01\\), \\(t=100\\).\nExplain why the theoretical curve fails if you use a normal distribution.",
     "crumbs": [
-      "Session 4: Coupled ODEs",
+      "Session 3: Coupled ODEs",
       "Assignment"
     ]
   },
@@ -1222,7 +1222,7 @@
     "section": "Extra Mile (Optional)",
     "text": "Extra Mile (Optional)\n\nImplement the full simulation with sliders.\nCompare mean-field and pairwise coupling.\n\nGood luck and enjoy your coding!",
     "crumbs": [
-      "Session 4: Coupled ODEs",
+      "Session 3: Coupled ODEs",
       "Assignment"
     ]
   },
@@ -1233,7 +1233,7 @@
     "section": "",
     "text": "In this session we return to ODEs and study coupled oscillators. The main example is the Kuramoto model, where synchronization emerges from weak coupling.",
     "crumbs": [
-      "Session 4: Coupled ODEs"
+      "Session 3: Coupled ODEs"
     ]
   },
   {
@@ -1243,7 +1243,7 @@
     "section": "Case Studies",
     "text": "Case Studies\nKuramoto Model Bifurcation Diagram Full Simulation Assignment",
     "crumbs": [
-      "Session 4: Coupled ODEs"
+      "Session 3: Coupled ODEs"
     ]
   },
   {
@@ -1253,7 +1253,7 @@
     "section": "What do we need?",
     "text": "What do we need?\n\nscipy\nWe are back to ODEs. Use scipy.integrate.solve_ivp().\n\n\nmatplotlib.pyplot\nInitialize the figure and axes and draw static elements.\n\n\nmatplotlib.animation\nUpdate plot elements in real time for animations.\n\n\nmatplotlib.Slider\nAdd sliders so users can interact with parameters.",
     "crumbs": [
-      "Session 4: Coupled ODEs"
+      "Session 3: Coupled ODEs"
     ]
   },
   {
@@ -1263,7 +1263,7 @@
     "section": "",
     "text": "The order parameter \\(r\\) measures the coherence of the population. As coupling \\(K\\) increases, the system transitions from incoherent (\\(r \\approx 0\\)) to synchronized (\\(r &gt; 0\\)).\nFor a Cauchy distribution with scale \\(\\gamma\\):\n\\[K_c = \\frac{2}{\\pi g(0)}, \\qquad g(\\omega)=\\frac{1}{\\pi} \\frac{\\gamma}{\\omega^2+\\gamma^2}.\\]\nThe theoretical curve is\n\\[\n\\quad r=0 \\text{ if } K \\le K_c, \\qquad r=\\sqrt{1-\\frac{K_c}{K}} \\text{ if } K&gt;K_c.\n\\]\nFigure 1: Kuramoto diagram: theoretical curve and empirical points (smaller N for speed).",
     "crumbs": [
-      "Session 4: Coupled ODEs",
+      "Session 3: Coupled ODEs",
       "Bifurcation Diagram"
     ]
   },
@@ -1274,7 +1274,7 @@
     "section": "Empirical vs theoretical",
     "text": "Empirical vs theoretical\nIn the figure above we used a Cauchy distribution so the theoretical formula applies. If you use a normal distribution, the exact curve no longer matches. That is why the empirical points can look off if you mix formulas and distributions.",
     "crumbs": [
-      "Session 4: Coupled ODEs",
+      "Session 3: Coupled ODEs",
       "Bifurcation Diagram"
     ]
   },
@@ -1285,7 +1285,7 @@
     "section": "Exercise",
     "text": "Exercise\nReproduce the bifurcation diagram for \\(0 &lt; K &lt; 5\\) using \\(N=1000\\), \\(dt=0.01\\), \\(t=100\\), and average \\(r\\) over the last ten steps.\nNeed a template? Start from sessions/s05_odes_coupled/kuramoto_diagram_template.py.",
     "crumbs": [
-      "Session 4: Coupled ODEs",
+      "Session 3: Coupled ODEs",
       "Bifurcation Diagram"
     ]
   },
@@ -1456,7 +1456,7 @@
     "href": "modules/ode-2d/van-der-pol.html#the-stable-limit-cycle",
     "title": "Van der Pol Oscillator",
     "section": "The Stable Limit Cycle",
-    "text": "The Stable Limit Cycle\nThe Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions. Plot this limit cycle as a \\(x(t)-t\\) plot, and verify that it matches the phase plane trajectories.\n\n\n/tmp/ipykernel_3035/2854713749.py:14: UserWarning:\n\nNo artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.\n\n\n\n\n\n\n\n\n\nFigure 2: Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nThe amplitude and period of the limit cycle depend on \\(\\mu\\). There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with \\(\\mu\\), while the fast phase becomes more abrupt. This leads to a characteristic “relaxation oscillation” shape for large \\(\\mu\\).\nPlay with the parameter \\(\\mu\\) to see how it changes the shape of the limit cycle and the transient dynamics.",
+    "text": "The Stable Limit Cycle\nThe Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions. Plot this limit cycle as a \\(x(t)-t\\) plot, and verify that it matches the phase plane trajectories.\n\n\n/tmp/ipykernel_3055/2854713749.py:14: UserWarning:\n\nNo artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.\n\n\n\n\n\n\n\n\n\nFigure 2: Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nThe amplitude and period of the limit cycle depend on \\(\\mu\\). There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with \\(\\mu\\), while the fast phase becomes more abrupt. This leads to a characteristic “relaxation oscillation” shape for large \\(\\mu\\).\nPlay with the parameter \\(\\mu\\) to see how it changes the shape of the limit cycle and the transient dynamics.",
     "crumbs": [
       "Session 2: ODEs in 2D",
       "Van der Pol Oscillator"
@@ -1513,7 +1513,7 @@
     "section": "",
     "text": "Complete a 2D reaction-diffusion simulation and report your findings.",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Assignment"
     ]
   },
@@ -1524,7 +1524,7 @@
     "section": "Required",
     "text": "Required\n\nImplement the 2D Gierer-Meinhardt PDE with a 5-point stencil.\nUse \\(L_1=20\\), \\(L_2=50\\), \\(dx=1\\), \\(dt=0.001\\), \\(a=0.40\\), \\(b=1.00\\), \\(d=20\\), \\(\\gamma=1\\).\nPlot a snapshot of \\(v(x,y)\\) after a long integration.\nCreate an animation that updates \\(v(x,y)\\) in real time.",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Assignment"
     ]
   },
@@ -1535,7 +1535,7 @@
     "section": "Turing Instability",
     "text": "Turing Instability\n\nImplement find_unstable_spatial_modes() and report the leading mode for \\(d=20\\) and \\(d=30\\).\nState whether each case exhibits Turing instability.",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Assignment"
     ]
   },
@@ -1546,7 +1546,7 @@
     "section": "Gray-Scott (Optional)",
     "text": "Gray-Scott (Optional)\n\nImplement the Gray-Scott model and reproduce one of the parameter sets (A-E).\nAdd interaction: draw perturbations and pause/resume the simulation.",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Assignment"
     ]
   },
@@ -1557,7 +1557,7 @@
     "section": "Tips for Success",
     "text": "Tips for Success\n\nStart small: use a smaller grid to debug the update function.\nCheck dt: if the simulation explodes, reduce \\(dt\\) or increase \\(dx\\).\nValidate: compare your pattern to ?@fig-gm-2d in the module notes.\n\nGood luck and enjoy your coding!",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Assignment"
     ]
   },
@@ -1568,7 +1568,7 @@
     "section": "",
     "text": "This page adds interaction to the Gray-Scott simulation: draw sources of \\(v\\), pause/resume, and adjust parameters with sliders. The reference implementation is in sessions/s04_pdes_2d/gray_scott.py.",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Gray-Scott: Interaction"
     ]
   },
@@ -1579,7 +1579,7 @@
     "section": "Draw on the plot",
     "text": "Draw on the plot\nLeft click adds a small perturbation near \\((u,v)=(0.5,0.5)\\), right click resets to \\((1,0)\\). Implement an update function and wire the events.\nfrom matplotlib.backend_bases import MouseEvent\n\ndef update_uv(event: MouseEvent, r: int = 3):\n    # TODO: check if event is inside the axes\n    # TODO: compute (x, y) indices\n    # TODO: left click adds noise around (0.5, 0.5)\n    # TODO: right click resets to (1, 0)\n    # TODO: update a (2r x 2r) patch in uv\n    # TODO: refresh the image\n\n\n\n\n\n\nHint: update_uv (click to expand)\n\n\n\n\n\ndef update_uv(event: MouseEvent, r: int = 3):\n    if event.inaxes != ax_uv:\n        return\n    if event.xdata is None or event.ydata is None:\n        return\n    x = int(event.xdata)\n    y = int(event.ydata)\n\n    if event.button == 1:\n        u_new = 0.5 * (1 + 0.1 * np.random.randn())\n        v_new = 0.5 * (1 + 0.1 * np.random.randn())\n    elif event.button == 3:\n        u_new = 1.0\n        v_new = 0.0\n    else:\n        return\n\n    uv[0, y - r : y + r, x - r : x + r] = u_new\n    uv[1, y - r : y + r, x - r : x + r] = v_new\n    im.set_array(uv[1])\n\n\n\nNow allow continuous drawing while the mouse button is pressed.\ndef on_click(event: MouseEvent):\n    # TODO: enable drawing and update_uv(event)\n\ndef on_release(event: MouseEvent):\n    # TODO: disable drawing\n\ndef on_motion(event: MouseEvent):\n    # TODO: if drawing, call update_uv(event)\n\nfig.canvas.mpl_connect(\"button_press_event\", on_click)\nfig.canvas.mpl_connect(\"button_release_event\", on_release)\nfig.canvas.mpl_connect(\"motion_notify_event\", on_motion)\n\n\n\n\n\n\nHint: mouse handlers (click to expand)\n\n\n\n\n\ndef on_click(event: MouseEvent):\n    if event.inaxes != ax_uv:\n        return\n    if event.xdata is None or event.ydata is None:\n        return\n    nonlocal drawing\n    drawing = True\n    update_uv(event)\n\n\ndef on_release(event: MouseEvent):\n    nonlocal drawing\n    drawing = False\n\n\ndef on_motion(event: MouseEvent):\n    if drawing:\n        update_uv(event)",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Gray-Scott: Interaction"
     ]
   },
@@ -1590,7 +1590,7 @@
     "section": "Pause and resume",
     "text": "Pause and resume\nUse the space bar to pause/resume the simulation.\nfrom matplotlib.backend_bases import KeyEvent\n\npause = False\n\ndef on_keypress(event: KeyEvent):\n    # TODO: toggle pause when space bar is pressed\n\nfig.canvas.mpl_connect(\"key_press_event\", on_keypress)\n\n\n\n\n\n\nHint: pause handler (click to expand)\n\n\n\n\n\ndef on_keypress(event: KeyEvent):\n    nonlocal pause\n    if event.key == \" \":\n        pause ^= True",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Gray-Scott: Interaction"
     ]
   },
@@ -1601,7 +1601,7 @@
     "section": "Sliders",
     "text": "Sliders\nCreate sliders to update \\(d_1, d_2, f, k\\) while the animation runs.\nfrom matplotlib.widgets import Slider\n\n# Create axes for sliders on the right\nax_d1 = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])\nax_d2 = ax_sliders.inset_axes([0.0, 0.6, 0.8, 0.1])\nax_f = ax_sliders.inset_axes([0.0, 0.4, 0.8, 0.1])\nax_k = ax_sliders.inset_axes([0.0, 0.2, 0.8, 0.1])\n\nslider_d1 = Slider(ax_d1, \"D1\", 0.01, 0.2, valinit=d1, valstep=0.01)\nslider_d2 = Slider(ax_d2, \"D2\", 0.01, 0.2, valinit=d2, valstep=0.01)\nslider_f = Slider(ax_f, \"F\", 0.01, 0.09, valinit=f, valstep=0.001)\nslider_k = Slider(ax_k, \"k\", 0.04, 0.07, valinit=k, valstep=0.001)\n\n# TODO: update parameters when sliders change\n\n\n\n\n\n\nHint: slider update (click to expand)\n\n\n\n\n\ndef update_sliders(_):\n    nonlocal d1, d2, f, k, pause\n    d1 = slider_d1.val\n    d2 = slider_d2.val\n    f = slider_f.val\n    k = slider_k.val\n    pause = True\n\nslider_d1.on_changed(update_sliders)\nslider_d2.on_changed(update_sliders)\nslider_f.on_changed(update_sliders)\nslider_k.on_changed(update_sliders)",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Gray-Scott: Interaction"
     ]
   },
@@ -1612,7 +1612,7 @@
     "section": "",
     "text": "The 2D Gierer-Meinhardt model is a pattern-forming reaction-diffusion system. We will extend the 1D solver to a rectangular domain \\(\\Omega = (0, L_1) \\times (0, L_2)\\) and visualize \\(v(x,y)\\).\nIn 2D the model is\n\\[\n\\begin{aligned}\n\\frac{\\partial u}{\\partial t} &= \\Delta u + \\gamma \\left(a - b u + \\frac{u^2}{v}\\right), \\\\\n\\frac{\\partial v}{\\partial t} &= d\\,\\Delta v + \\gamma \\left(u^2 - v\\right),\n\\end{aligned}\n\\]\nwhere \\(u(x,y,t)\\) and \\(v(x,y,t)\\) are concentrations.\nFigure 1: Gierer-Meinhardt 2D: example snapshot of \\(v(x,y)\\) with \\(L_1=20\\), \\(L_2=50\\), \\(dx=1\\), \\(a=0.40\\), \\(b=1.00\\), \\(d=20\\), \\(\\gamma=1\\).",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Gierer-Meinhardt 2D"
     ]
   },
@@ -1623,7 +1623,7 @@
     "section": "Laplacian in 2D",
     "text": "Laplacian in 2D\nIn two dimensions the Laplacian is\n\\[\n\\Delta u = \\frac{\\partial^2 u}{\\partial x^2} + \\frac{\\partial^2 u}{\\partial y^2}.\n\\]\nUsing a 5-point stencil with spacing \\(h\\):\n\\[\n\\Delta u(x,y) \\approx \\frac{u(x+h,y) + u(x-h,y) + u(x,y+h) + u(x,y-h) - 4u(x,y)}{h^2}.\n\\]\nA 9-point stencil improves accuracy by including diagonal neighbors:\n\\[\n\\Delta u(x,y) \\approx \\frac{-20u(x,y) + 4\\sum_{\\text{cardinal}} u + \\sum_{\\text{diagonal}} u}{6h^2}.\n\\]",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Gierer-Meinhardt 2D"
     ]
   },
@@ -1634,7 +1634,7 @@
     "section": "Exercise: Simulate the PDE",
     "text": "Exercise: Simulate the PDE\nWe will use \\(L_1=20\\), \\(L_2=50\\), \\(dx=1\\), \\(dt=0.001\\), \\(a=0.40\\), \\(b=1.00\\), \\(d=20\\), and \\(\\gamma=1\\). Follow the steps below and compare your output to Figure 1.\n\nInitialize the fields\nimport numpy as np\n\nlength_x = 20\nlength_y = 50\ndx = 1\nlenx = int(length_x / dx)\nleny = int(length_y / dx)\n\nuv = np.ones((2, lenx, leny))\nuv += uv * np.random.uniform(0, 1, uv.shape) / 100\n\n\nDefine the PDE (template)\ndef gierer_meinhardt_pde(t, uv, gamma=1, a=0.40, b=1.00, d=20, dx=1):\n    # TODO: compute the 2D Laplacian with np.roll\n\n    # TODO: implement the reaction terms f(u, v) and g(u, v)\n    # TODO: combine diffusion + reaction to build du_dt and dv_dt\n    return du_dt, dv_dt\n\n\n\n\n\n\nHint: Gierer-Meinhardt 2D PDE (click to expand)\n\n\n\n\n\ndef gierer_meinhardt_pde(t, uv, gamma=1, a=0.40, b=1.00, d=20, dx=1):\n    lap = -4 * uv\n    lap += np.roll(uv, shift=1, axis=1)\n    lap += np.roll(uv, shift=-1, axis=1)\n    lap += np.roll(uv, shift=1, axis=2)\n    lap += np.roll(uv, shift=-1, axis=2)\n    lap /= dx**2\n\n    u, v = uv\n    lu, lv = lap\n\n    f = a - b * u + (u**2) / v\n    g = u**2 - v\n    du_dt = lu + gamma * f\n    dv_dt = d * lv + gamma * g\n    return du_dt, dv_dt\n\n\n\n\n\nTime stepping (template)\nnum_iter = 50000\ndt = 0.001\n\nfor _ in range(num_iter):\n    dudt, dvdt = gierer_meinhardt_pde(0, uv, dx=dx)\n    # TODO: update u and v with Euler's method\n\n    # TODO: enforce Neumann boundary conditions in both directions\n\n\nPlot the image (template)\nimport matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nim = ax.imshow(\n    uv[1],\n    interpolation=\"bilinear\",\n    origin=\"lower\",\n    extent=[0, length_y, 0, length_x],\n)\nplt.show()\n\n\nAnimation\nInstead of running a long loop, move the Euler updates inside the animation callback.\nimport matplotlib.animation as animation\nimport matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nim = ax.imshow(uv[1], origin=\"lower\", extent=[0, length_y, 0, length_x])\n\ndef update_animation(frame):\n    # TODO: update uv via Euler steps\n    # TODO: apply Neumann boundary conditions\n    im.set_array(uv[1])\n    im.set_clim(vmin=uv[1].min(), vmax=uv[1].max() + 0.1)\n    return (im,)\n\nani = animation.FuncAnimation(fig, update_animation, interval=1, blit=True)\n\n\n\n\n\n\nHint: Animation update (click to expand)\n\n\n\n\n\ndef update_animation(frame):\n    global uv\n    for _ in range(anim_speed):\n        dudt = gierer_meinhardt_pde(0, uv, gamma=gamma, a=a, b=b, d=d, dx=dx)\n        uv = uv + dudt * dt\n        uv[:, 0, :] = uv[:, 1, :]\n        uv[:, -1, :] = uv[:, -2, :]\n        uv[:, :, 0] = uv[:, :, 1]\n        uv[:, :, -1] = uv[:, :, -2]\n\n    im.set_array(uv[1])\n    im.set_clim(vmin=uv[1].min(), vmax=uv[1].max() + 0.1)\n    return (im,)",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Gierer-Meinhardt 2D"
     ]
   },
@@ -1645,7 +1645,7 @@
     "section": "Explore",
     "text": "Explore\nTry different parameter values for \\((a, d)\\) and describe the pattern. What changes when you increase \\(d\\)?",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Gierer-Meinhardt 2D"
     ]
   },
@@ -1656,7 +1656,7 @@
     "section": "",
     "text": "Implement a full 1D reaction-diffusion workflow for the Gierer-Meinhardt model. Your submission should include code and figures that demonstrate pattern formation.",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Assignment"
     ]
   },
@@ -1667,7 +1667,7 @@
     "section": "Required",
     "text": "Required\n\nImplement the PDE solver using an explicit Euler time step.\nEnforce Neumann boundary conditions at each step.\nUse \\(L=40\\), \\(dx=0.5\\), \\(dt=0.001\\), \\(a=0.40\\), \\(b=1.00\\), \\(d=20\\), \\(\\gamma=1\\).\nCreate an animation of \\(v(x)\\) that updates in time.",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Assignment"
     ]
   },
@@ -1678,7 +1678,7 @@
     "section": "Turing Instability",
     "text": "Turing Instability\n\nImplement is_turing_instability(a, b, d) and plot the Turing space diagram.\nMark the point \\((a, d)\\) you are using on the diagram.",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Assignment"
     ]
   },
@@ -1689,7 +1689,7 @@
     "section": "Extra Mile (Optional)",
     "text": "Extra Mile (Optional)\n\nCompute unstable spatial modes and display the leading mode on the animation.\nMake the diagram interactive: clicking on \\((a, d)\\) updates the simulation.\nTry other boundary conditions and compare.",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Assignment"
     ]
   },
@@ -1700,7 +1700,7 @@
     "section": "Tips for Success",
     "text": "Tips for Success\n\nStart simple: Verify your Laplacian and boundary conditions first.\nTest incrementally: Plot intermediate results to detect instability early.\nBe careful with dt: If the simulation explodes, reduce \\(dt\\) or increase \\(dx\\).\nDocument choices: Report the parameters you used and the patterns you observed.\n\nGood luck and enjoy your coding!",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Assignment"
     ]
   },
@@ -1711,7 +1711,7 @@
     "section": "",
     "text": "Turing instability explains when a uniform steady state becomes unstable to spatial perturbations, leading to patterns. We will implement the checks and visualize the instability region.\nFigure 1: Turing space for the Gierer-Meinhardt model (a vs d).",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Turing Instability"
     ]
   },
@@ -1722,7 +1722,7 @@
     "section": "Conditions",
     "text": "Conditions\nLet the Jacobian at the fixed point be\n\\[J=\\begin{pmatrix} f_u & f_v \\\\ g_u & g_v \\end{pmatrix}.\\]\nA common set of conditions for Turing instability is:\n\\[\n\\begin{aligned}\n&f_u + g_v &lt; 0, \\\\\n&f_u g_v - f_v g_u &gt; 0, \\\\\n&g_v + d f_u &gt; 2\\sqrt{d\\,(f_u g_v - f_v g_u)}.\n\\end{aligned}\n\\]",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Turing Instability"
     ]
   },
@@ -1733,7 +1733,7 @@
     "section": "Implement a Turing test",
     "text": "Implement a Turing test\nCreate a function that returns True if all conditions are satisfied. In the reference script the Jacobian entries are hard-coded at the fixed point.\ndef giere_meinhardt_jacobian(a=0.40, b=1.00):\n    # TODO: compute fu, fv, gu, gv at the fixed point\n    return fu, fv, gu, gv\n\n\ndef is_turing_instability(a, b, d):\n    fu, fv, gu, gv = giere_meinhardt_jacobian(a, b)\n    # TODO: implement the three conditions\n    return cond1 & cond2 & cond3\n\n\n\n\n\n\nHint: Turing instability functions (click to expand)\n\n\n\n\n\ndef giere_meinhardt_jacobian(a=0.40, b=1.00):\n    fu = 2 * b / (a + 1) - b\n    fv = -((b / (a + 1)) ** 2)\n    gu = 2 * (a + 1) / b\n    gv = -1.0\n    return fu, fv, gu, gv\n\n\ndef is_turing_instability(a, b, d):\n    fu, fv, gu, gv = giere_meinhardt_jacobian(a, b)\n    nabla = fu * gv - fv * gu\n    cond1 = (fu + gv) &lt; 0\n    cond2 = nabla &gt; 0\n    cond3 = (gv + d * fu) &gt; (2 * np.sqrt(d) * np.sqrt(nabla))\n    return cond1 & cond2 & cond3",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Turing Instability"
     ]
   },
@@ -1744,7 +1744,7 @@
     "section": "Plot the Turing space",
     "text": "Plot the Turing space\nPlot the region of \\((a, d)\\) where the instability holds.\nimport numpy as np\nimport matplotlib.pyplot as plt\n\narr_a = np.linspace(0, 1, 1000)\narr_d = np.linspace(0, 100, 1000)\nmesh_a, mesh_d = np.meshgrid(arr_a, arr_d)\nmask_turing = is_turing_instability(mesh_a, b, mesh_d)\n\nfig, ax = plt.subplots(figsize=(6, 4))\nax.contourf(mesh_a, mesh_d, mask_turing)\nax.set_xlabel(\"a\")\nax.set_ylabel(\"d\")\nax.set_title(\"Turing Space\")\nEnsure your function works with arrays.",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Turing Instability"
     ]
   },
@@ -1755,7 +1755,7 @@
     "section": "Unstable spatial modes",
     "text": "Unstable spatial modes\nThe temporal eigenvalues for spatial mode \\(\\lambda_n\\) are the eigenvalues of\n\\[A_n = J - \\lambda_n \\;\\mathrm{diag}(1, d).\\]\nYou can scan modes to find which ones are unstable:\nimport numpy as np\n\ndef find_unstable_spatial_modes(a=0.40, b=1.00, d=30.0, length=40.0, num_modes=10):\n    # TODO: build Jacobian and scan spatial modes\n    return unstable_modes\n\n\n\n\n\n\nHint: Spatial mode scan (click to expand)\n\n\n\n\n\ndef find_unstable_spatial_modes(a=0.40, b=1.00, d=30.0, length=40.0, num_modes=10):\n    fu, fv, gu, gv = giere_meinhardt_jacobian(a, b)\n    jac = np.array([[fu, fv], [gu, gv]])\n    n_values = np.arange(num_modes)\n    max_eigs = np.zeros(num_modes)\n\n    for n in n_values:\n        lambda_n = (n * np.pi / length) ** 2\n        a_n = jac - lambda_n * np.diag([1, d])\n        sigma1, sigma2 = np.linalg.eigvals(a_n)\n        max_eigs[n] = max(sigma1.real, sigma2.real)\n\n    sorted_indices = np.argsort(max_eigs)[::-1]\n    unstable_modes = sorted_indices[max_eigs[sorted_indices] &gt; 0]\n    return unstable_modes",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Turing Instability"
     ]
   },
@@ -1766,7 +1766,7 @@
     "section": "Interaction extension (optional)",
     "text": "Interaction extension (optional)\nMake the plot interactive: clicking on the Turing diagram updates \\((a, d)\\) and restarts the animation of \\(v(x)\\).\nfrom matplotlib.backend_bases import MouseEvent\n\ndef mouse_click(event: MouseEvent):\n    if event.inaxes == ax_turing:\n        a = event.xdata\n        d = event.ydata\n        # TODO: reset u,v and restart the animation\n\nfig.canvas.mpl_connect(\"button_press_event\", mouse_click)\n\n\n\n\n\n\nTip\n\n\n\nYou can find a complete interactive implementation in sessions/s03_pdes_1d.",
     "crumbs": [
-      "Session 3: PDEs",
+      "Session 4: PDEs",
       "Turing Instability"
     ]
   },
