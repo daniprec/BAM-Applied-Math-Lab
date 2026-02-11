@@ -116,14 +116,14 @@ streamlit run ./streamlit/home.py
 
 ## SESSION 3 (LIVE IN-PERSON)
 
-- Reaction-diffusion equations in 1D.
+- Reaction-diffusion equations and pattern formation in 2D
 - Using Python for numerical integration of reaction-diffusion equations, based on a finite differences scheme.
 - Creating animations to visualize pattern formation.
 - Exploring parameter space to observe different patterns.
 
 ## SESSION 4 (LIVE IN-PERSON)
 
-- Reaction-diffusion equations and pattern formation in 2D
+- Reaction-diffusion equations in 1D.
 - Using Python for numerical integration of reaction-diffusion equations, based on a finite differences scheme.
 - Creating animations to visualize pattern formation.
 - Exploring parameter space to observe different patterns.
