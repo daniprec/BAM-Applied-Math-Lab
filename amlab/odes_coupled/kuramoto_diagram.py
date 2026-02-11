@@ -1,12 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from kuramoto import (
+from scipy.integrate import solve_ivp
+from scipy.stats import cauchy
+
+from amlab.odes_coupled.kuramoto import (
     initialize_oscillators,
     kuramoto_ode_meanfield,
     kuramoto_order_parameter,
 )
-from scipy.integrate import solve_ivp
-from scipy.stats import cauchy
 
 
 def kuramoto_critical_coupling(

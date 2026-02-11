@@ -12,7 +12,7 @@ from scipy.optimize import fsolve
 
 # I will import the "compute_nullclines" from the script "cdima.py"
 sys.path.append(".")
-from cdima import compute_nullclines
+from amlab.odes_2d.cdima import compute_nullclines
 
 
 def fitzhugh_nagumo(
