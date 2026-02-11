@@ -115,23 +115,23 @@ streamlit run ./streamlit/home.py
 
 ## SESSION 3 (LIVE IN-PERSON)
 
-- Reaction-diffusion equations and pattern formation in 2D
-- Using Python for numerical integration of reaction-diffusion equations, based on a finite differences scheme.
-- Creating animations to visualize pattern formation.
-- Exploring parameter space to observe different patterns.
+- Exploring synchronization with multiple coupled ODEs.
+- Implementing the Kuramoto model in Python.
+- Visualizing synchronization and analyzing the effects of coupling strength and initial conditions. This might include visual animations.
 
 ## SESSION 4 (LIVE IN-PERSON)
 
-- Reaction-diffusion equations in 1D.
+- Reaction-diffusion equations and pattern formation in 2D
 - Using Python for numerical integration of reaction-diffusion equations, based on a finite differences scheme.
 - Creating animations to visualize pattern formation.
 - Exploring parameter space to observe different patterns.
 
 ## SESSION 5 (LIVE IN-PERSON)
 
-- Exploring synchronization with multiple coupled ODEs.
-- Implementing the Kuramoto model in Python.
-- Visualizing synchronization and analyzing the effects of coupling strength and initial conditions. This might include visual animations.
+- Reaction-diffusion equations in 1D.
+- Using Python for numerical integration of reaction-diffusion equations, based on a finite differences scheme.
+- Creating animations to visualize pattern formation.
+- Exploring parameter space to observe different patterns.
 
 ## SESSION 6 (LIVE IN-PERSON)
 
