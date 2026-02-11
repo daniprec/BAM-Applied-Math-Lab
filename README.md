@@ -20,7 +20,6 @@ At a high level:
 ├─ modules/
 ├─ projects/
 ├─ references/
-├─ resources/
 ├─ code/
 ├─ streamlit/
 └─ tex/
@@ -39,7 +38,7 @@ Brief explanation:
 - **modules/**: Guided learning modules written in Quarto (notes, explanations, exercises).
 - **projects/**: Project-specific data, notebooks, and experiments for group projects.
 - **references/**: External reference materials (e.g., NetworkX tutorial notebooks, datasets).
-- **resources/**: Reusable helpers and utilities (e.g., event handlers, solvers) used by scripts.
+- **code/utils/**: Reusable helpers and utilities (e.g., event handlers, solvers) used by scripts.
 - **code/**: Code used during live sessions (scripts and examples by topic/session).
 - **streamlit/**: Streamlit app(s) used for interactive demonstrations and student exploration.
 - **tex/**: LaTeX assets and builds (style files, bibliography, generated PDFs/aux files).
