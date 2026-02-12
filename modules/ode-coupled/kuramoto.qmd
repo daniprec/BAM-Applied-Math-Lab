@@ -6,11 +6,11 @@ format: html
 
 The Kuramoto model describes a population of weakly coupled oscillators. Each oscillator has a phase $\theta_i$ and a natural frequency $\omega_i$.
 
-To visualize the dynamics, imagine points moving on the unit circle. Synchronization corresponds to points clustering around a common phase.
+To visualize the dynamics, imagine points moving on the unit circle. Synchronization corresponds to points clustering around a common phase. @fig-kuramoto-circle shows a snapshot of the oscillators (blue dots) and the order parameter (red arrow) pointing towards the centroid of the phases. If you want to see this in action, run the script in [amlab/odes_coupled/kuramoto.py](../../amlab/odes_coupled/kuramoto.py) to animate the oscillators on the unit circle.
 
 ```{python}
 #| label: fig-kuramoto-circle
-#| fig-cap: 'Kuramoto model: oscillators on the unit circle and the order-parameter vector.'
+#| fig-cap: 'Oscillators (blue dots) on the unit circle. The order parameter (red arrow) points towards the centroid of the phases. We will learn about the order parameter in the next section.'
 #| fig-width: 6
 #| fig-height: 6
 #| echo: false
@@ -46,9 +46,13 @@ plt.show()
 plt.close()
 ```
 
-## Initialize oscillators
+Follow the steps below to implement the Kuramoto model and produce an animation of the oscillators on the unit circle. We will build up to this final animation in stages, starting with initialization and the ODE definition.
+
+## Initialize Oscillators
 
 The phases $\theta_i$ are sampled uniformly on $[0, 2\pi]$ and the natural frequencies $\omega_i$ from a normal distribution with standard deviation $\sigma$.
+
+Write a function to initialize the oscillators:
 
 ```python
 def initialize_oscillators(num_oscillators: int, sigma: float = 1.0):
@@ -60,14 +64,101 @@ def initialize_oscillators(num_oscillators: int, sigma: float = 1.0):
     return theta, omega
 ```
 
+The outputs `theta` and `omega` are 1D arrays of length `num_oscillators`. If you don't know how to sample from these distributions, see the hint below.
+
 ::: {.callout-tip collapse="true"}
-## Hint: Initialization (click to expand)
+## How to sample from distributions (click to expand)
+
+Remember NumPy has built-in functions for sampling from distributions:
+- Uniform distribution: `np.random.uniform(low=0.0, high=2*np.pi, size=num_oscillators)`
+- Normal distribution: `np.random.normal(loc=0.0, scale=sigma, size=num_oscillators)`
+
+If you need more help, you can expand the code snippet below for a complete implementation.
+:::
+
+::: {.callout-tip collapse="true"}
+## Complete initialization function (click to expand)
 
 ```python
 def initialize_oscillators(num_oscillators: int, sigma: float = 1.0):
-    theta = np.random.uniform(0, 2 * np.pi, num_oscillators)
-    omega = np.random.normal(0, sigma, num_oscillators)
+    # Assign a random initial phase to each oscillator
+    theta =  np.random.uniform(low=0.0, high=2 * np.pi, size=num_oscillators)
+
+    # Assign a random natural frequency to each oscillator
+    omega =  np.random.normal(loc=0.0, scale=sigma, size=num_oscillators)
     return theta, omega
+```
+
+(Remember to import numpy first!)
+:::
+
+## Plot the Oscillators
+
+To visualize the oscillators, we can plot their phases on the unit circle. The x-coordinate is $\cos(\theta_i)$ and the y-coordinate is $\sin(\theta_i)$. This way, each oscillator corresponds to a point on the circle. Build a code to visualize the oscillators as blue dots on the unit circle. Your output should be similar to @fig-kuramoto-circle-sample, but feel free to show it in your own style!
+```{python}
+#| label: fig-kuramoto-circle-sample
+#| fig-cap: 'Sample visualization of oscillators on the unit circle. Each blue dot represents an oscillator with phase $\theta_i$.'
+#| fig-width: 6
+#| fig-height: 6
+#| echo: false
+
+x = np.cos(theta)
+y = np.sin(theta)
+fig, ax = plt.subplots(figsize=(6, 6))
+ax.set_title("Kuramoto Model")
+ax.set_xlabel("Cos(theta)")
+ax.set_ylabel("Sin(theta)")
+ax.set_xlim(-1.1, 1.1)
+ax.set_ylim(-1.1, 1.1)
+ax.set_aspect("equal")
+ax.grid(True)
+ax.scatter(x, y, s=50, color="blue", alpha=0.5)
+plt.show()
+plt.close()
+```
+
+If you don't know how to achieve the plot above, feel free to expand some of the hints below.
+
+::: {.callout-tip collapse="true"}
+## How to compute the positions of the oscillators (click to expand)
+
+To compute the x and y coordinates for the plot, you can use NumPy's `cos` and `sin` functions applied to the `theta` array:
+
+```python
+x = np.cos(theta)
+y = np.sin(theta)
+```
+
+(Remember to import numpy first!)
+:::
+
+::: How to create the plot (click to expand)
+
+To create the plot, you can use Matplotlib's `subplots` function to set up the figure and axes, and then use `scatter` to plot the points. Here's a complete example:
+
+```python
+# First, we prepare the figure and axes
+fig, ax = plt.subplots(figsize=(6, 6))
+# fig is the Figure, a "canvas" where everything is drawn
+# ax is the Axes, a "subplot" where we can plot data
+# A single figure can have multiple axes (e.g. for subplots)
+ax.set_title("Kuramoto Model")  # Title of the plot
+ax.set_xlabel("Cos(theta)")  # Name of x-axis
+ax.set_ylabel("Sin(theta)")  # Name of y-axis
+ax.set_xlim(-1.1, 1.1)  # Limits for x-axis
+ax.set_ylim(-1.1, 1.1)  # Limits for y-axis
+ax.set_aspect("equal")  # Make the circle look circular
+ax.grid(True)  # Show grid lines
+
+# Now we are ready to plot the oscillators as blue dots
+ax.scatter(x, y, s=50, color="blue", alpha=0.5)
+# s is the size of the dots
+# alpha is the transparency (0 is fully transparent, 1 is fully opaque)
+# we want the oscillators to be somewhat transparent so we can see overlaps
+
+# Finally, we show the plot and close it to free up memory
+plt.show()
+plt.close()
 ```
 :::
 
@@ -77,8 +168,6 @@ We will implement the mean-field form. Remember: `solve_ivp()` requires the time
 
 ```python
 def kuramoto_ode(t, theta, omega, coupling_strength=1.0):
-    theta = np.mod(theta, 2 * np.pi)
-
     # TODO: compute the order parameter (r, phi)
     # TODO: implement mean-field coupling
     return dtheta_dt
