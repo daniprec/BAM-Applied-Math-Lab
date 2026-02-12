@@ -1,6 +1,6 @@
 ---
-title: "Kuramoto Bifurcation Diagram"
-subtitle: "Order Parameter vs Coupling"
+title: "Kuramoto Model: Bifurcation Diagram"
+subtitle: "Bifurcation Diagram"
 format: html
 ---
 
@@ -8,17 +8,31 @@ The order parameter $r$ measures the coherence of the population. As coupling $K
 
 For a Cauchy distribution with scale $\gamma$:
 
-$$K_c = \frac{2}{\pi g(0)}, \qquad g(\omega)=\frac{1}{\pi} \frac{\gamma}{\omega^2+\gamma^2}.$$
+$$
+K_c = \frac{2}{\pi g(0)}
+$$ {#eq-kuramoto-kc}
 
-The theoretical curve is
+Where g() is the probability density function that generates the oscillator frequencies. For a Cauchy distribution with scale parameter gamma:
 
 $$
-\quad r=0 \text{ if } K \le K_c, \qquad r=\sqrt{1-\frac{K_c}{K}} \text{ if } K>K_c.
+g(\omega)=\frac{1}{\pi} \frac{\gamma}{\omega^2+\gamma^2}
+$$ {#eq-cauchy-density}
+
+The theoretical order parameter is:
+
 $$
+r(K)=
+\begin{cases}
+0, & K \le K_c \\
+\sqrt{1-\frac{K_c}{K}}, & K > K_c
+\end{cases}
+$$ {#eq-r-cauchy}
+
+**Warning:** This exact formula only works for a Cauchy distribution!
 
 ```{python}
-#| label: fig-kuramoto-bifurcation
-#| fig-cap: 'Kuramoto diagram: theoretical curve and empirical points (smaller N for speed).'
+#| label: fig-kuramoto-bifucartion-bad
+#| fig-cap: 'Kuramoto diagram: theoretical curve from @eq-r-cauchy and empirical points (drawn from a normal distribution). Why is there a mismatch?'
 #| fig-width: 7
 #| fig-height: 4
 #| echo: false
@@ -34,21 +48,21 @@ from amlab.odes_coupled.kuramoto import (
 )
 from amlab.odes_coupled.kuramoto_diagram import kuramoto_critical_coupling
 
-num_oscillators = 300
+num_oscillators = 500
 scale = 1.0
-kmin, kmax, knum = 0.0, 5.0, 15
+kmin, kmax, knum = 0.0, 5.0, 20
 ls_k = np.linspace(kmin, kmax, knum)
 
 r_theory = kuramoto_critical_coupling(ls_k, scale=scale, distribution="cauchy")
 
-theta, omega = initialize_oscillators(num_oscillators, distribution="cauchy", scale_omega=scale, seed=1)
+theta, omega = initialize_oscillators(num_oscillators, distribution="normal", scale_omega=scale, seed=1)
 
 ls_r = np.zeros_like(ls_k)
 for idx, k in enumerate(ls_k):
-    sol = solve_ivp(kuramoto_ode_meanfield, (0, 30), theta, t_eval=np.linspace(0, 30, 200), args=(omega, k))
+    sol = solve_ivp(kuramoto_ode_meanfield, (0, 100), theta, t_eval=np.arange(0, 100, 0.01), args=(omega, k))
     theta = np.mod(sol.y, 2 * np.pi)
     r, _, _, _ = kuramoto_order_parameter(theta)
-    ls_r[idx] = np.median(r[-20:])
+    ls_r[idx] = np.mean(r[-10:])
     theta = theta[:, -1]
 
 fig, ax = plt.subplots(figsize=(7, 4))
@@ -62,12 +76,140 @@ plt.show()
 plt.close()
 ```
 
-## Empirical vs theoretical
+For any other distribution, the theoretical order parameter near onset is
 
-In the figure above we used a Cauchy distribution so the theoretical formula applies. If you use a normal distribution, the exact curve no longer matches. That is why the empirical points can look off if you mix formulas and distributions.
+$$
+r \approx \sqrt{\frac{16}{\pi K_c^3}} \sqrt{\frac{\mu}{-g''(0)}}
+$$ {#eq-r-near-onset}
 
-## Exercise
+Where $\mu$ is the mean of the distribution and $g''(0)$ is the second derivative of the distribution at zero.
 
-Reproduce the bifurcation diagram for $0 < K < 5$ using $N=1000$, $dt=0.01$, $t=100$, and average $r$ over the last ten steps.
+$$
+\mu = \frac{K - K_c}{K_c}
+$$ {#eq-mu-def}
 
-Need a template? Start from [amlab/odes_coupled/kuramoto_diagram_template.py](../../amlab/odes_coupled/kuramoto_diagram_template.py).
+This formula is derived from a perturbative analysis near the critical point and captures the square-root scaling of the order parameter as the coupling strength exceeds the critical value.
+
+For a normal distribution with scale parameter (standard deviation) sigma:
+
+$$
+g(\omega) = \frac{1}{\sqrt{2\pi}\sigma} \exp\left(-\frac{\omega^2}{2\sigma^2}\right)
+$$ {#eq-normal-density}
+
+$$
+g''(\omega) = \left( \frac{\omega^2}{\sigma^4} - \frac{1}{\sigma^2} \right) g(\omega)
+$$ {#eq-normal-second-derivative}
+
+## Your Task
+
+In a new script, draw the theoretical bifurcation diagram for $0 < K < 5$.
+
+On top of it, draw the empirical curve, using $N = 1000$ oscillators, $dt = 0.01$, stopping at $t = 100$ and averaging the order parameter ($r$) over the last ten steps.
+
+Do your two curves match? The example of @fig-kuramoto-bifucartion-bad shows a mismatch. Can you explain why? Can you fix it? If you are stuck, check the solution below.
+
+::: {.callout-tip collapse="true"}
+### Why is there a mismatch?
+
+The mismatch occurs because the theoretical curve we used is derived for a Cauchy distribution, while our empirical data is generated from a normal distribution. The critical coupling strength and the shape of the bifurcation diagram depend on the specific distribution of natural frequencies. To fix this, need to use the correct theoretical curve for the normal distribution, which is given by @eq-r-near-onset.
+
+```{python}
+#| label: fig-kuramoto-bifucartion-good
+#| fig-cap: 'Kuramoto diagram: theoretical curve from @eq-r-near-onset and empirical points (drawn from a normal distribution).'
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+
+from amlab.odes_coupled.kuramoto import (
+    initialize_oscillators,
+    kuramoto_ode_meanfield,
+    kuramoto_order_parameter,
+)
+from amlab.odes_coupled.kuramoto_diagram import kuramoto_critical_coupling
+
+num_oscillators = 500
+scale = 1.0
+kmin, kmax, knum = 0.0, 5.0, 20
+ls_k = np.linspace(kmin, kmax, knum)
+
+r_theory = kuramoto_critical_coupling(ls_k, scale=scale, distribution="normal")
+
+theta, omega = initialize_oscillators(num_oscillators, distribution="normal", scale_omega=scale, seed=1)
+
+ls_r = np.zeros_like(ls_k)
+for idx, k in enumerate(ls_k):
+    sol = solve_ivp(kuramoto_ode_meanfield, (0, 100), theta, t_eval=np.arange(0, 100, 0.01), args=(omega, k))
+    theta = np.mod(sol.y, 2 * np.pi)
+    r, _, _, _ = kuramoto_order_parameter(theta)
+    ls_r[idx] = np.mean(r[-10:])
+    theta = theta[:, -1]
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.plot(ls_k, r_theory, label="Theoretical", color="blue")
+ax.plot(ls_k, ls_r, "o", label="Empirical", color="red")
+ax.set_xlabel("Coupling strength (K)")
+ax.set_ylabel("Order parameter (r)")
+ax.set_title("Kuramoto Bifurcation Diagram")
+ax.legend()
+plt.show()
+plt.close()
+```
+
+Alternatively, we can also fix the mismatch by changing the empirical distribution to a Cauchy distribution, which matches the theoretical curve we used in @eq-r-cauchy.
+
+```{python}
+#| label: fig-kuramoto-bifucartion-good
+#| fig-cap: 'Kuramoto diagram: theoretical curve from @eq-r-near-onset and empirical points (drawn from a normal distribution).'
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+
+from amlab.odes_coupled.kuramoto import (
+    initialize_oscillators,
+    kuramoto_ode_meanfield,
+    kuramoto_order_parameter,
+)
+from amlab.odes_coupled.kuramoto_diagram import kuramoto_critical_coupling
+
+num_oscillators = 500
+scale = 1.0
+kmin, kmax, knum = 0.0, 5.0, 20
+ls_k = np.linspace(kmin, kmax, knum)
+
+r_theory = kuramoto_critical_coupling(ls_k, scale=scale, distribution="cauchy")
+
+theta, omega = initialize_oscillators(num_oscillators, distribution="cauchy", scale_omega=scale, seed=1)
+
+ls_r = np.zeros_like(ls_k)
+for idx, k in enumerate(ls_k):
+    sol = solve_ivp(kuramoto_ode_meanfield, (0, 100), theta, t_eval=np.arange(0, 100, 0.01), args=(omega, k))
+    theta = np.mod(sol.y, 2 * np.pi)
+    r, _, _, _ = kuramoto_order_parameter(theta)
+    ls_r[idx] = np.mean(r[-10:])
+    theta = theta[:, -1]
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.plot(ls_k, r_theory, label="Theoretical", color="blue")
+ax.plot(ls_k, ls_r, "o", label="Empirical", color="red")
+ax.set_xlabel("Coupling strength (K)")
+ax.set_ylabel("Order parameter (r)")
+ax.set_title("Kuramoto Bifurcation Diagram")
+ax.legend()
+plt.show()
+plt.close()
+```
+:::
+
+## What's Next?
+
+In the next page, we will merge the bifurcation diagram with the oscillator animation to create a full simulation of the Kuramoto model. This will allow us to see how the order parameter evolves in real time as we adjust the coupling strength and other parameters using sliders.
+
+[Full Simulation](kuramoto-full.qmd){.btn .btn-primary}
