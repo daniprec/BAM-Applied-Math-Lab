@@ -6,11 +6,38 @@ format: html
 
 The Kuramoto model describes a population of weakly coupled oscillators. Each oscillator has a phase $\theta_i$ and a natural frequency $\omega_i$.
 
-To visualize the dynamics, imagine points moving on the unit circle. Synchronization corresponds to points clustering around a common phase. @fig-kuramoto-circle shows a snapshot of the oscillators (blue dots) and the order parameter (red arrow) pointing towards the centroid of the phases. If you want to see this in action, run the script in [amlab/odes_coupled/kuramoto.py](../../amlab/odes_coupled/kuramoto.py) to animate the oscillators on the unit circle.
+The **natural frequency** of each oscillator ($\omega_i$) is drawn from a normal distribution centered at zero, and with standard deviation (scale parameter) $\sigma$. The density function of this normal distribution is:
+
+$$
+g(\omega) = \frac{1}{\sqrt{2\pi}\sigma} \exp\left(-\frac{\omega^2}{2\sigma^2}\right).
+$$
+
+The **initial phase** of each oscillator ($\theta_i$) is drawn from an uniform distribution between $0$ and $2\pi$.
+
+For any system of weakly coupled, nearly identical **limit-cycle oscillators**, the long-term dynamics are given by phase equations of the following universal form:
+
+$$
+\dot\theta_i = \omega_i + \sum_{j=1}^N \Gamma_{ij} \left( \theta_j - \theta_i \right),\quad i = 1, \dots, N
+$$
+
+The Kuramoto model corresponds to the simplest possible case of equally weighted, all-to-all, purely sinusoidal coupling:
+
+$$
+\Gamma_{ij}(\theta) = \frac{K}{N} \sin \left( \theta_j - \theta_i \right)$$
+
+To visualize the dynamics of the phases, it is convenient to imagine a swarm of points running around the unit circle in the complex plane.
+
+The complex order parameter is a macroscopic quantity that can be interpreted as the collective rhythm produced by the whole population.
+
+$$
+r e^{i\Psi} = \frac{1}{N} \sum_{j=1}^N e^{i\theta_j}
+$$
+
+@fig-kuramoto-circle shows a snapshot of the oscillators (blue dots) and the order parameter (red arrow) pointing towards the centroid of the phases. If you want to see this in action, run the script in [amlab/odes_coupled/kuramoto.py](../../amlab/odes_coupled/kuramoto.py) to animate the oscillators on the unit circle.
 
 ```{python}
 #| label: fig-kuramoto-circle
-#| fig-cap: 'Oscillators (blue dots) on the unit circle. The order parameter (red arrow) points towards the centroid of the phases. We will learn about the order parameter in the next section.'
+#| fig-cap: 'Oscillators (blue dots) on the unit circle. The order parameter (red) points towards the centroid of the phases.'
 #| fig-width: 6
 #| fig-height: 6
 #| echo: false
@@ -21,7 +48,12 @@ import matplotlib.pyplot as plt
 from amlab.odes_coupled.kuramoto import initialize_oscillators, kuramoto_order_parameter
 
 num_oscillators = 100
-theta, omega = initialize_oscillators(num_oscillators, distribution="normal", scale_omega=0.5, seed=1)
+theta, omega = initialize_oscillators(
+    num_oscillators,
+    distribution="normal",
+    scale_omega=0.5,
+    scale_phase=0.6,
+    seed=1)
 
 x = np.cos(theta)
 y = np.sin(theta)
@@ -166,18 +198,24 @@ plt.close()
 
 We will implement the mean-field form. Remember: `solve_ivp()` requires the time argument even if it is not used.
 
+Follow the template below to define the ODE function for the Kuramoto model. Call it `kuramoto_ode()`. The function should compute the derivatives of the phases $\dot\theta_i$ based on the current phases $\theta_i$, natural frequencies $\omega_i$, and coupling strength $K$.
+
 ```python
-def kuramoto_ode(t, theta, omega, coupling_strength=1.0):
-    # TODO: compute the order parameter (r, phi)
-    # TODO: implement mean-field coupling
-    return dtheta_dt
+def ode(t, state, *params):
+    # state represents the current values of the variables (e.g., x, y)
+
+    # params are any additional parameters needed to compute the derivatives
+    # each of them is separated by commas
+
+    return dstate_dt  # this should be a sequence of the same length as `state`
 ```
 
 ::: {.callout-tip collapse="true"}
-## Hint: Mean-field ODE (click to expand)
+## See the full ODE function (click to expand)
 
 ```python
 def kuramoto_ode(t, theta, omega, coupling_strength=1.0):
+    # Make sure theta stays within [0, 2*pi] to avoid numerical issues
     theta = np.mod(theta, 2 * np.pi)
     order_param = np.mean(np.exp(1j * theta))
     r = np.abs(order_param)
