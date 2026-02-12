@@ -127,7 +127,7 @@ plt.close()
 
 ## Define the ODE
 
-We will implement the mean-field form. Remember: `solve_ivp()` requires the time argument even if it is not used.
+Choose between the original pairwise form of the Kuramoto model or the mean field approximation. You can see both forms in the theory page [Kuramoto Model](kuramoto.qmd). The mean field approximation is often more efficient for large populations, as it avoids computing pairwise interactions.
 
 Follow the template below to define the ODE function for the Kuramoto model. Call it `kuramoto_ode()`. The function should compute the derivatives of the phases $\dot\theta_i$ based on the current phases $\theta_i$, natural frequencies $\omega_i$, and coupling strength $K$.
 
@@ -140,9 +140,12 @@ def ode(t, state, *params):
 
     return dstate_dt  # this should be a sequence of the same length as `state`
 ```
+Remember: `solve_ivp()` requires the time argument even if it is not used.
 
 ::: {.callout-tip collapse="true"}
 ## See the full ODE function (click to expand)
+
+The function below is for the mean-field approximation of the Kuramoto model, which is more efficient than computing pairwise interactions. It computes the order parameter at each time step and uses it to calculate the derivatives.
 
 ```python
 def kuramoto_ode(t, theta, omega, coupling_strength=1.0):
@@ -156,7 +159,131 @@ def kuramoto_ode(t, theta, omega, coupling_strength=1.0):
 ```
 :::
 
-## Animate the phases
+To validate that your function works, try running it with the following parameters:
+
+- Coupling strength $K=10.0$ (this is a strong coupling regime where synchronization should occur)
+- Number of oscillators $N=100$
+- Standard deviation of natural frequencies $\sigma=1.0$
+
+Run the simulation for $t \in [0, 10]$ and visualize the last state on the unit circle. You should see some degree of synchronization, with the oscillators clustering together. See @fig-kuramoto-k-high for a sample output.
+
+```{python}
+#| label: fig-kuramoto-k-high
+#| fig-cap: 'Visualization of oscillators after running the Kuramoto ODE for K=10. The clustering of the blue dots indicates synchronization.'
+#| fig-width: 6
+#| fig-height: 6
+#| echo: false
+from scipy.integrate import solve_ivp
+from amlab.odes_coupled.kuramoto import kuramoto_ode_meanfield
+
+# Parameters
+coupling_strength = 10.0
+num_oscillators = 100
+sigma = 1.0
+t_span = (0, 10)
+
+# Initialize oscillators
+theta, omega = initialize_oscillators(
+    num_oscillators,
+    scale_phase=sigma
+    ) 
+
+# Run the simulation
+sol = solve_ivp(
+    kuramoto_ode_meanfield,
+    t_span,
+    theta,
+    args=(omega, coupling_strength)
+    )
+theta_end = sol.y[:, -1]
+
+x = np.cos(theta_end)
+y = np.sin(theta_end)
+fig, ax = plt.subplots(figsize=(6, 6))
+ax.set_title("Kuramoto Model - K = 10")
+ax.set_xlabel("Cos(theta)")
+ax.set_ylabel("Sin(theta)")
+ax.set_xlim(-1.1, 1.1)
+ax.set_ylim(-1.1, 1.1)
+ax.set_aspect("equal")
+ax.grid(True)
+ax.scatter(x, y, s=50, color="blue", alpha=0.5)
+plt.show()
+plt.close()
+```
+
+::: {.callout-tip collapse="true"}
+### How to run the simulation (click to expand)
+
+You can use `scipy.integrate.solve_ivp()` to run the simulation. Here's a simple example of how to do this:
+
+```python
+from scipy.integrate import solve_ivp
+
+# Parameters
+coupling_strength = 10.0
+num_oscillators = 100
+sigma = 1.0
+t_span = (0, 10)
+
+# Initialize oscillators
+theta, omega = initialize_oscillators(num_oscillators, sigma=sigma)
+# Run the simulation
+sol = solve_ivp(
+    kuramoto_ode,
+    t_span,
+    theta,
+    args=(omega, coupling_strength)
+    )
+# The solution `sol.y` contains the phases of the oscillators at each time step.
+# sol.y is a 2D array of shape (num_oscillators, num_time_points)
+# You can visualize the last state using the same plotting code as before.
+theta_end = sol.y[:, -1] # Get the final state of the phases
+x = np.cos(theta_end)
+y = np.sin(theta_end)
+# Plotting code as before to visualize the final state
+```
+:::
+
+Then, try reducing the coupling strength to $K=0.1$ and observe how the oscillators become more scattered, indicating a more incoherent state. See @fig-kuramoto-k-low for a sample output.
+
+```{python}
+#| label: fig-kuramoto-k-low
+#| fig-cap: 'Visualization of oscillators after running the Kuramoto ODE for K=0.1. The scattering of the blue dots indicates incoherence.'
+#| fig-width: 6
+#| fig-height: 6
+#| echo: false
+from scipy.integrate import solve_ivp
+from amlab.odes_coupled.kuramoto import kuramoto_ode_meanfield
+
+# Parameters
+coupling_strength = 0.1
+
+# Run the simulation
+sol = solve_ivp(
+    kuramoto_ode_meanfield,
+    t_span,
+    theta,
+    args=(omega, coupling_strength)
+    )
+theta_end = sol.y[:, -1]
+
+x = np.cos(theta_end)
+y = np.sin(theta_end)
+fig, ax = plt.subplots(figsize=(6, 6))
+ax.set_title("Kuramoto Model - K = 0.1")
+ax.set_xlabel("Cos(theta)")
+ax.set_ylabel("Sin(theta)")
+ax.set_xlim(-1.1, 1.1)
+ax.set_ylim(-1.1, 1.1)
+ax.set_aspect("equal")
+ax.grid(True)
+ax.scatter(x, y, s=50, color="blue", alpha=0.5)
+plt.show()
+plt.close()
+```
+
+## Animate the Phases
 
 Follow the same animation loop used in the template. The update function solves one small IVP and updates the scatter plot.
 
