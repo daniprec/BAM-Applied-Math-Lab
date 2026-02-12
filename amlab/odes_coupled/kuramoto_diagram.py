@@ -1,7 +1,11 @@
+import sys
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.stats import cauchy
+
+sys.path.append(".")
 
 from amlab.odes_coupled.kuramoto import (
     initialize_oscillators,
@@ -67,6 +71,7 @@ def draw_kuramoto_diagram(
     kmax: float = 5.0,
     knum: int = 50,
     seed: int = 1,
+    verbose: bool = False,
 ):
     """
     Draw the Kuramoto diagram, showing the order parameter as a function
@@ -94,6 +99,8 @@ def draw_kuramoto_diagram(
         Number of coupling strengths, default is 50.
     seed : int, optional
         Seed for the random number generator, default is 1.
+    verbose : bool, optional
+        Whether to print the coupling strength and order parameter at each step, default is False.
     """
     # Time span and time points relevant for the numerical integration
     t_span = (0, t_end)
@@ -138,10 +145,11 @@ def draw_kuramoto_diagram(
         ls_r_q50[idx] = np.percentile(r, 50)
         ls_r_q90[idx] = np.percentile(r, 90)
 
-        print(
-            f"K = {coupling_strength:.2f}, r (theory) = {r_theoretical[idx]:.2f}"
-            f", r (empirical) = {ls_r_q50[idx]:.2f}"
-        )
+        if verbose:
+            print(
+                f"K = {coupling_strength:.2f}, r (theory) = {r_theoretical[idx]:.2f}"
+                f", r (empirical) = {ls_r_q50[idx]:.2f}"
+            )
 
         # Take the last state as the initial condition for the next iteration
         theta = theta[:, -1]

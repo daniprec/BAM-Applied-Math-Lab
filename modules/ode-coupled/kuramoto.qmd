@@ -20,22 +20,18 @@ $$
 \dot\theta_i = \omega_i + \sum_{j=1}^N \Gamma_{ij} \left( \theta_j - \theta_i \right),\quad i = 1, \dots, N
 $$
 
+Where $\Gamma_{ij}(\theta)$ is the coupling function that describes how oscillator $j$ influences oscillator $i$ as a function of their phase difference. $N$ is the total number of oscillators in the population.
+
 The Kuramoto model corresponds to the simplest possible case of equally weighted, all-to-all, purely sinusoidal coupling:
 
 $$
 \Gamma_{ij}(\theta) = \frac{K}{N} \sin \left( \theta_j - \theta_i \right)$$
 
+Where $K$ is the coupling strength. The factor of $1/N$ ensures that the total input to each oscillator remains finite as $N$ increases. The Kuramoto model is a paradigmatic example of how collective synchronization can emerge from simple interactions among heterogeneous oscillators. It has been widely studied in physics, biology, and engineering to understand phenomena such as circadian rhythms, neuronal synchronization, and power grid stability.
+
 ## The Order Parameter
 
 To visualize the dynamics of the phases, it is convenient to imagine a swarm of points running around the unit circle in the complex plane.
-
-The complex **order parameter** is a macroscopic quantity that can be interpreted as the collective rhythm produced by the whole population.
-
-$$
-r e^{i\Psi} = \frac{1}{N} \sum_{j=1}^N e^{i\theta_j}
-$$
-
-@fig-kuramoto-circle shows a snapshot of the oscillators (blue dots) and the order parameter (red arrow) pointing towards the centroid of the phases. If you want to see this in action, run the script in [amlab/odes_coupled/kuramoto.py](../../amlab/odes_coupled/kuramoto.py) to animate the oscillators on the unit circle.
 
 ```{python}
 #| label: fig-kuramoto-circle
@@ -80,6 +76,16 @@ plt.show()
 plt.close()
 ```
 
+The complex **order parameter** is a macroscopic quantity that can be interpreted as the collective rhythm produced by the whole population.
+
+$$
+r e^{i\Psi} = \frac{1}{N} \sum_{j=1}^N e^{i\theta_j}
+$$
+
+$r$ is the **coherence** of the population, which measures how synchronized the oscillators are. It ranges from $0$ (completely incoherent) to $1$ (fully synchronized). $\Psi$ is the **mean phase**, which represents the average phase of the population.
+
+@fig-kuramoto-circle shows a snapshot of the oscillators (blue dots) and the order parameter (red arrow) pointing towards the centroid of the phases. If you want to see this in action, run the script in [amlab/odes_coupled/kuramoto.py](../../amlab/odes_coupled/kuramoto.py) to animate the oscillators on the unit circle.
+
 ## Mean Field Approximation
 
 Kuramoto noticed that the governing equation can be rewritten neatly in terms of the order parameter:
@@ -87,19 +93,32 @@ Kuramoto noticed that the governing equation can be rewritten neatly in terms of
 $$
 \dot\theta_i = \omega_i + K r \sin(\Psi - \theta_i),\quad i = 1, \dots, N $$
 
-## A Positive Feedback Loop
+This equation has a simple interpretation: each oscillator is pulled toward the mean phase $\Psi$ with an effective coupling strength $K r$ that depends on the coherence of the population. This is known as the **mean field approximation**. It is exact in the limit of infinite $N$ and provides a powerful framework to analyze the dynamics of the system.
+
+You can use this form of the equation to implement the ODE function for the Kuramoto model, which is often more efficient than computing pairwise interactions. The order parameter can be computed at each time step using the current phases of the oscillators.
+
+## Spontaneous Synchronization
+
+The mean field approximation reveals a positive feedback loop that can lead to **spontaneous synchronization**:
 
 1. The phase $\theta_i$ is pulled toward the mean phase $\Psi$.
 2. The population becomes more coherent. In turn, the order parameter $r$ increases.
 3. The effective strength of the coupling $K r$ increases proportionally to the coherence.
 4. $K r$ tends to recruit even more oscillators into the synchronized cluster, which feeds step 1.
 
-## Spontaneous Synchronization
+In other words, the more oscillators are synchronized, the stronger the coupling becomes, which in turn promotes even more synchronization. This positive feedback can lead to a phase transition from incoherence to coherence as the coupling strength $K$ crosses a critical threshold. The critical coupling strength $K_c$ can be derived analytically for certain frequency distributions (e.g. Cauchy) and can be estimated numerically for others (e.g. normal).
 
-Positive feedback loop between coupling ($K$) and coherence ($r$).
+```{python}
+#| label: fig-kuramoto-diagram
+#| fig-cap: 'Bifurcation diagram of the Kuramoto model. The order parameter $r_\infty$ (steady-state coherence) is plotted as a function of the coupling strength $K$. A phase transition occurs at a critical coupling strength $K_c$, where $r_\infty$ transitions from near zero (incoherence) to a positive value (synchronization).'
+#| fig-width: 6
+#| fig-height: 4
+#| echo: false
+from amlab.odes_coupled.kuramoto_diagram import draw_kuramoto_diagram
 
-If the coherence is further increased by the new recruits, the process will continue; otherwise, it becomes self-limiting.
-
+draw_kuramoto_diagram()
+plt.close()
+```
 ## Goal of this Session
 
 Implement the Kuramoto model in Python, visualize the oscillators on a unit circle and find when the spontaneous synchronization happens.
