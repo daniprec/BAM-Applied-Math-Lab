@@ -558,18 +558,18 @@ window.Quarto = {
 
 <p>The Kuramoto model describes a population of weakly coupled oscillators. Each oscillator has a phase <span class="math inline">\(\theta_i\)</span> and a natural frequency <span class="math inline">\(\omega_i\)</span>.</p>
 <p>The <strong>natural frequency</strong> of each oscillator (<span class="math inline">\(\omega_i\)</span>) is drawn from a normal distribution centered at zero, and with standard deviation (scale parameter) <span class="math inline">\(\sigma\)</span>. The density function of this normal distribution is:</p>
-<p><span class="math display">\[
+<p><span id="eq-density"><span class="math display">\[
 g(\omega) = \frac{1}{\sqrt{2\pi}\sigma} \exp\left(-\frac{\omega^2}{2\sigma^2}\right).
-\]</span></p>
+\tag{1}\]</span></span></p>
 <p>The <strong>initial phase</strong> of each oscillator (<span class="math inline">\(\theta_i\)</span>) is drawn from an uniform distribution between <span class="math inline">\(0\)</span> and <span class="math inline">\(2\pi\)</span>.</p>
 <p>For any system of weakly coupled, nearly identical <strong>limit-cycle oscillators</strong>, the long-term dynamics are given by phase equations of the following universal form:</p>
-<p><span class="math display">\[
+<p><span id="eq-ode-pairwise"><span class="math display">\[
 \dot\theta_i = \omega_i + \sum_{j=1}^N \Gamma_{ij} \left( \theta_j - \theta_i \right),\quad i = 1, \dots, N
-\]</span></p>
+\tag{2}\]</span></span></p>
 <p>Where <span class="math inline">\(\Gamma_{ij}(\theta)\)</span> is the coupling function that describes how oscillator <span class="math inline">\(j\)</span> influences oscillator <span class="math inline">\(i\)</span> as a function of their phase difference. <span class="math inline">\(N\)</span> is the total number of oscillators in the population.</p>
 <p>The Kuramoto model corresponds to the simplest possible case of equally weighted, all-to-all, purely sinusoidal coupling:</p>
-<p><span class="math display">\[
-\Gamma_{ij}(\theta) = \frac{K}{N} \sin \left( \theta_j - \theta_i \right)\]</span></p>
+<p><span id="eq-gamma"><span class="math display">\[
+\Gamma_{ij}(\theta) = \frac{K}{N} \sin \left( \theta_j - \theta_i \right) \tag{3}\]</span></span></p>
 <p>Where <span class="math inline">\(K\)</span> is the coupling strength. The factor of <span class="math inline">\(1/N\)</span> ensures that the total input to each oscillator remains finite as <span class="math inline">\(N\)</span> increases. The Kuramoto model is a paradigmatic example of how collective synchronization can emerge from simple interactions among heterogeneous oscillators. It has been widely studied in physics, biology, and engineering to understand phenomena such as circadian rhythms, neuronal synchronization, and power grid stability.</p>
 <section id="the-order-parameter" class="level2">
 <h2 class="anchored" data-anchor-id="the-order-parameter">The Order Parameter</h2>
@@ -589,17 +589,17 @@ Figure&nbsp;1: Oscillators (blue dots) on the unit circle. The order parameter (
 </div>
 </div>
 <p>The complex <strong>order parameter</strong> is a macroscopic quantity that can be interpreted as the collective rhythm produced by the whole population.</p>
-<p><span class="math display">\[
+<p><span id="eq-r-exp"><span class="math display">\[
 r e^{i\Psi} = \frac{1}{N} \sum_{j=1}^N e^{i\theta_j}
-\]</span></p>
+\tag{4}\]</span></span></p>
 <p><span class="math inline">\(r\)</span> is the <strong>coherence</strong> of the population, which measures how synchronized the oscillators are. It ranges from <span class="math inline">\(0\)</span> (completely incoherent) to <span class="math inline">\(1\)</span> (fully synchronized). <span class="math inline">\(\Psi\)</span> is the <strong>mean phase</strong>, which represents the average phase of the population.</p>
 <p><a href="#fig-kuramoto-circle" class="quarto-xref">Figure&nbsp;1</a> shows a snapshot of the oscillators (blue dots) and the order parameter (red arrow) pointing towards the centroid of the phases. If you want to see this in action, run the script in <a href="../../amlab/odes_coupled/kuramoto.py">amlab/odes_coupled/kuramoto.py</a> to animate the oscillators on the unit circle.</p>
 </section>
 <section id="mean-field-approximation" class="level2">
 <h2 class="anchored" data-anchor-id="mean-field-approximation">Mean Field Approximation</h2>
 <p>Kuramoto noticed that the governing equation can be rewritten neatly in terms of the order parameter:</p>
-<p><span class="math display">\[
-\dot\theta_i = \omega_i + K r \sin(\Psi - \theta_i),\quad i = 1, \dots, N \]</span></p>
+<p><span id="eq-ode-mean-field"><span class="math display">\[
+\dot\theta_i = \omega_i + K r \sin(\Psi - \theta_i),\quad i = 1, \dots, N  \tag{5}\]</span></span></p>
 <p>This equation has a simple interpretation: each oscillator is pulled toward the mean phase <span class="math inline">\(\Psi\)</span> with an effective coupling strength <span class="math inline">\(K r\)</span> that depends on the coherence of the population. This is known as the <strong>mean field approximation</strong>. It is exact in the limit of infinite <span class="math inline">\(N\)</span> and provides a powerful framework to analyze the dynamics of the system.</p>
 <p>You can use this form of the equation to implement the ODE function for the Kuramoto model, which is often more efficient than computing pairwise interactions. The order parameter can be computed at each time step using the current phases of the oscillators.</p>
 </section>
@@ -639,6 +639,7 @@ Figure&nbsp;2: Bifurcation diagram of the Kuramoto model. The order parameter <s
 <p>You can follow two approaches to the ODE function.</p>
 <section id="pairwise-interactions" class="level3">
 <h3 class="anchored" data-anchor-id="pairwise-interactions">Pairwise Interactions</h3>
+<p>Follow equations <a href="#eq-ode-pairwise" class="quarto-xref">Equation&nbsp;2</a> and <a href="#eq-gamma" class="quarto-xref">Equation&nbsp;3</a> to compute the pairwise interactions between oscillators. This is straightforward but can be computationally expensive for large <span class="math inline">\(N\)</span>.</p>
 <p><span class="math display">\[
 \dot\theta_i = \omega_i + \sum_{j=1}^N \Gamma_{ij} \left( \theta_j - \theta_i \right),\quad i = 1, \dots, N
 \]</span></p>
@@ -647,6 +648,7 @@ Figure&nbsp;2: Bifurcation diagram of the Kuramoto model. The order parameter <s
 </section>
 <section id="mean-field-approximation-1" class="level3">
 <h3 class="anchored" data-anchor-id="mean-field-approximation-1">Mean Field Approximation</h3>
+<p>Follow equation <a href="#eq-ode-mean-field" class="quarto-xref">Equation&nbsp;5</a> and <a href="#eq-r-exp" class="quarto-xref">Equation&nbsp;4</a> to compute the dynamics using the order parameter. This is more efficient and provides insight into the collective behavior of the system.</p>
 <p><span class="math display">\[
 \dot\theta_i = \omega_i + K r \sin(\Psi - \theta_i),\quad i = 1, \dots, N \]</span></p>
 <p><span class="math display">\[
@@ -1129,7 +1131,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>$$</span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>g(\omega) = \frac{1}{\sqrt{2\pi}\sigma} \exp\left(-\frac{\omega^2}{2\sigma^2}\right).</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>$$ {#eq-density}</span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>The **initial phase** of each oscillator ($\theta_i$) is drawn from an uniform distribution between $0$ and $2\pi$.</span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
@@ -1137,14 +1139,14 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>$$</span>
 <span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>\dot\theta_i = \omega_i + \sum_{j=1}^N \Gamma_{ij} \left( \theta_j - \theta_i \right),\quad i = 1, \dots, N</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>$$ {#eq-ode-pairwise}</span>
 <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>Where $\Gamma_{ij}(\theta)$ is the coupling function that describes how oscillator $j$ influences oscillator $i$ as a function of their phase difference. $N$ is the total number of oscillators in the population.</span>
 <span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>The Kuramoto model corresponds to the simplest possible case of equally weighted, all-to-all, purely sinusoidal coupling:</span>
 <span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>\Gamma_{ij}(\theta) = \frac{K}{N} \sin \left( \theta_j - \theta_i \right)$$</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>\Gamma_{ij}(\theta) = \frac{K}{N} \sin \left( \theta_j - \theta_i \right)$$ {#eq-gamma}</span>
 <span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>Where $K$ is the coupling strength. The factor of $1/N$ ensures that the total input to each oscillator remains finite as $N$ increases. The Kuramoto model is a paradigmatic example of how collective synchronization can emerge from simple interactions among heterogeneous oscillators. It has been widely studied in physics, biology, and engineering to understand phenomena such as circadian rhythms, neuronal synchronization, and power grid stability.</span>
 <span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
@@ -1201,7 +1203,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a>$$</span>
 <span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a>r e^{i\Psi} = \frac{1}{N} \sum_{j=1}^N e^{i\theta_j}</span>
-<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a>$$ {#eq-r-exp}</span>
 <span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a>$r$ is the **coherence** of the population, which measures how synchronized the oscillators are. It ranges from $0$ (completely incoherent) to $1$ (fully synchronized). $\Psi$ is the **mean phase**, which represents the average phase of the population.</span>
 <span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a></span>
@@ -1212,7 +1214,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb1-95"><a href="#cb1-95" aria-hidden="true" tabindex="-1"></a>Kuramoto noticed that the governing equation can be rewritten neatly in terms of the order parameter:</span>
 <span id="cb1-96"><a href="#cb1-96" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-97"><a href="#cb1-97" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb1-98"><a href="#cb1-98" aria-hidden="true" tabindex="-1"></a>\dot\theta_i = \omega_i + K r \sin(\Psi - \theta_i),\quad i = 1, \dots, N $$</span>
+<span id="cb1-98"><a href="#cb1-98" aria-hidden="true" tabindex="-1"></a>\dot\theta_i = \omega_i + K r \sin(\Psi - \theta_i),\quad i = 1, \dots, N $$ {#eq-ode-mean-field}</span>
 <span id="cb1-99"><a href="#cb1-99" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-100"><a href="#cb1-100" aria-hidden="true" tabindex="-1"></a>This equation has a simple interpretation: each oscillator is pulled toward the mean phase $\Psi$ with an effective coupling strength $K r$ that depends on the coherence of the population. This is known as the **mean field approximation**. It is exact in the limit of infinite $N$ and provides a powerful framework to analyze the dynamics of the system.</span>
 <span id="cb1-101"><a href="#cb1-101" aria-hidden="true" tabindex="-1"></a></span>
@@ -1253,31 +1255,35 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb1-138"><a href="#cb1-138" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-139"><a href="#cb1-139" aria-hidden="true" tabindex="-1"></a><span class="fu">### Pairwise Interactions</span></span>
 <span id="cb1-140"><a href="#cb1-140" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-141"><a href="#cb1-141" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb1-142"><a href="#cb1-142" aria-hidden="true" tabindex="-1"></a>\dot\theta_i = \omega_i + \sum_{j=1}^N \Gamma_{ij} \left( \theta_j - \theta_i \right),\quad i = 1, \dots, N</span>
+<span id="cb1-141"><a href="#cb1-141" aria-hidden="true" tabindex="-1"></a>Follow equations @eq-ode-pairwise and @eq-gamma to compute the pairwise interactions between oscillators. This is straightforward but can be computationally expensive for large $N$.</span>
+<span id="cb1-142"><a href="#cb1-142" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-143"><a href="#cb1-143" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb1-144"><a href="#cb1-144" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-144"><a href="#cb1-144" aria-hidden="true" tabindex="-1"></a>\dot\theta_i = \omega_i + \sum_{j=1}^N \Gamma_{ij} \left( \theta_j - \theta_i \right),\quad i = 1, \dots, N</span>
 <span id="cb1-145"><a href="#cb1-145" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb1-146"><a href="#cb1-146" aria-hidden="true" tabindex="-1"></a>\Gamma_{ij}(\theta) = \frac{K}{N} \sin \left( \theta_j - \theta_i \right)$$</span>
-<span id="cb1-147"><a href="#cb1-147" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-148"><a href="#cb1-148" aria-hidden="true" tabindex="-1"></a><span class="fu">### Mean Field Approximation</span></span>
+<span id="cb1-146"><a href="#cb1-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-147"><a href="#cb1-147" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb1-148"><a href="#cb1-148" aria-hidden="true" tabindex="-1"></a>\Gamma_{ij}(\theta) = \frac{K}{N} \sin \left( \theta_j - \theta_i \right)$$</span>
 <span id="cb1-149"><a href="#cb1-149" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-150"><a href="#cb1-150" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb1-151"><a href="#cb1-151" aria-hidden="true" tabindex="-1"></a>\dot\theta_i = \omega_i + K r \sin(\Psi - \theta_i),\quad i = 1, \dots, N $$</span>
-<span id="cb1-152"><a href="#cb1-152" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-153"><a href="#cb1-153" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb1-154"><a href="#cb1-154" aria-hidden="true" tabindex="-1"></a>r e^{i\Psi} = \frac{1}{N} \sum_{j=1}^N e^{i\theta_j}</span>
-<span id="cb1-155"><a href="#cb1-155" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb1-150"><a href="#cb1-150" aria-hidden="true" tabindex="-1"></a><span class="fu">### Mean Field Approximation</span></span>
+<span id="cb1-151"><a href="#cb1-151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-152"><a href="#cb1-152" aria-hidden="true" tabindex="-1"></a>Follow equation @eq-ode-mean-field and @eq-r-exp to compute the dynamics using the order parameter. This is more efficient and provides insight into the collective behavior of the system.</span>
+<span id="cb1-153"><a href="#cb1-153" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-154"><a href="#cb1-154" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb1-155"><a href="#cb1-155" aria-hidden="true" tabindex="-1"></a>\dot\theta_i = \omega_i + K r \sin(\Psi - \theta_i),\quad i = 1, \dots, N $$</span>
 <span id="cb1-156"><a href="#cb1-156" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-157"><a href="#cb1-157" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb1-158"><a href="#cb1-158" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-159"><a href="#cb1-159" aria-hidden="true" tabindex="-1"></a>We will start by initializing the oscillators and plotting them on the unit circle. Then, we will define the ODE function and use <span class="in">`scipy.integrate.solve_ivp()`</span> to simulate the dynamics. Follow to the next page for the implementation details.</span>
+<span id="cb1-157"><a href="#cb1-157" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb1-158"><a href="#cb1-158" aria-hidden="true" tabindex="-1"></a>r e^{i\Psi} = \frac{1}{N} \sum_{j=1}^N e^{i\theta_j}</span>
+<span id="cb1-159"><a href="#cb1-159" aria-hidden="true" tabindex="-1"></a>$$</span>
 <span id="cb1-160"><a href="#cb1-160" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-161"><a href="#cb1-161" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Oscillators and Animation</span><span class="co">](kuramoto-oscillators.qmd)</span>{.btn .btn-primary}</span>
+<span id="cb1-161"><a href="#cb1-161" aria-hidden="true" tabindex="-1"></a>---</span>
 <span id="cb1-162"><a href="#cb1-162" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-163"><a href="#cb1-163" aria-hidden="true" tabindex="-1"></a><span class="fu">## Reference</span></span>
+<span id="cb1-163"><a href="#cb1-163" aria-hidden="true" tabindex="-1"></a>We will start by initializing the oscillators and plotting them on the unit circle. Then, we will define the ODE function and use <span class="in">`scipy.integrate.solve_ivp()`</span> to simulate the dynamics. Follow to the next page for the implementation details.</span>
 <span id="cb1-164"><a href="#cb1-164" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-165"><a href="#cb1-165" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">From Kuramoto to Crawford: exploring the onset of synchronization in populations of coupled oscillators</span><span class="co">]</span>(https://doi.org/10.1016/S0167-2789(00)00094-4) by Steven H. Strogatz.</span>
+<span id="cb1-165"><a href="#cb1-165" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Oscillators and Animation</span><span class="co">](kuramoto-oscillators.qmd)</span>{.btn .btn-primary}</span>
+<span id="cb1-166"><a href="#cb1-166" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-167"><a href="#cb1-167" aria-hidden="true" tabindex="-1"></a><span class="fu">## Reference</span></span>
+<span id="cb1-168"><a href="#cb1-168" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-169"><a href="#cb1-169" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">From Kuramoto to Crawford: exploring the onset of synchronization in populations of coupled oscillators</span><span class="co">]</span>(https://doi.org/10.1016/S0167-2789(00)00094-4) by Steven H. Strogatz.</span>
 </code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
