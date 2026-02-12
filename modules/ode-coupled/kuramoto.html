@@ -515,7 +515,8 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#initialize-oscillators" id="toc-initialize-oscillators" class="nav-link active" data-scroll-target="#initialize-oscillators">Initialize oscillators</a></li>
+  <li><a href="#initialize-oscillators" id="toc-initialize-oscillators" class="nav-link active" data-scroll-target="#initialize-oscillators">Initialize Oscillators</a></li>
+  <li><a href="#plot-the-oscillators" id="toc-plot-the-oscillators" class="nav-link" data-scroll-target="#plot-the-oscillators">Plot the Oscillators</a></li>
   <li><a href="#define-the-ode" id="toc-define-the-ode" class="nav-link" data-scroll-target="#define-the-ode">Define the ODE</a></li>
   <li><a href="#animate-the-phases" id="toc-animate-the-phases" class="nav-link" data-scroll-target="#animate-the-phases">Animate the phases</a></li>
   </ul>
@@ -545,7 +546,24 @@ window.Quarto = {
 
 
 <p>The Kuramoto model describes a population of weakly coupled oscillators. Each oscillator has a phase <span class="math inline">\(\theta_i\)</span> and a natural frequency <span class="math inline">\(\omega_i\)</span>.</p>
-<p>To visualize the dynamics, imagine points moving on the unit circle. Synchronization corresponds to points clustering around a common phase.</p>
+<p>The <strong>natural frequency</strong> of each oscillator (<span class="math inline">\(\omega_i\)</span>) is drawn from a normal distribution centered at zero, and with standard deviation (scale parameter) <span class="math inline">\(\sigma\)</span>. The density function of this normal distribution is:</p>
+<p><span class="math display">\[
+g(\omega) = \frac{1}{\sqrt{2\pi}\sigma} \exp\left(-\frac{\omega^2}{2\sigma^2}\right).
+\]</span></p>
+<p>The <strong>initial phase</strong> of each oscillator (<span class="math inline">\(\theta_i\)</span>) is drawn from an uniform distribution between <span class="math inline">\(0\)</span> and <span class="math inline">\(2\pi\)</span>.</p>
+<p>For any system of weakly coupled, nearly identical <strong>limit-cycle oscillators</strong>, the long-term dynamics are given by phase equations of the following universal form:</p>
+<p><span class="math display">\[
+\dot\theta_i = \omega_i + \sum_{j=1}^N \Gamma_{ij} \left( \theta_j - \theta_i \right),\quad i = 1, \dots, N
+\]</span></p>
+<p>The Kuramoto model corresponds to the simplest possible case of equally weighted, all-to-all, purely sinusoidal coupling:</p>
+<p><span class="math display">\[
+\Gamma_{ij}(\theta) = \frac{K}{N} \sin \left( \theta_j - \theta_i \right)\]</span></p>
+<p>To visualize the dynamics of the phases, it is convenient to imagine a swarm of points running around the unit circle in the complex plane.</p>
+<p>The complex order parameter is a macroscopic quantity that can be interpreted as the collective rhythm produced by the whole population.</p>
+<p><span class="math display">\[
+r e^{i\Psi} = \frac{1}{N} \sum_{j=1}^N e^{i\theta_j}
+\]</span></p>
+<p><a href="#fig-kuramoto-circle" class="quarto-xref">Figure&nbsp;1</a> shows a snapshot of the oscillators (blue dots) and the order parameter (red arrow) pointing towards the centroid of the phases. If you want to see this in action, run the script in <a href="../../amlab/odes_coupled/kuramoto.py">amlab/odes_coupled/kuramoto.py</a> to animate the oscillators on the unit circle.</p>
 <div id="cell-fig-kuramoto-circle" class="cell" data-fig-height="6" data-fig-width="6" data-execution_count="1">
 <div class="cell-output cell-output-display">
 <div id="fig-kuramoto-circle" class="quarto-figure quarto-figure-center quarto-float anchored">
@@ -554,15 +572,17 @@ window.Quarto = {
 <img src="kuramoto_files/figure-html/fig-kuramoto-circle-output-1.png" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-kuramoto-circle-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;1: Kuramoto model: oscillators on the unit circle and the order-parameter vector.
+Figure&nbsp;1: Oscillators (blue dots) on the unit circle. The order parameter (red) points towards the centroid of the phases.
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
+<p>Follow the steps below to implement the Kuramoto model and produce an animation of the oscillators on the unit circle. We will build up to this final animation in stages, starting with initialization and the ODE definition.</p>
 <section id="initialize-oscillators" class="level2">
-<h2 class="anchored" data-anchor-id="initialize-oscillators">Initialize oscillators</h2>
+<h2 class="anchored" data-anchor-id="initialize-oscillators">Initialize Oscillators</h2>
 <p>The phases <span class="math inline">\(\theta_i\)</span> are sampled uniformly on <span class="math inline">\([0, 2\pi]\)</span> and the natural frequencies <span class="math inline">\(\omega_i\)</span> from a normal distribution with standard deviation <span class="math inline">\(\sigma\)</span>.</p>
+<p>Write a function to initialize the oscillators:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> initialize_oscillators(num_oscillators: <span class="bu">int</span>, sigma: <span class="bu">float</span> <span class="op">=</span> <span class="fl">1.0</span>):</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Assign a random initial phase to each oscillator</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span>  <span class="co"># draw from uniform distribution</span></span>
@@ -570,54 +590,142 @@ Figure&nbsp;1: Kuramoto model: oscillators on the unit circle and the order-para
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Assign a random natural frequency to each oscillator</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    omega <span class="op">=</span>  <span class="co"># draw from normal distribution</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> theta, omega</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The outputs <code>theta</code> and <code>omega</code> are 1D arrays of length <code>num_oscillators</code>. If you don’t know how to sample from these distributions, see the hint below.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Hint: Initialization (click to expand)
+How to sample from distributions (click to expand)
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
 <div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> initialize_oscillators(num_oscillators: <span class="bu">int</span>, sigma: <span class="bu">float</span> <span class="op">=</span> <span class="fl">1.0</span>):</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span> np.random.uniform(<span class="dv">0</span>, <span class="dv">2</span> <span class="op">*</span> np.pi, num_oscillators)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    omega <span class="op">=</span> np.random.normal(<span class="dv">0</span>, sigma, num_oscillators)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> theta, omega</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Remember NumPy has built-in functions for sampling from distributions: - Uniform distribution: <code>np.random.uniform(low=0.0, high=2*np.pi, size=num_oscillators)</code> - Normal distribution: <code>np.random.normal(loc=0.0, scale=sigma, size=num_oscillators)</code></p>
+<p>If you need more help, you can expand the code snippet below for a complete implementation.</p>
 </div>
 </div>
 </div>
-</section>
-<section id="define-the-ode" class="level2">
-<h2 class="anchored" data-anchor-id="define-the-ode">Define the ODE</h2>
-<p>We will implement the mean-field form. Remember: <code>solve_ivp()</code> requires the time argument even if it is not used.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> kuramoto_ode(t, theta, omega, coupling_strength<span class="op">=</span><span class="fl">1.0</span>):</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span> np.mod(theta, <span class="dv">2</span> <span class="op">*</span> np.pi)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: compute the order parameter (r, phi)</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: implement mean-field coupling</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dtheta_dt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Hint: Mean-field ODE (click to expand)
+Complete initialization function (click to expand)
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
 <div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> kuramoto_ode(t, theta, omega, coupling_strength<span class="op">=</span><span class="fl">1.0</span>):</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span> np.mod(theta, <span class="dv">2</span> <span class="op">*</span> np.pi)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    order_param <span class="op">=</span> np.mean(np.exp(<span class="ot">1j</span> <span class="op">*</span> theta))</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=</span> np.<span class="bu">abs</span>(order_param)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    phi <span class="op">=</span> np.angle(order_param)</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    dtheta_dt <span class="op">=</span> omega <span class="op">+</span> coupling_strength <span class="op">*</span> r <span class="op">*</span> np.sin(phi <span class="op">-</span> theta)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dtheta_dt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> initialize_oscillators(num_oscillators: <span class="bu">int</span>, sigma: <span class="bu">float</span> <span class="op">=</span> <span class="fl">1.0</span>):</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Assign a random initial phase to each oscillator</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span>  np.random.uniform(low<span class="op">=</span><span class="fl">0.0</span>, high<span class="op">=</span><span class="dv">2</span> <span class="op">*</span> np.pi, size<span class="op">=</span>num_oscillators)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Assign a random natural frequency to each oscillator</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    omega <span class="op">=</span>  np.random.normal(loc<span class="op">=</span><span class="fl">0.0</span>, scale<span class="op">=</span>sigma, size<span class="op">=</span>num_oscillators)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> theta, omega</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>(Remember to import numpy first!)</p>
+</div>
+</div>
+</div>
+</section>
+<section id="plot-the-oscillators" class="level2">
+<h2 class="anchored" data-anchor-id="plot-the-oscillators">Plot the Oscillators</h2>
+<p>To visualize the oscillators, we can plot their phases on the unit circle. The x-coordinate is <span class="math inline">\(\cos(\theta_i)\)</span> and the y-coordinate is <span class="math inline">\(\sin(\theta_i)\)</span>. This way, each oscillator corresponds to a point on the circle. Build a code to visualize the oscillators as blue dots on the unit circle. Your output should be similar to <a href="#fig-kuramoto-circle-sample" class="quarto-xref">Figure&nbsp;2</a>, but feel free to show it in your own style!</p>
+<div id="cell-fig-kuramoto-circle-sample" class="cell" data-fig-height="6" data-fig-width="6" data-execution_count="2">
+<div class="cell-output cell-output-display">
+<div id="fig-kuramoto-circle-sample" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-kuramoto-circle-sample-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="kuramoto_files/figure-html/fig-kuramoto-circle-sample-output-1.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-kuramoto-circle-sample-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Sample visualization of oscillators on the unit circle. Each blue dot represents an oscillator with phase <span class="math inline">\(\theta_i\)</span>.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>If you don’t know how to achieve the plot above, feel free to expand some of the hints below.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+How to compute the positions of the oscillators (click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>To compute the x and y coordinates for the plot, you can use NumPy’s <code>cos</code> and <code>sin</code> functions applied to the <code>theta</code> array:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.cos(theta)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> np.sin(theta)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>(Remember to import numpy first!)</p>
+</div>
+</div>
+</div>
+<p>::: How to create the plot (click to expand)</p>
+<p>To create the plot, you can use Matplotlib’s <code>subplots</code> function to set up the figure and axes, and then use <code>scatter</code> to plot the points. Here’s a complete example:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># First, we prepare the figure and axes</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">6</span>))</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># fig is the Figure, a "canvas" where everything is drawn</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ax is the Axes, a "subplot" where we can plot data</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># A single figure can have multiple axes (e.g. for subplots)</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Kuramoto Model"</span>)  <span class="co"># Title of the plot</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Cos(theta)"</span>)  <span class="co"># Name of x-axis</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Sin(theta)"</span>)  <span class="co"># Name of y-axis</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>ax.set_xlim(<span class="op">-</span><span class="fl">1.1</span>, <span class="fl">1.1</span>)  <span class="co"># Limits for x-axis</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>ax.set_ylim(<span class="op">-</span><span class="fl">1.1</span>, <span class="fl">1.1</span>)  <span class="co"># Limits for y-axis</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>ax.set_aspect(<span class="st">"equal"</span>)  <span class="co"># Make the circle look circular</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>ax.grid(<span class="va">True</span>)  <span class="co"># Show grid lines</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Now we are ready to plot the oscillators as blue dots</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>ax.scatter(x, y, s<span class="op">=</span><span class="dv">50</span>, color<span class="op">=</span><span class="st">"blue"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co"># s is the size of the dots</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co"># alpha is the transparency (0 is fully transparent, 1 is fully opaque)</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="co"># we want the oscillators to be somewhat transparent so we can see overlaps</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Finally, we show the plot and close it to free up memory</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>plt.close()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>:::</p>
+</section>
+<section id="define-the-ode" class="level2">
+<h2 class="anchored" data-anchor-id="define-the-ode">Define the ODE</h2>
+<p>We will implement the mean-field form. Remember: <code>solve_ivp()</code> requires the time argument even if it is not used.</p>
+<p>Follow the template below to define the ODE function for the Kuramoto model. Call it <code>kuramoto_ode()</code>. The function should compute the derivatives of the phases <span class="math inline">\(\dot\theta_i\)</span> based on the current phases <span class="math inline">\(\theta_i\)</span>, natural frequencies <span class="math inline">\(\omega_i\)</span>, and coupling strength <span class="math inline">\(K\)</span>.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ode(t, state, <span class="op">*</span>params):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># state represents the current values of the variables (e.g., x, y)</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># params are any additional parameters needed to compute the derivatives</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># each of them is separated by commas</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dstate_dt  <span class="co"># this should be a sequence of the same length as `state`</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+See the full ODE function (click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> kuramoto_ode(t, theta, omega, coupling_strength<span class="op">=</span><span class="fl">1.0</span>):</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Make sure theta stays within [0, 2*pi] to avoid numerical issues</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span> np.mod(theta, <span class="dv">2</span> <span class="op">*</span> np.pi)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    order_param <span class="op">=</span> np.mean(np.exp(<span class="ot">1j</span> <span class="op">*</span> theta))</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=</span> np.<span class="bu">abs</span>(order_param)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    phi <span class="op">=</span> np.angle(order_param)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    dtheta_dt <span class="op">=</span> omega <span class="op">+</span> coupling_strength <span class="op">*</span> r <span class="op">*</span> np.sin(phi <span class="op">-</span> theta)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dtheta_dt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
@@ -625,48 +733,48 @@ Hint: Mean-field ODE (click to expand)
 <section id="animate-the-phases" class="level2">
 <h2 class="anchored" data-anchor-id="animate-the-phases">Animate the phases</h2>
 <p>Follow the same animation loop used in the template. The update function solves one small IVP and updates the scatter plot.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.integrate <span class="im">import</span> solve_ivp</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.animation <span class="im">as</span> animation</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Parameters</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>coupling_strength <span class="op">=</span> <span class="fl">1.0</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>num_oscillators <span class="op">=</span> <span class="dv">100</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>sigma <span class="op">=</span> <span class="fl">1.0</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>dt <span class="op">=</span> <span class="fl">0.01</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize oscillators</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>theta, omega <span class="op">=</span> initialize_oscillators(num_oscillators, sigma<span class="op">=</span>sigma)</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Figure setup</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>fig, ax_phase <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>ax_phase.set_title(<span class="st">"Kuramoto Model"</span>)</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>ax_phase.set_xlabel(<span class="st">"Cos(theta)"</span>)</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>ax_phase.set_ylabel(<span class="st">"Sin(theta)"</span>)</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>ax_phase.set_xlim(<span class="op">-</span><span class="fl">1.1</span>, <span class="fl">1.1</span>)</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>ax_phase.set_ylim(<span class="op">-</span><span class="fl">1.1</span>, <span class="fl">1.1</span>)</span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>ax_phase.set_aspect(<span class="st">"equal"</span>)</span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>ax_phase.grid(<span class="va">True</span>)</span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>circle <span class="op">=</span> plt.Circle((<span class="dv">0</span>, <span class="dv">0</span>), <span class="dv">1</span>, color<span class="op">=</span><span class="st">"lightgray"</span>, fill<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>ax_phase.add_artist(circle)</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>scatter <span class="op">=</span> ax_phase.scatter([], [], s<span class="op">=</span><span class="dv">50</span>, color<span class="op">=</span><span class="st">"blue"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Animation update</span></span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> update(frame: <span class="bu">int</span>):</span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>    <span class="kw">global</span> theta</span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>    sol <span class="op">=</span> solve_ivp(kuramoto_ode, (<span class="dv">0</span>, dt), theta, args<span class="op">=</span>(omega, coupling_strength))</span>
-<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span> sol.y[..., <span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span> np.mod(theta, <span class="dv">2</span> <span class="op">*</span> np.pi)</span>
-<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> np.cos(theta)</span>
-<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> np.sin(theta)</span>
-<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>    scatter.set_offsets(np.vstack((x, y)).T)</span>
-<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [scatter]</span>
-<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>ani <span class="op">=</span> animation.FuncAnimation(fig, update, blit<span class="op">=</span><span class="va">True</span>, interval<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.integrate <span class="im">import</span> solve_ivp</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.animation <span class="im">as</span> animation</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Parameters</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>coupling_strength <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>num_oscillators <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>sigma <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>dt <span class="op">=</span> <span class="fl">0.01</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize oscillators</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>theta, omega <span class="op">=</span> initialize_oscillators(num_oscillators, sigma<span class="op">=</span>sigma)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Figure setup</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>fig, ax_phase <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>ax_phase.set_title(<span class="st">"Kuramoto Model"</span>)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>ax_phase.set_xlabel(<span class="st">"Cos(theta)"</span>)</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>ax_phase.set_ylabel(<span class="st">"Sin(theta)"</span>)</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>ax_phase.set_xlim(<span class="op">-</span><span class="fl">1.1</span>, <span class="fl">1.1</span>)</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>ax_phase.set_ylim(<span class="op">-</span><span class="fl">1.1</span>, <span class="fl">1.1</span>)</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>ax_phase.set_aspect(<span class="st">"equal"</span>)</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>ax_phase.grid(<span class="va">True</span>)</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>circle <span class="op">=</span> plt.Circle((<span class="dv">0</span>, <span class="dv">0</span>), <span class="dv">1</span>, color<span class="op">=</span><span class="st">"lightgray"</span>, fill<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>ax_phase.add_artist(circle)</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>scatter <span class="op">=</span> ax_phase.scatter([], [], s<span class="op">=</span><span class="dv">50</span>, color<span class="op">=</span><span class="st">"blue"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Animation update</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> update(frame: <span class="bu">int</span>):</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>    <span class="kw">global</span> theta</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>    sol <span class="op">=</span> solve_ivp(kuramoto_ode, (<span class="dv">0</span>, dt), theta, args<span class="op">=</span>(omega, coupling_strength))</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span> sol.y[..., <span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span> np.mod(theta, <span class="dv">2</span> <span class="op">*</span> np.pi)</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> np.cos(theta)</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> np.sin(theta)</span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>    scatter.set_offsets(np.vstack((x, y)).T)</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [scatter]</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>ani <span class="op">=</span> animation.FuncAnimation(fig, update, blit<span class="op">=</span><span class="va">True</span>, interval<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>If you get stuck, see the mini template in <a href="../../amlab/odes_coupled/kuramoto_template_mini.py">amlab/odes_coupled/kuramoto_template_mini.py</a>.</p>
 
 
@@ -1125,156 +1233,283 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>
   </div>
 </nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="sourceCode" id="cb6" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Kuramoto Model"</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Coupled Oscillators"</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>The Kuramoto model describes a population of weakly coupled oscillators. Each oscillator has a phase $\theta_i$ and a natural frequency $\omega_i$.</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>To visualize the dynamics, imagine points moving on the unit circle. Synchronization corresponds to points clustering around a common phase.</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-kuramoto-circle</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: 'Kuramoto model: oscillators on the unit circle and the order-parameter vector.'</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 6</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 6</span></span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.odes_coupled.kuramoto <span class="im">import</span> initialize_oscillators, kuramoto_order_parameter</span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>num_oscillators <span class="op">=</span> <span class="dv">100</span></span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>theta, omega <span class="op">=</span> initialize_oscillators(num_oscillators, distribution<span class="op">=</span><span class="st">"normal"</span>, scale_omega<span class="op">=</span><span class="fl">0.5</span>, seed<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.cos(theta)</span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> np.sin(theta)</span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>r, phi, rcosphi, rsinphi <span class="op">=</span> kuramoto_order_parameter(theta)</span>
-<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">6</span>))</span>
-<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Kuramoto Model"</span>)</span>
-<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Cos(theta)"</span>)</span>
-<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Sin(theta)"</span>)</span>
-<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>ax.set_xlim(<span class="op">-</span><span class="fl">1.1</span>, <span class="fl">1.1</span>)</span>
-<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>ax.set_ylim(<span class="op">-</span><span class="fl">1.1</span>, <span class="fl">1.1</span>)</span>
-<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>ax.set_aspect(<span class="st">"equal"</span>)</span>
-<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>ax.grid(<span class="va">True</span>)</span>
-<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>circle <span class="op">=</span> plt.Circle((<span class="dv">0</span>, <span class="dv">0</span>), <span class="dv">1</span>, color<span class="op">=</span><span class="st">"lightgray"</span>, fill<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>ax.add_artist(circle)</span>
-<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>ax.scatter(x, y, s<span class="op">=</span><span class="dv">50</span>, color<span class="op">=</span><span class="st">"blue"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
-<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>ax.plot([<span class="dv">0</span>, rcosphi], [<span class="dv">0</span>, rsinphi], color<span class="op">=</span><span class="st">"red"</span>, linewidth<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>ax.plot([rcosphi], [rsinphi], <span class="st">"ro"</span>, markersize<span class="op">=</span><span class="dv">6</span>)</span>
-<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>plt.close()</span>
-<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a><span class="fu">## Initialize oscillators</span></span>
-<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>The phases $\theta_i$ are sampled uniformly on $<span class="co">[</span><span class="ot">0, 2\pi</span><span class="co">]</span>$ and the natural frequencies $\omega_i$ from a normal distribution with standard deviation $\sigma$.</span>
-<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> initialize_oscillators(num_oscillators: <span class="bu">int</span>, sigma: <span class="bu">float</span> <span class="op">=</span> <span class="fl">1.0</span>):</span>
-<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Assign a random initial phase to each oscillator</span></span>
-<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span>  <span class="co"># draw from uniform distribution</span></span>
-<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Assign a random natural frequency to each oscillator</span></span>
-<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>    omega <span class="op">=</span>  <span class="co"># draw from normal distribution</span></span>
-<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> theta, omega</span>
-<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
-<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hint: Initialization (click to expand)</span></span>
-<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb6-69"><a href="#cb6-69" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> initialize_oscillators(num_oscillators: <span class="bu">int</span>, sigma: <span class="bu">float</span> <span class="op">=</span> <span class="fl">1.0</span>):</span>
-<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span> np.random.uniform(<span class="dv">0</span>, <span class="dv">2</span> <span class="op">*</span> np.pi, num_oscillators)</span>
-<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a>    omega <span class="op">=</span> np.random.normal(<span class="dv">0</span>, sigma, num_oscillators)</span>
-<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> theta, omega</span>
-<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a><span class="fu">## Define the ODE</span></span>
-<span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a>We will implement the mean-field form. Remember: <span class="in">`solve_ivp()`</span> requires the time argument even if it is not used.</span>
-<span id="cb6-79"><a href="#cb6-79" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-80"><a href="#cb6-80" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb6-81"><a href="#cb6-81" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> kuramoto_ode(t, theta, omega, coupling_strength<span class="op">=</span><span class="fl">1.0</span>):</span>
-<span id="cb6-82"><a href="#cb6-82" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span> np.mod(theta, <span class="dv">2</span> <span class="op">*</span> np.pi)</span>
-<span id="cb6-83"><a href="#cb6-83" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-84"><a href="#cb6-84" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: compute the order parameter (r, phi)</span></span>
-<span id="cb6-85"><a href="#cb6-85" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: implement mean-field coupling</span></span>
-<span id="cb6-86"><a href="#cb6-86" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dtheta_dt</span>
-<span id="cb6-87"><a href="#cb6-87" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb6-88"><a href="#cb6-88" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-89"><a href="#cb6-89" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
-<span id="cb6-90"><a href="#cb6-90" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hint: Mean-field ODE (click to expand)</span></span>
-<span id="cb6-91"><a href="#cb6-91" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-92"><a href="#cb6-92" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb6-93"><a href="#cb6-93" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> kuramoto_ode(t, theta, omega, coupling_strength<span class="op">=</span><span class="fl">1.0</span>):</span>
-<span id="cb6-94"><a href="#cb6-94" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span> np.mod(theta, <span class="dv">2</span> <span class="op">*</span> np.pi)</span>
-<span id="cb6-95"><a href="#cb6-95" aria-hidden="true" tabindex="-1"></a>    order_param <span class="op">=</span> np.mean(np.exp(<span class="ot">1j</span> <span class="op">*</span> theta))</span>
-<span id="cb6-96"><a href="#cb6-96" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=</span> np.<span class="bu">abs</span>(order_param)</span>
-<span id="cb6-97"><a href="#cb6-97" aria-hidden="true" tabindex="-1"></a>    phi <span class="op">=</span> np.angle(order_param)</span>
-<span id="cb6-98"><a href="#cb6-98" aria-hidden="true" tabindex="-1"></a>    dtheta_dt <span class="op">=</span> omega <span class="op">+</span> coupling_strength <span class="op">*</span> r <span class="op">*</span> np.sin(phi <span class="op">-</span> theta)</span>
-<span id="cb6-99"><a href="#cb6-99" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dtheta_dt</span>
-<span id="cb6-100"><a href="#cb6-100" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb6-101"><a href="#cb6-101" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb6-102"><a href="#cb6-102" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-103"><a href="#cb6-103" aria-hidden="true" tabindex="-1"></a><span class="fu">## Animate the phases</span></span>
-<span id="cb6-104"><a href="#cb6-104" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-105"><a href="#cb6-105" aria-hidden="true" tabindex="-1"></a>Follow the same animation loop used in the template. The update function solves one small IVP and updates the scatter plot.</span>
-<span id="cb6-106"><a href="#cb6-106" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-107"><a href="#cb6-107" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb6-108"><a href="#cb6-108" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.integrate <span class="im">import</span> solve_ivp</span>
-<span id="cb6-109"><a href="#cb6-109" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.animation <span class="im">as</span> animation</span>
-<span id="cb6-110"><a href="#cb6-110" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-111"><a href="#cb6-111" aria-hidden="true" tabindex="-1"></a><span class="co"># Parameters</span></span>
-<span id="cb6-112"><a href="#cb6-112" aria-hidden="true" tabindex="-1"></a>coupling_strength <span class="op">=</span> <span class="fl">1.0</span></span>
-<span id="cb6-113"><a href="#cb6-113" aria-hidden="true" tabindex="-1"></a>num_oscillators <span class="op">=</span> <span class="dv">100</span></span>
-<span id="cb6-114"><a href="#cb6-114" aria-hidden="true" tabindex="-1"></a>sigma <span class="op">=</span> <span class="fl">1.0</span></span>
-<span id="cb6-115"><a href="#cb6-115" aria-hidden="true" tabindex="-1"></a>dt <span class="op">=</span> <span class="fl">0.01</span></span>
-<span id="cb6-116"><a href="#cb6-116" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-117"><a href="#cb6-117" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize oscillators</span></span>
-<span id="cb6-118"><a href="#cb6-118" aria-hidden="true" tabindex="-1"></a>theta, omega <span class="op">=</span> initialize_oscillators(num_oscillators, sigma<span class="op">=</span>sigma)</span>
-<span id="cb6-119"><a href="#cb6-119" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-120"><a href="#cb6-120" aria-hidden="true" tabindex="-1"></a><span class="co"># Figure setup</span></span>
-<span id="cb6-121"><a href="#cb6-121" aria-hidden="true" tabindex="-1"></a>fig, ax_phase <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
-<span id="cb6-122"><a href="#cb6-122" aria-hidden="true" tabindex="-1"></a>ax_phase.set_title(<span class="st">"Kuramoto Model"</span>)</span>
-<span id="cb6-123"><a href="#cb6-123" aria-hidden="true" tabindex="-1"></a>ax_phase.set_xlabel(<span class="st">"Cos(theta)"</span>)</span>
-<span id="cb6-124"><a href="#cb6-124" aria-hidden="true" tabindex="-1"></a>ax_phase.set_ylabel(<span class="st">"Sin(theta)"</span>)</span>
-<span id="cb6-125"><a href="#cb6-125" aria-hidden="true" tabindex="-1"></a>ax_phase.set_xlim(<span class="op">-</span><span class="fl">1.1</span>, <span class="fl">1.1</span>)</span>
-<span id="cb6-126"><a href="#cb6-126" aria-hidden="true" tabindex="-1"></a>ax_phase.set_ylim(<span class="op">-</span><span class="fl">1.1</span>, <span class="fl">1.1</span>)</span>
-<span id="cb6-127"><a href="#cb6-127" aria-hidden="true" tabindex="-1"></a>ax_phase.set_aspect(<span class="st">"equal"</span>)</span>
-<span id="cb6-128"><a href="#cb6-128" aria-hidden="true" tabindex="-1"></a>ax_phase.grid(<span class="va">True</span>)</span>
-<span id="cb6-129"><a href="#cb6-129" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-130"><a href="#cb6-130" aria-hidden="true" tabindex="-1"></a>circle <span class="op">=</span> plt.Circle((<span class="dv">0</span>, <span class="dv">0</span>), <span class="dv">1</span>, color<span class="op">=</span><span class="st">"lightgray"</span>, fill<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb6-131"><a href="#cb6-131" aria-hidden="true" tabindex="-1"></a>ax_phase.add_artist(circle)</span>
-<span id="cb6-132"><a href="#cb6-132" aria-hidden="true" tabindex="-1"></a>scatter <span class="op">=</span> ax_phase.scatter([], [], s<span class="op">=</span><span class="dv">50</span>, color<span class="op">=</span><span class="st">"blue"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
-<span id="cb6-133"><a href="#cb6-133" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-134"><a href="#cb6-134" aria-hidden="true" tabindex="-1"></a><span class="co"># Animation update</span></span>
-<span id="cb6-135"><a href="#cb6-135" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-136"><a href="#cb6-136" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> update(frame: <span class="bu">int</span>):</span>
-<span id="cb6-137"><a href="#cb6-137" aria-hidden="true" tabindex="-1"></a>    <span class="kw">global</span> theta</span>
-<span id="cb6-138"><a href="#cb6-138" aria-hidden="true" tabindex="-1"></a>    sol <span class="op">=</span> solve_ivp(kuramoto_ode, (<span class="dv">0</span>, dt), theta, args<span class="op">=</span>(omega, coupling_strength))</span>
-<span id="cb6-139"><a href="#cb6-139" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span> sol.y[..., <span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb6-140"><a href="#cb6-140" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span> np.mod(theta, <span class="dv">2</span> <span class="op">*</span> np.pi)</span>
-<span id="cb6-141"><a href="#cb6-141" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-142"><a href="#cb6-142" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> np.cos(theta)</span>
-<span id="cb6-143"><a href="#cb6-143" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> np.sin(theta)</span>
-<span id="cb6-144"><a href="#cb6-144" aria-hidden="true" tabindex="-1"></a>    scatter.set_offsets(np.vstack((x, y)).T)</span>
-<span id="cb6-145"><a href="#cb6-145" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [scatter]</span>
-<span id="cb6-146"><a href="#cb6-146" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-147"><a href="#cb6-147" aria-hidden="true" tabindex="-1"></a>ani <span class="op">=</span> animation.FuncAnimation(fig, update, blit<span class="op">=</span><span class="va">True</span>, interval<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb6-148"><a href="#cb6-148" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb6-149"><a href="#cb6-149" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb6-150"><a href="#cb6-150" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb6-151"><a href="#cb6-151" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-152"><a href="#cb6-152" aria-hidden="true" tabindex="-1"></a>If you get stuck, see the mini template in <span class="co">[</span><span class="ot">amlab/odes_coupled/kuramoto_template_mini.py</span><span class="co">](../../amlab/odes_coupled/kuramoto_template_mini.py)</span>.</span>
+<div class="sourceCode" id="cb8" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Kuramoto Model"</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Coupled Oscillators"</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>The Kuramoto model describes a population of weakly coupled oscillators. Each oscillator has a phase $\theta_i$ and a natural frequency $\omega_i$.</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>The **natural frequency** of each oscillator ($\omega_i$) is drawn from a normal distribution centered at zero, and with standard deviation (scale parameter) $\sigma$. The density function of this normal distribution is:</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>g(\omega) = \frac{1}{\sqrt{2\pi}\sigma} \exp\left(-\frac{\omega^2}{2\sigma^2}\right).</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>The **initial phase** of each oscillator ($\theta_i$) is drawn from an uniform distribution between $0$ and $2\pi$.</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>For any system of weakly coupled, nearly identical **limit-cycle oscillators**, the long-term dynamics are given by phase equations of the following universal form:</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>\dot\theta_i = \omega_i + \sum_{j=1}^N \Gamma_{ij} \left( \theta_j - \theta_i \right),\quad i = 1, \dots, N</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>The Kuramoto model corresponds to the simplest possible case of equally weighted, all-to-all, purely sinusoidal coupling:</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>\Gamma_{ij}(\theta) = \frac{K}{N} \sin \left( \theta_j - \theta_i \right)$$</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>To visualize the dynamics of the phases, it is convenient to imagine a swarm of points running around the unit circle in the complex plane.</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>The complex order parameter is a macroscopic quantity that can be interpreted as the collective rhythm produced by the whole population.</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>r e^{i\Psi} = \frac{1}{N} \sum_{j=1}^N e^{i\theta_j}</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>@fig-kuramoto-circle shows a snapshot of the oscillators (blue dots) and the order parameter (red arrow) pointing towards the centroid of the phases. If you want to see this in action, run the script in <span class="co">[</span><span class="ot">amlab/odes_coupled/kuramoto.py</span><span class="co">](../../amlab/odes_coupled/kuramoto.py)</span> to animate the oscillators on the unit circle.</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-kuramoto-circle</span></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: 'Oscillators (blue dots) on the unit circle. The order parameter (red) points towards the centroid of the phases.'</span></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 6</span></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 6</span></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.odes_coupled.kuramoto <span class="im">import</span> initialize_oscillators, kuramoto_order_parameter</span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>num_oscillators <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a>theta, omega <span class="op">=</span> initialize_oscillators(</span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a>    num_oscillators,</span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a>    distribution<span class="op">=</span><span class="st">"normal"</span>,</span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a>    scale_omega<span class="op">=</span><span class="fl">0.5</span>,</span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a>    scale_phase<span class="op">=</span><span class="fl">0.6</span>,</span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a>    seed<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.cos(theta)</span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> np.sin(theta)</span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a>r, phi, rcosphi, rsinphi <span class="op">=</span> kuramoto_order_parameter(theta)</span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">6</span>))</span>
+<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Kuramoto Model"</span>)</span>
+<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Cos(theta)"</span>)</span>
+<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Sin(theta)"</span>)</span>
+<span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a>ax.set_xlim(<span class="op">-</span><span class="fl">1.1</span>, <span class="fl">1.1</span>)</span>
+<span id="cb8-70"><a href="#cb8-70" aria-hidden="true" tabindex="-1"></a>ax.set_ylim(<span class="op">-</span><span class="fl">1.1</span>, <span class="fl">1.1</span>)</span>
+<span id="cb8-71"><a href="#cb8-71" aria-hidden="true" tabindex="-1"></a>ax.set_aspect(<span class="st">"equal"</span>)</span>
+<span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a>ax.grid(<span class="va">True</span>)</span>
+<span id="cb8-73"><a href="#cb8-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-74"><a href="#cb8-74" aria-hidden="true" tabindex="-1"></a>circle <span class="op">=</span> plt.Circle((<span class="dv">0</span>, <span class="dv">0</span>), <span class="dv">1</span>, color<span class="op">=</span><span class="st">"lightgray"</span>, fill<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a>ax.add_artist(circle)</span>
+<span id="cb8-76"><a href="#cb8-76" aria-hidden="true" tabindex="-1"></a>ax.scatter(x, y, s<span class="op">=</span><span class="dv">50</span>, color<span class="op">=</span><span class="st">"blue"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb8-77"><a href="#cb8-77" aria-hidden="true" tabindex="-1"></a>ax.plot([<span class="dv">0</span>, rcosphi], [<span class="dv">0</span>, rsinphi], color<span class="op">=</span><span class="st">"red"</span>, linewidth<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb8-78"><a href="#cb8-78" aria-hidden="true" tabindex="-1"></a>ax.plot([rcosphi], [rsinphi], <span class="st">"ro"</span>, markersize<span class="op">=</span><span class="dv">6</span>)</span>
+<span id="cb8-79"><a href="#cb8-79" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb8-80"><a href="#cb8-80" aria-hidden="true" tabindex="-1"></a>plt.close()</span>
+<span id="cb8-81"><a href="#cb8-81" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-82"><a href="#cb8-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-83"><a href="#cb8-83" aria-hidden="true" tabindex="-1"></a>Follow the steps below to implement the Kuramoto model and produce an animation of the oscillators on the unit circle. We will build up to this final animation in stages, starting with initialization and the ODE definition.</span>
+<span id="cb8-84"><a href="#cb8-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-85"><a href="#cb8-85" aria-hidden="true" tabindex="-1"></a><span class="fu">## Initialize Oscillators</span></span>
+<span id="cb8-86"><a href="#cb8-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-87"><a href="#cb8-87" aria-hidden="true" tabindex="-1"></a>The phases $\theta_i$ are sampled uniformly on $<span class="co">[</span><span class="ot">0, 2\pi</span><span class="co">]</span>$ and the natural frequencies $\omega_i$ from a normal distribution with standard deviation $\sigma$.</span>
+<span id="cb8-88"><a href="#cb8-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-89"><a href="#cb8-89" aria-hidden="true" tabindex="-1"></a>Write a function to initialize the oscillators:</span>
+<span id="cb8-90"><a href="#cb8-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-91"><a href="#cb8-91" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb8-92"><a href="#cb8-92" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> initialize_oscillators(num_oscillators: <span class="bu">int</span>, sigma: <span class="bu">float</span> <span class="op">=</span> <span class="fl">1.0</span>):</span>
+<span id="cb8-93"><a href="#cb8-93" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Assign a random initial phase to each oscillator</span></span>
+<span id="cb8-94"><a href="#cb8-94" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span>  <span class="co"># draw from uniform distribution</span></span>
+<span id="cb8-95"><a href="#cb8-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-96"><a href="#cb8-96" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Assign a random natural frequency to each oscillator</span></span>
+<span id="cb8-97"><a href="#cb8-97" aria-hidden="true" tabindex="-1"></a>    omega <span class="op">=</span>  <span class="co"># draw from normal distribution</span></span>
+<span id="cb8-98"><a href="#cb8-98" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> theta, omega</span>
+<span id="cb8-99"><a href="#cb8-99" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-100"><a href="#cb8-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-101"><a href="#cb8-101" aria-hidden="true" tabindex="-1"></a>The outputs <span class="in">`theta`</span> and <span class="in">`omega`</span> are 1D arrays of length <span class="in">`num_oscillators`</span>. If you don't know how to sample from these distributions, see the hint below.</span>
+<span id="cb8-102"><a href="#cb8-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-103"><a href="#cb8-103" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb8-104"><a href="#cb8-104" aria-hidden="true" tabindex="-1"></a><span class="fu">## How to sample from distributions (click to expand)</span></span>
+<span id="cb8-105"><a href="#cb8-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-106"><a href="#cb8-106" aria-hidden="true" tabindex="-1"></a>Remember NumPy has built-in functions for sampling from distributions:</span>
+<span id="cb8-107"><a href="#cb8-107" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Uniform distribution: <span class="in">`np.random.uniform(low=0.0, high=2*np.pi, size=num_oscillators)`</span></span>
+<span id="cb8-108"><a href="#cb8-108" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Normal distribution: <span class="in">`np.random.normal(loc=0.0, scale=sigma, size=num_oscillators)`</span></span>
+<span id="cb8-109"><a href="#cb8-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-110"><a href="#cb8-110" aria-hidden="true" tabindex="-1"></a>If you need more help, you can expand the code snippet below for a complete implementation.</span>
+<span id="cb8-111"><a href="#cb8-111" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb8-112"><a href="#cb8-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-113"><a href="#cb8-113" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb8-114"><a href="#cb8-114" aria-hidden="true" tabindex="-1"></a><span class="fu">## Complete initialization function (click to expand)</span></span>
+<span id="cb8-115"><a href="#cb8-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-116"><a href="#cb8-116" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb8-117"><a href="#cb8-117" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> initialize_oscillators(num_oscillators: <span class="bu">int</span>, sigma: <span class="bu">float</span> <span class="op">=</span> <span class="fl">1.0</span>):</span>
+<span id="cb8-118"><a href="#cb8-118" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Assign a random initial phase to each oscillator</span></span>
+<span id="cb8-119"><a href="#cb8-119" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span>  np.random.uniform(low<span class="op">=</span><span class="fl">0.0</span>, high<span class="op">=</span><span class="dv">2</span> <span class="op">*</span> np.pi, size<span class="op">=</span>num_oscillators)</span>
+<span id="cb8-120"><a href="#cb8-120" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-121"><a href="#cb8-121" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Assign a random natural frequency to each oscillator</span></span>
+<span id="cb8-122"><a href="#cb8-122" aria-hidden="true" tabindex="-1"></a>    omega <span class="op">=</span>  np.random.normal(loc<span class="op">=</span><span class="fl">0.0</span>, scale<span class="op">=</span>sigma, size<span class="op">=</span>num_oscillators)</span>
+<span id="cb8-123"><a href="#cb8-123" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> theta, omega</span>
+<span id="cb8-124"><a href="#cb8-124" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-125"><a href="#cb8-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-126"><a href="#cb8-126" aria-hidden="true" tabindex="-1"></a>(Remember to import numpy first!)</span>
+<span id="cb8-127"><a href="#cb8-127" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb8-128"><a href="#cb8-128" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-129"><a href="#cb8-129" aria-hidden="true" tabindex="-1"></a><span class="fu">## Plot the Oscillators</span></span>
+<span id="cb8-130"><a href="#cb8-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-131"><a href="#cb8-131" aria-hidden="true" tabindex="-1"></a>To visualize the oscillators, we can plot their phases on the unit circle. The x-coordinate is $\cos(\theta_i)$ and the y-coordinate is $\sin(\theta_i)$. This way, each oscillator corresponds to a point on the circle. Build a code to visualize the oscillators as blue dots on the unit circle. Your output should be similar to @fig-kuramoto-circle-sample, but feel free to show it in your own style!</span>
+<span id="cb8-134"><a href="#cb8-134" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb8-135"><a href="#cb8-135" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-kuramoto-circle-sample</span></span>
+<span id="cb8-136"><a href="#cb8-136" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: 'Sample visualization of oscillators on the unit circle. Each blue dot represents an oscillator with phase $\theta_i$.'</span></span>
+<span id="cb8-137"><a href="#cb8-137" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 6</span></span>
+<span id="cb8-138"><a href="#cb8-138" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 6</span></span>
+<span id="cb8-139"><a href="#cb8-139" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb8-140"><a href="#cb8-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-141"><a href="#cb8-141" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.cos(theta)</span>
+<span id="cb8-142"><a href="#cb8-142" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> np.sin(theta)</span>
+<span id="cb8-143"><a href="#cb8-143" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">6</span>))</span>
+<span id="cb8-144"><a href="#cb8-144" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Kuramoto Model"</span>)</span>
+<span id="cb8-145"><a href="#cb8-145" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Cos(theta)"</span>)</span>
+<span id="cb8-146"><a href="#cb8-146" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Sin(theta)"</span>)</span>
+<span id="cb8-147"><a href="#cb8-147" aria-hidden="true" tabindex="-1"></a>ax.set_xlim(<span class="op">-</span><span class="fl">1.1</span>, <span class="fl">1.1</span>)</span>
+<span id="cb8-148"><a href="#cb8-148" aria-hidden="true" tabindex="-1"></a>ax.set_ylim(<span class="op">-</span><span class="fl">1.1</span>, <span class="fl">1.1</span>)</span>
+<span id="cb8-149"><a href="#cb8-149" aria-hidden="true" tabindex="-1"></a>ax.set_aspect(<span class="st">"equal"</span>)</span>
+<span id="cb8-150"><a href="#cb8-150" aria-hidden="true" tabindex="-1"></a>ax.grid(<span class="va">True</span>)</span>
+<span id="cb8-151"><a href="#cb8-151" aria-hidden="true" tabindex="-1"></a>ax.scatter(x, y, s<span class="op">=</span><span class="dv">50</span>, color<span class="op">=</span><span class="st">"blue"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb8-152"><a href="#cb8-152" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb8-153"><a href="#cb8-153" aria-hidden="true" tabindex="-1"></a>plt.close()</span>
+<span id="cb8-154"><a href="#cb8-154" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-155"><a href="#cb8-155" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-156"><a href="#cb8-156" aria-hidden="true" tabindex="-1"></a>If you don't know how to achieve the plot above, feel free to expand some of the hints below.</span>
+<span id="cb8-157"><a href="#cb8-157" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-158"><a href="#cb8-158" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb8-159"><a href="#cb8-159" aria-hidden="true" tabindex="-1"></a><span class="fu">## How to compute the positions of the oscillators (click to expand)</span></span>
+<span id="cb8-160"><a href="#cb8-160" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-161"><a href="#cb8-161" aria-hidden="true" tabindex="-1"></a>To compute the x and y coordinates for the plot, you can use NumPy's <span class="in">`cos`</span> and <span class="in">`sin`</span> functions applied to the <span class="in">`theta`</span> array:</span>
+<span id="cb8-162"><a href="#cb8-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-163"><a href="#cb8-163" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb8-164"><a href="#cb8-164" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.cos(theta)</span>
+<span id="cb8-165"><a href="#cb8-165" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> np.sin(theta)</span>
+<span id="cb8-166"><a href="#cb8-166" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-167"><a href="#cb8-167" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-168"><a href="#cb8-168" aria-hidden="true" tabindex="-1"></a>(Remember to import numpy first!)</span>
+<span id="cb8-169"><a href="#cb8-169" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb8-170"><a href="#cb8-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-171"><a href="#cb8-171" aria-hidden="true" tabindex="-1"></a>::: How to create the plot (click to expand)</span>
+<span id="cb8-172"><a href="#cb8-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-173"><a href="#cb8-173" aria-hidden="true" tabindex="-1"></a>To create the plot, you can use Matplotlib's <span class="in">`subplots`</span> function to set up the figure and axes, and then use <span class="in">`scatter`</span> to plot the points. Here's a complete example:</span>
+<span id="cb8-174"><a href="#cb8-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-175"><a href="#cb8-175" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb8-176"><a href="#cb8-176" aria-hidden="true" tabindex="-1"></a><span class="co"># First, we prepare the figure and axes</span></span>
+<span id="cb8-177"><a href="#cb8-177" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">6</span>))</span>
+<span id="cb8-178"><a href="#cb8-178" aria-hidden="true" tabindex="-1"></a><span class="co"># fig is the Figure, a "canvas" where everything is drawn</span></span>
+<span id="cb8-179"><a href="#cb8-179" aria-hidden="true" tabindex="-1"></a><span class="co"># ax is the Axes, a "subplot" where we can plot data</span></span>
+<span id="cb8-180"><a href="#cb8-180" aria-hidden="true" tabindex="-1"></a><span class="co"># A single figure can have multiple axes (e.g. for subplots)</span></span>
+<span id="cb8-181"><a href="#cb8-181" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Kuramoto Model"</span>)  <span class="co"># Title of the plot</span></span>
+<span id="cb8-182"><a href="#cb8-182" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Cos(theta)"</span>)  <span class="co"># Name of x-axis</span></span>
+<span id="cb8-183"><a href="#cb8-183" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Sin(theta)"</span>)  <span class="co"># Name of y-axis</span></span>
+<span id="cb8-184"><a href="#cb8-184" aria-hidden="true" tabindex="-1"></a>ax.set_xlim(<span class="op">-</span><span class="fl">1.1</span>, <span class="fl">1.1</span>)  <span class="co"># Limits for x-axis</span></span>
+<span id="cb8-185"><a href="#cb8-185" aria-hidden="true" tabindex="-1"></a>ax.set_ylim(<span class="op">-</span><span class="fl">1.1</span>, <span class="fl">1.1</span>)  <span class="co"># Limits for y-axis</span></span>
+<span id="cb8-186"><a href="#cb8-186" aria-hidden="true" tabindex="-1"></a>ax.set_aspect(<span class="st">"equal"</span>)  <span class="co"># Make the circle look circular</span></span>
+<span id="cb8-187"><a href="#cb8-187" aria-hidden="true" tabindex="-1"></a>ax.grid(<span class="va">True</span>)  <span class="co"># Show grid lines</span></span>
+<span id="cb8-188"><a href="#cb8-188" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-189"><a href="#cb8-189" aria-hidden="true" tabindex="-1"></a><span class="co"># Now we are ready to plot the oscillators as blue dots</span></span>
+<span id="cb8-190"><a href="#cb8-190" aria-hidden="true" tabindex="-1"></a>ax.scatter(x, y, s<span class="op">=</span><span class="dv">50</span>, color<span class="op">=</span><span class="st">"blue"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb8-191"><a href="#cb8-191" aria-hidden="true" tabindex="-1"></a><span class="co"># s is the size of the dots</span></span>
+<span id="cb8-192"><a href="#cb8-192" aria-hidden="true" tabindex="-1"></a><span class="co"># alpha is the transparency (0 is fully transparent, 1 is fully opaque)</span></span>
+<span id="cb8-193"><a href="#cb8-193" aria-hidden="true" tabindex="-1"></a><span class="co"># we want the oscillators to be somewhat transparent so we can see overlaps</span></span>
+<span id="cb8-194"><a href="#cb8-194" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-195"><a href="#cb8-195" aria-hidden="true" tabindex="-1"></a><span class="co"># Finally, we show the plot and close it to free up memory</span></span>
+<span id="cb8-196"><a href="#cb8-196" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb8-197"><a href="#cb8-197" aria-hidden="true" tabindex="-1"></a>plt.close()</span>
+<span id="cb8-198"><a href="#cb8-198" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-199"><a href="#cb8-199" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb8-200"><a href="#cb8-200" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-201"><a href="#cb8-201" aria-hidden="true" tabindex="-1"></a><span class="fu">## Define the ODE</span></span>
+<span id="cb8-202"><a href="#cb8-202" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-203"><a href="#cb8-203" aria-hidden="true" tabindex="-1"></a>We will implement the mean-field form. Remember: <span class="in">`solve_ivp()`</span> requires the time argument even if it is not used.</span>
+<span id="cb8-204"><a href="#cb8-204" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-205"><a href="#cb8-205" aria-hidden="true" tabindex="-1"></a>Follow the template below to define the ODE function for the Kuramoto model. Call it <span class="in">`kuramoto_ode()`</span>. The function should compute the derivatives of the phases $\dot\theta_i$ based on the current phases $\theta_i$, natural frequencies $\omega_i$, and coupling strength $K$.</span>
+<span id="cb8-206"><a href="#cb8-206" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-207"><a href="#cb8-207" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb8-208"><a href="#cb8-208" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ode(t, state, <span class="op">*</span>params):</span>
+<span id="cb8-209"><a href="#cb8-209" aria-hidden="true" tabindex="-1"></a>    <span class="co"># state represents the current values of the variables (e.g., x, y)</span></span>
+<span id="cb8-210"><a href="#cb8-210" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-211"><a href="#cb8-211" aria-hidden="true" tabindex="-1"></a>    <span class="co"># params are any additional parameters needed to compute the derivatives</span></span>
+<span id="cb8-212"><a href="#cb8-212" aria-hidden="true" tabindex="-1"></a>    <span class="co"># each of them is separated by commas</span></span>
+<span id="cb8-213"><a href="#cb8-213" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-214"><a href="#cb8-214" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dstate_dt  <span class="co"># this should be a sequence of the same length as `state`</span></span>
+<span id="cb8-215"><a href="#cb8-215" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-216"><a href="#cb8-216" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-217"><a href="#cb8-217" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb8-218"><a href="#cb8-218" aria-hidden="true" tabindex="-1"></a><span class="fu">## See the full ODE function (click to expand)</span></span>
+<span id="cb8-219"><a href="#cb8-219" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-220"><a href="#cb8-220" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb8-221"><a href="#cb8-221" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> kuramoto_ode(t, theta, omega, coupling_strength<span class="op">=</span><span class="fl">1.0</span>):</span>
+<span id="cb8-222"><a href="#cb8-222" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Make sure theta stays within [0, 2*pi] to avoid numerical issues</span></span>
+<span id="cb8-223"><a href="#cb8-223" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span> np.mod(theta, <span class="dv">2</span> <span class="op">*</span> np.pi)</span>
+<span id="cb8-224"><a href="#cb8-224" aria-hidden="true" tabindex="-1"></a>    order_param <span class="op">=</span> np.mean(np.exp(<span class="ot">1j</span> <span class="op">*</span> theta))</span>
+<span id="cb8-225"><a href="#cb8-225" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=</span> np.<span class="bu">abs</span>(order_param)</span>
+<span id="cb8-226"><a href="#cb8-226" aria-hidden="true" tabindex="-1"></a>    phi <span class="op">=</span> np.angle(order_param)</span>
+<span id="cb8-227"><a href="#cb8-227" aria-hidden="true" tabindex="-1"></a>    dtheta_dt <span class="op">=</span> omega <span class="op">+</span> coupling_strength <span class="op">*</span> r <span class="op">*</span> np.sin(phi <span class="op">-</span> theta)</span>
+<span id="cb8-228"><a href="#cb8-228" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dtheta_dt</span>
+<span id="cb8-229"><a href="#cb8-229" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-230"><a href="#cb8-230" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb8-231"><a href="#cb8-231" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-232"><a href="#cb8-232" aria-hidden="true" tabindex="-1"></a><span class="fu">## Animate the phases</span></span>
+<span id="cb8-233"><a href="#cb8-233" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-234"><a href="#cb8-234" aria-hidden="true" tabindex="-1"></a>Follow the same animation loop used in the template. The update function solves one small IVP and updates the scatter plot.</span>
+<span id="cb8-235"><a href="#cb8-235" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-236"><a href="#cb8-236" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb8-237"><a href="#cb8-237" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.integrate <span class="im">import</span> solve_ivp</span>
+<span id="cb8-238"><a href="#cb8-238" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.animation <span class="im">as</span> animation</span>
+<span id="cb8-239"><a href="#cb8-239" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-240"><a href="#cb8-240" aria-hidden="true" tabindex="-1"></a><span class="co"># Parameters</span></span>
+<span id="cb8-241"><a href="#cb8-241" aria-hidden="true" tabindex="-1"></a>coupling_strength <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb8-242"><a href="#cb8-242" aria-hidden="true" tabindex="-1"></a>num_oscillators <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb8-243"><a href="#cb8-243" aria-hidden="true" tabindex="-1"></a>sigma <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb8-244"><a href="#cb8-244" aria-hidden="true" tabindex="-1"></a>dt <span class="op">=</span> <span class="fl">0.01</span></span>
+<span id="cb8-245"><a href="#cb8-245" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-246"><a href="#cb8-246" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize oscillators</span></span>
+<span id="cb8-247"><a href="#cb8-247" aria-hidden="true" tabindex="-1"></a>theta, omega <span class="op">=</span> initialize_oscillators(num_oscillators, sigma<span class="op">=</span>sigma)</span>
+<span id="cb8-248"><a href="#cb8-248" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-249"><a href="#cb8-249" aria-hidden="true" tabindex="-1"></a><span class="co"># Figure setup</span></span>
+<span id="cb8-250"><a href="#cb8-250" aria-hidden="true" tabindex="-1"></a>fig, ax_phase <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
+<span id="cb8-251"><a href="#cb8-251" aria-hidden="true" tabindex="-1"></a>ax_phase.set_title(<span class="st">"Kuramoto Model"</span>)</span>
+<span id="cb8-252"><a href="#cb8-252" aria-hidden="true" tabindex="-1"></a>ax_phase.set_xlabel(<span class="st">"Cos(theta)"</span>)</span>
+<span id="cb8-253"><a href="#cb8-253" aria-hidden="true" tabindex="-1"></a>ax_phase.set_ylabel(<span class="st">"Sin(theta)"</span>)</span>
+<span id="cb8-254"><a href="#cb8-254" aria-hidden="true" tabindex="-1"></a>ax_phase.set_xlim(<span class="op">-</span><span class="fl">1.1</span>, <span class="fl">1.1</span>)</span>
+<span id="cb8-255"><a href="#cb8-255" aria-hidden="true" tabindex="-1"></a>ax_phase.set_ylim(<span class="op">-</span><span class="fl">1.1</span>, <span class="fl">1.1</span>)</span>
+<span id="cb8-256"><a href="#cb8-256" aria-hidden="true" tabindex="-1"></a>ax_phase.set_aspect(<span class="st">"equal"</span>)</span>
+<span id="cb8-257"><a href="#cb8-257" aria-hidden="true" tabindex="-1"></a>ax_phase.grid(<span class="va">True</span>)</span>
+<span id="cb8-258"><a href="#cb8-258" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-259"><a href="#cb8-259" aria-hidden="true" tabindex="-1"></a>circle <span class="op">=</span> plt.Circle((<span class="dv">0</span>, <span class="dv">0</span>), <span class="dv">1</span>, color<span class="op">=</span><span class="st">"lightgray"</span>, fill<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb8-260"><a href="#cb8-260" aria-hidden="true" tabindex="-1"></a>ax_phase.add_artist(circle)</span>
+<span id="cb8-261"><a href="#cb8-261" aria-hidden="true" tabindex="-1"></a>scatter <span class="op">=</span> ax_phase.scatter([], [], s<span class="op">=</span><span class="dv">50</span>, color<span class="op">=</span><span class="st">"blue"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb8-262"><a href="#cb8-262" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-263"><a href="#cb8-263" aria-hidden="true" tabindex="-1"></a><span class="co"># Animation update</span></span>
+<span id="cb8-264"><a href="#cb8-264" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-265"><a href="#cb8-265" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> update(frame: <span class="bu">int</span>):</span>
+<span id="cb8-266"><a href="#cb8-266" aria-hidden="true" tabindex="-1"></a>    <span class="kw">global</span> theta</span>
+<span id="cb8-267"><a href="#cb8-267" aria-hidden="true" tabindex="-1"></a>    sol <span class="op">=</span> solve_ivp(kuramoto_ode, (<span class="dv">0</span>, dt), theta, args<span class="op">=</span>(omega, coupling_strength))</span>
+<span id="cb8-268"><a href="#cb8-268" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span> sol.y[..., <span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb8-269"><a href="#cb8-269" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span> np.mod(theta, <span class="dv">2</span> <span class="op">*</span> np.pi)</span>
+<span id="cb8-270"><a href="#cb8-270" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-271"><a href="#cb8-271" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> np.cos(theta)</span>
+<span id="cb8-272"><a href="#cb8-272" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> np.sin(theta)</span>
+<span id="cb8-273"><a href="#cb8-273" aria-hidden="true" tabindex="-1"></a>    scatter.set_offsets(np.vstack((x, y)).T)</span>
+<span id="cb8-274"><a href="#cb8-274" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [scatter]</span>
+<span id="cb8-275"><a href="#cb8-275" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-276"><a href="#cb8-276" aria-hidden="true" tabindex="-1"></a>ani <span class="op">=</span> animation.FuncAnimation(fig, update, blit<span class="op">=</span><span class="va">True</span>, interval<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb8-277"><a href="#cb8-277" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb8-278"><a href="#cb8-278" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb8-279"><a href="#cb8-279" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-280"><a href="#cb8-280" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-281"><a href="#cb8-281" aria-hidden="true" tabindex="-1"></a>If you get stuck, see the mini template in <span class="co">[</span><span class="ot">amlab/odes_coupled/kuramoto_template_mini.py</span><span class="co">](../../amlab/odes_coupled/kuramoto_template_mini.py)</span>.</span>
 </code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
