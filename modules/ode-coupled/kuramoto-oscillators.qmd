@@ -408,6 +408,31 @@ All done! You should see an animation of the oscillators moving around the unit 
 
 **Wait**. The order parameter is not moving! You can fix this by computing the updated order parameter at each step, and updating it inside the `update_function()`. Try it yourself.
 
+## Compare the ODEs
+
+If you have reached this far, congratulations! You have successfully implemented the Kuramoto model and visualized its dynamics. Now, you can compare the original pairwise form of the ODE with the mean field approximation. Try implementing both versions and see how they differ in terms of computational efficiency and the resulting dynamics. You should find that the mean field approximation is much faster for large populations, while still capturing the essential behavior of synchronization.
+
+::: {.callout-tip collapse="true"}
+### How do I implement the other ODE?
+
+You just have to create a new `kuramoto_ode()` function. I recommend you name them differently, for instance `kuramoto_ode_pairwise()` and `kuramoto_ode_meanfield()`, so that you can easily switch between them in the animation loop. Follow the equations in the theory page [Kuramoto Model](kuramoto.qmd).
+
+If you have reached this far by implementing one of them, it should be as simple as changing the ODE function in the `solve_ivp()` call inside the `update_function()`. For example, if you have implemented the pairwise version, you can switch to the mean field version by changing this line:
+
+```python
+sol = solve_ivp(
+    kuramoto_ode_pairwise, # Change this to the other ODE function
+    (0, dt),
+    theta,
+    args=(omega, coupling_strength),
+    )
+```
+
+This is why **modularity** is important! By keeping your code organized and modular, you can easily swap out different components (like the ODE function) without having to rewrite the entire animation code. This allows you to experiment with different models and see how they compare in terms of dynamics and computational efficiency.
+
+In fact, doing modularization well will save you half the work for the [assignment](assignment.qmd) where you will implement a different model of coupled oscillators (the bridge of the Millenium).
+:::
+
 ## What's Next?
 
 In the next page, we will explore the bifurcation diagram of the Kuramoto model, which shows how the order parameter changes as a function of the coupling strength. This will help us understand the transition from incoherence to synchronization in this system.
