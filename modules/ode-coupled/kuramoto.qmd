@@ -1,6 +1,6 @@
 ---
 title: "Kuramoto Model"
-subtitle: "Coupled Oscillators"
+subtitle: "Theory"
 format: html
 ---
 
@@ -25,9 +25,11 @@ The Kuramoto model corresponds to the simplest possible case of equally weighted
 $$
 \Gamma_{ij}(\theta) = \frac{K}{N} \sin \left( \theta_j - \theta_i \right)$$
 
+## The Order Parameter
+
 To visualize the dynamics of the phases, it is convenient to imagine a swarm of points running around the unit circle in the complex plane.
 
-The complex order parameter is a macroscopic quantity that can be interpreted as the collective rhythm produced by the whole population.
+The complex **order parameter** is a macroscopic quantity that can be interpreted as the collective rhythm produced by the whole population.
 
 $$
 r e^{i\Psi} = \frac{1}{N} \sum_{j=1}^N e^{i\theta_j}
@@ -78,200 +80,57 @@ plt.show()
 plt.close()
 ```
 
-Follow the steps below to implement the Kuramoto model and produce an animation of the oscillators on the unit circle. We will build up to this final animation in stages, starting with initialization and the ODE definition.
+## Mean Field Approximation
 
-## Initialize Oscillators
+Kuramoto noticed that the governing equation can be rewritten neatly in terms of the order parameter:
 
-The phases $\theta_i$ are sampled uniformly on $[0, 2\pi]$ and the natural frequencies $\omega_i$ from a normal distribution with standard deviation $\sigma$.
+$$
+\dot\theta_i = \omega_i + K r \sin(\Psi - \theta_i),\quad i = 1, \dots, N $$
 
-Write a function to initialize the oscillators:
+## A Positive Feedback Loop
 
-```python
-def initialize_oscillators(num_oscillators: int, sigma: float = 1.0):
-    # Assign a random initial phase to each oscillator
-    theta =  # draw from uniform distribution
+1. The phase $\theta_i$ is pulled toward the mean phase $\Psi$.
+2. The population becomes more coherent. In turn, the order parameter $r$ increases.
+3. The effective strength of the coupling $K r$ increases proportionally to the coherence.
+4. $K r$ tends to recruit even more oscillators into the synchronized cluster, which feeds step 1.
 
-    # Assign a random natural frequency to each oscillator
-    omega =  # draw from normal distribution
-    return theta, omega
-```
+## Spontaneous Synchronization
 
-The outputs `theta` and `omega` are 1D arrays of length `num_oscillators`. If you don't know how to sample from these distributions, see the hint below.
+Positive feedback loop between coupling ($K$) and coherence ($r$).
 
-::: {.callout-tip collapse="true"}
-## How to sample from distributions (click to expand)
+If the coherence is further increased by the new recruits, the process will continue; otherwise, it becomes self-limiting.
 
-Remember NumPy has built-in functions for sampling from distributions:
-- Uniform distribution: `np.random.uniform(low=0.0, high=2*np.pi, size=num_oscillators)`
-- Normal distribution: `np.random.normal(loc=0.0, scale=sigma, size=num_oscillators)`
+## Goal of this Session
 
-If you need more help, you can expand the code snippet below for a complete implementation.
-:::
+Implement the Kuramoto model in Python, visualize the oscillators on a unit circle and find when the spontaneous synchronization happens.
 
-::: {.callout-tip collapse="true"}
-## Complete initialization function (click to expand)
+Play with the following parameters and see how they affect the dynamics:
 
-```python
-def initialize_oscillators(num_oscillators: int, sigma: float = 1.0):
-    # Assign a random initial phase to each oscillator
-    theta =  np.random.uniform(low=0.0, high=2 * np.pi, size=num_oscillators)
+- Coupling strength, $K > 0$
+- Number of oscillators, $N$
 
-    # Assign a random natural frequency to each oscillator
-    omega =  np.random.normal(loc=0.0, scale=sigma, size=num_oscillators)
-    return theta, omega
-```
+You can follow two approaches to the ODE function.
 
-(Remember to import numpy first!)
-:::
+### Pairwise Interactions
 
-## Plot the Oscillators
+$$
+\dot\theta_i = \omega_i + \sum_{j=1}^N \Gamma_{ij} \left( \theta_j - \theta_i \right),\quad i = 1, \dots, N
+$$
 
-To visualize the oscillators, we can plot their phases on the unit circle. The x-coordinate is $\cos(\theta_i)$ and the y-coordinate is $\sin(\theta_i)$. This way, each oscillator corresponds to a point on the circle. Build a code to visualize the oscillators as blue dots on the unit circle. Your output should be similar to @fig-kuramoto-circle-sample, but feel free to show it in your own style!
-```{python}
-#| label: fig-kuramoto-circle-sample
-#| fig-cap: 'Sample visualization of oscillators on the unit circle. Each blue dot represents an oscillator with phase $\theta_i$.'
-#| fig-width: 6
-#| fig-height: 6
-#| echo: false
+$$
+\Gamma_{ij}(\theta) = \frac{K}{N} \sin \left( \theta_j - \theta_i \right)$$
 
-x = np.cos(theta)
-y = np.sin(theta)
-fig, ax = plt.subplots(figsize=(6, 6))
-ax.set_title("Kuramoto Model")
-ax.set_xlabel("Cos(theta)")
-ax.set_ylabel("Sin(theta)")
-ax.set_xlim(-1.1, 1.1)
-ax.set_ylim(-1.1, 1.1)
-ax.set_aspect("equal")
-ax.grid(True)
-ax.scatter(x, y, s=50, color="blue", alpha=0.5)
-plt.show()
-plt.close()
-```
+### Mean Field Approximation
 
-If you don't know how to achieve the plot above, feel free to expand some of the hints below.
+$$
+\dot\theta_i = \omega_i + K r \sin(\Psi - \theta_i),\quad i = 1, \dots, N $$
 
-::: {.callout-tip collapse="true"}
-## How to compute the positions of the oscillators (click to expand)
+$$
+r e^{i\Psi} = \frac{1}{N} \sum_{j=1}^N e^{i\theta_j}
+$$
 
-To compute the x and y coordinates for the plot, you can use NumPy's `cos` and `sin` functions applied to the `theta` array:
+---
 
-```python
-x = np.cos(theta)
-y = np.sin(theta)
-```
+We will start by initializing the oscillators and plotting them on the unit circle. Then, we will define the ODE function and use `scipy.integrate.solve_ivp()` to simulate the dynamics. Follow to the next page for the implementation details.
 
-(Remember to import numpy first!)
-:::
-
-::: How to create the plot (click to expand)
-
-To create the plot, you can use Matplotlib's `subplots` function to set up the figure and axes, and then use `scatter` to plot the points. Here's a complete example:
-
-```python
-# First, we prepare the figure and axes
-fig, ax = plt.subplots(figsize=(6, 6))
-# fig is the Figure, a "canvas" where everything is drawn
-# ax is the Axes, a "subplot" where we can plot data
-# A single figure can have multiple axes (e.g. for subplots)
-ax.set_title("Kuramoto Model")  # Title of the plot
-ax.set_xlabel("Cos(theta)")  # Name of x-axis
-ax.set_ylabel("Sin(theta)")  # Name of y-axis
-ax.set_xlim(-1.1, 1.1)  # Limits for x-axis
-ax.set_ylim(-1.1, 1.1)  # Limits for y-axis
-ax.set_aspect("equal")  # Make the circle look circular
-ax.grid(True)  # Show grid lines
-
-# Now we are ready to plot the oscillators as blue dots
-ax.scatter(x, y, s=50, color="blue", alpha=0.5)
-# s is the size of the dots
-# alpha is the transparency (0 is fully transparent, 1 is fully opaque)
-# we want the oscillators to be somewhat transparent so we can see overlaps
-
-# Finally, we show the plot and close it to free up memory
-plt.show()
-plt.close()
-```
-:::
-
-## Define the ODE
-
-We will implement the mean-field form. Remember: `solve_ivp()` requires the time argument even if it is not used.
-
-Follow the template below to define the ODE function for the Kuramoto model. Call it `kuramoto_ode()`. The function should compute the derivatives of the phases $\dot\theta_i$ based on the current phases $\theta_i$, natural frequencies $\omega_i$, and coupling strength $K$.
-
-```python
-def ode(t, state, *params):
-    # state represents the current values of the variables (e.g., x, y)
-
-    # params are any additional parameters needed to compute the derivatives
-    # each of them is separated by commas
-
-    return dstate_dt  # this should be a sequence of the same length as `state`
-```
-
-::: {.callout-tip collapse="true"}
-## See the full ODE function (click to expand)
-
-```python
-def kuramoto_ode(t, theta, omega, coupling_strength=1.0):
-    # Make sure theta stays within [0, 2*pi] to avoid numerical issues
-    theta = np.mod(theta, 2 * np.pi)
-    order_param = np.mean(np.exp(1j * theta))
-    r = np.abs(order_param)
-    phi = np.angle(order_param)
-    dtheta_dt = omega + coupling_strength * r * np.sin(phi - theta)
-    return dtheta_dt
-```
-:::
-
-## Animate the phases
-
-Follow the same animation loop used in the template. The update function solves one small IVP and updates the scatter plot.
-
-```python
-from scipy.integrate import solve_ivp
-import matplotlib.animation as animation
-
-# Parameters
-coupling_strength = 1.0
-num_oscillators = 100
-sigma = 1.0
-dt = 0.01
-
-# Initialize oscillators
-theta, omega = initialize_oscillators(num_oscillators, sigma=sigma)
-
-# Figure setup
-fig, ax_phase = plt.subplots(1, 1, figsize=(12, 6))
-ax_phase.set_title("Kuramoto Model")
-ax_phase.set_xlabel("Cos(theta)")
-ax_phase.set_ylabel("Sin(theta)")
-ax_phase.set_xlim(-1.1, 1.1)
-ax_phase.set_ylim(-1.1, 1.1)
-ax_phase.set_aspect("equal")
-ax_phase.grid(True)
-
-circle = plt.Circle((0, 0), 1, color="lightgray", fill=False)
-ax_phase.add_artist(circle)
-scatter = ax_phase.scatter([], [], s=50, color="blue", alpha=0.5)
-
-# Animation update
-
-def update(frame: int):
-    global theta
-    sol = solve_ivp(kuramoto_ode, (0, dt), theta, args=(omega, coupling_strength))
-    theta = sol.y[..., -1]
-    theta = np.mod(theta, 2 * np.pi)
-
-    x = np.cos(theta)
-    y = np.sin(theta)
-    scatter.set_offsets(np.vstack((x, y)).T)
-    return [scatter]
-
-ani = animation.FuncAnimation(fig, update, blit=True, interval=1)
-plt.tight_layout()
-plt.show()
-```
-
-If you get stuck, see the mini template in [amlab/odes_coupled/kuramoto_template_mini.py](../../amlab/odes_coupled/kuramoto_template_mini.py).
+[Oscillators and Animation](kuramoto-oscillators.qmd){.btn .btn-primary}
