@@ -75,6 +75,10 @@ ax.set_xlim(-1.1, 1.1)
 ax.set_ylim(-1.1, 1.1)
 ax.set_aspect("equal")
 ax.grid(True)
+# Draw unit circle (optional, but it helps to visualize the boundary)
+circle = plt.Circle((0, 0), 1, color="lightgray", fill=False)
+ax.add_artist(circle)
+
 ax.scatter(x, y, s=50, color="blue", alpha=0.5)
 plt.show()
 plt.close()
@@ -112,6 +116,9 @@ ax.set_xlim(-1.1, 1.1)  # Limits for x-axis
 ax.set_ylim(-1.1, 1.1)  # Limits for y-axis
 ax.set_aspect("equal")  # Make the circle look circular
 ax.grid(True)  # Show grid lines
+# Draw unit circle (optional, but it helps to visualize the boundary)
+circle = plt.Circle((0, 0), 1, color="lightgray", fill=False)
+ax.add_artist(circle)
 
 # Now we are ready to plot the oscillators as blue dots
 ax.scatter(x, y, s=50, color="blue", alpha=0.5)
@@ -207,6 +214,9 @@ ax.set_xlim(-1.1, 1.1)
 ax.set_ylim(-1.1, 1.1)
 ax.set_aspect("equal")
 ax.grid(True)
+# Draw unit circle (optional, but it helps to visualize the boundary)
+circle = plt.Circle((0, 0), 1, color="lightgray", fill=False)
+ax.add_artist(circle)
 ax.scatter(x, y, s=50, color="blue", alpha=0.5)
 plt.show()
 plt.close()
@@ -278,6 +288,9 @@ ax.set_xlim(-1.1, 1.1)
 ax.set_ylim(-1.1, 1.1)
 ax.set_aspect("equal")
 ax.grid(True)
+# Draw unit circle (optional, but it helps to visualize the boundary)
+circle = plt.Circle((0, 0), 1, color="lightgray", fill=False)
+ax.add_artist(circle)
 ax.scatter(x, y, s=50, color="blue", alpha=0.5)
 plt.show()
 plt.close()
@@ -285,23 +298,40 @@ plt.close()
 
 ## Animate the Phases
 
-Follow the same animation loop used in the template. The update function solves one small IVP and updates the scatter plot.
+Seeing the final state of the system is nice and that, but you know what is even better? Seeing it in action! You can use `matplotlib.animation` to create an animation of the oscillators moving around the unit circle as they evolve according to the Kuramoto ODE. This will allow you to visualize the process of synchronization in real time.
+
+To create an animation, make sure you are working on a Python script in your local computer (e.g., `kuramoto.py`) and run it with `python kuramoto.py`. It is _possible_ to do animations on Jupyter notebooks, but it is more complicated and may not work in all environments.
+
+Ready? Firt, your script should initialize the oscillators and all parameters that you want to control (e.g., coupling strength, number of oscillators, etc.).
 
 ```python
-from scipy.integrate import solve_ivp
-import matplotlib.animation as animation
+# Remember to include / import the following functions
+# that you have created earlier:
+# initialize_oscillators()
+# kuramoto_ode()
 
-# Parameters
-coupling_strength = 1.0
-num_oscillators = 100
-sigma = 1.0
-dt = 0.01
+coupling_strength = 1.0  # K
+num_oscillators = 100  # Number of oscillators
+omega = 0.5  # Standard deviation of the natural frequencies
+sigma = 1.0  # Scale of the initial phases
+dt = 0.1  # Time step for the integration time
 
-# Initialize oscillators
-theta, omega = initialize_oscillators(num_oscillators, sigma=sigma)
+# Initialize oscillators (phase and natural frequency)
+theta, omega = initialize_oscillators(
+    num_oscillators,
+    omega=omega,
+    sigma=sigma
+)
+t_span = (0, dt)
+```
 
-# Figure setup
-fig, ax_phase = plt.subplots(1, 1, figsize=(12, 6))
+Second, we need to create a figure and axes. Every element inside this plot should be named, so that we can update it in real time. Follow this template:
+
+```python
+# Initialize the figure and axes
+fig, ax_phase = plt.subplots(figsize=(6, 6))
+
+# Define the labels and size of this plot
 ax_phase.set_title("Kuramoto Model")
 ax_phase.set_xlabel("Cos(theta)")
 ax_phase.set_ylabel("Sin(theta)")
@@ -310,26 +340,68 @@ ax_phase.set_ylim(-1.1, 1.1)
 ax_phase.set_aspect("equal")
 ax_phase.grid(True)
 
+# Draw unit circle (optional, but it helps to visualize the boundary)
 circle = plt.Circle((0, 0), 1, color="lightgray", fill=False)
 ax_phase.add_artist(circle)
-scatter = ax_phase.scatter([], [], s=50, color="blue", alpha=0.5)
 
-# Animation update
+# Initialize scatter plot for oscillators
+scatter = ax_phase.scatter([], [], s=50, color="blue", alpha=0.25)
+# [] means we are starting with an empty array of points,
+# which we will update in the animation loop
+# s is the size of the dots, and alpha is the transparency
 
-def update(frame: int):
-    global theta
-    sol = solve_ivp(kuramoto_ode, (0, dt), theta, args=(omega, coupling_strength))
-    theta = sol.y[..., -1]
-    theta = np.mod(theta, 2 * np.pi)
+# Initialize line for the phase centroid (order parameter)
+(centroid_line,) = ax_phase.plot([], [], color="red", linewidth=2)
+(centroid_point,) = ax_phase.plot([], [], "ro", markersize=8)
+# Same idea here:
+# we start with empty data and update it in the animation loop
+```
 
-    x = np.cos(theta)
-    y = np.sin(theta)
-    scatter.set_offsets(np.vstack((x, y)).T)
-    return [scatter]
+All the block above will initialize the figure and axes, draw the unit circle, and create empty plot elements for the oscillators and the order parameter. The variables `scatter`, `centroid_line`, and `centroid_point` are references to these plot elements, which we will update in the animation loop.
 
-ani = animation.FuncAnimation(fig, update, blit=True, interval=1)
-plt.tight_layout()
+Next, we need to define an **update function** that will be called at each time step of the animation. This function will compute the new positions of the oscillators and the order parameter based on the current state of the system. It should look something like this:
+
+```python
+def update_function(frame: int):
+	# Acces the variables from the outer scope
+	global theta
+
+	# Solve the ODE system
+	sol = solve_ivp(
+    		kuramoto_ode,
+    		(0, dt),
+    		theta,
+    		args=(omega, coupling_strength),
+	)
+    # Update theta with the new values from the solution
+	theta = sol.y[..., -1]
+	
+	# Keep theta within [0, 2 * pi]
+	theta = np.mod(theta, 2 * np.pi)
+
+	# Update scatter plot on the unit circle
+	x = np.cos(theta)
+	y = np.sin(theta)
+	data = np.vstack((x, y)).T
+	scatter.set_offsets(data)
+	return [scatter]
+```
+
+Finally, we can create the animation using `matplotlib.animation.FuncAnimation`:
+
+```python
+from matplotlib.animation import FuncAnimation
+
+ani = FuncAnimation(
+    fig,  # Our figure object
+    update_function,  # Updates the plot at each frame
+    frames=200, # Number of frames in the animation
+    interval=100, # Time between frames in milliseconds
+    blit=True, # Optimize rendering by only updating changed elements
+    )
 plt.show()
 ```
 
-If you get stuck, see the mini template in [amlab/odes_coupled/kuramoto_template_mini.py](../../amlab/odes_coupled/kuramoto_template_mini.py).
+All done! You should see an animation of the oscillators moving around the unit circle. You can experiment with different parameters (e.g., coupling strength, number of oscillators, etc.) to see how it affects the synchronization process.
+
+**Wait**. The order parameter is not moving! You can fix this by computing the updated order parameter at each step, and updating it inside the `update_function()`. Try it yourself.
