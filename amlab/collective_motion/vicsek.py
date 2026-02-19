@@ -191,7 +191,6 @@ def plot_avg_velocity_vs_noise(
     noise_range: tuple[float, float] = (0.0, 5.0),
     noise_steps: int = 10,
     n_realizations: int = 1,
-    img_dir: str = "img",
 ) -> None:
     """
     Plot the time-averaged normalized order parameter vs noise for different system sizes (N),
@@ -210,8 +209,6 @@ def plot_avg_velocity_vs_noise(
         Number of noise values to simulate within the range, default is 20.
     n_realizations : int, optional
         Number of independent realizations to average over for each parameter set, default is 1.
-    img_dir : str, optional
-        Directory to save the output plot, default is "img".
     """
     plt.figure(figsize=(8, 6))
     noises = np.linspace(noise_range[0], noise_range[1], noise_steps)
@@ -239,11 +236,6 @@ def plot_avg_velocity_vs_noise(
     plt.title(f"Order parameter vs Noise (density={density})")
     plt.legend()
     plt.grid(True)
-    os.makedirs(img_dir, exist_ok=True)
-    out_path = os.path.join(img_dir, "s04_order_parameter_vs_noise.png")
-    plt.savefig(out_path)
-    plt.close()
-    print(f"Saved: {out_path}")
 
 
 def plot_avg_velocity_vs_density(
@@ -251,7 +243,6 @@ def plot_avg_velocity_vs_density(
     density_steps: int = 10,
     noise: float = 0.1,
     box_size: float = 20,
-    img_dir: str = "img",
 ) -> None:
     """
     Plot the time-averaged normalized order parameter vs density for a fixed noise.
@@ -266,8 +257,6 @@ def plot_avg_velocity_vs_density(
         Noise parameter (eta) to use for the simulations, default is 0.1.
     box_size : float, optional
         Dimension of the space, L, default is 20.
-    img_dir : str, optional
-        Directory to save the output plot, default is "img".
     """
     avg_velocities = []
     # Because computation takes way longer in high densities,
@@ -275,6 +264,21 @@ def plot_avg_velocity_vs_density(
     densities = np.logspace(
         np.log10(density_range[0]), np.log10(density_range[1]), density_steps
     )
+
+    plt.figure(figsize=(8, 6))
+    # Plot the theoretical line of order vs density [Vicsek1995]
+    gamma = 0.35
+    density_critical = 0.4
+    theoretical_densities = np.linspace(density_range[0], density_range[1], 100)
+    theoretical_order = np.power(theoretical_densities - density_critical, gamma)
+    plt.plot(
+        theoretical_densities,
+        theoretical_order,
+        label="Theoretical (Vicsek 1995)",
+        color="gray",
+    )
+
+    #
     for density in densities:
         num_boids = int(density * box_size**2)
         avg_v = simulate_vicsek(num_boids=num_boids, noise=noise, density=density)
@@ -282,25 +286,31 @@ def plot_avg_velocity_vs_density(
         print(
             f"Box size: {box_size}, density: {density:.2f}, avg velocity: {avg_v:.4f}"
         )
-    plt.figure(figsize=(8, 6))
+
     plt.plot(densities, avg_velocities, marker="o")
     plt.xlabel("Density (N/L^2)")
     plt.ylabel(r"Order parameter, avg. velocity ($\varphi$)")
     plt.title("Average velocity vs Density (" r"$\eta$" f"={noise})")
     plt.grid(True)
+
+
+def main(img_dir: str = "img") -> None:
+    # Example system sizes (N) as in the original paper
+    num_boids_list = [40, 100]
+    # For publication-quality, set n_realizations > 1 (e.g. 5-10)
+    plot_avg_velocity_vs_noise(num_boids_list=num_boids_list, n_realizations=1)
+    os.makedirs(img_dir, exist_ok=True)
+    out_path = os.path.join(img_dir, "s04_order_parameter_vs_noise.png")
+    plt.savefig(out_path)
+    plt.close()
+    print(f"Saved: {out_path}")
+
+    plot_avg_velocity_vs_density()
     os.makedirs(img_dir, exist_ok=True)
     out_path = os.path.join(img_dir, "s04_avg_velocity_vs_density.png")
     plt.savefig(out_path)
     plt.close()
     print(f"Saved: {out_path}")
-
-
-def main() -> None:
-    # Example system sizes (N) as in the original paper
-    num_boids_list = [40, 100]
-    # For publication-quality, set n_realizations > 1 (e.g. 5-10)
-    plot_avg_velocity_vs_noise(num_boids_list=num_boids_list, n_realizations=1)
-    plot_avg_velocity_vs_density()
 
 
 if __name__ == "__main__":
