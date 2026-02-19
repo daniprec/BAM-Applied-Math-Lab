@@ -134,9 +134,9 @@ def simulate_vicsek(
     density: float = 2.0,
     radius_interaction: float = 1.0,
     v0: float = 0.03,
-    steps: int = 20000,
+    steps: int = 2000,
     dt: float = 1.0,
-    avg_steps: int = 2000,
+    avg_steps: int = 20,
 ) -> float:
     """
     Simulate the Vicsek model and return the time-averaged normalized
@@ -165,7 +165,7 @@ def plot_avg_velocity_vs_noise(
     num_boids_list: list[int],
     density: float = 4.0,
     noise_range: tuple[float, float] = (0.0, 5.0),
-    noise_steps: int = 20,
+    noise_steps: int = 10,
     n_realizations: int = 1,
     img_dir: str = "img",
 ) -> None:
@@ -216,7 +216,7 @@ def plot_avg_velocity_vs_noise(
     plt.legend()
     plt.grid(True)
     os.makedirs(img_dir, exist_ok=True)
-    out_path = os.path.join(img_dir, "order_parameter_vs_noise.png")
+    out_path = os.path.join(img_dir, "s04_order_parameter_vs_noise.png")
     plt.savefig(out_path)
     plt.close()
     print(f"Saved: {out_path}")
@@ -224,7 +224,7 @@ def plot_avg_velocity_vs_noise(
 
 def plot_avg_velocity_vs_density(
     density_range: tuple[float, float] = (0.1, 10.0),
-    density_steps: int = 20,
+    density_steps: int = 10,
     noise: float = 0.1,
     box_size: float = 20,
     img_dir: str = "img",
@@ -246,7 +246,11 @@ def plot_avg_velocity_vs_density(
         Directory to save the output plot, default is "img".
     """
     avg_velocities = []
-    densities = np.linspace(density_range[0], density_range[1], density_steps)
+    # Because computation takes way longer in high densities,
+    # we use a logarithmic spacing for density values
+    densities = np.logspace(
+        np.log10(density_range[0]), np.log10(density_range[1]), density_steps
+    )
     for density in densities:
         num_boids = int(density * box_size**2)
         avg_v = simulate_vicsek(num_boids=num_boids, noise=noise, density=density)
@@ -257,11 +261,11 @@ def plot_avg_velocity_vs_density(
     plt.figure(figsize=(8, 6))
     plt.plot(densities, avg_velocities, marker="o")
     plt.xlabel("Density (N/L^2)")
-    plt.ylabel("|<v>| (average velocity)")
-    plt.title(f"Average velocity vs Density (eta={noise})")
+    plt.ylabel(r"Order parameter, avg. velocity ($\varphi$)")
+    plt.title("Average velocity vs Density (" r"$\eta$" f"={noise})")
     plt.grid(True)
     os.makedirs(img_dir, exist_ok=True)
-    out_path = os.path.join(img_dir, "avg_velocity_vs_density.png")
+    out_path = os.path.join(img_dir, "s04_avg_velocity_vs_density.png")
     plt.savefig(out_path)
     plt.close()
     print(f"Saved: {out_path}")
