@@ -4,7 +4,7 @@ subtitle: "Collective Motion on a Box"
 format: html
 ---
 
-The Vicsek model describes $N$ self-propelled particles that align with neighbors within a radius $r$, plus noise. Each particle has position $\mathbf{r}_i(t)$ and heading $\theta_i(t)$.
+The Vicsek model describes $N$ self-propelled particles that align with neighbors within a radius $r$, plus noise $\eta$. Each particle has position $\mathbf{x}_i(t)$ and heading $\theta_i(t)$.
 
 ```{python}
 #| label: fig-vicsek
@@ -15,12 +15,24 @@ The Vicsek model describes $N$ self-propelled particles that align with neighbor
 
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
-from amlab.collective_motion.vicsek import initialize_particles
+sys.path.append("..")
+
+from amlab.collective_motion.vicsek import initialize_particles, vicsek_equations
 
 num_boids = 200
 box_size = 25
 xy, theta = initialize_particles(num_boids, box_size=box_size)
+
+# Evolve for a few steps to show a more interesting configuration
+for _ in range(10):
+    xy, theta = vicsek_equations(
+        xy,
+        theta,
+        noise=0.5,
+        box_size=box_size,
+    )
 
 fig, ax = plt.subplots(figsize=(6, 6))
 ax.set_xlim(0, box_size)

@@ -87,7 +87,7 @@ def run_simulation(dt: float = 1):
             dt=dt,
             radius_interaction=radius_interaction,
             box_size=box_size,
-            eta=noise_eta,
+            noise=noise_eta,
         )
 
         # Update quiver plot

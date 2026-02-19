@@ -256,7 +256,8 @@ def plot_avg_velocity_vs_density(
     noise : float, optional
         Noise parameter (eta) to use for the simulations, default is 2.0.
     box_size : float, optional
-        Dimension of the space, L, default is 3.
+        Dimension of the space, L, default is 5.
+        Vicsek used 20 but we use smaller L to speed up the simulations at high densities.
     """
     avg_velocities = []
     # Because computation takes way longer in high densities,
