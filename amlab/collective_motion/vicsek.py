@@ -85,7 +85,7 @@ def vicsek_equations(
     mean_cos = sum_cos / count
     theta_avg = np.arctan2(mean_sin, mean_cos)
     # Add noise: uniform in [-noise/2, noise/2]
-    noise_arr = noise * (np.random.rand(num_boids) - 0.5)
+    noise_arr = noise * (np.random.uniform(size=num_boids) - 0.5)
     theta_new = theta_avg + noise_arr
     theta_new = np.mod(theta_new, 2 * np.pi)
 
@@ -98,26 +98,7 @@ def vicsek_equations(
     return xy_new, theta_new
 
 
-def vicsek_order_parameter(theta: np.ndarray) -> float:
-    """
-    Compute the order parameter of the Vicsek model.
-
-    Parameters
-    ----------
-    theta : np.ndarray
-        Angle of the particles.
-
-    Returns
-    -------
-    float
-        Order parameter of the Vicsek model.
-    """
-    return np.abs(np.mean(np.exp(1j * theta)))
-
-
-def compute_order_parameter(
-    xy: np.ndarray, theta: np.ndarray, v0: float = 0.03
-) -> float:
+def vicsek_order_parameter(theta: np.ndarray, v0: float = 0.03) -> float:
     """
     Compute the normalized order parameter (mean velocity divided by v0), as in Vicsek et al. (1995).
     """
@@ -180,7 +161,7 @@ def simulate_vicsek(
             v0=v0,
         )
         if i >= steps - avg_steps:
-            order_params.append(compute_order_parameter(xy, theta, v0=v0))
+            order_params.append(vicsek_order_parameter(theta, v0=v0))
     avg_order = float(np.mean(order_params))
     return avg_order
 

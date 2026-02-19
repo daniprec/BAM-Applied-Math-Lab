@@ -79,7 +79,7 @@ def initialize_particles(num_boids, box_size):
 ```
 
 ::: {.callout-tip collapse="true"}
-## Hint: Initialization (click to expand)
+## Solved: Initialization (click to expand)
 
 ```python
 def initialize_particles(num_boids, box_size):
@@ -157,7 +157,7 @@ for i in range(num_boids):
 ```
 
 ::: {.callout-tip collapse="true"}
-## Hint: Update theta using loops (click to expand)
+## Solved: Update theta using loops (click to expand)
 ```python
 num_boids = xy.shape[1]  # N
 
@@ -206,7 +206,7 @@ There is a final step to apply periodic boundary conditions, following @eq-vicse
 ```
 
 ::: {.callout-tip collapse="true"}
-## Hint: Update positions and apply periodic boundaries (click to expand)
+## Solved: Update positions and apply periodic boundaries (click to expand)
 ```python
 # After updating theta for all particles
 for i in range(num_boids):
@@ -223,7 +223,7 @@ xy = np.mod(xy_new, box_size)
 Do you have it? Excellent! Last but not least, we can put everything together in a function that takes the current positions and headings and returns the updated positions and headings after one time step.
 
 ::: {.callout-tip collapse="true"}
-## Hint: Vicsek equations, loop version (click to expand)
+## Solved: Vicsek equations, loop version (click to expand)
 
 ```python
 def vicsek_equations(xy, theta, dt=1.0, eta=0.1, box_size=10, radius_interaction=1, v0=0.03):
@@ -247,61 +247,135 @@ def vicsek_equations(xy, theta, dt=1.0, eta=0.1, box_size=10, radius_interaction
 ```
 :::
 
-## Vectorized version (optional)
+## Python Implementation: Vectorized Version (Optional)
 
 Loops are expensive. You can compute neighbor averages with a distance matrix.
 
 ```python
-def vicsek_equations(xy, theta, dt, eta, box_size, radius_interaction, v0):
-    # TODO: compute distance matrix
-    # TODO: build neighbor mask
-    # TODO: average neighbor angles
-    # TODO: add noise, update positions
-    return xy, theta
-```
+def vicsek_equations(
+    xy: np.ndarray,
+    theta: np.ndarray,
+    noise: float = 0.1,
+    box_size: float = 25,
+    dt: float = 1,
+    radius_interaction: float = 1,
+    v0: float = 0.03,
+) -> tuple[np.ndarray, np.ndarray]:
+    # TODO: Compute distance matrix and neighbor matrix
+    # Useful functions:
+    # scipy.spatial.distance.pdist
+    # scipy.spatial.distance.squareform
+    
+    # TODO: Vectorized computation of average direction of neighbors (including itself)
+    # Useful functions: np.sin, np.cos, np.arctan2
 
-If you want to use a template, start from [amlab/collective_motion/vicsek_template.py](../../amlab/collective_motion/vicsek_template.py).
+    # TODO: Add noise to the average heading
+    # Useful function: np.random.rand
 
-## Animate the boids
+    # TODO: Update position based on new headings
+    # Useful functions: np.cos, np.sin
 
-Use a quiver plot for headings and update it each frame.
-
-```python
-import matplotlib.animation as animation
-
-plt_particles = ax.quiver(
-    xy[0],
-    xy[1],
-    np.cos(theta),
-    np.sin(theta),
-    angles="xy",
-)
-
-# Inside update:
-plt_particles.set_offsets(xy.T)
-plt_particles.set_UVC(np.cos(theta), np.sin(theta))
-```
-
-## Order parameter
-
-The order parameter is the average normalized velocity:
-
-$$r = \left|\frac{1}{N} \sum_{j=1}^N e^{i\theta_j} \right|.$$ {#eq-collective-motion-vicsek-1}
-
-Implement it as:
-
-```python
-def vicsek_order_parameter(theta):
-    # TODO: compute mean of exp(i*theta)
-    return r
+    return xy_new, theta_new
 ```
 
 ::: {.callout-tip collapse="true"}
-## Hint: Order parameter (click to expand)
+## Solved: Vicsek equations, vectorized version (click to expand) 
+```python
+def vicsek_equations(
+    xy: np.ndarray,
+    theta: np.ndarray,
+    noise: float = 0.1,
+    box_size: float = 25,
+    dt: float = 1,
+    radius_interaction: float = 1,
+    v0: float = 0.03,
+) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Update the state of the particles based on the Vicsek model.
+
+    Parameters
+    ----------
+    xy : np.ndarray
+        Position of the particles.
+    theta : np.ndarray
+        Angle of the particles.
+    noise : float, optional
+        Noise parameter, eta, default is 0.1.
+    box_size : float, optional
+        Dimension of the space, L, default is 25.
+    dt : float, optional
+        Time step, default is 1 [Vicsek1995]
+    radius_interaction : float, optional
+        Interaction radius, default is 1 [Vicsek1995]
+    v0 : float, optional
+        Speed of the particles, default is 0.03 [Vicsek1995]
+
+    Returns
+    -------
+    np.ndarray
+        Updated position of the particles.
+    np.ndarray
+        Updated angle of the particles.
+    """
+    # Compute distance matrix and neighbor matrix
+    d_matrix = scipy.spatial.distance.pdist(xy.T)
+    d_matrix = scipy.spatial.distance.squareform(d_matrix)
+    neighbors = d_matrix <= radius_interaction
+    # Vectorized computation of average direction of neighbors (including itself)
+    num_boids = xy.shape[1]
+    sin_theta = np.sin(theta)
+    cos_theta = np.cos(theta)
+    # neighbors is (N, N), sin_theta/cos_theta is (N,)
+    # Broadcasting: (N, N) * (N,) -> (N, N)
+    sum_sin = neighbors @ sin_theta  # (N,)
+    sum_cos = neighbors @ cos_theta  # (N,)
+    count = neighbors.sum(axis=1)  # (N,)
+    mean_sin = sum_sin / count
+    mean_cos = sum_cos / count
+    theta_avg = np.arctan2(mean_sin, mean_cos)
+    # Add noise: uniform in [-noise/2, noise/2]
+    noise_arr = noise * (np.random.uniform(size=num_boids) - 0.5)
+    theta_new = theta_avg + noise_arr
+    theta_new = np.mod(theta_new, 2 * np.pi)
+
+    # Update position
+    v = v0 * np.array([np.cos(theta_new), np.sin(theta_new)])
+    xy_new = xy + dt * v
+    # Periodic boundary conditions
+    xy_new = np.mod(xy_new, box_size)
+
+    return xy_new, theta_new
+```
+:::
+
+## Order Parameter
+
+The order parameter $\varphi$ is defined as the magnitude of the average velocity vector normalized by the speed:
+
+$$
+\varphi(t) = \frac{1}{N v_0} \left|\sum_{i=1}^N v_0 \begin{bmatrix} \cos(\theta_i(t)) \\ \sin(\theta_i(t)) \end{bmatrix}\right| = \frac{1}{N} \left|\sum_{i=1}^N \begin{bmatrix} \cos(\theta_i(t)) \\ \sin(\theta_i(t)) \end{bmatrix}\right|.
+$$ {#eq-vicsek-order-parameter}
+
+We can compute this at each time step to see how the system evolves. In the disordered phase, $\varphi \approx 0$ because the headings are random and cancel out. In the ordered phase, $\varphi \approx 1$ because all particles align in the same direction.
 
 ```python
-def vicsek_order_parameter(theta):
-    return np.abs(np.mean(np.exp(1j * theta)))
+def vicsek_order_parameter(xy: np.ndarray, theta: np.ndarray, v0: float = 0.03) -> float:
+    # TODO: Compute the order parameter phi based on the headings theta
+    return phi
+```
+
+::: {.callout-tip collapse="true"}
+## Solved: Order parameter (click to expand)
+```python
+def vicsek_order_parameter(theta: np.ndarray, v0: float = 0.03) -> float:
+    """
+    Compute the normalized order parameter (mean velocity divided by v0), as in Vicsek et al. (1995).
+    """
+    vx = v0 * np.cos(theta)
+    vy = v0 * np.sin(theta)
+    avg_vx = np.mean(vx)
+    avg_vy = np.mean(vy)
+    return float(np.sqrt(avg_vx**2 + avg_vy**2) / v0)
 ```
 :::
 
