@@ -134,13 +134,37 @@ def simulate_vicsek(
     density: float = 2.0,
     radius_interaction: float = 1.0,
     v0: float = 0.03,
-    steps: int = 2000,
+    steps: int = 20000,
     dt: float = 1.0,
-    avg_steps: int = 20,
+    avg_steps: int = 2000,
 ) -> float:
     """
     Simulate the Vicsek model and return the time-averaged normalized
     order parameter over the last avg_steps.
+
+    Parameters
+    ----------
+    num_boids : int
+        Number of particles, N.
+    noise : float
+        Noise parameter, eta.
+    density : float, optional
+        Density of the system (N/L^2), default is 2.0.
+    radius_interaction : float, optional
+        Interaction radius, default is 1.0.
+    v0 : float, optional
+        Speed of the particles, default is 0.03.
+    steps : int, optional
+        Total number of simulation steps, default is 20000.
+    dt : float, optional
+        Time step, default is 1.0.
+    avg_steps : int, optional
+        Number of steps to average over for the order parameter, default is 2000.
+
+    Returns
+    -------
+    float
+        Time-averaged normalized order parameter over the last avg_steps.
     """
     box_size = np.sqrt(num_boids / density)
     xy, theta = initialize_particles(num_boids, box_size=box_size)
