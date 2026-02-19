@@ -44,13 +44,18 @@ def run_simulation(dt: float = 1):
     ax_sliders: Axes = axs[1, 0]
     ax_noise: Axes = axs[1, 1]
 
-    # Initialize quiver plot
-    plt_particles = ax_plane.quiver(
-        xy[0],
-        xy[1],
-        np.cos(theta),
-        np.sin(theta),
-        angles="xy",
+    # We will show the last 20 positions of each particle to create a tail effect
+    xy_tail = np.repeat(xy[:, :, np.newaxis], 20, axis=2)
+
+    # Initialize line plot for all particles' tails as a single Line2D object
+    # We'll plot all tails as a single line (flattened)
+    (plt_particles,) = ax_plane.plot(
+        xy_tail[0].flatten(),
+        xy_tail[1].flatten(),
+        color="grey",
+        linestyle="",
+        marker=".",  # using dots avoids connecting lines between tails of different particles
+        markersize=2,
     )
     ax_plane.set_xlim(0, box_size)
     ax_plane.set_ylim(0, box_size)
@@ -79,7 +84,15 @@ def run_simulation(dt: float = 1):
     # --------------------------------
 
     def update_animation(frame: int):
-        nonlocal xy, theta, noise_eta, v0, radius_interaction, box_size, dict_noise
+        nonlocal \
+            xy, \
+            xy_tail, \
+            theta, \
+            noise_eta, \
+            v0, \
+            radius_interaction, \
+            box_size, \
+            dict_noise
         xy, theta = vicsek_equations(
             xy,
             theta,
@@ -90,9 +103,11 @@ def run_simulation(dt: float = 1):
             noise=noise_eta,
         )
 
-        # Update quiver plot
-        plt_particles.set_offsets(xy.T)
-        plt_particles.set_UVC(np.cos(theta), np.sin(theta))
+        # Update tails
+        xy_tail = np.roll(xy_tail, shift=-1, axis=2)  # Shift tail positions
+        xy_tail[:, :, -1] = xy  # Update last position with current position
+        # Flatten all tails for all particles into a single line
+        plt_particles.set_data(xy_tail[0].flatten(), xy_tail[1].flatten())
 
         # Update order parameter
         ls_order_param.append(vicsek_order_parameter(theta))
@@ -103,8 +118,12 @@ def run_simulation(dt: float = 1):
         order_param = np.mean(ls_order_param[-1000:])
         dict_noise[noise_eta] = order_param
         dict_noise = dict(sorted(dict_noise.items()))
-        line_noise.set_data(*zip(*dict_noise.items()))
-        return plt_particles, line_order_param, line_noise
+        if dict_noise:
+            line_noise.set_data(*zip(*dict_noise.items()))
+        else:
+            line_noise.set_data([], [])
+        # Return a flat tuple of all updated Artist objects
+        return (plt_particles, line_order_param, line_noise)
 
     ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)
 
@@ -164,7 +183,7 @@ def run_simulation(dt: float = 1):
 
     # A special case must be done for the number of boids as it requires to reinitialize the particles
     def update_num_boids(_):
-        nonlocal xy, theta, num_boids, plt_particles
+        nonlocal xy, theta, num_boids, plt_particles, xy_tail
         # Pause animation
         ani.event_source.stop()
 
@@ -172,18 +191,10 @@ def run_simulation(dt: float = 1):
         num_boids = int(slider_num_boids.val)
         # Reinitialize particles
         xy, theta = initialize_particles(num_boids, box_size=box_size)
-
-        # Because the number of particles has changed, we need to redefine the quiver plot
-        # This is because the number of particles on the plot is fixed at the beginning
-        # and cannot be changed dynamically
-        plt_particles.remove()  # Remove old quiver plot
-        plt_particles = ax_plane.quiver(
-            xy[0],
-            xy[1],
-            np.cos(theta),
-            np.sin(theta),
-            angles="xy",
-        )
+        # Reinitialize tails
+        xy_tail = np.repeat(xy[:, :, np.newaxis], 20, axis=2)
+        # Update the Line2D object to match new number of particles
+        plt_particles.set_data(xy_tail[0].flatten(), xy_tail[1].flatten())
 
         # Reinitialize the animation
         ani.event_source.start()
