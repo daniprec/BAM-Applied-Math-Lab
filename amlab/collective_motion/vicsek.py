@@ -170,7 +170,10 @@ def plot_avg_velocity_vs_noise(
     """
     plt.figure(figsize=(8, 6))
     etas = np.linspace(eta_range[0], eta_range[1], eta_steps)
-    for nb in num_boids_list:
+    # Following the marker style from the original paper
+    # Plus sign in scatter is
+    markers = ["s", "P", "X", "^", "D"]
+    for idx, nb in enumerate(num_boids_list):
         box_size = np.sqrt(nb / density)
         avg_orders = []
         print(f"Simulating for N={nb}, L={box_size:.2f}, density={density}")
@@ -183,10 +186,13 @@ def plot_avg_velocity_vs_noise(
                 vals.append(val)
             mean_val = float(np.mean(vals))
             avg_orders.append(mean_val)
-            print(f"  eta={eta:.3f}, " r"\varphi" f"={mean_val:.4f}")
-        plt.plot(etas, avg_orders, label=f"N={nb}, L={box_size:.1f}")
-    plt.xlabel(r"Noise (\eta)")
-    plt.ylabel(r"Order parameter \varphi")
+            print(f"    eta={eta:.3f}, phi={mean_val:.4f}")
+        marker = markers[idx % len(markers)]
+        plt.scatter(
+            etas, avg_orders, label=f"N={nb}, L={box_size:.1f}", marker=marker, s=60
+        )
+    plt.xlabel(r"Noise ($\eta$)")
+    plt.ylabel(r"Order parameter $\varphi$")
     plt.title(f"Order parameter vs Noise (density={density})")
     plt.legend()
     plt.grid(True)
@@ -231,8 +237,8 @@ def plot_avg_velocity_vs_density(
 
 
 def main() -> None:
-    # Example system sizes (N) as in the original paper, e.g. N = 40, 100
-    num_boids_list = [40, 100]
+    # Example system sizes (N) as in the original paper
+    num_boids_list = [40, 100, 400]
     # For publication-quality, set n_realizations > 1 (e.g. 5-10)
     plot_avg_velocity_vs_noise(num_boids_list=num_boids_list, n_realizations=1)
     plot_avg_velocity_vs_density()
