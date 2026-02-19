@@ -4,7 +4,7 @@ subtitle: "Collective Motion on a Box"
 format: html
 ---
 
-The Vicsek model describes $N$ self-propelled particles that align with neighbors within a radius $r$, plus noise $\eta$. Each particle has position $\mathbf{x}_i(t)$ and heading $\theta_i(t)$.
+The Vicsek model describes $N$ self-propelled particles (boids) that align with neighbors within a radius $r$, plus noise $\eta$. Each particle has position $\mathbf{x}_i(t)$ and heading $\theta_i(t)$.
 
 ```{python}
 #| label: fig-vicsek
@@ -17,39 +17,54 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-sys.path.append("..")
-
 from amlab.collective_motion.vicsek import initialize_particles, vicsek_equations
 
-num_boids = 200
-box_size = 25
+num_boids = 100
+box_size = 10
 xy, theta = initialize_particles(num_boids, box_size=box_size)
 
+# We will store the last 20 positions for each particle to plot tails
+xy_tail = np.zeros((2, num_boids, 20))
+
 # Evolve for a few steps to show a more interesting configuration
-for _ in range(10):
+for _ in range(20):
     xy, theta = vicsek_equations(
         xy,
         theta,
         noise=0.5,
         box_size=box_size,
     )
+    xy_tail = np.roll(xy_tail, shift=-1, axis=2)  # shift tail positions
+    xy_tail[:, :, -1] = xy  # add current position to tail
 
 fig, ax = plt.subplots(figsize=(6, 6))
 ax.set_xlim(0, box_size)
 ax.set_ylim(0, box_size)
 ax.set_aspect("equal")
+# Plot tails as a single line (flattened)
+ax.plot(
+    xy_tail[0].flatten(),
+    xy_tail[1].flatten(),
+    color="grey",
+    linestyle="",
+    marker=".",  # using dots avoids connecting lines between tails of different particles
+    markersize=2,
+)
+# Plot headings as quivers
 ax.quiver(
     xy[0],
     xy[1],
     np.cos(theta),
     np.sin(theta),
     angles="xy",
+    scale_units="xy",
+    scale=1,
 )
 plt.show()
 plt.close()
 ```
 
-## Initialize particles
+## Initial State
 
 Create the initial positions and headings. Positions are uniform on the box and headings are uniform on $[0, 2\pi]$.
 
@@ -74,37 +89,144 @@ def initialize_particles(num_boids, box_size):
 ```
 :::
 
-## Implement the Vicsek equations
+Try out your function now. Vicsek used $N \in [40, 10000]$ and $L \in [3.0, 50.0]$ in his simulations. The more particles you have, the slower the simulation will be, so start with a small number like $N=100$ and a box size of $L=10$.
 
-Each time step, every boid aligns with neighbors within radius $r$ and then moves at constant speed.
+## Motion
+
+All boids have the same speed module $v_0$, but their headings change based on neighbors. Every time step $\Delta t$, each boid averages the headings of neighbors within radius $r$ and adds noise $\eta$. Then it moves in the new heading direction. This happens **simultaneously** to all boids. Follow the equations in [@vicsek1995novel] to implement the update step. We provide a summary here.
+
+The positions of the $i$th particle is updated as:
+
+$$
+\mathbf{x}_i(t + \Delta t) = \mathbf{x}_i(t) + v_0 \Delta t \begin{bmatrix} \cos(\theta_i(t + \Delta t)) \\ \sin(\theta_i(t + \Delta t)) \end{bmatrix}.
+$$ {#eq-viseck-xi}
+
+Where $v_0$ is the speed module, which Vicsek assumed to be $v_0 = 0.03$ in his simulations.
+
+It is important to remember that particles stay within the box. We will apply **periodic boundary conditions**, meaning that a particle that goes out of the box on one side reappears on the opposite side. Mathematically, we can implement this with the modulo operator, if we assume that the positions are in the range $[0, L]$:
+
+$$
+\mathbf{x}_i(t + \Delta t) = \mathbf{x}_i(t + \Delta t) \mod L,
+$$ {#eq-vicsek-periodic}
+
+Coming back to @eq-vicsek-xi, in order to compute the new positions, we need to compute the new heading $\theta_i(t + \Delta t)$ as:
+
+$$
+\theta_i(t + \Delta t) = \langle \theta_j(t) \rangle_{j \in \mathcal{N}_i} + \frac{\eta}{2} \xi_i(t),
+$$ {#eq-vicsek-theta}
+
+where $\mathcal{N}_i$ is the set of neighbors within radius $r$ of particle $i$, $\langle \cdot \rangle$ denotes the average angle, and $\xi_i(t)$ is a random variable uniformly distributed in $[-1, 1]$. Vicsek used $r = 1$ and $\eta \in [0.0, 5.0]$ in his simulations.
+
+### Python Implementation
+
+Before we jump into coding, it is good to outline the steps we need to take for each time step:
+
+1. For each particle $i$, find its neighbors within radius $r$.
+2. Compute the average heading of these neighbors.
+3. Add noise to the average heading to get the new heading $\theta_i(t + \Delta t)$.
+4. Update the position of each particle based on its new heading.
+5. Apply periodic boundary conditions to ensure particles stay within the box.
+
+For **steps 1**, we need to compare every particle with every other particle to compute distances. This can be done with nested loops or more efficiently with a distance matrix. For simplicity, start with the loop version. Once we know the distances, we can get all neighbors for each particle and compute the average heading. Finally, we add noise, following @eq-vicsek-theta.
 
 ```python
-def vicsek_equations(xy, theta, dt, eta, box_size, radius_interaction, v0):
-    xy_new = xy.copy()
-    theta_new = theta.copy()
-    num_boids = len(theta)
-    for i in range(num_boids):
-        ls_theta_neighbors = []
-        for j in range(num_boids):
-            # TODO: compute distance between i and j
-            # TODO: if within radius, add theta[j]
-            pass
-        # TODO: average neighbor angles
-        # TODO: add noise
+# What we have:
+xy # the positions of the particles, shape (2, N)
+theta # the headings of the particles, shape (N)
+noise # the noise level eta
+# ----
 
-        # TODO: compute velocity and update position
-        pass
+num_boids = xy.shape[1]  # N
 
-    # Periodic boundary conditions
-    xy_new = np.mod(xy_new, box_size)
-    return xy_new, theta_new
+# Loop over each particle
+for i in range(num_boids):
+    # Initialize list to store neighbor headings
+    ls_theta_neighbors = []
+    # Loop over all other particles to find neighbors
+    for j in range(num_boids):
+        # TODO: Skip self comparison (i == j)
+
+        # TODO: Compute distance between particle i and j
+        
+        # TODO: If distance is less than radius,
+        # add the heading of particle j to the list of neighbors
+    # After finding neighbors...
+    # TODO: Compute the average heading and add noise
+
+# Result: updated theta for all particles
 ```
 
 ::: {.callout-tip collapse="true"}
-## Hint: Loop version (click to expand)
+## Hint: Update theta using loops (click to expand)
+```python
+num_boids = xy.shape[1]  # N
+
+# Loop over each particle
+for i in range(num_boids):
+    # Initialize list to store neighbor headings
+    ls_theta_neighbors = []
+    # Loop over all other particles to find neighbors
+    for j in range(num_boids):
+        # Skip self comparison
+        if i == j:
+            continue
+        # Compute distance between particle i and j
+        dist = np.linalg.norm(xy[:, i] - xy[:, j])
+        # If distance is less than radius,
+        # add the heading of particle j to the list of neighbors
+        if dist <= radius_interaction:
+            ls_theta_neighbors.append(theta[j])
+    # After finding neighbors
+    # Compute the average heading...
+    theta_new[i] = np.mean(ls_theta_neighbors)
+    # ...and add noise
+    theta_new[i] += noise * np.pi * np.random.uniform(-1, 1)
+```
+:::
+
+Just with that, we have implemented **steps 1-3**. Now we can compute the new positions based on the new headings, following @eq-viseck-xi.
 
 ```python
-def vicsek_equations(xy, theta, dt, eta, box_size, radius_interaction, v0):
+# After updating theta for all particles
+for i in range(num_boids):
+    # TODO: Compute velocity vector based on new heading
+
+    # TODO: Update position based on velocity and time step
+
+# Result: updated xy for all particles
+```
+
+There is a final step to apply periodic boundary conditions, following @eq-vicsek-periodic.
+
+```python
+# After updating positions for all particles
+# TODO: Apply periodic boundary conditions to xy
+
+# Result: updated xy with periodic boundaries
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: Update positions and apply periodic boundaries (click to expand)
+```python
+# After updating theta for all particles
+for i in range(num_boids):
+    # Compute velocity vector based on new heading
+    v = v0 * np.array([np.cos(theta_new[i]), np.sin(theta_new[i])])
+    # Update position based on velocity and time step
+    xy_new[:, i] = xy_new[:, i] + dt * v
+
+# Apply periodic boundary conditions to xy
+xy = np.mod(xy_new, box_size)
+# We overwrite xy with the new positions after applying periodic boundaries
+```
+
+Do you have it? Excellent! Last but not least, we can put everything together in a function that takes the current positions and headings and returns the updated positions and headings after one time step.
+
+::: {.callout-tip collapse="true"}
+## Hint: Vicsek equations, loop version (click to expand)
+
+```python
+def vicsek_equations(xy, theta, dt=1.0, eta=0.1, box_size=10, radius_interaction=1, v0=0.03):
     xy_new = xy.copy()
     theta_new = theta.copy()
     num_boids = len(theta)
