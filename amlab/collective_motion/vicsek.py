@@ -130,7 +130,8 @@ def simulate_vicsek(
     avg_steps: int = 2000,
 ) -> float:
     """
-    Simulate the Vicsek model and return the time-averaged normalized order parameter over the last avg_steps.
+    Simulate the Vicsek model and return the time-averaged normalized
+    order parameter over the last avg_steps.
     """
     box_size = np.sqrt(num_boids / density)
     xy, theta = initialize_particles(num_boids, box_size=box_size)
@@ -204,8 +205,9 @@ def plot_avg_velocity_vs_noise(
 
 
 def plot_avg_velocity_vs_density(
+    density_range: tuple[float, float] = (0.1, 10.0),
+    density_steps: int = 20,
     fixed_eta: float = 0.1,
-    densities: np.ndarray = np.linspace(0.1, 2.0, 20),
     box_size: float = 20,
     radius_interaction: float = 1,
     v0: float = 0.03,
@@ -214,10 +216,18 @@ def plot_avg_velocity_vs_density(
     img_dir: str = "img",
 ) -> None:
     avg_velocities = []
+    densities = np.linspace(density_range[0], density_range[1], density_steps)
     for density in densities:
         num_boids = int(density * box_size**2)
         avg_v = simulate_vicsek(
-            num_boids, box_size, fixed_eta, radius_interaction, v0, steps, dt
+            num_boids=num_boids,
+            eta=fixed_eta,
+            density=density,
+            radius_interaction=radius_interaction,
+            v0=v0,
+            steps=steps,
+            dt=dt,
+            avg_steps=steps // 10,
         )
         avg_velocities.append(avg_v)
         print(
@@ -238,7 +248,7 @@ def plot_avg_velocity_vs_density(
 
 def main() -> None:
     # Example system sizes (N) as in the original paper
-    num_boids_list = [40, 100, 400]
+    num_boids_list = [40, 100]
     # For publication-quality, set n_realizations > 1 (e.g. 5-10)
     plot_avg_velocity_vs_noise(num_boids_list=num_boids_list, n_realizations=1)
     plot_avg_velocity_vs_density()
