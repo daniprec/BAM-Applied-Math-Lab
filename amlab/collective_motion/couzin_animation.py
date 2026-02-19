@@ -50,10 +50,19 @@ def run_simulation(dt: float = 0.1):
     (plt_particles,) = ax_plane.plot(
         xy_tail[0].flatten(),
         xy_tail[1].flatten(),
-        color="grey",
+        color="cyan",
         linestyle="",
         marker=".",
         markersize=2,
+    )
+    # Current positions (black, bigger markers)
+    (plt_current,) = ax_plane.plot(
+        xy[0],
+        xy[1],
+        linestyle="",
+        marker="o",
+        color="blue",
+        markersize=4,  # twice as big as 2
     )
     ax_plane.set_xlim(0, box_size)
     ax_plane.set_ylim(0, box_size)
@@ -102,6 +111,9 @@ def run_simulation(dt: float = 0.1):
         xy_tail[:, :, -1] = xy
         plt_particles.set_data(xy_tail[0].flatten(), xy_tail[1].flatten())
 
+        # Update current positions
+        plt_current.set_data(xy[0], xy[1])
+
         # Proper polarization / order parameter:
         # r = | (1/N) sum_i v_i / |v_i| |, here |v_i| = 1
         vx = np.cos(theta)
@@ -114,7 +126,7 @@ def run_simulation(dt: float = 0.1):
         x_vals = np.arange(len(ls_order_param))
         line_order_param.set_data(x_vals, ls_order_param)
 
-        return (plt_particles, line_order_param)
+        return (plt_particles, plt_current, line_order_param)
 
     ani = animation.FuncAnimation(
         fig,
