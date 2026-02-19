@@ -166,7 +166,4 @@ def couzin_equations(
     v = v0 * np.vstack((np.cos(theta_new), np.sin(theta_new)))
     xy_new = xy + dt * v
 
-    # Periodic boundary conditions
-    xy_new = np.mod(xy_new, box_size)
-
     return xy_new, theta_new
