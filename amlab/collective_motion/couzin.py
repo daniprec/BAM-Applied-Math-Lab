@@ -53,7 +53,7 @@ def couzin_equations(
     # Build KD-tree for efficient neighbour search up to the largest radius (ra)
     tree = cKDTree(xy.T)
 
-    heading_new = theta.copy()
+    theta_new = theta.copy()
 
     half_fov = np.deg2rad(perception_angle_deg) / 2.0
     max_turn = np.deg2rad(turning_rate_deg) * dt
@@ -160,13 +160,13 @@ def couzin_equations(
         dheading = (desired_heading - heading_i + np.pi) % (2.0 * np.pi) - np.pi
         if np.abs(dheading) > max_turn:
             dheading = np.sign(dheading) * max_turn
-        heading_new[i] = (heading_i + dheading) % (2.0 * np.pi)
+        theta_new[i] = (heading_i + dheading) % (2.0 * np.pi)
 
     # Move at constant speed v0
-    v = v0 * np.vstack((np.cos(heading_new), np.sin(heading_new)))
+    v = v0 * np.vstack((np.cos(theta_new), np.sin(theta_new)))
     xy_new = xy + dt * v
 
     # Periodic boundary conditions
     xy_new = np.mod(xy_new, box_size)
 
-    return xy_new, heading_new
+    return xy_new, theta_new
