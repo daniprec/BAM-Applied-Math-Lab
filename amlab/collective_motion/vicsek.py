@@ -240,9 +240,9 @@ def plot_avg_velocity_vs_noise(
 
 def plot_avg_velocity_vs_density(
     density_range: tuple[float, float] = (0.1, 10.0),
-    density_steps: int = 10,
-    noise: float = 0.1,
-    box_size: float = 20,
+    density_steps: int = 20,
+    noise: float = 2.0,
+    box_size: float = 5,
 ) -> None:
     """
     Plot the time-averaged normalized order parameter vs density for a fixed noise.
@@ -254,9 +254,9 @@ def plot_avg_velocity_vs_density(
     density_steps : int, optional
         Number of density values to simulate within the range, default is 20.
     noise : float, optional
-        Noise parameter (eta) to use for the simulations, default is 0.1.
+        Noise parameter (eta) to use for the simulations, default is 2.0.
     box_size : float, optional
-        Dimension of the space, L, default is 20.
+        Dimension of the space, L, default is 3.
     """
     avg_velocities = []
     # Because computation takes way longer in high densities,
@@ -266,31 +266,26 @@ def plot_avg_velocity_vs_density(
     )
 
     plt.figure(figsize=(8, 6))
-    # Plot the theoretical line of order vs density [Vicsek1995]
-    gamma = 0.35
-    density_critical = 0.4
-    theoretical_densities = np.linspace(density_range[0], density_range[1], 100)
-    theoretical_order = np.power(theoretical_densities - density_critical, gamma)
-    plt.plot(
-        theoretical_densities,
-        theoretical_order,
-        label="Theoretical (Vicsek 1995)",
-        color="gray",
-    )
-
-    #
+    # Simulate for each density and compute average velocity
     for density in densities:
         num_boids = int(density * box_size**2)
+        # If the number of boids is too small, skip to avoid noisy results
+        if num_boids <= 5:
+            print(
+                f"Box size: {box_size}, density: {density:.2f}, num_boids: {num_boids} (skipped)"
+            )
+            continue
         avg_v = simulate_vicsek(num_boids=num_boids, noise=noise, density=density)
         avg_velocities.append(avg_v)
         print(
             f"Box size: {box_size}, density: {density:.2f}, avg velocity: {avg_v:.4f}"
         )
-
-    plt.plot(densities, avg_velocities, marker="o")
+    # Crop densities to match the length of avg_velocities (in case some were skipped)
+    densities = densities[-len(avg_velocities) :]
+    plt.scatter(densities, avg_velocities, marker="o")
     plt.xlabel("Density (N/L^2)")
     plt.ylabel(r"Order parameter, avg. velocity ($\varphi$)")
-    plt.title("Average velocity vs Density (" r"$\eta$" f"={noise})")
+    plt.title("Average velocity vs Density (" r"$\eta$" f"={noise}, L={box_size})")
     plt.grid(True)
 
 
