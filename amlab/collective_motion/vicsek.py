@@ -14,9 +14,9 @@ def initialize_particles(
     Parameters
     ----------
     num_boids : int
-        Number of particles.
+        Number of particles, N.
     box_size : float, optional
-        Dimension of the space (default is 25).
+        Dimension of the space, L (default is 25).
 
     Returns
     -------
@@ -35,9 +35,9 @@ def initialize_particles(
 def vicsek_equations(
     xy: np.ndarray,
     theta: np.ndarray,
-    dt: float = 1,
-    eta: float = 0.1,
+    noise: float = 0.1,
     box_size: float = 25,
+    dt: float = 1,
     radius_interaction: float = 1,
     v0: float = 0.03,
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -50,16 +50,16 @@ def vicsek_equations(
         Position of the particles.
     theta : np.ndarray
         Angle of the particles.
-    dt : float, optional
-        Time step, default is 1 (standard convention).
-    eta : float, optional
-        Noise parameter, default is 0.1.
+    noise : float, optional
+        Noise parameter, eta, default is 0.1.
     box_size : float, optional
-        Dimension of the space, default is 25.
+        Dimension of the space, L, default is 25.
+    dt : float, optional
+        Time step, default is 1 [Vicsek1995]
     radius_interaction : float, optional
-        Interaction radius, default is 1 (standard convention).
+        Interaction radius, default is 1 [Vicsek1995]
     v0 : float, optional
-        Speed of the particles, default is 0.03.
+        Speed of the particles, default is 0.03 [Vicsek1995]
 
     Returns
     -------
@@ -84,9 +84,9 @@ def vicsek_equations(
     mean_sin = sum_sin / count
     mean_cos = sum_cos / count
     theta_avg = np.arctan2(mean_sin, mean_cos)
-    # Add noise: uniform in [-eta/2, eta/2]
-    noise = eta * (np.random.rand(num_boids) - 0.5)
-    theta_new = theta_avg + noise
+    # Add noise: uniform in [-noise/2, noise/2]
+    noise_arr = noise * (np.random.rand(num_boids) - 0.5)
+    theta_new = theta_avg + noise_arr
     theta_new = np.mod(theta_new, 2 * np.pi)
 
     # Update position
@@ -130,7 +130,7 @@ def compute_order_parameter(
 
 def simulate_vicsek(
     num_boids: int,
-    eta: float,
+    noise: float,
     density: float = 2.0,
     radius_interaction: float = 1.0,
     v0: float = 0.03,
@@ -150,7 +150,7 @@ def simulate_vicsek(
             xy,
             theta,
             dt=dt,
-            eta=eta,
+            noise=noise,
             box_size=box_size,
             radius_interaction=radius_interaction,
             v0=v0,
@@ -164,22 +164,33 @@ def simulate_vicsek(
 def plot_avg_velocity_vs_noise(
     num_boids_list: list[int],
     density: float = 4.0,
-    eta_range: tuple[float, float] = (0.0, 5.0),
-    eta_steps: int = 20,
-    radius_interaction: float = 1.0,
-    v0: float = 0.03,
-    steps: int = 20000,
-    dt: float = 1.0,
-    avg_steps: int = 2000,
+    noise_range: tuple[float, float] = (0.0, 5.0),
+    noise_steps: int = 20,
     n_realizations: int = 1,
     img_dir: str = "img",
 ) -> None:
     """
-    Plot the time-averaged normalized order parameter vs noise for different system sizes (N), keeping density fixed.
+    Plot the time-averaged normalized order parameter vs noise for different system sizes (N),
+    keeping density fixed.
     Optionally averages over multiple realizations for each parameter set.
+
+    Parameters
+    ----------
+    num_boids_list : list[int]
+        List of system sizes (number of particles, N) to simulate.
+    density : float, optional
+        Density of the system (N/L^2), default is 4.0.
+    noise_range : tuple[float, float], optional
+        Range of noise values (eta) to simulate, default is (0.0, 5.0).
+    noise_steps : int, optional
+        Number of noise values to simulate within the range, default is 20.
+    n_realizations : int, optional
+        Number of independent realizations to average over for each parameter set, default is 1.
+    img_dir : str, optional
+        Directory to save the output plot, default is "img".
     """
     plt.figure(figsize=(8, 6))
-    etas = np.linspace(eta_range[0], eta_range[1], eta_steps)
+    noises = np.linspace(noise_range[0], noise_range[1], noise_steps)
     # Following the marker style from the original paper
     # Plus sign in scatter is
     markers = ["s", "P", "X", "^", "D"]
@@ -187,19 +198,17 @@ def plot_avg_velocity_vs_noise(
         box_size = np.sqrt(nb / density)
         avg_orders = []
         print(f"Simulating for N={nb}, L={box_size:.2f}, density={density}")
-        for eta in etas:
+        for noise in noises:
             vals = []
             for rep in range(n_realizations):
-                val = simulate_vicsek(
-                    nb, eta, density, radius_interaction, v0, steps, dt, avg_steps
-                )
+                val = simulate_vicsek(nb, noise, density=density)
                 vals.append(val)
             mean_val = float(np.mean(vals))
             avg_orders.append(mean_val)
-            print(f"    eta={eta:.3f}, phi={mean_val:.4f}")
+            print(f"    noise={noise:.3f}, phi={mean_val:.4f}")
         marker = markers[idx % len(markers)]
         plt.scatter(
-            etas, avg_orders, label=f"N={nb}, L={box_size:.1f}", marker=marker, s=60
+            noises, avg_orders, label=f"N={nb}, L={box_size:.1f}", marker=marker, s=60
         )
     plt.xlabel(r"Noise ($\eta$)")
     plt.ylabel(r"Order parameter $\varphi$")
@@ -216,28 +225,31 @@ def plot_avg_velocity_vs_noise(
 def plot_avg_velocity_vs_density(
     density_range: tuple[float, float] = (0.1, 10.0),
     density_steps: int = 20,
-    fixed_eta: float = 0.1,
+    noise: float = 0.1,
     box_size: float = 20,
-    radius_interaction: float = 1,
-    v0: float = 0.03,
-    steps: int = 1000,
-    dt: float = 1,
     img_dir: str = "img",
 ) -> None:
+    """
+    Plot the time-averaged normalized order parameter vs density for a fixed noise.
+
+    Parameters
+    ----------
+    density_range : tuple[float, float], optional
+        Range of density values (N/L^2) to simulate, default is (0.1, 10.0).
+    density_steps : int, optional
+        Number of density values to simulate within the range, default is 20.
+    noise : float, optional
+        Noise parameter (eta) to use for the simulations, default is 0.1.
+    box_size : float, optional
+        Dimension of the space, L, default is 20.
+    img_dir : str, optional
+        Directory to save the output plot, default is "img".
+    """
     avg_velocities = []
     densities = np.linspace(density_range[0], density_range[1], density_steps)
     for density in densities:
         num_boids = int(density * box_size**2)
-        avg_v = simulate_vicsek(
-            num_boids=num_boids,
-            eta=fixed_eta,
-            density=density,
-            radius_interaction=radius_interaction,
-            v0=v0,
-            steps=steps,
-            dt=dt,
-            avg_steps=steps // 10,
-        )
+        avg_v = simulate_vicsek(num_boids=num_boids, noise=noise, density=density)
         avg_velocities.append(avg_v)
         print(
             f"Box size: {box_size}, density: {density:.2f}, avg velocity: {avg_v:.4f}"
@@ -246,7 +258,7 @@ def plot_avg_velocity_vs_density(
     plt.plot(densities, avg_velocities, marker="o")
     plt.xlabel("Density (N/L^2)")
     plt.ylabel("|<v>| (average velocity)")
-    plt.title(f"Average velocity vs Density (eta={fixed_eta})")
+    plt.title(f"Average velocity vs Density (eta={noise})")
     plt.grid(True)
     os.makedirs(img_dir, exist_ok=True)
     out_path = os.path.join(img_dir, "avg_velocity_vs_density.png")
