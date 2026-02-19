@@ -66,7 +66,7 @@ def run_simulation(dt: float = 1):
 
     # Initialize order parameter vs noise
     (line_noise,) = ax_noise.plot([], [], color="red", marker="o", linestyle="--")
-    ax_noise.set_xlim(0, 1)
+    ax_noise.set_xlim(0, 5)
     ax_noise.set_ylim(0, 1)
     ax_noise.set_xlabel("Noise (eta)")
     ax_noise.set_ylabel("Order param (r)")
@@ -131,7 +131,7 @@ def run_simulation(dt: float = 1):
         valstep=1,
     )
     slider_noise_eta = plt.Slider(
-        ax_noise_eta, "Noise", 0.0, 0.5, valinit=noise_eta, valstep=0.01
+        ax_noise_eta, "Noise", 0.0, 5.0, valinit=noise_eta, valstep=0.01
     )
     slider_v0 = plt.Slider(ax_v0, "Speed", 0.0, 0.1, valinit=v0, valstep=0.01)
     slider_box_size = plt.Slider(

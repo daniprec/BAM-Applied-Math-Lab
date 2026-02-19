@@ -72,21 +72,30 @@ def vicsek_equations(
     d_matrix = scipy.spatial.distance.pdist(xy.T)
     d_matrix = scipy.spatial.distance.squareform(d_matrix)
     neighbors = d_matrix <= radius_interaction
-    # Compute mean angle of neighbors
-    term_theta_avg = theta @ neighbors / np.sum(neighbors, axis=1)
-    # Add noise
-    term_noise = eta * np.pi * np.random.uniform(-1, 1, len(theta))
-    # Update angle
-    theta = term_theta_avg + term_noise
-    theta = np.mod(theta, 2 * np.pi)
+    # Vectorized computation of average direction of neighbors (including itself)
+    num_boids = xy.shape[1]
+    sin_theta = np.sin(theta)
+    cos_theta = np.cos(theta)
+    # neighbors is (N, N), sin_theta/cos_theta is (N,)
+    # Broadcasting: (N, N) * (N,) -> (N, N)
+    sum_sin = neighbors @ sin_theta  # (N,)
+    sum_cos = neighbors @ cos_theta  # (N,)
+    count = neighbors.sum(axis=1)  # (N,)
+    mean_sin = sum_sin / count
+    mean_cos = sum_cos / count
+    theta_avg = np.arctan2(mean_sin, mean_cos)
+    # Add noise: uniform in [-eta/2, eta/2]
+    noise = eta * (np.random.rand(num_boids) - 0.5)
+    theta_new = theta_avg + noise
+    theta_new = np.mod(theta_new, 2 * np.pi)
 
     # Update position
-    v = v0 * np.array([np.cos(theta), np.sin(theta)])
-    xy = xy + dt * v
-    # Boundary conditions: periodic
-    xy = np.mod(xy, box_size)
+    v = v0 * np.array([np.cos(theta_new), np.sin(theta_new)])
+    xy_new = xy + dt * v
+    # Periodic boundary conditions
+    xy_new = np.mod(xy_new, box_size)
 
-    return xy, theta
+    return xy_new, theta_new
 
 
 def vicsek_order_parameter(theta: np.ndarray) -> float:
