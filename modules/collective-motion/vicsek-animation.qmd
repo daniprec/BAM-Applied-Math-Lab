@@ -81,9 +81,11 @@ def run_simulation(dt: float = 1.0) -> None:
 
     # TODO: initialize the state (xy, theta)
 
-    # TODO: store order parameter history
+    # store order parameter history
+    ls_order_param = []
 
-    # TODO: store explored noise->order mapping
+    # store explored noise->order mapping
+    dict_noise = {}
 
     # We stop here for now.
     return
@@ -181,24 +183,26 @@ This avoids creating new arrays each frame.
 The next plot will show the order parameter $r$ over time.
 
 ```{python}
-#| label: vicsek-anim-order-plot
+#| label: fig-vicsek-anim-order-plot
+#| fig-alt: "Example order parameter plot (r vs time)"
 #| echo: false
 import matplotlib.pyplot as plt
 import numpy as np
 
-t = np.arange(100)
-r = np.random.uniform(0.0, 1.0, size=100)
-r = np.cumprod(r)
-r = np.clip(r, 0, 1)
+t = np.arange(1000)
+r = np.random.uniform(-1, 1, size=len(t))
+r = np.cumsum(r)
+r = (r - r.min()) / (r.max() - r.min())  # normalize to [0, 1]
 
 plt.plot(t, r)
 plt.xlabel("Time")
 plt.ylabel("Order parameter (r)")
+plt.ylim(0, 1)
 plt.grid(True)
 plt.show()
 ```
 
-We will update the line data at each animation frame.
+We will update the line data at each animation frame, using the `ls_order_param` list to store the recent history of $r$.
 
 Create an empty line in `ax_order` and set labels/limits.
 
@@ -233,13 +237,30 @@ def init_order_plot(ax_order: Axes, order_window: int):
 
 ## Initialize the Noise Diagnostic Plot
 
-Here we store a dictionary:
+In this plot we will track how the order parameter $r$ changes as we explore different noise levels $\eta$ with the slider. Visually, we expect to see a curve that starts near $r=1$ at low noise, and drops towards $r=0$ as noise increases. See @fig-vicsek-anim-noise-plot for an example (using mock data).
+
+```{python}
+#| label: fig-vicsek-anim-noise-plot
+#| fig-alt: "Example noise diagnostic plot (order parameter vs noise)"
+#| echo: false
+import matplotlib.pyplot as plt
+noise_eta = [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0]
+order_param = [1.0, 0.8, 0.5, 0.2, 0.1, 0.05, 0.01]
+plt.plot(noise_eta, order_param, color="red", marker="o", linestyle="--")
+plt.xlabel("Noise (eta)")
+plt.ylabel("Order param (r)")
+plt.ylim(0, 1)
+plt.grid(True)
+plt.show()
+```
+
+To build this plot, we will maintain a dictionary `dict_noise` that maps noise levels to the recent average of the order parameter. Each time we update the animation, we will compute the recent average of $r$ and update this dictionary with the current noise level. Then we will set the line data for the noise plot using the items in this dictionary.
 
 \[
 \eta \mapsto \text{(recent average of } r \text{)}
 \]
 
-**Task:** initialize an empty line (red markers).
+Initialize an empty line (red markers).
 
 ```{python}
 #| label: vicsek-anim-step5-noise-plot
@@ -247,16 +268,23 @@ Here we store a dictionary:
 
 def init_noise_plot(ax_noise: Axes):
     # TODO: create the line artist
-    # (line_noise,) = ax_noise.plot([], [], color="red", marker="o", linestyle="--")
 
     # TODO: set limits and labels (match your slider range)
-    # ax_noise.set_xlim(0, 5)
-    # ax_noise.set_ylim(0, 1)
-    # ax_noise.set_xlabel("Noise (eta)")
-    # ax_noise.set_ylabel("Order param (r)")
 
-    # return line_noise
-    ...
+    # return
+```
+
+::: {.callout-tip collapse="true"}
+## Solved
+
+```python
+def init_noise_plot(ax_noise: Axes):
+    (line_noise,) = ax_noise.plot([], [], color="red", marker="o", linestyle="--")
+    ax_noise.set_xlim(0, 5)
+    ax_noise.set_ylim(0, 1)
+    ax_noise.set_xlabel("Noise (eta)")
+    ax_noise.set_ylabel("Order param (r)")
+    return line_noise
 ```
 
 ---
@@ -268,10 +296,8 @@ This is the core loop:
 1. advance the Vicsek dynamics by one step (`vicsek_equations`)
 2. update `xy_tail`
 3. update the particle artists
-4. update order-parameter history + plot
-5. update the noise diagnostic
-
-**Task:** implement `update_animation(frame)`.
+4. update order-parameter history `ls_order_param` and its plot
+5. update the noise diagnostic `dict_noise` and its plot
 
 Use this checklist:
 
@@ -283,87 +309,84 @@ Use this checklist:
 - [ ] compute a *recent average* (e.g. last third of the window)
 - [ ] update `dict_noise[noise_eta]` and redraw the noise curve
 
-```{python}
-#| label: vicsek-anim-step6-update
-#| echo: true
+You can follow the structure of the `update_animation` function below, which includes comments for each step.
 
-def make_update_fn(
-    *,
-    dt: float,
-    TAIL_LEN: int,
-    ORDER_WINDOW: int,
-    ax_plane: Axes,
-    plt_particles,
-    plt_current,
-    line_order_param,
-    line_noise,
-):
-    # You will capture state with closures + `nonlocal`.
-    # This is the simplest pattern in Matplotlib animations.
+```python
+def update_animation(frame: int):
+    nonlocal xy, xy_tail, theta, noise_eta, v0, radius_interaction, box_size, dict_noise, ls_order_param
 
-    # TODO: initialize these in run_simulation and pass them in
-    xy = None
-    theta = None
-    xy_tail = None
-    noise_eta = None
-    radius_interaction = None
-    v0 = None
-    box_size = None
-    dict_noise = None
-    ls_order_param = None
+    # TODO: advance the Vicsek equations
 
-    def update_animation(frame: int):
-        nonlocal xy, theta, xy_tail, noise_eta, radius_interaction, v0, box_size, dict_noise, ls_order_param
+    # TODO: update the tail tensor
+    # TODO: update the particle artists with set_data
 
-        # 1) Vicsek step
-        # xy, theta = vicsek_equations(
-        #     xy, theta,
-        #     v0=v0, dt=dt,
-        #     radius_interaction=radius_interaction,
-        #     box_size=box_size,
-        #     noise=noise_eta,
-        # )
+    # TODO: update the order parameter history and plot
 
-        # 2) Tail update
-        # xy_tail = np.roll(xy_tail, shift=-1, axis=2)
-        # xy_tail[:, :, -1] = xy
+    # TODO: compute a recent average and update dict_noise
+    # TODO: update the noise diagnostic plot with set_data
 
-        # 3) Particle artists
-        # plt_particles.set_data(xy_tail[0].flatten(), xy_tail[1].flatten())
-        # plt_current.set_data(xy[0], xy[1])
-
-        # 4) Order parameter window + plot
-        # ls_order_param.append(vicsek_order_parameter(theta))
-        # ls_order_param = ls_order_param[-ORDER_WINDOW:]
-        # x_vals = np.arange(len(ls_order_param))
-        # line_order_param.set_data(x_vals, ls_order_param)
-
-        # 5) Noise diagnostic (recent average)
-        # order_param = np.mean(ls_order_param[-ORDER_WINDOW // 3 :])
-        # dict_noise[noise_eta] = order_param
-        # dict_noise = dict(sorted(dict_noise.items()))
-        # if dict_noise:
-        #     line_noise.set_data(*zip(*dict_noise.items()))
-        # else:
-        #     line_noise.set_data([], [])
-
-        return (plt_particles, plt_current, line_order_param, line_noise)
-
-    return update_animation
+    return (plt_particles, plt_current, line_order_param, line_noise)
 ```
 
+**Tip:** blitting requires you to return artists
+If you set `blit=True`, your update function **must** return an iterable of the artists that changed, as shown above. If you forget to return them, the animation will run but the plot will not update (it will look frozen).
+
+Move the function `update_animation` inside `run_simulation` so it can access the state variables with `nonlocal`.
+
 ::: {.callout-tip collapse="true"}
-### Tip: blitting requires you to return artists
-If you set `blit=True`, your update function **must** return an iterable of the artists that changed.
+## Solved
+
+```python
+def update_animation(frame: int):
+    nonlocal \
+        xy, \
+        xy_tail, \
+        theta, \
+        noise_eta, \
+        v0, \
+        radius_interaction, \
+        box_size, \
+        dict_noise, \
+        ls_order_param
+    xy, theta = vicsek_equations(
+        xy,
+        theta,
+        v0=v0,
+        dt=dt,
+        radius_interaction=radius_interaction,
+        box_size=box_size,
+        noise=noise_eta,
+    )
+
+    # Update tails
+    xy_tail = np.roll(xy_tail, shift=-1, axis=2)
+    xy_tail[:, :, -1] = xy
+    plt_particles.set_data(xy_tail[0].flatten(), xy_tail[1].flatten())
+    plt_current.set_data(xy[0], xy[1])
+
+    # Update order parameter
+    ls_order_param.append(vicsek_order_parameter(theta))
+    ls_order_param = ls_order_param[-ORDER_WINDOW:]
+    x_vals = np.arange(len(ls_order_param))
+    line_order_param.set_data(x_vals, ls_order_param)
+
+    # Average the last ORDER_WINDOW//3 values to get the order parameter (similar to Couzin)
+    order_param = np.mean(ls_order_param[-ORDER_WINDOW // 3 :])
+    dict_noise[noise_eta] = order_param
+    dict_noise = dict(sorted(dict_noise.items()))
+    if dict_noise:
+        line_noise.set_data(*zip(*dict_noise.items()))
+    else:
+        line_noise.set_data([], [])
+    return (plt_particles, plt_current, line_order_param, line_noise)
+```
 :::
 
 ---
 
-## Step 7 — Create the animation object
+## Create the Animation Object
 
-Matplotlib uses `FuncAnimation`.
-
-**Task:** create:
+Matplotlib uses `FuncAnimation`. Inside `run_simulation`, after defining `update_animation`, create the animation object:
 
 ```python
 ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)
@@ -372,28 +395,17 @@ ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)
 - `interval=0` makes it as fast as your computer can handle.
 - You can set a larger interval (e.g. 20 ms) to reduce CPU usage.
 
-```{python}
-#| label: vicsek-anim-step7-ani
-#| echo: true
-
-def make_animation(fig, update_animation):
-    # TODO: create FuncAnimation
-    # ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)
-    # return ani
-    ...
-```
-
 ---
 
-## Step 8 — Add sliders
+## Add Sliders
 
 We want sliders for:
 
-- Number of boids (special: requires reinitializing particles)
-- Interaction radius
-- Noise
-- Speed
-- Box size
+- Number of boids $N$ (special: requires reinitializing particles).
+- Interaction radius $r$.
+- Noise $\eta$.
+- Speed $v_0$.
+- Box size $L$.
 
 ### Step 8A — Create slider axes
 
