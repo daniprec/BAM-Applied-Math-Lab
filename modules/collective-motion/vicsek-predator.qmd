@@ -1,71 +1,75 @@
 ---
 title: "Vicsek Model with Predator"
-subtitle: "Mouse-Controlled Repulsion"
+subtitle: "Implementing the Avoidance Rule"
 format: html
 ---
 
-::: {.callout-warning}
-**Warning:** This section will *not* be covered this year. You are welcome to explore or implement the idea, but the code and example may be outdated.
-:::
+In the Couzin model, particle avoidance takes absolute priority: if an individual senses another particle within a certain radius, it immediately turns directly away, ignoring all other alignment or noise rules. We can implement a similar rule in the Vicsek model to simulate predator avoidance. The predator can be a fixed point, a random walker, or even the mouse cursor. In all cases, if a boid senses the predator within a certain radius, it will turn directly away from it.
 
+Below is a guide on how to implement this in your Vicsek animation. You can choose to implement one or more types of predators (static, random walk, mouse-following) and compare their effects on the collective behavior of the particles.
 
-Now add a predator that boids avoid. The predator position is controlled by the mouse, and boids change their angle when they are within a predator radius.
+---
 
-The repulsion angle is
+## Static Predator
 
-$$\Theta_{\text{rep}, i} = \tan^{-1}\left(\frac{y_i - y_{\text{pred}}}{x_i - x_{\text{pred}}}\right).$$ {#eq-collective-motion-vicsek-predator-1}
+The simplest case is a predator fixed at a given position. To implement this:
 
-We blend alignment and repulsion with strength $k$:
+- Set the predator's position (e.g., `xy_pred = np.array([L/2, L/2])` for the center).
+- In your Vicsek update function, check for boids within the predator radius and set their direction directly away from the predator (as in the Couzin rule).
+- In your animation, draw the predator as a red circle.
 
-$$\Theta_i = (1-k)\left(\langle \Theta_j \rangle + \eta_i\right) + k\,\Theta_{\text{rep}, i}.$$ {#eq-collective-motion-vicsek-predator-2}
+**Where to add:**
+- Set `xy_pred` before the animation loop in your main script.
+- Pass `xy_pred` to your Vicsek update at each frame.
+- Draw the predator in the plotting section (after initializing the axes).
 
-## Track the predator
+---
 
-```python
-from matplotlib.backend_bases import MouseEvent
+## Random Walk Predator
 
-# Inside run_simulation
-xy_pred = np.array([-1000, -1000])
-radius_predator = 1.0
-strength_predator = 0.1
+To make the predator more dynamic, let it perform a random walk:
 
+- At each animation frame, update `xy_pred` by adding a small random displacement (e.g., `xy_pred += np.random.normal(0, step_size, 2)`).
+- Apply periodic boundary conditions to keep the predator in the box.
+- The avoidance rule for boids remains unchanged.
 
-def on_mouse_move(event: MouseEvent):
-    nonlocal xy_pred
-    if event.inaxes == ax_plane:
-        xy_pred = np.array([event.xdata, event.ydata])
-    else:
-        xy_pred = np.array([-1000, -1000])
+**Where to add:**
+- In your animation update function, before updating the boids, update `xy_pred` with a random walk step.
+- Pass the new `xy_pred` to the Vicsek update.
+- Update the predator's position in the plot.
 
-fig.canvas.mpl_connect("motion_notify_event", on_mouse_move)
-```
+---
 
-## Update the equations
+## Mouse-Following Predator
 
-Add the predator terms inside your Vicsek update.
+For an interactive experience, let the predator follow the mouse:
 
-```python
-def vicsek_equations(
-    xy, theta, dt, eta, box_size, radius_interaction, v0,
-    xy_pred, radius_predator, strength_predator,
-):
-    # TODO: compute alignment as usual
+- Use a mouse event callback to update `xy_pred` to the mouse position whenever the mouse moves over the plot.
+- The avoidance rule for boids is the same: those within the predator radius turn directly away.
 
-    # TODO: compute repulsion angle and blend with k
-    return xy, theta
-```
+**Where to add:**
 
-::: {.callout-tip collapse="true"}
-## Hint: Predator update (click to expand)
+- Register a mouse motion callback (e.g., with `fig.canvas.mpl_connect('motion_notify_event', on_mouse_move)`).
+- In the callback, update `xy_pred` to the mouse coordinates if the mouse is over the main plot.
+- The animation update function will use the current `xy_pred` as usual.
 
-```python
-# Distances to predator
- d_pred = np.linalg.norm(xy - xy_pred[:, np.newaxis], axis=0)
- affected = d_pred <= radius_predator
- repulsion_angle = np.arctan2(xy[1] - xy_pred[1], xy[0] - xy_pred[0])
- term_pred = strength_predator * (repulsion_angle - theta) * affected
- theta = np.mod(theta + term_pred, 2 * np.pi)
-```
-:::
+---
 
-If you want a full working reference, check [amlab/collective_motion/vicsek_predator.py](../../amlab/collective_motion/vicsek_predator.py).
+## Integration
+
+In all cases, the predator logic is integrated as follows:
+
+- The predator's position (`xy_pred`) is set or updated before each Vicsek update.
+- The Vicsek update function receives `xy_pred` and applies the Couzin avoidance rule.
+- The predator is drawn as a red circle in the main plot.
+- For the mouse-following version, the mouse callback is registered during figure setup.
+
+This modular approach allows you to experiment with different predator behaviors by simply changing how `xy_pred` is updated, while keeping the avoidance rule and animation structure consistent.
+
+---
+
+## Assignment
+
+Check the assignment page for the next steps. You will be implementing this model in a script named `vicsek_predator.py`.
+
+[Assignment: Implementing the Vicsek Model with Predator](assignment.qmd){.btn .btn-primary}
