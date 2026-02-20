@@ -180,6 +180,8 @@ This avoids creating new arrays each frame.
 
 ## Initialize the Order-Parameter Plot
 
+**Optional:** You can skip this step and just create an empty plot with `ax_order.plot([], [])` for now. We will fill in the details later.
+
 The next plot will show the order parameter $r$ over time.
 
 ```{python}
@@ -237,6 +239,8 @@ def init_order_plot(ax_order: Axes, order_window: int):
 
 ## Initialize the Noise Diagnostic Plot
 
+**Optional:** You can skip this step and just create an empty plot with `ax_noise.plot([], [])` for now. We will fill in the details later.
+
 In this plot we will track how the order parameter $r$ changes as we explore different noise levels $\eta$ with the slider. Visually, we expect to see a curve that starts near $r=1$ at low noise, and drops towards $r=0$ as noise increases. See @fig-vicsek-anim-noise-plot for an example (using mock data).
 
 ```{python}
@@ -290,21 +294,21 @@ def init_noise_plot(ax_noise: Axes):
 
 This is the core loop:
 
-1. advance the Vicsek dynamics by one step (`vicsek_equations`)
-2. update `xy_tail`
-3. update the particle artists
-4. update order-parameter history `ls_order_param` and its plot
-5. update the noise diagnostic `dict_noise` and its plot
+1. advance the Vicsek dynamics by one step (`vicsek_equations`).
+2. update `xy_tail`.
+3. update the particle artists.
+4. update order-parameter history `ls_order_param` and its plot (only if you implemented the order plot in the previous step).
+5. update the noise diagnostic `dict_noise` and its plot (only if you implemented the noise plot in the previous step).
 
 Use this checklist:
 
 - [ ] call `vicsek_equations(...)`
 - [ ] update `xy_tail` with `np.roll(...)`
 - [ ] `plt_particles.set_data(...)` and `plt_current.set_data(...)`
-- [ ] append `vicsek_order_parameter(theta)` to the window list
-- [ ] set line data for the order parameter plot
-- [ ] compute a *recent average* (e.g. last third of the window)
-- [ ] update `dict_noise[noise_eta]` and redraw the noise curve
+- [ ] append `vicsek_order_parameter(theta)` to the window list (only if you implemented the order plot)
+- [ ] set line data for the order parameter plot (only if you implemented the order plot)
+- [ ] compute a *recent average* (only if you implemented the order plot)
+- [ ] update `dict_noise[noise_eta]` and redraw the noise curve (only if you implemented the noise plot)
 
 You can follow the structure of the `update_animation` function below, which includes comments for each step.
 
@@ -318,9 +322,12 @@ def update_animation(frame: int):
     # TODO: update the particle artists with set_data
 
     # TODO: update the order parameter history and plot
+    # (only if you implemented the order plot in the previous step)
 
     # TODO: compute a recent average and update dict_noise
+    # (only if you implemented the order plot in the previous step)
     # TODO: update the noise diagnostic plot with set_data
+    # (only if you implemented the noise plot in the previous step)
 
     return (plt_particles, plt_current, line_order_param, line_noise)
 ```
@@ -396,6 +403,8 @@ ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)
 
 ## Add Sliders
 
+**Optional:** You can skip this step for now and just set default parameters at the top of `run_simulation()`.
+
 We want sliders for:
 
 - Number of boids $N$ (special: requires reinitializing particles).
@@ -446,9 +455,7 @@ def make_sliders(
     return slider_num_boids, slider_radius_interaction, slider_noise_eta, slider_v0, slider_box_size
 ```
 
----
-
-## Slider Callbacks
+### Slider Callbacks
 
 We need **two** callbacks:
 
@@ -489,13 +496,55 @@ This reduces glitches while you resize arrays or change plot limits.
 
 ---
 
-## Put it all together (full script)
+## Full Script
 
 At this point you have built every piece.  
 Below is a sample of how your `run_simulation` function might look with all the pieces assembled.
 
 ::: {.callout-tip collapse="true"}
-## Full `run_simulation()`
+## Solution: Simplified `run_simulation()`
+
+This is a simplified version that assumes you have not implemented the order plot or noise plot, neither the sliders, yet. It focuses on the particle animation.
+
+```python
+def run_simulation(dt: float = 1.0) -> None:
+    # Parameters
+    num_boids = 100
+    noise_eta = 0.5
+    box_size = 10.0
+    radius_interaction = 1.0
+    v0 = 0.03
+
+    # Initialize state
+    xy, theta = initialize_particles(num_boids, box_size)
+
+    # Order parameter history and noise diagnostic
+    # will be initialized here
+
+    # Create figure and axes
+    fig, ax_plane, ax_order, ax_sliders, ax_noise = make_figure()
+
+    # Initialize plots
+    xy_tail, plt_particles, plt_current = init_particles_plot(ax_plane, xy, box_size, tail_len=20)
+    # The order plot and noise plot will go here
+
+    # Sliders will be added here
+
+    # Define the animation update function
+    def update_animation(frame: int):
+        # See the previous step for the full implementation
+        ...
+
+    # Create the animation object
+    ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)
+
+    # The slider callbacks will come here
+
+    plt.show()
+```
+
+::: {.callout-tip collapse="true"}
+## Solution: Full `run_simulation()`
 
 ```python
 def run_simulation(dt: float = 1.0) -> None:
