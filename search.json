@@ -807,7 +807,7 @@
     "href": "modules/ode-2d/van-der-pol.html#the-stable-limit-cycle",
     "title": "Van der Pol Oscillator",
     "section": "The Stable Limit Cycle",
-    "text": "The Stable Limit Cycle\nThe Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions. Plot this limit cycle as a \\(x(t)-t\\) plot, and verify that it matches the phase plane trajectories.\n\n\n/tmp/ipykernel_3205/2854713749.py:14: UserWarning:\n\nNo artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.\n\n\n\n\n\n\n\n\n\nFigure 2: Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nThe amplitude and period of the limit cycle depend on \\(\\mu\\). There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with \\(\\mu\\), while the fast phase becomes more abrupt. This leads to a characteristic “relaxation oscillation” shape for large \\(\\mu\\).\nPlay with the parameter \\(\\mu\\) to see how it changes the shape of the limit cycle and the transient dynamics.",
+    "text": "The Stable Limit Cycle\nThe Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions. Plot this limit cycle as a \\(x(t)-t\\) plot, and verify that it matches the phase plane trajectories.\n\n\n/tmp/ipykernel_3180/2854713749.py:14: UserWarning:\n\nNo artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.\n\n\n\n\n\n\n\n\n\nFigure 2: Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nThe amplitude and period of the limit cycle depend on \\(\\mu\\). There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with \\(\\mu\\), while the fast phase becomes more abrupt. This leads to a characteristic “relaxation oscillation” shape for large \\(\\mu\\).\nPlay with the parameter \\(\\mu\\) to see how it changes the shape of the limit cycle and the transient dynamics.",
     "crumbs": [
       "Session 2: ODEs in 2D",
       "Van der Pol Oscillator"
@@ -874,6 +874,708 @@
     "text": "What do we need?\n\nnumpy\nEfficient arrays for state updates.\n\n\nmatplotlib.pyplot\nVisualize space-time diagrams.\n\n\nmatplotlib.backend_bases\nHandle mouse clicks for interactive initial conditions.",
     "crumbs": [
       "Session 8: Cellular Automata"
+    ]
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation-full.html",
+    "href": "modules/collective-motion/vicsek-animation-full.html",
+    "title": "Vicsek Model",
+    "section": "",
+    "text": "In this chapter I will guide you to build an interactive Vicsek animation in Matplotlib, one step at a time.\nYou already have a basic animation of particles moving (see the previous chapter). Now we will add: - an order parameter plot, - a noise diagnostic plot, - and sliders to explore the parameter space.\nAt the end, you should have a \\(2 \\times 2\\) layout:\nThe imports remain the same as in the previous chapter, but now we will also import Slider from matplotlib.widgets to create interactive sliders.\nI recommend making a new script named vicsek_animation_full.py for this chapter, so you can compare it with the simpler version from the previous chapter (and you don’t lose the other functional version). You can copy-paste the code from the previous chapter and then incrementally add the new features.\nKeep it incremental: Run your code after each step. If something breaks, you only have one new thing to debug."
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation-full.html#the-main-function",
+    "href": "modules/collective-motion/vicsek-animation-full.html#the-main-function",
+    "title": "Vicsek Model",
+    "section": "The Main Function",
+    "text": "The Main Function\nYou will need to modify your run_simulation() function to include the new plots and sliders. The structure will be similar to the simplified version from the previous chapter, but with additional initialization for the order plot, noise plot, and sliders.\ndef run_simulation(dt: float = 1.0) -&gt; None:\n    \"\"\"Run an interactive Vicsek animation (Matplotlib).\"\"\"\n    # TODO: choose defaults\n    num_boids = \n    noise_eta = \n    box_size = \n    radius_interaction = \n    v0 = \n\n    # Sliding window length for order parameter plot\n    ORDER_WINDOW = 3000\n\n    # Tail length for trajectory visualization\n    TAIL_LEN = 20\n\n    # TODO: initialize the state (xy, theta)\n\n    # store order parameter history\n    ls_order_param = []\n\n    # store explored noise-&gt;order mapping\n    dict_noise = {}\n\n    # We stop here for now.\n    return\n\n\n\n\n\n\nWhy a sliding window?\n\n\n\n\n\nIf you store the full time series, your plot and memory will grow forever.\nA fixed-length list (window) gives you: - stable performance, - and a plot that focuses on recent behavior."
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation-full.html#create-the-figure-layout",
+    "href": "modules/collective-motion/vicsek-animation-full.html#create-the-figure-layout",
+    "title": "Vicsek Model",
+    "section": "Create the Figure Layout",
+    "text": "Create the Figure Layout\nWe want a large space for particles, and a smaller area for sliders + extra diagnostics.\nCreate the subplots and name the axes.\ndef make_figure():\n    # Create a 2x2 grid\n    fig, axs = plt.subplots(\n        2, 2,\n        figsize=(12, 8),\n        height_ratios=[4, 1],  # top row larger than bottom row\n    )\n\n    ax_plane: Axes = axs[0, 0]\n    ax_order: Axes = axs[0, 1]\n    ax_sliders: Axes = axs[1, 0]\n    ax_noise: Axes = axs[1, 1]\n\n    # Sliders live in an empty axis\n    ax_sliders.axis(\"off\")\n\n    return fig, ax_plane, ax_order, ax_sliders, ax_noise\nWe are keeping the ax_plane name the same, as that is where the particles will be plotted. The new axes are ax_order for the order parameter plot, ax_sliders for the sliders, and ax_noise for the noise diagnostic plot."
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation-full.html#draw-particles",
+    "href": "modules/collective-motion/vicsek-animation-full.html#draw-particles",
+    "title": "Vicsek Model",
+    "section": "Draw Particles",
+    "text": "Draw Particles\nThis stays the same as before."
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation-full.html#initialize-the-order-parameter-plot",
+    "href": "modules/collective-motion/vicsek-animation-full.html#initialize-the-order-parameter-plot",
+    "title": "Vicsek Model",
+    "section": "Initialize the Order-Parameter Plot",
+    "text": "Initialize the Order-Parameter Plot\nThe next plot will show the order parameter \\(r\\) over time.\n\n\n\n\n\n\n\n\nFigure 1\n\n\n\n\n\nWe will update the line data at each animation frame, using the ls_order_param list to store the recent history of \\(r\\).\nCreate an empty line in ax_order and set labels/limits.\ndef init_order_plot(ax_order: Axes, order_window: int):\n    # TODO: create the line artist\n    # HINT: this is similar to how you created the particle artists,\n    # but with empty data\n\n    # TODO: set axes cosmetics\n    # limits, labels, grid\n\n    # TODO: return relevant variables\n\n\n\n\n\n\nSolved\n\n\n\n\n\ndef init_order_plot(ax_order: Axes, order_window: int):\n    (line_order_param,) = ax_order.plot([], [])\n    ax_order.set_xlim(0, order_window - 1)\n    ax_order.set_ylim(0, 1)\n    ax_order.set_xlabel(\"Time\")\n    ax_order.set_ylabel(\"Order parameter (r)\")\n    ax_order.grid(True)\n    return line_order_param"
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation-full.html#initialize-the-noise-diagnostic-plot",
+    "href": "modules/collective-motion/vicsek-animation-full.html#initialize-the-noise-diagnostic-plot",
+    "title": "Vicsek Model",
+    "section": "Initialize the Noise Diagnostic Plot",
+    "text": "Initialize the Noise Diagnostic Plot\nIn this plot we will track how the order parameter \\(r\\) changes as we explore different noise levels \\(\\eta\\) with the slider. Visually, we expect to see a curve that starts near \\(r=1\\) at low noise, and drops towards \\(r=0\\) as noise increases. See Figure 2 for an example (using mock data).\n\n\n\n\n\n\n\n\nFigure 2\n\n\n\n\n\nTo build this plot, we will maintain a dictionary dict_noise that maps noise levels to the recent average of the order parameter. Each time we update the animation, we will compute the recent average of \\(r\\) and update this dictionary with the current noise level. Then we will set the line data for the noise plot using the items in this dictionary.\n[ r ]\nInitialize an empty line (red markers).\ndef init_noise_plot(ax_noise: Axes):\n    # TODO: create the line artist\n\n    # TODO: set limits and labels (match your slider range)\n\n    # return\n::: {.callout-tip collapse=“true”} ## Solved\ndef init_noise_plot(ax_noise: Axes):\n    (line_noise,) = ax_noise.plot([], [], color=\"red\", marker=\"o\", linestyle=\"--\")\n    ax_noise.set_xlim(0, 5)\n    ax_noise.set_ylim(0, 1)\n    ax_noise.set_xlabel(\"Noise (eta)\")\n    ax_noise.set_ylabel(\"Order param (r)\")\n    return line_noise"
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation-full.html#write-the-animation-update-function",
+    "href": "modules/collective-motion/vicsek-animation-full.html#write-the-animation-update-function",
+    "title": "Vicsek Model",
+    "section": "Write the Animation Update Function",
+    "text": "Write the Animation Update Function\nThe core loop is expanded to include updates for the order parameter plot and noise diagnostic plot. The pipeline is as follows:\n\nadvance the Vicsek dynamics by one step (vicsek_equations).\nupdate xy_tail.\nupdate the particle artists.\nupdate order-parameter history ls_order_param and its plot.\nupdate the noise diagnostic dict_noise and its plot.\n\nAs you can see, steps 1-3 remain the same. Use this checklist:\n\ncall vicsek_equations(...)\nupdate xy_tail with np.roll(...)\nplt_particles.set_data(...) and plt_current.set_data(...)\nappend vicsek_order_parameter(theta) to the window list\nset line data for the order parameter plot\ncompute a recent average\nupdate dict_noise[noise_eta] and redraw the noise curve\n\nYou can follow the structure of the update_animation function below, which includes comments for each step.\ndef update_animation(frame: int):\n    nonlocal xy, xy_tail, theta, noise_eta, v0, radius_interaction, box_size, dict_noise, ls_order_param\n\n    # TODO: advance the Vicsek equations\n\n    # TODO: update the tail tensor\n    # TODO: update the particle artists with set_data\n\n    # TODO: update the order parameter history and plot\n\n    # TODO: compute a recent average and update dict_noise\n\n    # TODO: update the noise diagnostic plot with set_data\n\n\n    return (plt_particles, plt_current, line_order_param, line_noise)\nKeep the function update_animation inside run_simulation so it can access the state variables with nonlocal.\n\n\n\n\n\n\nSolution: Full update_animation()\n\n\n\n\n\ndef update_animation(frame: int):\n    nonlocal \\\n        xy, \\\n        xy_tail, \\\n        theta, \\\n        noise_eta, \\\n        v0, \\\n        radius_interaction, \\\n        box_size, \\\n        dict_noise, \\\n        ls_order_param\n    xy, theta = vicsek_equations(\n        xy,\n        theta,\n        v0=v0,\n        dt=dt,\n        radius_interaction=radius_interaction,\n        box_size=box_size,\n        noise=noise_eta,\n    )\n\n    # Update tails\n    xy_tail = np.roll(xy_tail, shift=-1, axis=2)\n    xy_tail[:, :, -1] = xy\n    plt_particles.set_data(xy_tail[0].flatten(), xy_tail[1].flatten())\n    plt_current.set_data(xy[0], xy[1])\n\n    # Update order parameter\n    ls_order_param.append(vicsek_order_parameter(theta))\n    ls_order_param = ls_order_param[-ORDER_WINDOW:]\n    x_vals = np.arange(len(ls_order_param))\n    line_order_param.set_data(x_vals, ls_order_param)\n\n    # Average the last ORDER_WINDOW//3 values to get the order parameter (similar to Couzin)\n    order_param = np.mean(ls_order_param[-ORDER_WINDOW // 3 :])\n    dict_noise[noise_eta] = order_param\n    dict_noise = dict(sorted(dict_noise.items()))\n    if dict_noise:\n        line_noise.set_data(*zip(*dict_noise.items()))\n    else:\n        line_noise.set_data([], [])\n    return (plt_particles, plt_current, line_order_param, line_noise)"
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation-full.html#create-the-animation-object",
+    "href": "modules/collective-motion/vicsek-animation-full.html#create-the-animation-object",
+    "title": "Vicsek Model",
+    "section": "Create the Animation Object",
+    "text": "Create the Animation Object\nThis stays the same as before."
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation-full.html#add-sliders",
+    "href": "modules/collective-motion/vicsek-animation-full.html#add-sliders",
+    "title": "Vicsek Model",
+    "section": "Add Sliders",
+    "text": "Add Sliders\nWe want sliders for:\n\nNumber of boids \\(N\\) (special: requires reinitializing particles).\nInteraction radius \\(r\\).\nNoise \\(\\eta\\).\nSpeed \\(v_0\\).\nBox size \\(L\\).\n\n\nCreate Slider Axes\nWe will create little inset axes inside ax_sliders:\ndef make_slider_axes(ax_sliders: Axes):\n    ax_sliders.axis(\"off\")\n\n    ax_num_boids = ax_sliders.inset_axes([0.0, 1.2, 0.8, 0.1])\n    ax_radius_interaction = ax_sliders.inset_axes([0.0, 1.0, 0.8, 0.1])\n    ax_noise_eta = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])\n    ax_v0 = ax_sliders.inset_axes([0.0, 0.6, 0.8, 0.1])\n    ax_box_size = ax_sliders.inset_axes([0.0, 0.4, 0.8, 0.1])\n\n    return ax_num_boids, ax_radius_interaction, ax_noise_eta, ax_v0, ax_box_size\n\n\nCreate the Slider Widgets\nMatplotlib’s Slider lives in matplotlib.widgets. Import it and create the sliders.\nfrom matplotlib.widgets import Slider\n\ndef make_sliders(\n    *,\n    ax_num_boids,\n    ax_radius_interaction,\n    ax_noise_eta,\n    ax_v0,\n    ax_box_size,\n    num_boids: int,\n    radius_interaction: float,\n    noise_eta: float,\n    v0: float,\n    box_size: float,\n):\n    # TODO: define the sliders with appropriate ranges and initial values\n\n    return slider_num_boids, slider_radius_interaction, slider_noise_eta, slider_v0, slider_box_size\n\n\nSlider Callbacks\nWe need two callbacks:\n\nA general callback that updates parameters without reinitializing particles.\nA special callback for num_boids that reinitializes the system and updates the tail tensor.\n\nImplement both callbacks and connect them with on_changed.\ndef connect_slider_callbacks(\n    *,\n    ani,\n    slider_radius_interaction,\n    slider_noise_eta,\n    slider_v0,\n    slider_box_size,\n    slider_num_boids,\n    ax_plane: Axes,\n):\n    # This function will depend on your state variables.\n    # The simplest approach: define the callbacks INSIDE run_simulation\n    # so they can use `nonlocal` to access xy, theta, etc.\n    ...\n\n\n\n\n\n\nTip: pause the animation during parameter changes\n\n\n\n\n\nInside a callback:\nani.event_source.stop()\n# update parameters / reinit\nani.event_source.start()\nThis reduces glitches while you resize arrays or change plot limits."
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation-full.html#full-script",
+    "href": "modules/collective-motion/vicsek-animation-full.html#full-script",
+    "title": "Vicsek Model",
+    "section": "Full Script",
+    "text": "Full Script\nAt this point you have built every piece.\nBelow is a sample of how your run_simulation function might look with all the pieces assembled.\n\n\n\n\n\n\nSolution: Full run_simulation()\n\n\n\n\n\ndef run_simulation(dt: float = 1.0) -&gt; None:\n    # Parameters\n    num_boids = 100\n    noise_eta = 0.5\n    box_size = 10.0\n    radius_interaction = 1.0\n    v0 = 0.03\n\n    # Initialize state\n    xy, theta = initialize_particles(num_boids, box_size)\n\n    # Order parameter history and noise diagnostic\n    ls_order_param = []\n    dict_noise = {}\n\n    # Create figure and axes\n    fig, ax_plane, ax_order, ax_sliders, ax_noise = make_figure()\n\n    # Initialize plots\n    xy_tail, plt_particles, plt_current = init_particles_plot(ax_plane, xy, box_size, tail_len=20)\n    line_order_param = init_order_plot(ax_order, order_window=3000)\n    line_noise = init_noise_plot(ax_noise)\n\n    # Create sliders\n    ax_num_boids, ax_radius_interaction, ax_noise_eta, ax_v0, ax_box_size = make_slider_axes(ax_sliders)\n    slider_num_boids, slider_radius_interaction, slider_noise_eta, slider_v0, slider_box_size = make_sliders(\n        ax_num_boids,\n        ax_radius_interaction,\n        ax_noise_eta,\n        ax_v0,\n        ax_box_size,\n        num_boids,\n        radius_interaction,\n        noise_eta,\n        v0,\n        box_size,\n    )\n\n    # Define the animation update function (see previous step for details)\n    def update_animation(frame: int):\n        ...\n\n    # Create the animation object\n    ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)\n    # Connect slider callbacks\n    connect_slider_callbacks(\n        ani=ani,\n        slider_radius_interaction=slider_radius_interaction,\n        slider_noise_eta=slider_noise_eta,\n        slider_v0=slider_v0,\n        slider_box_size=slider_box_size,\n        slider_num_boids=slider_num_boids,\n        ax_plane=ax_plane,\n    )\n    plt.show()\nThe full script with all functions defined is available in vicsek_animation.py in the repo. You can run it and experiment with the sliders to see how the Vicsek model behaves under different conditions."
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation-full.html#checklist-debugging",
+    "href": "modules/collective-motion/vicsek-animation-full.html#checklist-debugging",
+    "title": "Vicsek Model",
+    "section": "Checklist (Debugging)",
+    "text": "Checklist (Debugging)\nIf your animation is blank:\n\nDid you return the artists in update_animation?\nDid you set axis limits (set_xlim, set_ylim)?\nAre xy and theta updated each frame?\nAre you calling plt.show() at the end of run_simulation()?\nAre you calling run_simulation() at the end of your script?\n\nIf sliders do nothing:\n\nDid you call slider.on_changed(...)?\nAre you updating the right variables (nonlocal)?"
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation-full.html#optional-extensions",
+    "href": "modules/collective-motion/vicsek-animation-full.html#optional-extensions",
+    "title": "Vicsek Model",
+    "section": "Optional Extensions",
+    "text": "Optional Extensions\n\nColor by heading: map theta to a colormap for the current points.\nQuiver plot: show velocity vectors for a subset of particles.\nPause button: add a Matplotlib Button widget."
+  },
+  {
+    "objectID": "modules/collective-motion/couzin.html",
+    "href": "modules/collective-motion/couzin.html",
+    "title": "Couzin Model",
+    "section": "",
+    "text": "These are its behavioral rules, as summarized in (Couzin et al. 2002):",
+    "crumbs": [
+      "Session 4: Collective Motion",
+      "Couzin Model"
+    ]
+  },
+  {
+    "objectID": "modules/collective-motion/couzin.html#behavioral-rules",
+    "href": "modules/collective-motion/couzin.html#behavioral-rules",
+    "title": "Couzin Model",
+    "section": "Behavioral Rules",
+    "text": "Behavioral Rules\n\\(N\\) individuals (\\(i=1,2,\\dots,N\\)) with position vectors \\(\\mathbf{c}_i\\) and unit direction vectors \\(\\mathbf{vi}\\) are simulated in continuous two-dimensional space (the original paper did it in 3D). Time is partitioned into discrete time steps \\(t\\) with a regular spacing \\(\\tau = 0.1\\) seconds, corresponding to the response latency of fish. In each time step, individuals assess the position and/or orientation of \\(n\\) neigbours within three non-overlapping behavioral zones. This information is used to determine a desired direction for each individual for the successive time step \\(\\mathbf{d}_i(t+\\tau)\\) using the following rules.\n\nRule 1: Avoidance\nEach individual attempts to maintain a minimum distance from others within a “zone of repulsion” (), modelled as a circle, centred on the individual, with radius \\(r_r\\). If \\(n_r\\) neighbours are present in the at time \\(t\\), individual \\(i\\) responds by moving away from neighbours within this zone:\n\\[\n\\mathbf{d}_r(t+\\tau) = -\\sum^{n_r}_{j \\ineq i} \\frac{\\mathbf{r}_{ij}(t)}{|\\mathbf{r}_{ij}(t)|}\n\\tag{1}\\]\nwhere \\(\\mathbf{r}_{ij}\\) is the unit vector in the direction of neighbour \\(j\\).\n\\[\n\\mathbf{r}_{ij} = (\\mathbf{c}_j - \\mathbf{c}_i) / |(\\mathbf{c}_j - \\mathbf{c}_i)|\n\\tag{2}\\]\nThis behavioural rule has the highest priority in the model, so that if \\(n_r &gt; 0\\), the desired direction \\(\\mathbf{d}_i(t+\\tau) = \\mathbf{d}_r(t+\\tau)\\). The zone of repulsion can be interpreted as individuals maintaining personal space, or avoiding collisions.\n\n\nRule 2: Orienation and Attraction\nIf no neighbours are within the zone of repulsion (\\(n_r=0\\)), the individual responds to others within the “zone of orientation” () and the “zone of attraction” (). These zones are circular, except for a surface behind the individual within which neighbours are undetectable. This “blind surfuce” is defined as a triangle with angle \\((360 - \\alpha)^\\circ\\), where \\(\\alpha\\) is defined as the field of perception.\nThe zone of orientation contains \\(n_o\\) detectable neighbours with \\(r_r \\leq |(\\mathbf{c}_j - \\mathbf{c}_i)| &lt; r_o\\) and the zone of attraction \\(n_a\\) detectable neighbours with \\(r_o \\leq |(\\mathbf{c}_j - \\mathbf{c}_i)| \\leq r_a\\).\nAn individual will attempt to align itself with neighbours within the zone of orientation, giving\n\\[\n\\mathbf{d}_o(t+\\tau) = \\sum^{n_o}_{j=1} \\frac{\\mathbf{v}_j(t)}{|\\mathbf{v}_j(t)|}\n\\] {?@eq-orientation}\nand towards the poisitions of individuals within the zone of attraction\n\\[\n\\mathbf{d}_a(t+\\tau) = \\sum^{n_a}_{j \\ineq i} \\frac{\\mathbf{v}_j(t)}{|\\mathbf{v}_j(t)|}\n\\] {?@eq-attraction}\nIf neighbours are found in both orientation and attraction zones, then\n\\[\n\\mathbf{d}_i(t+\\tau) = \\frac{1}{2} \\left[ \\mathbf{d}_o(t+\\tau) + \\mathbf{d}_a(t+\\tau)\\right]\n\\tag{3}\\]\nIn the eventuality that the social forces result in a zero vector, or if no individuals are detected, then\n\\[\n\\mathbf{d}_i(t+\\tau) = \\mathbf{v}_i(t)\n\\]\n\n\nRandomness\nDecision making in animals is subject to stochastic effects (e.g. sensory error, movement error). This is simnulated by modifying \\(\\mathbf{d}_i(t+\\tau)\\) by rotating it by an angle taken at random from a circully wrapped Gaussian distribution with standard deviation \\(\\sigma\\).\n\n\nMotion\nAfter the above process has been performed for every individual they turn towards the direction vector \\(\\mathbf{d}_i(t+\\tau)\\) by the turning rate \\(\\theta\\). Provided the angle between $\\(\\mathbf{v}_i(t)\\) and \\(\\mathbf{d}_i(t+\\tau)\\) is less than the maximum turning angle \\(\\theta \\tau\\), then \\(\\mathbf{v}_i(t+\\tau) = \\mathbf{d}_i(t+\\tau)\\); if not, the individual rotates by \\(\\theta \\tau\\) towards the desired direction.",
+    "crumbs": [
+      "Session 4: Collective Motion",
+      "Couzin Model"
+    ]
+  },
+  {
+    "objectID": "modules/collective-motion/index.html",
+    "href": "modules/collective-motion/index.html",
+    "title": "Collective Motion",
+    "section": "",
+    "text": "In this session we study collective motion: how local alignment rules create global order. The main example is the Vicsek model, with optional predator interaction.",
+    "crumbs": [
+      "Session 4: Collective Motion"
+    ]
+  },
+  {
+    "objectID": "modules/collective-motion/index.html#case-studies",
+    "href": "modules/collective-motion/index.html#case-studies",
+    "title": "Collective Motion",
+    "section": "Case Studies",
+    "text": "Case Studies\nVicsek Model Vicsek Animation\nCouzin Model Assignment",
+    "crumbs": [
+      "Session 4: Collective Motion"
+    ]
+  },
+  {
+    "objectID": "modules/collective-motion/index.html#what-do-we-need",
+    "href": "modules/collective-motion/index.html#what-do-we-need",
+    "title": "Collective Motion",
+    "section": "What do we need?",
+    "text": "What do we need?\n\nmatplotlib.pyplot\nInitialize the figure and axes and draw static elements.\n\n\nmatplotlib.animation\nUpdate plot elements in real time for animations.\n\n\nmatplotlib.Slider\nAdd sliders so users can interact with parameters.\n\n\nWhy not use scipy.solve_ivp here?\nIn previous sessions, we used ODE solvers like scipy.solve_ivp to study continuous-time dynamical systems. The Vicsek model, however, is fundamentally a discrete-time, agent-based model: at each step, all particles update their direction and position based on their neighbors and some noise. This update is not described by a differential equation, but by a set of rules applied at each time step. Therefore, we implement the Vicsek model using a simple loop, not an ODE solver.",
+    "crumbs": [
+      "Session 4: Collective Motion"
+    ]
+  },
+  {
+    "objectID": "modules/collective-motion/index.html#references",
+    "href": "modules/collective-motion/index.html#references",
+    "title": "Collective Motion",
+    "section": "References",
+    "text": "References\n\n(Vicsek et al. 1995)\nCheck this cool simulation. This explorable illustrates of an intuitive dynamic model for collective motion (swarming) in animal groups. The model can be used to describe collective behavior observed in schooling fish or flocking birds, for example. The details of the model are described in (Couzin et al. 2002).",
+    "crumbs": [
+      "Session 4: Collective Motion"
+    ]
+  },
+  {
+    "objectID": "modules/collective-motion/assignment.html",
+    "href": "modules/collective-motion/assignment.html",
+    "title": "Assignment",
+    "section": "",
+    "text": "Simulate the Couzin model and report your findings.\nYou can follow the guide here:\nCouzin Model",
+    "crumbs": [
+      "Session 4: Collective Motion",
+      "Assignment"
+    ]
+  },
+  {
+    "objectID": "modules/collective-motion/assignment.html#required",
+    "href": "modules/collective-motion/assignment.html#required",
+    "title": "Assignment",
+    "section": "Required",
+    "text": "Required\n\nImplement the Couzin rules and motion.\nImplement an animation that shows the individuals moving. You can see an example in the Vicsek animation chapter.\nImplement an order parameter that quantifies the degree of alignment in the system. Read the original paper (Couzin et al. 2002) to find out how they defined it. You can also check the Vicsek order parameter for inspiration.\nExplore the parameter space and report your insights. Find the four collective dynamical behaviours described in the original paper (Couzin et al. 2002).\n\nUpload the code and a short report (1-2 pages done in LaTeX) describing your findings to the course platform.",
+    "crumbs": [
+      "Session 4: Collective Motion",
+      "Assignment"
+    ]
+  },
+  {
+    "objectID": "modules/collective-motion/assignment.html#extra-mile-optional",
+    "href": "modules/collective-motion/assignment.html#extra-mile-optional",
+    "title": "Assignment",
+    "section": "Extra Mile (Optional)",
+    "text": "Extra Mile (Optional)\n\nAdd sliders to allow change parameters (of your choice) on real time.\nImplement the model in 3D, following the original paper (Couzin et al. 2002).\n\nGood luck and enjoy your coding!",
+    "crumbs": [
+      "Session 4: Collective Motion",
+      "Assignment"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto-full.html",
+    "href": "modules/ode-coupled/kuramoto-full.html",
+    "title": "Kuramoto Model",
+    "section": "",
+    "text": "This part is optional and is meant to be a fun extension if you want to build a full simulation with sliders and live plots. It combines the previous two pages into a single interactive experience.\nIf you want to skip this part, you can go directly to the next page, which contains an assignment based on the same ideas.\nAssignment",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto: Full Simulation"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto-full.html#template",
+    "href": "modules/ode-coupled/kuramoto-full.html#template",
+    "title": "Kuramoto Model",
+    "section": "Template",
+    "text": "Template\nYou can start from the template in amlab/odes_coupled/kuramoto_full_template.py and fill in the missing parts. The template includes the structure for sliders, animation, and order parameter computation, so you can focus on implementing the Kuramoto model dynamics and visualizations.\nAlternatively, you can build the full simulation from scratch by following the steps outlined in the previous pages and combining them together.",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto: Full Simulation"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto-full.html#order-parameter",
+    "href": "modules/ode-coupled/kuramoto-full.html#order-parameter",
+    "title": "Kuramoto Model",
+    "section": "Order Parameter",
+    "text": "Order Parameter\nComplete the function that computes the order parameter:\ndef kuramoto_order_parameter(theta: np.ndarray) -&gt; tuple:\n    # TODO: compute r * exp(i * phi)\n    order_param =  # replace this line\n    r = np.abs(order_param)\n    phi = np.angle(order_param)\n    rcosphi = np.real(order_param)\n    rsinphi = np.imag(order_param)\n    return r, phi, rcosphi, rsinphi\n\n\n\n\n\n\nHint: Order parameter (click to expand)\n\n\n\n\n\ndef kuramoto_order_parameter(theta: np.ndarray) -&gt; tuple:\n    order_param = np.mean(np.exp(1j * theta), axis=0)\n    r = np.abs(order_param)\n    phi = np.angle(order_param)\n    rcosphi = np.real(order_param)\n    rsinphi = np.imag(order_param)\n    return r, phi, rcosphi, rsinphi",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto: Full Simulation"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto-full.html#sliders",
+    "href": "modules/ode-coupled/kuramoto-full.html#sliders",
+    "title": "Kuramoto Model",
+    "section": "Sliders",
+    "text": "Sliders\nUse sliders to update the coupling strength, number of oscillators, and the distribution scale. The template shows how to restart the animation when values change.\n\n\n\n\n\n\nHint: Slider update (click to expand)\n\n\n\n\n\ndef update_sliders(_):\n    nonlocal coupling_strength, num_oscillators, sigma, theta, omega\n    coupling_strength = slider_coupling.val\n    num_oscillators = int(slider_num_oscillators.val)\n    sigma = slider_sigma.val\n    theta, omega = initialize_oscillators(num_oscillators, sigma=sigma)\n\n\n\nWhen you finish, run the full simulation and explore how synchronization changes as you vary \\(K\\).",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto: Full Simulation"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/index.html",
+    "href": "modules/ode-coupled/index.html",
+    "title": "Coupled ODEs",
+    "section": "",
+    "text": "In this session we return to ODEs and study coupled oscillators. The main example is the Kuramoto model, where synchronization emerges from weak coupling.",
+    "crumbs": [
+      "Session 3: Coupled ODEs"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/index.html#case-studies",
+    "href": "modules/ode-coupled/index.html#case-studies",
+    "title": "Coupled ODEs",
+    "section": "Case Studies",
+    "text": "Case Studies\nWe will focus on the Kuramoto model, which represents a population of oscillators with distributed natural frequencies. You can read the theory in the following page:\nKuramoto Model\nThe following button will guide you through a basic implementation of the model, including visualizations of the oscillators.\nOscillators and Animation\nNext, we will explore the bifurcation diagram of the Kuramoto model, which shows how the order parameter changes as a function of the coupling strength.\nBifurcation Diagram\nFinally, we merge the two graphs together into a full simulation with sliders to control parameters in real time.\nFull Simulation\nAnd once that is ready, we will apply the same ideas to a more complex system: the Millennium Bridge crowd–bridge synchrony model.\nAssignment",
+    "crumbs": [
+      "Session 3: Coupled ODEs"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/index.html#what-do-we-need",
+    "href": "modules/ode-coupled/index.html#what-do-we-need",
+    "title": "Coupled ODEs",
+    "section": "What do we need?",
+    "text": "What do we need?\n\nscipy\nWe are back to ODEs. Use scipy.integrate.solve_ivp().\n\n\nmatplotlib.pyplot\nInitialize the figure and axes and draw static elements.\n\n\nmatplotlib.animation\nUpdate plot elements in real time for animations.\n\n\nmatplotlib.Slider\nAdd sliders so users can interact with parameters.",
+    "crumbs": [
+      "Session 3: Coupled ODEs"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/index.html#references",
+    "href": "modules/ode-coupled/index.html#references",
+    "title": "Coupled ODEs",
+    "section": "References",
+    "text": "References\n\nFrom Kuramoto to Crawford: exploring the onset of synchronization in populations of coupled oscillators by Steven H. Strogatz.",
+    "crumbs": [
+      "Session 3: Coupled ODEs"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/assignment.html",
+    "href": "modules/ode-coupled/assignment.html",
+    "title": "Assignment",
+    "section": "",
+    "text": "This is a joint assignment with the main course Mathematical Modelling. Follow the official handout posted on the main course Blackboard: Kuramoto_assignment.pdf.\nYour main goal is to simulate the Millennium Bridge crowd–bridge synchrony model from the handout. Conceptually, it is Kuramoto-like: pedestrians are phase oscillators, and their coupling is mediated by the bridge motion (Strogatz et al. (2005); Eckhardt et al. (2007)).\nUpload your submission to the Mathematical Modelling course (it counts towards both courses). This time, assignments are individual.",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Assignment"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/assignment.html#summary-of-goals",
+    "href": "modules/ode-coupled/assignment.html#summary-of-goals",
+    "title": "Assignment",
+    "section": "Summary of Goals",
+    "text": "Summary of Goals\nBelow is a brief summary of the goals; use the handout for full details and instructions.\n\nKuramoto Model (Coupled Oscillators)\nStart with the basic all-to-all Kuramoto ODE (Kuramoto (2003); Strogatz (2000)) \\[\\dot\\theta_i = \\omega_i + \\frac{K}{N}\\sum_{j=1}^N \\sin(\\theta_j-\\theta_i),\\qquad i=1,\\dots,N. \\tag{1}\\]\nFrom this, you can implement the following tasks:\n\nPlot \\(r(t)\\) (order parameter) versus time. \\(r_\\infty\\approx 0\\) for \\(K&lt;K_c\\) (up to fluctuations) and \\(r_\\infty\\in(0,1)\\) for \\(K&gt;K_c\\), with fluctuations typically decreasing like \\(\\mathcal{O}(N^{-1/2})\\).\nAnimate oscillators on the unit circle (optionally plot the centroid \\(r e^{i\\Psi}\\)).\nEstimate \\(K_c\\) numerically by sampling multiple \\(K\\) values and plotting \\(r_\\infty(K)\\) with error bars. We suggest averaging over a tail window to reduce fluctuations.\nCompare with the theory in Strogatz (2000) (implicit curve for \\(r_\\infty(K)\\)) and the special case of the Cauchy distribution.\n\n\n\nMillennium Bridge Crowd Synchrony\nModeling assumptions:\n\nThe bridge is a single lateral vibration mode (damped harmonic oscillator).\nEach pedestrian is a phase oscillator whose lateral forcing is periodic in its stepping phase.\n\nBridge dynamics: \\[M\\,\\ddot X(t)+B\\,\\dot X(t)+KX(t)=\\sum_{i=1}^N G\\sin\\theta_i(t),\\qquad \\Omega=\\sqrt{K/M}. \\tag{2}\\]\nPedestrian phase dynamics (see Strogatz et al. (2005)): \\[\\dot\\theta_i(t)=\\Omega_i + C\\,A(t)\\,\\sin\\big(\\Psi(t)-\\theta_i(t)+\\alpha\\big),\\qquad i=1,\\dots,N. \\tag{3}\\]\nBridge amplitude/phase definitions: \\[X(t)=A(t)\\sin\\Psi(t),\\quad \\dot X(t)=A(t)\\Omega\\cos\\Psi(t), \\tag{4}\\] \\[A(t)=\\sqrt{X(t)^2+\\Big(\\dot X(t)/\\Omega\\Big)^2},\\qquad \\Psi(t)=\\operatorname{atan2}\\!\\Big(X(t),\\dot X(t)/\\Omega\\Big). \\tag{5}\\]\nSynchronization measure: \\[R(t)e^{i\\Phi(t)}=\\frac{1}{N}\\sum_{j=1}^N e^{i\\theta_j(t)}. \\tag{6}\\]\nCritical crowd size (simplest case \\(\\alpha=\\pi/2\\) and symmetric \\(P(\\Omega)\\) about the bridge frequency): \\[N_c=\\frac{2B\\Omega}{\\pi G C\\,P(\\Omega)}. \\tag{7}\\]\nWobbling and synchronization emerge together when \\(N\\) crosses \\(N_c\\) (see also Strogatz et al. (2005)).",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Assignment"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/assignment.html#required-millennium-bridge-experiment",
+    "href": "modules/ode-coupled/assignment.html#required-millennium-bridge-experiment",
+    "title": "Assignment",
+    "section": "Required (Millennium Bridge experiment)",
+    "text": "Required (Millennium Bridge experiment)\nUse scipy.integrate.solve_ivp to run the controlled crowd ramp experiment:\n\nStart with \\(N=N_0\\) pedestrians. Every \\(\\Delta T\\) seconds, increase the crowd by \\(\\Delta N\\) (add new pedestrians with fresh \\(\\theta_i(0)\\) and \\(\\Omega_i\\)) until reaching \\(N_{\\max}\\).\nCompute \\(N_c\\) using the formula in the handout (using your chosen parameters/distribution).\nDefine \\(t_c=\\inf\\{t: N(t)\\ge N_c\\}\\).\nProduce three stacked plots and draw a vertical dashed line at \\(t=t_c\\) labeled “\\(N=N_c\\)”:\n\n\\(N(t)\\) vs \\(t\\) (crowd size staircase)\n\\(A(t)\\) vs \\(t\\) (bridge wobble amplitude)\n\\(R(t)\\) vs \\(t\\) (degree of synchronization)\n\nBriefly describe what happens before/after \\(t_c\\) and whether the observed onset is close to the theoretical prediction.\n\nReference code is available in amlab/odes_coupled/bridge.py. Use it for ideas, but do not copy it.\nGood luck and enjoy your coding!",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Assignment"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Applied Math Modeling (Python)",
+    "section": "",
+    "text": "Welcome! This site collects the notes, code, and datasets for the Applied Math Lab.",
+    "crumbs": [
+      "Getting Started",
+      "Home"
+    ]
+  },
+  {
+    "objectID": "index.html#course-at-a-glance",
+    "href": "index.html#course-at-a-glance",
+    "title": "Applied Math Modeling (Python)",
+    "section": "Course at a glance",
+    "text": "Course at a glance\n\nFormat: 10 live in-person sessions\nTools: Python, NumPy, SciPy, matplotlib, Streamlit, NetworkX\nMain goal: learn modeling by building simulations you can explore and explain",
+    "crumbs": [
+      "Getting Started",
+      "Home"
+    ]
+  },
+  {
+    "objectID": "index.html#how-this-reposite-is-organized",
+    "href": "index.html#how-this-reposite-is-organized",
+    "title": "Applied Math Modeling (Python)",
+    "section": "How this repo/site is organized",
+    "text": "How this repo/site is organized\n\nModules (theory + guided notebooks/notes): modules/\nSession code (classroom scripts and demos): amlab/\nStreamlit app (interactive demos): streamlit/\nDatasets used in network sessions: data/",
+    "crumbs": [
+      "Getting Started",
+      "Home"
+    ]
+  },
+  {
+    "objectID": "index.html#what-you-will-build",
+    "href": "index.html#what-you-will-build",
+    "title": "Applied Math Modeling (Python)",
+    "section": "What you will build",
+    "text": "What you will build\nAcross the course you will implement and experiment with:\n\nODE models (SIR, spruce budworm, Michaelis–Menten)\nNonlinear oscillators (Van der Pol, FitzHugh–Nagumo)\nReaction–diffusion PDEs (finite differences + animations)\nCollective motion (Vicsek collective motion + interaction)\nNetworks (metrics, spreading processes, real datasets)\nCellular automata (1D rules + traffic models)",
+    "crumbs": [
+      "Getting Started",
+      "Home"
+    ]
+  },
+  {
+    "objectID": "index.html#getting-started-locally",
+    "href": "index.html#getting-started-locally",
+    "title": "Applied Math Modeling (Python)",
+    "section": "Getting started locally",
+    "text": "Getting started locally\n\nCreate an environment\nIf you use Conda:\nconda create --name amlab python=3.13\nconda activate amlab\nconda install --yes --file requirements.txt\nIf you prefer pip:\nWindows (PowerShell):\npython -m venv .venv\n.\\.venv\\Scripts\\Activate.ps1\npip install -r requirements.txt\nmacOS/Linux:\npython -m venv .venv\nsource .venv/bin/activate\npip install -r requirements.txt\n\n\nRun the Streamlit app\nstreamlit run ./streamlit/home.py",
+    "crumbs": [
+      "Getting Started",
+      "Home"
+    ]
+  },
+  {
+    "objectID": "index.html#where-to-go-next",
+    "href": "index.html#where-to-go-next",
+    "title": "Applied Math Modeling (Python)",
+    "section": "Where to go next",
+    "text": "Where to go next\n\nStart with Session 1: ODEs in 1D\nReview the full schedule in the Syllabus",
+    "crumbs": [
+      "Getting Started",
+      "Home"
+    ]
+  },
+  {
+    "objectID": "syllabus.html",
+    "href": "syllabus.html",
+    "title": "Applied Math Lab",
+    "section": "",
+    "text": "This course has 10 live in-person sessions.\n\n\nSimulate classical one-dimensional ODE models (SIR epidemiological model, spruce budworm population model, Michaelis–Menten enzyme kinetics). Solve ODEs numerically with SciPy in Python, and build/deploy a simple Streamlit web app to explore parameter effects. Groups are assigned and remain for the whole course.\n\n\n\nExplore two-dimensional ODEs via nonlinear oscillatory systems: Van der Pol oscillator and FitzHugh–Nagumo model. Create animations with matplotlib and build interactive Python programs that let users set initial conditions via mouse clicks.\n\n\n\nImplement coupled ODEs, focusing on the Kuramoto model. Animate multiple plots simultaneously (e.g., oscillator evolution and a bifurcation diagram).\n\n\n\nSimulate flocking behavior using the Vicsek model. Implement interaction rules for “boids” and extend the simulation by treating the mouse as a predator and coding avoidance behavior.\n\n\n\nIntroduce partial differential equations through reaction–diffusion models (Gierer–Meinhardt and Gray–Scott). Implement 1D and 2D Laplacians with NumPy and animate spatiotemporal evolution to study Turing instability and pattern formation.\n\n\n\nIntroduce NetworkX: build graphs, compute structural metrics (degree distribution, clustering coefficient, centrality), and visualize different network types. Establish foundations for modeling dynamics on networks.\n\n\n\nSimulate spreading processes (fake news, epidemics) on real-world networks. Retrieve and process open-source network datasets, and investigate how network structure shapes propagation dynamics.\n\n\n\nIntroduce one-dimensional cellular automata as a framework for discrete dynamical systems. Explore deterministic and stochastic CA, and how simple local rules generate complex global behavior.\n\n\n\nApply cellular automata to traffic modeling with the Nagel–Schreckenberg model. Study congestion, flow, and phase transitions by tuning parameters such as vehicle density and maximum speed.\n\n\n\nWrap-up and support session for the final project: address remaining questions, clarify concepts, and help groups prepare deliverables.",
+    "crumbs": [
+      "Getting Started",
+      "Syllabus"
+    ]
+  },
+  {
+    "objectID": "syllabus.html#program",
+    "href": "syllabus.html#program",
+    "title": "Applied Math Lab",
+    "section": "",
+    "text": "This course has 10 live in-person sessions.\n\n\nSimulate classical one-dimensional ODE models (SIR epidemiological model, spruce budworm population model, Michaelis–Menten enzyme kinetics). Solve ODEs numerically with SciPy in Python, and build/deploy a simple Streamlit web app to explore parameter effects. Groups are assigned and remain for the whole course.\n\n\n\nExplore two-dimensional ODEs via nonlinear oscillatory systems: Van der Pol oscillator and FitzHugh–Nagumo model. Create animations with matplotlib and build interactive Python programs that let users set initial conditions via mouse clicks.\n\n\n\nImplement coupled ODEs, focusing on the Kuramoto model. Animate multiple plots simultaneously (e.g., oscillator evolution and a bifurcation diagram).\n\n\n\nSimulate flocking behavior using the Vicsek model. Implement interaction rules for “boids” and extend the simulation by treating the mouse as a predator and coding avoidance behavior.\n\n\n\nIntroduce partial differential equations through reaction–diffusion models (Gierer–Meinhardt and Gray–Scott). Implement 1D and 2D Laplacians with NumPy and animate spatiotemporal evolution to study Turing instability and pattern formation.\n\n\n\nIntroduce NetworkX: build graphs, compute structural metrics (degree distribution, clustering coefficient, centrality), and visualize different network types. Establish foundations for modeling dynamics on networks.\n\n\n\nSimulate spreading processes (fake news, epidemics) on real-world networks. Retrieve and process open-source network datasets, and investigate how network structure shapes propagation dynamics.\n\n\n\nIntroduce one-dimensional cellular automata as a framework for discrete dynamical systems. Explore deterministic and stochastic CA, and how simple local rules generate complex global behavior.\n\n\n\nApply cellular automata to traffic modeling with the Nagel–Schreckenberg model. Study congestion, flow, and phase transitions by tuning parameters such as vehicle density and maximum speed.\n\n\n\nWrap-up and support session for the final project: address remaining questions, clarify concepts, and help groups prepare deliverables.",
+    "crumbs": [
+      "Getting Started",
+      "Syllabus"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto.html",
+    "href": "modules/ode-coupled/kuramoto.html",
+    "title": "Kuramoto Model",
+    "section": "",
+    "text": "The Kuramoto model describes a population of weakly coupled oscillators. Each oscillator has a phase \\(\\theta_i\\) and a natural frequency \\(\\omega_i\\).\nThe natural frequency of each oscillator (\\(\\omega_i\\)) is drawn from a normal distribution centered at zero, and with standard deviation (scale parameter) \\(\\sigma\\). The density function of this normal distribution is:\n\\[\ng(\\omega) = \\frac{1}{\\sqrt{2\\pi}\\sigma} \\exp\\left(-\\frac{\\omega^2}{2\\sigma^2}\\right).\n\\tag{1}\\]\nThe initial phase of each oscillator (\\(\\theta_i\\)) is drawn from an uniform distribution between \\(0\\) and \\(2\\pi\\).\nFor any system of weakly coupled, nearly identical limit-cycle oscillators, the long-term dynamics are given by phase equations of the following universal form:\n\\[\n\\dot\\theta_i = \\omega_i + \\sum_{j=1}^N \\Gamma_{ij} \\left( \\theta_j - \\theta_i \\right),\\quad i = 1, \\dots, N\n\\tag{2}\\]\nWhere \\(\\Gamma_{ij}(\\theta)\\) is the coupling function that describes how oscillator \\(j\\) influences oscillator \\(i\\) as a function of their phase difference. \\(N\\) is the total number of oscillators in the population.\nThe Kuramoto model corresponds to the simplest possible case of equally weighted, all-to-all, purely sinusoidal coupling:\n\\[\n\\Gamma_{ij}(\\theta) = \\frac{K}{N} \\sin \\left( \\theta_j - \\theta_i \\right) \\tag{3}\\]\nWhere \\(K\\) is the coupling strength. The factor of \\(1/N\\) ensures that the total input to each oscillator remains finite as \\(N\\) increases. The Kuramoto model is a paradigmatic example of how collective synchronization can emerge from simple interactions among heterogeneous oscillators. It has been widely studied in physics, biology, and engineering to understand phenomena such as circadian rhythms, neuronal synchronization, and power grid stability.",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto Model"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto.html#the-order-parameter",
+    "href": "modules/ode-coupled/kuramoto.html#the-order-parameter",
+    "title": "Kuramoto Model",
+    "section": "The Order Parameter",
+    "text": "The Order Parameter\nTo visualize the dynamics of the phases, it is convenient to imagine a swarm of points running around the unit circle in the complex plane.\n\n\n\n\n\n\n\n\nFigure 1: Oscillators (blue dots) on the unit circle. The order parameter (red) points towards the centroid of the phases.\n\n\n\n\n\nThe complex order parameter is a macroscopic quantity that can be interpreted as the collective rhythm produced by the whole population.\n\\[\nr e^{i\\Psi} = \\frac{1}{N} \\sum_{j=1}^N e^{i\\theta_j}\n\\tag{4}\\]\n\\(r\\) is the coherence of the population, which measures how synchronized the oscillators are. It ranges from \\(0\\) (completely incoherent) to \\(1\\) (fully synchronized). \\(\\Psi\\) is the mean phase, which represents the average phase of the population.\nFigure 1 shows a snapshot of the oscillators (blue dots) and the order parameter (red arrow) pointing towards the centroid of the phases. If you want to see this in action, run the script in amlab/odes_coupled/kuramoto.py to animate the oscillators on the unit circle.",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto Model"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto.html#mean-field-approximation",
+    "href": "modules/ode-coupled/kuramoto.html#mean-field-approximation",
+    "title": "Kuramoto Model",
+    "section": "Mean Field Approximation",
+    "text": "Mean Field Approximation\nKuramoto noticed that the governing equation can be rewritten neatly in terms of the order parameter:\n\\[\n\\dot\\theta_i = \\omega_i + K r \\sin(\\Psi - \\theta_i),\\quad i = 1, \\dots, N  \\tag{5}\\]\nThis equation has a simple interpretation: each oscillator is pulled toward the mean phase \\(\\Psi\\) with an effective coupling strength \\(K r\\) that depends on the coherence of the population. This is known as the mean field approximation. It is exact in the limit of infinite \\(N\\) and provides a powerful framework to analyze the dynamics of the system.\nYou can use this form of the equation to implement the ODE function for the Kuramoto model, which is often more efficient than computing pairwise interactions. The order parameter can be computed at each time step using the current phases of the oscillators.",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto Model"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto.html#spontaneous-synchronization",
+    "href": "modules/ode-coupled/kuramoto.html#spontaneous-synchronization",
+    "title": "Kuramoto Model",
+    "section": "Spontaneous Synchronization",
+    "text": "Spontaneous Synchronization\nThe mean field approximation reveals a positive feedback loop that can lead to spontaneous synchronization:\n\nThe phase \\(\\theta_i\\) is pulled toward the mean phase \\(\\Psi\\).\nThe population becomes more coherent. In turn, the order parameter \\(r\\) increases.\nThe effective strength of the coupling \\(K r\\) increases proportionally to the coherence.\n\\(K r\\) tends to recruit even more oscillators into the synchronized cluster, which feeds step 1.\n\nIn other words, the more oscillators are synchronized, the stronger the coupling becomes, which in turn promotes even more synchronization. This positive feedback can lead to a phase transition from incoherence to coherence as the coupling strength \\(K\\) crosses a critical threshold. The critical coupling strength \\(K_c\\) can be derived analytically for certain frequency distributions (e.g. Cauchy) and can be estimated numerically for others (e.g. normal).\n\n\n\n\n\n\n\n\nFigure 2: Bifurcation diagram of the Kuramoto model. The order parameter \\(r_\\infty\\) (steady-state coherence) is plotted as a function of the coupling strength \\(K\\). A phase transition occurs at a critical coupling strength \\(K_c\\), where \\(r_\\infty\\) transitions from near zero (incoherence) to a positive value (synchronization).",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto Model"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto.html#goal-of-this-session",
+    "href": "modules/ode-coupled/kuramoto.html#goal-of-this-session",
+    "title": "Kuramoto Model",
+    "section": "Goal of this Session",
+    "text": "Goal of this Session\nImplement the Kuramoto model in Python, visualize the oscillators on a unit circle and find when the spontaneous synchronization happens.\nPlay with the following parameters and see how they affect the dynamics:\n\nCoupling strength, \\(K &gt; 0\\)\nNumber of oscillators, \\(N\\)\n\nYou can follow two approaches to the ODE function.\n\nPairwise Interactions\nFollow equations Equation 2 and Equation 3 to compute the pairwise interactions between oscillators. This is straightforward but can be computationally expensive for large \\(N\\).\n\\[\n\\dot\\theta_i = \\omega_i + \\sum_{j=1}^N \\Gamma_{ij} \\left( \\theta_j - \\theta_i \\right),\\quad i = 1, \\dots, N\n\\tag{6}\\]\n\\[\n\\Gamma_{ij}(\\theta) = \\frac{K}{N} \\sin \\left( \\theta_j - \\theta_i \\right) \\tag{7}\\]\n\n\nMean Field Approximation\nFollow equation Equation 5 and Equation 4 to compute the dynamics using the order parameter. This is more efficient and provides insight into the collective behavior of the system.\n\\[\n\\dot\\theta_i = \\omega_i + K r \\sin(\\Psi - \\theta_i),\\quad i = 1, \\dots, N  \\tag{8}\\]\n\\[\nr e^{i\\Psi} = \\frac{1}{N} \\sum_{j=1}^N e^{i\\theta_j}\n\\tag{9}\\]\n\nWe will start by initializing the oscillators and plotting them on the unit circle. Then, we will define the ODE function and use scipy.integrate.solve_ivp() to simulate the dynamics. Follow to the next page for the implementation details.\nOscillators and Animation",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto Model"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto.html#reference",
+    "href": "modules/ode-coupled/kuramoto.html#reference",
+    "title": "Kuramoto Model",
+    "section": "Reference",
+    "text": "Reference\nFrom Kuramoto to Crawford: exploring the onset of synchronization in populations of coupled oscillators by Steven H. Strogatz.",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto Model"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto-oscillators.html",
+    "href": "modules/ode-coupled/kuramoto-oscillators.html",
+    "title": "Kuramoto Model",
+    "section": "",
+    "text": "The phases \\(\\theta_i\\) are sampled uniformly on \\([0, 2\\pi]\\) and the natural frequencies \\(\\omega_i\\) from a normal distribution with standard deviation \\(\\sigma\\).\nWrite a function to initialize the oscillators:\ndef initialize_oscillators(num_oscillators: int, sigma: float = 1.0):\n    # Assign a random initial phase to each oscillator\n    theta =  # draw from uniform distribution\n\n    # Assign a random natural frequency to each oscillator\n    omega =  # draw from normal distribution\n    return theta, omega\nThe outputs theta and omega are 1D arrays of length num_oscillators. If you don’t know how to sample from these distributions, see the hint below.\n\n\n\n\n\n\nHow to sample from distributions (click to expand)\n\n\n\n\n\nRemember NumPy has built-in functions for sampling from distributions: - Uniform distribution: np.random.uniform(low=0.0, high=2*np.pi, size=num_oscillators) - Normal distribution: np.random.normal(loc=0.0, scale=sigma, size=num_oscillators)\nIf you need more help, you can expand the code snippet below for a complete implementation.\n\n\n\n\n\n\n\n\n\nComplete initialization function (click to expand)\n\n\n\n\n\ndef initialize_oscillators(num_oscillators: int, sigma: float = 1.0):\n    # Assign a random initial phase to each oscillator\n    theta =  np.random.uniform(low=0.0, high=2 * np.pi, size=num_oscillators)\n\n    # Assign a random natural frequency to each oscillator\n    omega =  np.random.normal(loc=0.0, scale=sigma, size=num_oscillators)\n    return theta, omega\n(Remember to import numpy first!)",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto: Oscillators"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto-oscillators.html#initialize-oscillators",
+    "href": "modules/ode-coupled/kuramoto-oscillators.html#initialize-oscillators",
+    "title": "Kuramoto Model",
+    "section": "",
+    "text": "The phases \\(\\theta_i\\) are sampled uniformly on \\([0, 2\\pi]\\) and the natural frequencies \\(\\omega_i\\) from a normal distribution with standard deviation \\(\\sigma\\).\nWrite a function to initialize the oscillators:\ndef initialize_oscillators(num_oscillators: int, sigma: float = 1.0):\n    # Assign a random initial phase to each oscillator\n    theta =  # draw from uniform distribution\n\n    # Assign a random natural frequency to each oscillator\n    omega =  # draw from normal distribution\n    return theta, omega\nThe outputs theta and omega are 1D arrays of length num_oscillators. If you don’t know how to sample from these distributions, see the hint below.\n\n\n\n\n\n\nHow to sample from distributions (click to expand)\n\n\n\n\n\nRemember NumPy has built-in functions for sampling from distributions: - Uniform distribution: np.random.uniform(low=0.0, high=2*np.pi, size=num_oscillators) - Normal distribution: np.random.normal(loc=0.0, scale=sigma, size=num_oscillators)\nIf you need more help, you can expand the code snippet below for a complete implementation.\n\n\n\n\n\n\n\n\n\nComplete initialization function (click to expand)\n\n\n\n\n\ndef initialize_oscillators(num_oscillators: int, sigma: float = 1.0):\n    # Assign a random initial phase to each oscillator\n    theta =  np.random.uniform(low=0.0, high=2 * np.pi, size=num_oscillators)\n\n    # Assign a random natural frequency to each oscillator\n    omega =  np.random.normal(loc=0.0, scale=sigma, size=num_oscillators)\n    return theta, omega\n(Remember to import numpy first!)",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto: Oscillators"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto-oscillators.html#plot-the-oscillators",
+    "href": "modules/ode-coupled/kuramoto-oscillators.html#plot-the-oscillators",
+    "title": "Kuramoto Model",
+    "section": "Plot the Oscillators",
+    "text": "Plot the Oscillators\nTo visualize the oscillators, we can plot their phases on the unit circle. The x-coordinate is \\(\\cos(\\theta_i)\\) and the y-coordinate is \\(\\sin(\\theta_i)\\). This way, each oscillator corresponds to a point on the circle. Build a code to visualize the oscillators as blue dots on the unit circle. Your output should be similar to Figure 1, but feel free to show it in your own style!\n\n\n\n\n\n\n\n\nFigure 1: Sample visualization of oscillators on the unit circle. Each blue dot represents an oscillator with phase \\(\\theta_i\\).\n\n\n\n\n\nIf you don’t know how to achieve the plot above, feel free to expand some of the hints below.\n\n\n\n\n\n\nHow to compute the positions of the oscillators (click to expand)\n\n\n\n\n\nTo compute the x and y coordinates for the plot, you can use NumPy’s cos and sin functions applied to the theta array:\nx = np.cos(theta)\ny = np.sin(theta)\n(Remember to import numpy first!)\n\n\n\n\n\n\n\n\n\nHow to create the plot (click to expand)\n\n\n\n\n\nTo create the plot, you can use Matplotlib’s subplots function to set up the figure and axes, and then use scatter to plot the points. Here’s a complete example:\n# First, we prepare the figure and axes\nfig, ax = plt.subplots(figsize=(6, 6))\n# fig is the Figure, a \"canvas\" where everything is drawn\n# ax is the Axes, a \"subplot\" where we can plot data\n# A single figure can have multiple axes (e.g. for subplots)\nax.set_title(\"Kuramoto Model\")  # Title of the plot\nax.set_xlabel(\"Cos(theta)\")  # Name of x-axis\nax.set_ylabel(\"Sin(theta)\")  # Name of y-axis\nax.set_xlim(-1.1, 1.1)  # Limits for x-axis\nax.set_ylim(-1.1, 1.1)  # Limits for y-axis\nax.set_aspect(\"equal\")  # Make the circle look circular\nax.grid(True)  # Show grid lines\n# Draw unit circle (optional, but it helps to visualize the boundary)\ncircle = plt.Circle((0, 0), 1, color=\"lightgray\", fill=False)\nax.add_artist(circle)\n\n# Now we are ready to plot the oscillators as blue dots\nax.scatter(x, y, s=50, color=\"blue\", alpha=0.5)\n# s is the size of the dots\n# alpha is the transparency (0 is fully transparent, 1 is fully opaque)\n# we want the oscillators to be somewhat transparent so we can see overlaps\n\n# Finally, we show the plot and close it to free up memory\nplt.show()\nplt.close()",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto: Oscillators"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto-oscillators.html#define-the-ode",
+    "href": "modules/ode-coupled/kuramoto-oscillators.html#define-the-ode",
+    "title": "Kuramoto Model",
+    "section": "Define the ODE",
+    "text": "Define the ODE\nChoose between the original pairwise form of the Kuramoto model or the mean field approximation. You can see both forms in the theory page Kuramoto Model. The mean field approximation is often more efficient for large populations, as it avoids computing pairwise interactions.\nFollow the template below to define the ODE function for the Kuramoto model. Call it kuramoto_ode(). The function should compute the derivatives of the phases \\(\\dot\\theta_i\\) based on the current phases \\(\\theta_i\\), natural frequencies \\(\\omega_i\\), and coupling strength \\(K\\).\ndef ode(t, state, *params):\n    # state represents the current values of the variables (e.g., x, y)\n\n    # params are any additional parameters needed to compute the derivatives\n    # each of them is separated by commas\n\n    return dstate_dt  # this should be a sequence of the same length as `state`\nRemember: solve_ivp() requires the time argument even if it is not used.\nBy the way, remember to keep the phases \\(\\theta_i\\) within the range \\([0, 2\\pi]\\) to avoid numerical issues. You can use np.mod(theta, 2 * np.pi) to achieve this.\n\n\n\n\n\n\nSee the full ODE function (click to expand)\n\n\n\n\n\nThe function below is for the mean-field approximation of the Kuramoto model, which is more efficient than computing pairwise interactions. It computes the order parameter at each time step and uses it to calculate the derivatives.\ndef kuramoto_ode(t, theta, omega, coupling_strength=1.0):\n    # Make sure theta stays within [0, 2*pi] to avoid numerical issues\n    theta = np.mod(theta, 2 * np.pi)\n    order_param = np.mean(np.exp(1j * theta))\n    r = np.abs(order_param)\n    phi = np.angle(order_param)\n    dtheta_dt = omega + coupling_strength * r * np.sin(phi - theta)\n    return dtheta_dt\n\n\n\nTo validate that your function works, try running it with the following parameters:\n\nCoupling strength \\(K=10.0\\) (this is a strong coupling regime where synchronization should occur)\nNumber of oscillators \\(N=100\\)\nStandard deviation of natural frequencies \\(\\sigma=1.0\\)\n\nRun the simulation for \\(t \\in [0, 10]\\) and visualize the last state on the unit circle. You should see some degree of synchronization, with the oscillators clustering together. See Figure 2 for a sample output.\n\n\n\n\n\n\n\n\nFigure 2: Visualization of oscillators after running the Kuramoto ODE for K=10. The clustering of the blue dots indicates synchronization.\n\n\n\n\n\n\n\n\n\n\n\nHow to run the simulation (click to expand)\n\n\n\n\n\nYou can use scipy.integrate.solve_ivp() to run the simulation. Here’s a simple example of how to do this:\nfrom scipy.integrate import solve_ivp\n\n# Parameters\ncoupling_strength = 10.0\nnum_oscillators = 100\nsigma = 1.0\nt_span = (0, 10)\n\n# Initialize oscillators\ntheta, omega = initialize_oscillators(num_oscillators, sigma=sigma)\n# Run the simulation\nsol = solve_ivp(\n    kuramoto_ode,\n    t_span,\n    theta,\n    args=(omega, coupling_strength)\n    )\n# The solution `sol.y` contains the phases of the oscillators at each time step.\n# sol.y is a 2D array of shape (num_oscillators, num_time_points)\n# You can visualize the last state using the same plotting code as before.\ntheta_end = sol.y[:, -1] # Get the final state of the phases\nx = np.cos(theta_end)\ny = np.sin(theta_end)\n# Plotting code as before to visualize the final state\n\n\n\nThen, try reducing the coupling strength to \\(K=0.1\\) and observe how the oscillators become more scattered, indicating a more incoherent state. See Figure 3 for a sample output.\n\n\n\n\n\n\n\n\nFigure 3: Visualization of oscillators after running the Kuramoto ODE for K=0.1. The scattering of the blue dots indicates incoherence.",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto: Oscillators"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto-oscillators.html#animate-the-phases",
+    "href": "modules/ode-coupled/kuramoto-oscillators.html#animate-the-phases",
+    "title": "Kuramoto Model",
+    "section": "Animate the Phases",
+    "text": "Animate the Phases\nSeeing the final state of the system is nice and that, but you know what is even better? Seeing it in action! You can use matplotlib.animation to create an animation of the oscillators moving around the unit circle as they evolve according to the Kuramoto ODE. This will allow you to visualize the process of synchronization in real time.\nTo create an animation, make sure you are working on a Python script in your local computer (e.g., kuramoto.py) and run it with python kuramoto.py. It is possible to do animations on Jupyter notebooks, but it is more complicated and may not work in all environments.\nReady? Firt, your script should initialize the oscillators and all parameters that you want to control (e.g., coupling strength, number of oscillators, etc.).\n# Remember to include / import the following functions\n# that you have created earlier:\n# initialize_oscillators()\n# kuramoto_ode()\n\ncoupling_strength = 1.0  # K\nnum_oscillators = 100  # Number of oscillators\nomega = 0.5  # Standard deviation of the natural frequencies\nsigma = 1.0  # Scale of the initial phases\ndt = 0.1  # Time step for the integration time\n\n# Initialize oscillators (phase and natural frequency)\ntheta, omega = initialize_oscillators(\n    num_oscillators,\n    sigma=sigma\n)\nt_span = (0, dt)\n# For the animation, we use a small time span\n# But you can go higher for the static imagine\n# t_span = (0, 100)\nSecond, we need to create a figure and axes. Every element inside this plot should be named, so that we can update it in real time. Follow this template:\n# Initialize the figure and axes\nfig, ax_phase = plt.subplots(figsize=(6, 6))\n\n# Define the labels and size of this plot\nax_phase.set_title(\"Kuramoto Model\")\nax_phase.set_xlabel(\"Cos(theta)\")\nax_phase.set_ylabel(\"Sin(theta)\")\nax_phase.set_xlim(-1.1, 1.1)\nax_phase.set_ylim(-1.1, 1.1)\nax_phase.set_aspect(\"equal\")\nax_phase.grid(True)\n\n# Draw unit circle (optional, but it helps to visualize the boundary)\ncircle = plt.Circle((0, 0), 1, color=\"lightgray\", fill=False)\nax_phase.add_artist(circle)\n\n# Initialize scatter plot for oscillators\nscatter = ax_phase.scatter([], [], s=50, color=\"blue\", alpha=0.25)\n# [] means we are starting with an empty array of points,\n# which we will update in the animation loop\n# s is the size of the dots, and alpha is the transparency\n\n# Initialize line for the phase centroid (order parameter)\n(centroid_line,) = ax_phase.plot([], [], color=\"red\", linewidth=2)\n(centroid_point,) = ax_phase.plot([], [], \"ro\", markersize=8)\n# Same idea here:\n# we start with empty data and update it in the animation loop\nAll the block above will initialize the figure and axes, draw the unit circle, and create empty plot elements for the oscillators and the order parameter. The variables scatter, centroid_line, and centroid_point are references to these plot elements, which we will update in the animation loop.\nNext, we need to define an update function that will be called at each time step of the animation. This function will compute the new positions of the oscillators and the order parameter based on the current state of the system. It should look something like this:\ndef update_function(frame: int):\n    # Acces the variables from the outer scope\n    global theta\n\n    # Solve the ODE system\n    sol = solve_ivp(\n            kuramoto_ode,\n            (0, dt),\n            theta,\n            args=(omega, coupling_strength),\n    )\n    # Update theta with the new values from the solution\n    theta = sol.y[..., -1]\n    \n    # Keep theta within [0, 2 * pi]\n    theta = np.mod(theta, 2 * np.pi)\n\n    # Update scatter plot on the unit circle\n    x = np.cos(theta)\n    y = np.sin(theta)\n    data = np.vstack((x, y)).T\n    scatter.set_offsets(data)\n    return [scatter]\nFinally, we can create the animation using matplotlib.animation.FuncAnimation:\nfrom matplotlib.animation import FuncAnimation\n\nani = FuncAnimation(\n    fig,  # Our figure object\n    update_function,  # Updates the plot at each frame\n    frames=200, # Number of frames in the animation\n    interval=100, # Time between frames in milliseconds\n    blit=True, # Optimize rendering by only updating changed elements\n    )\nplt.show()\nAll done! You should see an animation of the oscillators moving around the unit circle. You can experiment with different parameters (e.g., coupling strength, number of oscillators, etc.) to see how it affects the synchronization process.\n\n\n\n\n\n\nFigure 4: Kuramoto oscillators animation on the unit circle.\n\n\n\nIs your order parameter not moving? If you followed the guide, you might notice that the order parameter does not update in the animation. You will need to compute the order parameter inside the update_function() and update the centroid_line and centroid_point accordingly.",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto: Oscillators"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto-oscillators.html#compare-the-odes",
+    "href": "modules/ode-coupled/kuramoto-oscillators.html#compare-the-odes",
+    "title": "Kuramoto Model",
+    "section": "Compare the ODEs",
+    "text": "Compare the ODEs\nIf you have reached this far, congratulations! You have successfully implemented the Kuramoto model and visualized its dynamics. Now, you can compare the original pairwise form of the ODE with the mean field approximation. Try implementing both versions and see how they differ in terms of computational efficiency and the resulting dynamics. You should find that the mean field approximation is much faster for large populations, while still capturing the essential behavior of synchronization.\n\n\n\n\n\n\nHow do I implement the other ODE?\n\n\n\n\n\nYou just have to create a new kuramoto_ode() function. I recommend you name them differently, for instance kuramoto_ode_pairwise() and kuramoto_ode_meanfield(), so that you can easily switch between them in the animation loop. Follow the equations in the theory page Kuramoto Model.\nIf you have reached this far by implementing one of them, it should be as simple as changing the ODE function in the solve_ivp() call inside the update_function(). For example, if you have implemented the pairwise version, you can switch to the mean field version by changing this line:\nsol = solve_ivp(\n    kuramoto_ode_pairwise, # Change this to the other ODE function\n    (0, dt),\n    theta,\n    args=(omega, coupling_strength),\n    )\nThis is why modularity is important! By keeping your code organized and modular, you can easily swap out different components (like the ODE function) without having to rewrite the entire animation code. This allows you to experiment with different models and see how they compare in terms of dynamics and computational efficiency.\nIn fact, doing modularization well will save you half the work for the assignment where you will implement a different model of coupled oscillators (the bridge of the Millenium).",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto: Oscillators"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto-oscillators.html#whats-next",
+    "href": "modules/ode-coupled/kuramoto-oscillators.html#whats-next",
+    "title": "Kuramoto Model",
+    "section": "What’s Next?",
+    "text": "What’s Next?\nIn the next page, we will explore the bifurcation diagram of the Kuramoto model, which shows how the order parameter changes as a function of the coupling strength. This will help us understand the transition from incoherence to synchronization in this system.\nBifurcation Diagram",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto: Oscillators"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto-diagram.html",
+    "href": "modules/ode-coupled/kuramoto-diagram.html",
+    "title": "Kuramoto Model",
+    "section": "",
+    "text": "The order parameter \\(r\\) measures the coherence of the population. As coupling \\(K\\) increases, the system transitions from incoherent (\\(r \\approx 0\\)) to synchronized (\\(r &gt; 0\\)).\nFor a Cauchy distribution with scale \\(\\gamma\\):\n\\[\nK_c = \\frac{2}{\\pi g(0)}\n\\tag{1}\\]\nwhere \\(g(\\omega)\\) is the probability density function of the natural frequencies. For a Cauchy distribution with scale parameter \\(\\gamma\\):\n\\[\ng(\\omega)=\\frac{1}{\\pi} \\frac{\\gamma}{\\omega^2+\\gamma^2}\n\\tag{2}\\]\nIn particular, \\(g(0)=\\frac{1}{\\pi\\gamma}\\), so the critical coupling simplifies to\n\\[\nK_c = 2\\gamma\n\\tag{3}\\]\nThe theoretical order parameter is:\n\\[\nr(K)=\n\\begin{cases}\n0, & K \\le K_c \\\\\n\\sqrt{1-\\frac{K_c}{K}}, & K &gt; K_c\n\\end{cases}\n\\tag{4}\\]\nWarning: This exact formula only works for a Cauchy distribution!\nFigure 1: Kuramoto diagram: theoretical curve from Equation 4 and empirical points (drawn from a normal distribution). Why is there a mismatch?\nFor any other distribution, the theoretical order parameter near onset is\n\\[\nr \\approx \\sqrt{\\frac{16}{\\pi K_c^3}} \\sqrt{\\frac{\\mu}{-g''(0)}}\n\\tag{5}\\]\nwhere \\(\\mu\\) measures the distance from the critical point (a dimensionless reduced coupling) and \\(g''(0)\\) is the second derivative of the frequency distribution at \\(0\\).\n\\[\n\\mu = \\frac{K - K_c}{K_c}\n\\tag{6}\\]\nThis formula is derived from a perturbative analysis near the critical point and captures the square-root scaling of the order parameter as the coupling strength exceeds the critical value.\nFor a normal distribution with scale parameter (standard deviation) sigma:\n\\[\ng(\\omega) = \\frac{1}{\\sqrt{2\\pi}\\sigma} \\exp\\left(-\\frac{\\omega^2}{2\\sigma^2}\\right)\n\\tag{7}\\]\n\\[\ng''(\\omega) = \\left( \\frac{\\omega^2}{\\sigma^4} - \\frac{1}{\\sigma^2} \\right) g(\\omega)\n\\tag{8}\\]",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto: Bifurcation Diagram"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto-diagram.html#python-implementation",
+    "href": "modules/ode-coupled/kuramoto-diagram.html#python-implementation",
+    "title": "Kuramoto Model",
+    "section": "Python Implementation",
+    "text": "Python Implementation\nIn a new script, draw the theoretical bifurcation diagram for \\(0 &lt; K &lt; 5\\).\nOn top of it, draw the empirical curve, using \\(N = 1000\\) oscillators, \\(dt = 0.01\\), stopping at \\(t = 100\\) and averaging the order parameter (\\(r\\)) over the last ten steps.\nDo your two curves match? The example in Figure 1 shows a mismatch. Can you explain why? Can you fix it? If you are stuck, check the solution below.\n\n\n\n\n\n\nWhy is there a mismatch?\n\n\n\n\n\nThe mismatch occurs because the closed-form theoretical curve Equation 4 is derived for a Cauchy frequency distribution, while the empirical data in Figure 1 is generated from a normal distribution.\nTo fix this you have two consistent options:\n\nKeep the normal distribution and use a matching theoretical prediction (typically only an approximation near onset, e.g. Equation 5).\nKeep the closed-form curve Equation 4 and generate the empirical data using a Cauchy distribution.\n\n\n\n\n\n\n\n\n\nFigure 2: Kuramoto diagram: empirical points (normal frequencies) and a matching theoretical prediction (see Equation 5 for the near-onset scaling).\n\n\n\n\n\nAlternatively, fix the mismatch by changing the empirical distribution to a Cauchy distribution, which matches the closed-form curve Equation 4.\n\n\n\n\n\n\n\n\nFigure 3: Kuramoto diagram: theoretical curve Equation 4 and empirical points (Cauchy frequencies).",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto: Bifurcation Diagram"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto-diagram.html#validate-your-findings",
+    "href": "modules/ode-coupled/kuramoto-diagram.html#validate-your-findings",
+    "title": "Kuramoto Model",
+    "section": "Validate Your Findings",
+    "text": "Validate Your Findings\nFind the critical coupling \\(K_c\\) from the theoretical formula and check if it matches the empirical transition point in your simulations. You can estimate the empirical \\(K_c\\) by looking for the value of \\(K\\) where \\(r\\) starts to deviate significantly from zero. Or use then ear-onset scaling Equation 5 to fit the empirical data and extract an estimate of \\(K_c\\).\nIn your animation script from the previous page, try setting the coupling strength just below and just above the critical value to see the difference in the dynamics. You should see that below \\(K_c\\), the oscillators remain incoherent, while above \\(K_c\\), they start to synchronize and form a cluster on the unit circle.\n\n\n\n\n\n\n\n\nFigure 4: Comparison between the theoretical critical coupling \\(K_c\\) and the empirical transition point observed in simulations. Individual oscillators are represented as blue dots, while the coupling strength is painted red.",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto: Bifurcation Diagram"
+    ]
+  },
+  {
+    "objectID": "modules/ode-coupled/kuramoto-diagram.html#whats-next",
+    "href": "modules/ode-coupled/kuramoto-diagram.html#whats-next",
+    "title": "Kuramoto Model",
+    "section": "What’s Next?",
+    "text": "What’s Next?\nIn the next page, we will merge the bifurcation diagram with the oscillator animation to create a full simulation of the Kuramoto model. This will allow us to see how the order parameter evolves in real time as we adjust the coupling strength and other parameters using sliders.\nFull Simulation",
+    "crumbs": [
+      "Session 3: Coupled ODEs",
+      "Kuramoto: Bifurcation Diagram"
+    ]
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-predator.html",
+    "href": "modules/collective-motion/vicsek-predator.html",
+    "title": "Vicsek Model with Predator",
+    "section": "",
+    "text": "Warning\n\n\n\nWarning: This section will not be covered this year. You are welcome to explore or implement the idea, but the code and example may be outdated.\nNow add a predator that boids avoid. The predator position is controlled by the mouse, and boids change their angle when they are within a predator radius.\nThe repulsion angle is\n\\[\\Theta_{\\text{rep}, i} = \\tan^{-1}\\left(\\frac{y_i - y_{\\text{pred}}}{x_i - x_{\\text{pred}}}\\right). \\tag{1}\\]\nWe blend alignment and repulsion with strength \\(k\\):\n\\[\\Theta_i = (1-k)\\left(\\langle \\Theta_j \\rangle + \\eta_i\\right) + k\\,\\Theta_{\\text{rep}, i}. \\tag{2}\\]"
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-predator.html#track-the-predator",
+    "href": "modules/collective-motion/vicsek-predator.html#track-the-predator",
+    "title": "Vicsek Model with Predator",
+    "section": "Track the predator",
+    "text": "Track the predator\nfrom matplotlib.backend_bases import MouseEvent\n\n# Inside run_simulation\nxy_pred = np.array([-1000, -1000])\nradius_predator = 1.0\nstrength_predator = 0.1\n\n\ndef on_mouse_move(event: MouseEvent):\n    nonlocal xy_pred\n    if event.inaxes == ax_plane:\n        xy_pred = np.array([event.xdata, event.ydata])\n    else:\n        xy_pred = np.array([-1000, -1000])\n\nfig.canvas.mpl_connect(\"motion_notify_event\", on_mouse_move)"
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-predator.html#update-the-equations",
+    "href": "modules/collective-motion/vicsek-predator.html#update-the-equations",
+    "title": "Vicsek Model with Predator",
+    "section": "Update the equations",
+    "text": "Update the equations\nAdd the predator terms inside your Vicsek update.\ndef vicsek_equations(\n    xy, theta, dt, eta, box_size, radius_interaction, v0,\n    xy_pred, radius_predator, strength_predator,\n):\n    # TODO: compute alignment as usual\n\n    # TODO: compute repulsion angle and blend with k\n    return xy, theta\n\n\n\n\n\n\nHint: Predator update (click to expand)\n\n\n\n\n\n# Distances to predator\n d_pred = np.linalg.norm(xy - xy_pred[:, np.newaxis], axis=0)\n affected = d_pred &lt;= radius_predator\n repulsion_angle = np.arctan2(xy[1] - xy_pred[1], xy[0] - xy_pred[0])\n term_pred = strength_predator * (repulsion_angle - theta) * affected\n theta = np.mod(theta + term_pred, 2 * np.pi)\n\n\n\nIf you want a full working reference, check amlab/collective_motion/vicsek_predator.py."
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation.html",
+    "href": "modules/collective-motion/vicsek-animation.html",
+    "title": "Vicsek Model",
+    "section": "",
+    "text": "In this chapter I will guide you to build a basic animation of the Vicsek model using Matplotlib. This will be a foundation for more complex visualizations and interactive explorations in later chapters.\nYou already have the Vicsek functions implemented (e.g. initialize_particles, vicsek_equations, vicsek_order_parameter).\nYour job here is to assemble them into a 2D particle animation (with a short tail) that shows the recent trajectory of each particle.",
+    "crumbs": [
+      "Session 4: Collective Motion",
+      "Vicsek Animation"
+    ]
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation.html#imports-and-model-functions",
+    "href": "modules/collective-motion/vicsek-animation.html#imports-and-model-functions",
+    "title": "Vicsek Model",
+    "section": "Imports and Model Functions",
+    "text": "Imports and Model Functions\nCreate a new script named vicsek_animation.py. At the end of this page you will have a complete version.\nFill in the missing imports:\nimport sys\n\nimport matplotlib.pyplot as plt\nimport matplotlib.animation as animation\nimport numpy as np\nfrom matplotlib.axes import Axes\n\n# make sure Python can find your package/module\nsys.path.append(\".\")\n\n# import Vicsek utilities from your project\nfrom amlab.collective_motion.vicsek import initialize_particles, vicsek_equations, vicsek_order_parameter\n\n\n\n\n\n\nCommon import issues\n\n\n\n\n\n\nIf you get ModuleNotFoundError, you likely need sys.path.append(\".\") (or adjust it to your repo root).\nPrefer importing from your package (e.g. amlab...) rather than relative imports.",
+    "crumbs": [
+      "Session 4: Collective Motion",
+      "Vicsek Animation"
+    ]
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation.html#the-main-function",
+    "href": "modules/collective-motion/vicsek-animation.html#the-main-function",
+    "title": "Vicsek Model",
+    "section": "The Main Function",
+    "text": "The Main Function\nWe will put everything inside a function so you can run it with different dt.\nCreate a function skeleton and choose parameter defaults.\ndef run_simulation(dt: float = 1.0) -&gt; None:\n    \"\"\"Run an interactive Vicsek animation (Matplotlib).\"\"\"\n    # TODO: choose defaults\n    num_boids = \n    noise_eta = \n    box_size = \n    radius_interaction = \n    v0 = \n\n    # Tail length for trajectory visualization\n    TAIL_LEN = 20\n\n    # TODO: initialize the state (xy, theta)\n\n    # We stop here for now",
+    "crumbs": [
+      "Session 4: Collective Motion",
+      "Vicsek Animation"
+    ]
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation.html#create-the-figure-layout",
+    "href": "modules/collective-motion/vicsek-animation.html#create-the-figure-layout",
+    "title": "Vicsek Model",
+    "section": "Create the Figure Layout",
+    "text": "Create the Figure Layout\nWe want a large space for particles, and a smaller area for sliders + extra diagnostics.\nCreate the subplots and name the axes.\ndef make_figure():\n    # Create a single grid\n    fig, axs = plt.subplots(\n        1, 1,\n        figsize=(12, 8),\n        height_ratios=[4, 1],  # top row larger than bottom row\n    )\n    ax_plane = axs[0]\n\n    return fig, ax_plane",
+    "crumbs": [
+      "Session 4: Collective Motion",
+      "Vicsek Animation"
+    ]
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation.html#draw-particles",
+    "href": "modules/collective-motion/vicsek-animation.html#draw-particles",
+    "title": "Vicsek Model",
+    "section": "Draw Particles",
+    "text": "Draw Particles\nIn order to convey the movement of the particles, we want them to look like “tadpoles”: a big head with a smaller tail. In practice, we will be plotting their current position as the “head”, using a bigger marker, and their recent trajectory as the “tail”, using many small points. This will show the direction of movement and give a better sense of the dynamics. We will use two artists:\n\none for the tail (many tiny points),\none for the current positions (bigger markers).\n\nTranslating this to code, we will - create xy_tail with shape (2, N, TAIL_LEN), and - create the two Line2D artists with ax_plane.plot(...).\ndef init_particles_plot(ax_plane: Axes, xy: np.ndarray, box_size: float, tail_len: int):\n    # build a tail tensor by repeating xy across a third axis\n    xy_tail = np.repeat(xy[:, :, np.newaxis], tail_len, axis=2)\n\n    # tail (small grey points)\n    (plt_particles,) = ax_plane.plot(\n        xy_tail[0].flatten(), xy_tail[1].flatten(),\n        linestyle=\"\", marker=\".\", markersize=2, color=\"grey\"\n    )\n\n    # current positions (bigger black circles)\n    (plt_current,) = ax_plane.plot(\n        xy[0], xy[1],\n        linestyle=\"\", marker=\"o\", markersize=3, color=\"black\"\n    )\n\n    # set plot limits\n    ax_plane.set_xlim(0, box_size)\n    ax_plane.set_ylim(0, box_size)\n    ax_plane.set_aspect(\"equal\")\n\n    return xy_tail, plt_particles, plt_current\n\n\n\n\n\n\nTail trick (fast and simple)\n\n\n\n\n\nStore the last TAIL_LEN positions:\n\nshift the tensor with np.roll(...),\nwrite the newest positions into the last slice.\n\nThis avoids creating new arrays each frame.",
+    "crumbs": [
+      "Session 4: Collective Motion",
+      "Vicsek Animation"
+    ]
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation.html#write-the-animation-update-function",
+    "href": "modules/collective-motion/vicsek-animation.html#write-the-animation-update-function",
+    "title": "Vicsek Model",
+    "section": "Write the Animation Update Function",
+    "text": "Write the Animation Update Function\nThis is the core loop:\n\nadvance the Vicsek dynamics by one step (vicsek_equations).\nupdate xy_tail.\nupdate the particle artists.\n\nUse this checklist:\n\ncall vicsek_equations(...)\nupdate xy_tail with np.roll(...)\nplt_particles.set_data(...) and plt_current.set_data(...)\n\nYou can follow the structure of the update_animation function below, which includes comments for each step.\ndef update_animation(frame: int):\n    nonlocal xy, xy_tail, theta, noise_eta, v0, radius_interaction, box_size\n\n    # TODO: advance the Vicsek equations\n\n    # TODO: update the tail tensor\n    # TODO: update the particle artists with set_data\n\n    return (plt_particles, plt_current)\nTip: blitting requires you to return artists If you set blit=True, your update function must return an iterable of the artists that changed, as shown above. If you forget to return them, the animation will run but the plot will not update (it will look frozen).\nMove the function update_animation inside run_simulation so it can access the state variables with nonlocal.\n\n\n\n\n\n\nSolution: Simple update_animation()\n\n\n\n\n\ndef update_animation(frame: int):\n    nonlocal \\\n        xy, \\\n        xy_tail, \\\n        theta, \\\n        noise_eta, \\\n        v0, \\\n        radius_interaction, \\\n        box_size\n    xy, theta = vicsek_equations(\n        xy,\n        theta,\n        v0=v0,\n        dt=dt,\n        radius_interaction=radius_interaction,\n        box_size=box_size,\n        noise=noise_eta,\n    )\n\n    # Update tails\n    xy_tail = np.roll(xy_tail, shift=-1, axis=2)\n    xy_tail[:, :, -1] = xy\n    plt_particles.set_data(xy_tail[0].flatten(), xy_tail[1].flatten())\n    plt_current.set_data(xy[0], xy[1])\n\n    return (plt_particles, plt_current)",
+    "crumbs": [
+      "Session 4: Collective Motion",
+      "Vicsek Animation"
+    ]
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation.html#create-the-animation-object",
+    "href": "modules/collective-motion/vicsek-animation.html#create-the-animation-object",
+    "title": "Vicsek Model",
+    "section": "Create the Animation Object",
+    "text": "Create the Animation Object\nMatplotlib uses FuncAnimation. Inside run_simulation, after defining update_animation, create the animation object:\nani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)\n\ninterval=0 makes it as fast as your computer can handle.\nYou can set a larger interval (e.g. 20 ms) to reduce CPU usage.",
+    "crumbs": [
+      "Session 4: Collective Motion",
+      "Vicsek Animation"
+    ]
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation.html#full-script",
+    "href": "modules/collective-motion/vicsek-animation.html#full-script",
+    "title": "Vicsek Model",
+    "section": "Full Script",
+    "text": "Full Script\nAt this point you have built every piece.\nBelow is a sample of how your run_simulation function might look with all the pieces assembled.\n\n\n\n\n\n\nSolution: Simplified run_simulation()\n\n\n\n\n\nThis is a simplified version that assumes you have not implemented the order plot or noise plot, neither the sliders, yet. It focuses on the particle animation.\ndef run_simulation(dt: float = 1.0) -&gt; None:\n    # Parameters\n    num_boids = 100\n    noise_eta = 0.5\n    box_size = 10.0\n    radius_interaction = 1.0\n    v0 = 0.03\n\n    # Initialize state\n    xy, theta = initialize_particles(num_boids, box_size)\n\n    # Order parameter history and noise diagnostic\n    # will be initialized here\n\n    # Create figure and axes\n    fig, ax_plane, ax_order, ax_sliders, ax_noise = make_figure()\n\n    # Initialize plots\n    xy_tail, plt_particles, plt_current = init_particles_plot(ax_plane, xy, box_size, tail_len=20)\n    # The order plot and noise plot will go here\n\n    # Sliders will be added here\n\n    # Define the animation update function\n    def update_animation(frame: int):\n        # See the previous step for the full implementation\n        ...\n\n    # Create the animation object\n    ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)\n\n    # The slider callbacks will come here\n\n    plt.show()\n\n\n\nImportant: For your script to work, remember to call the run_simulation() function at the end of your script:\nif __name__ == \"__main__\":\n    run_simulation()",
+    "crumbs": [
+      "Session 4: Collective Motion",
+      "Vicsek Animation"
+    ]
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation.html#checklist-debugging",
+    "href": "modules/collective-motion/vicsek-animation.html#checklist-debugging",
+    "title": "Vicsek Model",
+    "section": "Checklist (Debugging)",
+    "text": "Checklist (Debugging)\nIf your animation is blank:\n\nDid you return the artists in update_animation?\nDid you set axis limits (set_xlim, set_ylim)?\nAre xy and theta updated each frame?\nAre you calling plt.show() at the end of run_simulation()?\nAre you calling run_simulation() at the end of your script?",
+    "crumbs": [
+      "Session 4: Collective Motion",
+      "Vicsek Animation"
+    ]
+  },
+  {
+    "objectID": "modules/collective-motion/vicsek-animation.html#extension",
+    "href": "modules/collective-motion/vicsek-animation.html#extension",
+    "title": "Vicsek Model",
+    "section": "Extension",
+    "text": "Extension\n\nAdd the order parameter plot and noise diagnostic plot.\nAdd sliders for noise_eta and v0.\nAdd a slider for radius_interaction and see how it affects the dynamics.\n\nGo to the next chapter to see how to add the order parameter plot and noise diagnostic plot.\nNext: Adding Diagnostics and Sliders",
+    "crumbs": [
+      "Session 4: Collective Motion",
+      "Vicsek Animation"
     ]
   },
   {
@@ -962,668 +1664,6 @@
     "crumbs": [
       "Session 4: Collective Motion",
       "Vicsek Model"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/vicsek-animation.html",
-    "href": "modules/collective-motion/vicsek-animation.html",
-    "title": "Vicsek Model",
-    "section": "",
-    "text": "In this chapter I will guide you to build an interactive Vicsek animation in Matplotlib, one step at a time.\nYou already have the Vicsek functions implemented (e.g. initialize_particles, vicsek_equations, vicsek_order_parameter).\nYour job here is to assemble them into:",
-    "crumbs": [
-      "Session 4: Collective Motion",
-      "Vicsek Animation"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/vicsek-animation.html#what-you-will-build",
-    "href": "modules/collective-motion/vicsek-animation.html#what-you-will-build",
-    "title": "Vicsek Model",
-    "section": "What you will build",
-    "text": "What you will build\nA \\(2 \\times 2\\) layout:\n\nTop-left: particle positions (with a tail).\nTop-right: order parameter over time.\nBottom-left: sliders.\nBottom-right: order parameter vs noise (a crude “phase diagram”) as you explore.\n\nKeep it incremental: Run your code after each step. If something breaks, you only have one new thing to debug.",
-    "crumbs": [
-      "Session 4: Collective Motion",
-      "Vicsek Animation"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/vicsek-animation.html#imports-and-model-functions",
-    "href": "modules/collective-motion/vicsek-animation.html#imports-and-model-functions",
-    "title": "Vicsek Model",
-    "section": "Imports and Model Functions",
-    "text": "Imports and Model Functions\nCreate a new script named vicsek_animation.py. At the end of this page you will have a complete version.\nFill in the missing imports:\nimport sys\n\nimport matplotlib.pyplot as plt\nimport matplotlib.animation as animation\nimport numpy as np\nfrom matplotlib.axes import Axes\n\n# make sure Python can find your package/module\nsys.path.append(\".\")\n\n# import Vicsek utilities from your project\nfrom amlab.collective_motion.vicsek import initialize_particles, vicsek_equations, vicsek_order_parameter\n\n\n\n\n\n\nCommon import issues\n\n\n\n\n\n\nIf you get ModuleNotFoundError, you likely need sys.path.append(\".\") (or adjust it to your repo root).\nPrefer importing from your package (e.g. amlab...) rather than relative imports.",
-    "crumbs": [
-      "Session 4: Collective Motion",
-      "Vicsek Animation"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/vicsek-animation.html#the-main-function",
-    "href": "modules/collective-motion/vicsek-animation.html#the-main-function",
-    "title": "Vicsek Model",
-    "section": "The Main Function",
-    "text": "The Main Function\nWe will put everything inside a function so you can run it with different dt.\nCreate a function skeleton and choose parameter defaults.\ndef run_simulation(dt: float = 1.0) -&gt; None:\n    \"\"\"Run an interactive Vicsek animation (Matplotlib).\"\"\"\n    # TODO: choose defaults\n    num_boids = \n    noise_eta = \n    box_size = \n    radius_interaction = \n    v0 = \n\n    # Sliding window length for order parameter plot\n    ORDER_WINDOW = 3000\n\n    # Tail length for trajectory visualization\n    TAIL_LEN = 20\n\n    # TODO: initialize the state (xy, theta)\n\n    # store order parameter history\n    ls_order_param = []\n\n    # store explored noise-&gt;order mapping\n    dict_noise = {}\n\n    # We stop here for now.\n    return\n\n\n\n\n\n\nWhy a sliding window?\n\n\n\n\n\nIf you store the full time series, your plot and memory will grow forever.\nA fixed-length list (window) gives you: - stable performance, - and a plot that focuses on recent behavior.",
-    "crumbs": [
-      "Session 4: Collective Motion",
-      "Vicsek Animation"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/vicsek-animation.html#create-the-figure-layout",
-    "href": "modules/collective-motion/vicsek-animation.html#create-the-figure-layout",
-    "title": "Vicsek Model",
-    "section": "Create the Figure Layout",
-    "text": "Create the Figure Layout\nWe want a large space for particles, and a smaller area for sliders + extra diagnostics.\nCreate the subplots and name the axes.\ndef make_figure():\n    # Create a 2x2 grid\n    fig, axs = plt.subplots(\n        2, 2,\n        figsize=(12, 8),\n        height_ratios=[4, 1],  # top row larger than bottom row\n    )\n\n    ax_plane: Axes = axs[0, 0]\n    ax_order: Axes = axs[0, 1]\n    ax_sliders: Axes = axs[1, 0]\n    ax_noise: Axes = axs[1, 1]\n\n    # Sliders live in an empty axis\n    ax_sliders.axis(\"off\")\n\n    return fig, ax_plane, ax_order, ax_sliders, ax_noise",
-    "crumbs": [
-      "Session 4: Collective Motion",
-      "Vicsek Animation"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/vicsek-animation.html#draw-particles",
-    "href": "modules/collective-motion/vicsek-animation.html#draw-particles",
-    "title": "Vicsek Model",
-    "section": "Draw Particles",
-    "text": "Draw Particles\nIn order to convey the movement of the particles, we want them to look like “tadpoles”: a big head with a smaller tail. In practice, we will be plotting their current position as the “head”, using a bigger marker, and their recent trajectory as the “tail”, using many small points. This will show the direction of movement and give a better sense of the dynamics. We will use two artists:\n\none for the tail (many tiny points),\none for the current positions (bigger markers).\n\nTranslating this to code, we will - create xy_tail with shape (2, N, TAIL_LEN), and - create the two Line2D artists with ax_plane.plot(...).\ndef init_particles_plot(ax_plane: Axes, xy: np.ndarray, box_size: float, tail_len: int):\n    # build a tail tensor by repeating xy across a third axis\n    xy_tail = np.repeat(xy[:, :, np.newaxis], tail_len, axis=2)\n\n    # tail (small grey points)\n    (plt_particles,) = ax_plane.plot(\n        xy_tail[0].flatten(), xy_tail[1].flatten(),\n        linestyle=\"\", marker=\".\", markersize=2, color=\"grey\"\n    )\n\n    # current positions (bigger black circles)\n    (plt_current,) = ax_plane.plot(\n        xy[0], xy[1],\n        linestyle=\"\", marker=\"o\", markersize=3, color=\"black\"\n    )\n\n    # set plot limits\n    ax_plane.set_xlim(0, box_size)\n    ax_plane.set_ylim(0, box_size)\n    ax_plane.set_aspect(\"equal\")\n\n    return xy_tail, plt_particles, plt_current\n\n\n\n\n\n\nTail trick (fast and simple)\n\n\n\n\n\nStore the last TAIL_LEN positions:\n\nshift the tensor with np.roll(...),\nwrite the newest positions into the last slice.\n\nThis avoids creating new arrays each frame.",
-    "crumbs": [
-      "Session 4: Collective Motion",
-      "Vicsek Animation"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/vicsek-animation.html#initialize-the-order-parameter-plot",
-    "href": "modules/collective-motion/vicsek-animation.html#initialize-the-order-parameter-plot",
-    "title": "Vicsek Model",
-    "section": "Initialize the Order-Parameter Plot",
-    "text": "Initialize the Order-Parameter Plot\nOptional: You can skip this step and just create an empty plot with ax_order.plot([], []) for now. We will fill in the details later.\nThe next plot will show the order parameter \\(r\\) over time.\n\n\n\n\n\n\n\n\nFigure 1\n\n\n\n\n\nWe will update the line data at each animation frame, using the ls_order_param list to store the recent history of \\(r\\).\nCreate an empty line in ax_order and set labels/limits.\ndef init_order_plot(ax_order: Axes, order_window: int):\n    # TODO: create the line artist\n    # HINT: this is similar to how you created the particle artists,\n    # but with empty data\n\n    # TODO: set axes cosmetics\n    # limits, labels, grid\n\n    # TODO: return relevant variables\n\n\n\n\n\n\nSolved\n\n\n\n\n\ndef init_order_plot(ax_order: Axes, order_window: int):\n    (line_order_param,) = ax_order.plot([], [])\n    ax_order.set_xlim(0, order_window - 1)\n    ax_order.set_ylim(0, 1)\n    ax_order.set_xlabel(\"Time\")\n    ax_order.set_ylabel(\"Order parameter (r)\")\n    ax_order.grid(True)\n    return line_order_param",
-    "crumbs": [
-      "Session 4: Collective Motion",
-      "Vicsek Animation"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/vicsek-animation.html#initialize-the-noise-diagnostic-plot",
-    "href": "modules/collective-motion/vicsek-animation.html#initialize-the-noise-diagnostic-plot",
-    "title": "Vicsek Model",
-    "section": "Initialize the Noise Diagnostic Plot",
-    "text": "Initialize the Noise Diagnostic Plot\nOptional: You can skip this step and just create an empty plot with ax_noise.plot([], []) for now. We will fill in the details later.\nIn this plot we will track how the order parameter \\(r\\) changes as we explore different noise levels \\(\\eta\\) with the slider. Visually, we expect to see a curve that starts near \\(r=1\\) at low noise, and drops towards \\(r=0\\) as noise increases. See Figure 2 for an example (using mock data).\n\n\n\n\n\n\n\n\nFigure 2\n\n\n\n\n\nTo build this plot, we will maintain a dictionary dict_noise that maps noise levels to the recent average of the order parameter. Each time we update the animation, we will compute the recent average of \\(r\\) and update this dictionary with the current noise level. Then we will set the line data for the noise plot using the items in this dictionary.\n[ r ]\nInitialize an empty line (red markers).\ndef init_noise_plot(ax_noise: Axes):\n    # TODO: create the line artist\n\n    # TODO: set limits and labels (match your slider range)\n\n    # return\n::: {.callout-tip collapse=“true”} ## Solved\ndef init_noise_plot(ax_noise: Axes):\n    (line_noise,) = ax_noise.plot([], [], color=\"red\", marker=\"o\", linestyle=\"--\")\n    ax_noise.set_xlim(0, 5)\n    ax_noise.set_ylim(0, 1)\n    ax_noise.set_xlabel(\"Noise (eta)\")\n    ax_noise.set_ylabel(\"Order param (r)\")\n    return line_noise",
-    "crumbs": [
-      "Session 4: Collective Motion",
-      "Vicsek Animation"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/vicsek-animation.html#write-the-animation-update-function",
-    "href": "modules/collective-motion/vicsek-animation.html#write-the-animation-update-function",
-    "title": "Vicsek Model",
-    "section": "Write the Animation Update Function",
-    "text": "Write the Animation Update Function\nThis is the core loop:\n\nadvance the Vicsek dynamics by one step (vicsek_equations).\nupdate xy_tail.\nupdate the particle artists.\nupdate order-parameter history ls_order_param and its plot (only if you implemented the order plot in the previous step).\nupdate the noise diagnostic dict_noise and its plot (only if you implemented the noise plot in the previous step).\n\nUse this checklist:\n\ncall vicsek_equations(...)\nupdate xy_tail with np.roll(...)\nplt_particles.set_data(...) and plt_current.set_data(...)\nappend vicsek_order_parameter(theta) to the window list (only if you implemented the order plot)\nset line data for the order parameter plot (only if you implemented the order plot)\ncompute a recent average (only if you implemented the order plot)\nupdate dict_noise[noise_eta] and redraw the noise curve (only if you implemented the noise plot)\n\nYou can follow the structure of the update_animation function below, which includes comments for each step.\ndef update_animation(frame: int):\n    nonlocal xy, xy_tail, theta, noise_eta, v0, radius_interaction, box_size, dict_noise, ls_order_param\n\n    # TODO: advance the Vicsek equations\n\n    # TODO: update the tail tensor\n    # TODO: update the particle artists with set_data\n\n    # TODO: update the order parameter history and plot\n    # (only if you implemented the order plot in the previous step)\n\n    # TODO: compute a recent average and update dict_noise\n    # (only if you implemented the order plot in the previous step)\n    # TODO: update the noise diagnostic plot with set_data\n    # (only if you implemented the noise plot in the previous step)\n\n    return (plt_particles, plt_current, line_order_param, line_noise)\nTip: blitting requires you to return artists If you set blit=True, your update function must return an iterable of the artists that changed, as shown above. If you forget to return them, the animation will run but the plot will not update (it will look frozen).\nMove the function update_animation inside run_simulation so it can access the state variables with nonlocal.\n\n\n\n\n\n\nSolved\n\n\n\n\n\ndef update_animation(frame: int):\n    nonlocal \\\n        xy, \\\n        xy_tail, \\\n        theta, \\\n        noise_eta, \\\n        v0, \\\n        radius_interaction, \\\n        box_size, \\\n        dict_noise, \\\n        ls_order_param\n    xy, theta = vicsek_equations(\n        xy,\n        theta,\n        v0=v0,\n        dt=dt,\n        radius_interaction=radius_interaction,\n        box_size=box_size,\n        noise=noise_eta,\n    )\n\n    # Update tails\n    xy_tail = np.roll(xy_tail, shift=-1, axis=2)\n    xy_tail[:, :, -1] = xy\n    plt_particles.set_data(xy_tail[0].flatten(), xy_tail[1].flatten())\n    plt_current.set_data(xy[0], xy[1])\n\n    # Update order parameter\n    ls_order_param.append(vicsek_order_parameter(theta))\n    ls_order_param = ls_order_param[-ORDER_WINDOW:]\n    x_vals = np.arange(len(ls_order_param))\n    line_order_param.set_data(x_vals, ls_order_param)\n\n    # Average the last ORDER_WINDOW//3 values to get the order parameter (similar to Couzin)\n    order_param = np.mean(ls_order_param[-ORDER_WINDOW // 3 :])\n    dict_noise[noise_eta] = order_param\n    dict_noise = dict(sorted(dict_noise.items()))\n    if dict_noise:\n        line_noise.set_data(*zip(*dict_noise.items()))\n    else:\n        line_noise.set_data([], [])\n    return (plt_particles, plt_current, line_order_param, line_noise)",
-    "crumbs": [
-      "Session 4: Collective Motion",
-      "Vicsek Animation"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/vicsek-animation.html#create-the-animation-object",
-    "href": "modules/collective-motion/vicsek-animation.html#create-the-animation-object",
-    "title": "Vicsek Model",
-    "section": "Create the Animation Object",
-    "text": "Create the Animation Object\nMatplotlib uses FuncAnimation. Inside run_simulation, after defining update_animation, create the animation object:\nani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)\n\ninterval=0 makes it as fast as your computer can handle.\nYou can set a larger interval (e.g. 20 ms) to reduce CPU usage.",
-    "crumbs": [
-      "Session 4: Collective Motion",
-      "Vicsek Animation"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/vicsek-animation.html#add-sliders",
-    "href": "modules/collective-motion/vicsek-animation.html#add-sliders",
-    "title": "Vicsek Model",
-    "section": "Add Sliders",
-    "text": "Add Sliders\nOptional: You can skip this step for now and just set default parameters at the top of run_simulation().\nWe want sliders for:\n\nNumber of boids \\(N\\) (special: requires reinitializing particles).\nInteraction radius \\(r\\).\nNoise \\(\\eta\\).\nSpeed \\(v_0\\).\nBox size \\(L\\).\n\n\nCreate Slider Axes\nWe will create little inset axes inside ax_sliders:\ndef make_slider_axes(ax_sliders: Axes):\n    ax_sliders.axis(\"off\")\n\n    ax_num_boids = ax_sliders.inset_axes([0.0, 1.2, 0.8, 0.1])\n    ax_radius_interaction = ax_sliders.inset_axes([0.0, 1.0, 0.8, 0.1])\n    ax_noise_eta = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])\n    ax_v0 = ax_sliders.inset_axes([0.0, 0.6, 0.8, 0.1])\n    ax_box_size = ax_sliders.inset_axes([0.0, 0.4, 0.8, 0.1])\n\n    return ax_num_boids, ax_radius_interaction, ax_noise_eta, ax_v0, ax_box_size\n\n\nCreate the Slider Widgets\nMatplotlib’s Slider lives in matplotlib.widgets. Import it and create the sliders.\nfrom matplotlib.widgets import Slider\n\ndef make_sliders(\n    *,\n    ax_num_boids,\n    ax_radius_interaction,\n    ax_noise_eta,\n    ax_v0,\n    ax_box_size,\n    num_boids: int,\n    radius_interaction: float,\n    noise_eta: float,\n    v0: float,\n    box_size: float,\n):\n    # TODO: define the sliders with appropriate ranges and initial values\n\n    return slider_num_boids, slider_radius_interaction, slider_noise_eta, slider_v0, slider_box_size\n\n\nSlider Callbacks\nWe need two callbacks:\n\nA general callback that updates parameters without reinitializing particles.\nA special callback for num_boids that reinitializes the system and updates the tail tensor.\n\nImplement both callbacks and connect them with on_changed.\ndef connect_slider_callbacks(\n    *,\n    ani,\n    slider_radius_interaction,\n    slider_noise_eta,\n    slider_v0,\n    slider_box_size,\n    slider_num_boids,\n    ax_plane: Axes,\n):\n    # This function will depend on your state variables.\n    # The simplest approach: define the callbacks INSIDE run_simulation\n    # so they can use `nonlocal` to access xy, theta, etc.\n    ...\n\n\n\n\n\n\nTip: pause the animation during parameter changes\n\n\n\n\n\nInside a callback:\nani.event_source.stop()\n# update parameters / reinit\nani.event_source.start()\nThis reduces glitches while you resize arrays or change plot limits.",
-    "crumbs": [
-      "Session 4: Collective Motion",
-      "Vicsek Animation"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/vicsek-animation.html#full-script",
-    "href": "modules/collective-motion/vicsek-animation.html#full-script",
-    "title": "Vicsek Model",
-    "section": "Full Script",
-    "text": "Full Script\nAt this point you have built every piece.\nBelow is a sample of how your run_simulation function might look with all the pieces assembled.\n::: {.callout-tip collapse=“true”} ## Solution: Simplified run_simulation()\nThis is a simplified version that assumes you have not implemented the order plot or noise plot, neither the sliders, yet. It focuses on the particle animation.\ndef run_simulation(dt: float = 1.0) -&gt; None:\n    # Parameters\n    num_boids = 100\n    noise_eta = 0.5\n    box_size = 10.0\n    radius_interaction = 1.0\n    v0 = 0.03\n\n    # Initialize state\n    xy, theta = initialize_particles(num_boids, box_size)\n\n    # Order parameter history and noise diagnostic\n    # will be initialized here\n\n    # Create figure and axes\n    fig, ax_plane, ax_order, ax_sliders, ax_noise = make_figure()\n\n    # Initialize plots\n    xy_tail, plt_particles, plt_current = init_particles_plot(ax_plane, xy, box_size, tail_len=20)\n    # The order plot and noise plot will go here\n\n    # Sliders will be added here\n\n    # Define the animation update function\n    def update_animation(frame: int):\n        # See the previous step for the full implementation\n        ...\n\n    # Create the animation object\n    ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)\n\n    # The slider callbacks will come here\n\n    plt.show()\n\n\n\n\n\n\nSolution: Full run_simulation()\n\n\n\n\n\ndef run_simulation(dt: float = 1.0) -&gt; None:\n    # Parameters\n    num_boids = 100\n    noise_eta = 0.5\n    box_size = 10.0\n    radius_interaction = 1.0\n    v0 = 0.03\n\n    # Initialize state\n    xy, theta = initialize_particles(num_boids, box_size)\n\n    # Order parameter history and noise diagnostic\n    ls_order_param = []\n    dict_noise = {}\n\n    # Create figure and axes\n    fig, ax_plane, ax_order, ax_sliders, ax_noise = make_figure()\n\n    # Initialize plots\n    xy_tail, plt_particles, plt_current = init_particles_plot(ax_plane, xy, box_size, tail_len=20)\n    line_order_param = init_order_plot(ax_order, order_window=3000)\n    line_noise = init_noise_plot(ax_noise)\n\n    # Create sliders\n    ax_num_boids, ax_radius_interaction, ax_noise_eta, ax_v0, ax_box_size = make_slider_axes(ax_sliders)\n    slider_num_boids, slider_radius_interaction, slider_noise_eta, slider_v0, slider_box_size = make_sliders(\n        ax_num_boids,\n        ax_radius_interaction,\n        ax_noise_eta,\n        ax_v0,\n        ax_box_size,\n        num_boids,\n        radius_interaction,\n        noise_eta,\n        v0,\n        box_size,\n    )\n\n    # Define the animation update function (see previous step for details)\n    def update_animation(frame: int):\n        ...\n\n    # Create the animation object\n    ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)\n    # Connect slider callbacks\n    connect_slider_callbacks(\n        ani=ani,\n        slider_radius_interaction=slider_radius_interaction,\n        slider_noise_eta=slider_noise_eta,\n        slider_v0=slider_v0,\n        slider_box_size=slider_box_size,\n        slider_num_boids=slider_num_boids,\n        ax_plane=ax_plane,\n    )\n    plt.show()\nThe full script with all functions defined is available in vicsek_animation.py in the repo. You can run it and experiment with the sliders to see how the Vicsek model behaves under different conditions.\n\n\n\nImportant: For your script to work, remember to call the run_simulation() function at the end of your script:\nif __name__ == \"__main__\":\n    run_simulation()",
-    "crumbs": [
-      "Session 4: Collective Motion",
-      "Vicsek Animation"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/vicsek-animation.html#checklist-debugging",
-    "href": "modules/collective-motion/vicsek-animation.html#checklist-debugging",
-    "title": "Vicsek Model",
-    "section": "Checklist (Debugging)",
-    "text": "Checklist (Debugging)\nIf your animation is blank:\n\nDid you return the artists in update_animation?\nDid you set axis limits (set_xlim, set_ylim)?\nAre xy and theta updated each frame?\nAre you calling plt.show() at the end of run_simulation()?\nAre you calling run_simulation() at the end of your script?\n\nIf sliders do nothing:\n\nDid you call slider.on_changed(...)?\nAre you updating the right variables (nonlocal)?",
-    "crumbs": [
-      "Session 4: Collective Motion",
-      "Vicsek Animation"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/vicsek-animation.html#optional-extensions",
-    "href": "modules/collective-motion/vicsek-animation.html#optional-extensions",
-    "title": "Vicsek Model",
-    "section": "Optional Extensions",
-    "text": "Optional Extensions\n\nColor by heading: map theta to a colormap for the current points.\nQuiver plot: show velocity vectors for a subset of particles.\nPause button: add a Matplotlib Button widget.",
-    "crumbs": [
-      "Session 4: Collective Motion",
-      "Vicsek Animation"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/vicsek-predator.html",
-    "href": "modules/collective-motion/vicsek-predator.html",
-    "title": "Vicsek Model with Predator",
-    "section": "",
-    "text": "Warning\n\n\n\nWarning: This section will not be covered this year. You are welcome to explore or implement the idea, but the code and example may be outdated.\nNow add a predator that boids avoid. The predator position is controlled by the mouse, and boids change their angle when they are within a predator radius.\nThe repulsion angle is\n\\[\\Theta_{\\text{rep}, i} = \\tan^{-1}\\left(\\frac{y_i - y_{\\text{pred}}}{x_i - x_{\\text{pred}}}\\right). \\tag{1}\\]\nWe blend alignment and repulsion with strength \\(k\\):\n\\[\\Theta_i = (1-k)\\left(\\langle \\Theta_j \\rangle + \\eta_i\\right) + k\\,\\Theta_{\\text{rep}, i}. \\tag{2}\\]"
-  },
-  {
-    "objectID": "modules/collective-motion/vicsek-predator.html#track-the-predator",
-    "href": "modules/collective-motion/vicsek-predator.html#track-the-predator",
-    "title": "Vicsek Model with Predator",
-    "section": "Track the predator",
-    "text": "Track the predator\nfrom matplotlib.backend_bases import MouseEvent\n\n# Inside run_simulation\nxy_pred = np.array([-1000, -1000])\nradius_predator = 1.0\nstrength_predator = 0.1\n\n\ndef on_mouse_move(event: MouseEvent):\n    nonlocal xy_pred\n    if event.inaxes == ax_plane:\n        xy_pred = np.array([event.xdata, event.ydata])\n    else:\n        xy_pred = np.array([-1000, -1000])\n\nfig.canvas.mpl_connect(\"motion_notify_event\", on_mouse_move)"
-  },
-  {
-    "objectID": "modules/collective-motion/vicsek-predator.html#update-the-equations",
-    "href": "modules/collective-motion/vicsek-predator.html#update-the-equations",
-    "title": "Vicsek Model with Predator",
-    "section": "Update the equations",
-    "text": "Update the equations\nAdd the predator terms inside your Vicsek update.\ndef vicsek_equations(\n    xy, theta, dt, eta, box_size, radius_interaction, v0,\n    xy_pred, radius_predator, strength_predator,\n):\n    # TODO: compute alignment as usual\n\n    # TODO: compute repulsion angle and blend with k\n    return xy, theta\n\n\n\n\n\n\nHint: Predator update (click to expand)\n\n\n\n\n\n# Distances to predator\n d_pred = np.linalg.norm(xy - xy_pred[:, np.newaxis], axis=0)\n affected = d_pred &lt;= radius_predator\n repulsion_angle = np.arctan2(xy[1] - xy_pred[1], xy[0] - xy_pred[0])\n term_pred = strength_predator * (repulsion_angle - theta) * affected\n theta = np.mod(theta + term_pred, 2 * np.pi)\n\n\n\nIf you want a full working reference, check amlab/collective_motion/vicsek_predator.py."
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto-diagram.html",
-    "href": "modules/ode-coupled/kuramoto-diagram.html",
-    "title": "Kuramoto Model",
-    "section": "",
-    "text": "The order parameter \\(r\\) measures the coherence of the population. As coupling \\(K\\) increases, the system transitions from incoherent (\\(r \\approx 0\\)) to synchronized (\\(r &gt; 0\\)).\nFor a Cauchy distribution with scale \\(\\gamma\\):\n\\[\nK_c = \\frac{2}{\\pi g(0)}\n\\tag{1}\\]\nwhere \\(g(\\omega)\\) is the probability density function of the natural frequencies. For a Cauchy distribution with scale parameter \\(\\gamma\\):\n\\[\ng(\\omega)=\\frac{1}{\\pi} \\frac{\\gamma}{\\omega^2+\\gamma^2}\n\\tag{2}\\]\nIn particular, \\(g(0)=\\frac{1}{\\pi\\gamma}\\), so the critical coupling simplifies to\n\\[\nK_c = 2\\gamma\n\\tag{3}\\]\nThe theoretical order parameter is:\n\\[\nr(K)=\n\\begin{cases}\n0, & K \\le K_c \\\\\n\\sqrt{1-\\frac{K_c}{K}}, & K &gt; K_c\n\\end{cases}\n\\tag{4}\\]\nWarning: This exact formula only works for a Cauchy distribution!\nFigure 1: Kuramoto diagram: theoretical curve from Equation 4 and empirical points (drawn from a normal distribution). Why is there a mismatch?\nFor any other distribution, the theoretical order parameter near onset is\n\\[\nr \\approx \\sqrt{\\frac{16}{\\pi K_c^3}} \\sqrt{\\frac{\\mu}{-g''(0)}}\n\\tag{5}\\]\nwhere \\(\\mu\\) measures the distance from the critical point (a dimensionless reduced coupling) and \\(g''(0)\\) is the second derivative of the frequency distribution at \\(0\\).\n\\[\n\\mu = \\frac{K - K_c}{K_c}\n\\tag{6}\\]\nThis formula is derived from a perturbative analysis near the critical point and captures the square-root scaling of the order parameter as the coupling strength exceeds the critical value.\nFor a normal distribution with scale parameter (standard deviation) sigma:\n\\[\ng(\\omega) = \\frac{1}{\\sqrt{2\\pi}\\sigma} \\exp\\left(-\\frac{\\omega^2}{2\\sigma^2}\\right)\n\\tag{7}\\]\n\\[\ng''(\\omega) = \\left( \\frac{\\omega^2}{\\sigma^4} - \\frac{1}{\\sigma^2} \\right) g(\\omega)\n\\tag{8}\\]",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto: Bifurcation Diagram"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto-diagram.html#python-implementation",
-    "href": "modules/ode-coupled/kuramoto-diagram.html#python-implementation",
-    "title": "Kuramoto Model",
-    "section": "Python Implementation",
-    "text": "Python Implementation\nIn a new script, draw the theoretical bifurcation diagram for \\(0 &lt; K &lt; 5\\).\nOn top of it, draw the empirical curve, using \\(N = 1000\\) oscillators, \\(dt = 0.01\\), stopping at \\(t = 100\\) and averaging the order parameter (\\(r\\)) over the last ten steps.\nDo your two curves match? The example in Figure 1 shows a mismatch. Can you explain why? Can you fix it? If you are stuck, check the solution below.\n\n\n\n\n\n\nWhy is there a mismatch?\n\n\n\n\n\nThe mismatch occurs because the closed-form theoretical curve Equation 4 is derived for a Cauchy frequency distribution, while the empirical data in Figure 1 is generated from a normal distribution.\nTo fix this you have two consistent options:\n\nKeep the normal distribution and use a matching theoretical prediction (typically only an approximation near onset, e.g. Equation 5).\nKeep the closed-form curve Equation 4 and generate the empirical data using a Cauchy distribution.\n\n\n\n\n\n\n\n\n\nFigure 2: Kuramoto diagram: empirical points (normal frequencies) and a matching theoretical prediction (see Equation 5 for the near-onset scaling).\n\n\n\n\n\nAlternatively, fix the mismatch by changing the empirical distribution to a Cauchy distribution, which matches the closed-form curve Equation 4.\n\n\n\n\n\n\n\n\nFigure 3: Kuramoto diagram: theoretical curve Equation 4 and empirical points (Cauchy frequencies).",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto: Bifurcation Diagram"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto-diagram.html#validate-your-findings",
-    "href": "modules/ode-coupled/kuramoto-diagram.html#validate-your-findings",
-    "title": "Kuramoto Model",
-    "section": "Validate Your Findings",
-    "text": "Validate Your Findings\nFind the critical coupling \\(K_c\\) from the theoretical formula and check if it matches the empirical transition point in your simulations. You can estimate the empirical \\(K_c\\) by looking for the value of \\(K\\) where \\(r\\) starts to deviate significantly from zero. Or use then ear-onset scaling Equation 5 to fit the empirical data and extract an estimate of \\(K_c\\).\nIn your animation script from the previous page, try setting the coupling strength just below and just above the critical value to see the difference in the dynamics. You should see that below \\(K_c\\), the oscillators remain incoherent, while above \\(K_c\\), they start to synchronize and form a cluster on the unit circle.\n\n\n\n\n\n\n\n\nFigure 4: Comparison between the theoretical critical coupling \\(K_c\\) and the empirical transition point observed in simulations. Individual oscillators are represented as blue dots, while the coupling strength is painted red.",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto: Bifurcation Diagram"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto-diagram.html#whats-next",
-    "href": "modules/ode-coupled/kuramoto-diagram.html#whats-next",
-    "title": "Kuramoto Model",
-    "section": "What’s Next?",
-    "text": "What’s Next?\nIn the next page, we will merge the bifurcation diagram with the oscillator animation to create a full simulation of the Kuramoto model. This will allow us to see how the order parameter evolves in real time as we adjust the coupling strength and other parameters using sliders.\nFull Simulation",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto: Bifurcation Diagram"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto-oscillators.html",
-    "href": "modules/ode-coupled/kuramoto-oscillators.html",
-    "title": "Kuramoto Model",
-    "section": "",
-    "text": "The phases \\(\\theta_i\\) are sampled uniformly on \\([0, 2\\pi]\\) and the natural frequencies \\(\\omega_i\\) from a normal distribution with standard deviation \\(\\sigma\\).\nWrite a function to initialize the oscillators:\ndef initialize_oscillators(num_oscillators: int, sigma: float = 1.0):\n    # Assign a random initial phase to each oscillator\n    theta =  # draw from uniform distribution\n\n    # Assign a random natural frequency to each oscillator\n    omega =  # draw from normal distribution\n    return theta, omega\nThe outputs theta and omega are 1D arrays of length num_oscillators. If you don’t know how to sample from these distributions, see the hint below.\n\n\n\n\n\n\nHow to sample from distributions (click to expand)\n\n\n\n\n\nRemember NumPy has built-in functions for sampling from distributions: - Uniform distribution: np.random.uniform(low=0.0, high=2*np.pi, size=num_oscillators) - Normal distribution: np.random.normal(loc=0.0, scale=sigma, size=num_oscillators)\nIf you need more help, you can expand the code snippet below for a complete implementation.\n\n\n\n\n\n\n\n\n\nComplete initialization function (click to expand)\n\n\n\n\n\ndef initialize_oscillators(num_oscillators: int, sigma: float = 1.0):\n    # Assign a random initial phase to each oscillator\n    theta =  np.random.uniform(low=0.0, high=2 * np.pi, size=num_oscillators)\n\n    # Assign a random natural frequency to each oscillator\n    omega =  np.random.normal(loc=0.0, scale=sigma, size=num_oscillators)\n    return theta, omega\n(Remember to import numpy first!)",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto: Oscillators"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto-oscillators.html#initialize-oscillators",
-    "href": "modules/ode-coupled/kuramoto-oscillators.html#initialize-oscillators",
-    "title": "Kuramoto Model",
-    "section": "",
-    "text": "The phases \\(\\theta_i\\) are sampled uniformly on \\([0, 2\\pi]\\) and the natural frequencies \\(\\omega_i\\) from a normal distribution with standard deviation \\(\\sigma\\).\nWrite a function to initialize the oscillators:\ndef initialize_oscillators(num_oscillators: int, sigma: float = 1.0):\n    # Assign a random initial phase to each oscillator\n    theta =  # draw from uniform distribution\n\n    # Assign a random natural frequency to each oscillator\n    omega =  # draw from normal distribution\n    return theta, omega\nThe outputs theta and omega are 1D arrays of length num_oscillators. If you don’t know how to sample from these distributions, see the hint below.\n\n\n\n\n\n\nHow to sample from distributions (click to expand)\n\n\n\n\n\nRemember NumPy has built-in functions for sampling from distributions: - Uniform distribution: np.random.uniform(low=0.0, high=2*np.pi, size=num_oscillators) - Normal distribution: np.random.normal(loc=0.0, scale=sigma, size=num_oscillators)\nIf you need more help, you can expand the code snippet below for a complete implementation.\n\n\n\n\n\n\n\n\n\nComplete initialization function (click to expand)\n\n\n\n\n\ndef initialize_oscillators(num_oscillators: int, sigma: float = 1.0):\n    # Assign a random initial phase to each oscillator\n    theta =  np.random.uniform(low=0.0, high=2 * np.pi, size=num_oscillators)\n\n    # Assign a random natural frequency to each oscillator\n    omega =  np.random.normal(loc=0.0, scale=sigma, size=num_oscillators)\n    return theta, omega\n(Remember to import numpy first!)",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto: Oscillators"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto-oscillators.html#plot-the-oscillators",
-    "href": "modules/ode-coupled/kuramoto-oscillators.html#plot-the-oscillators",
-    "title": "Kuramoto Model",
-    "section": "Plot the Oscillators",
-    "text": "Plot the Oscillators\nTo visualize the oscillators, we can plot their phases on the unit circle. The x-coordinate is \\(\\cos(\\theta_i)\\) and the y-coordinate is \\(\\sin(\\theta_i)\\). This way, each oscillator corresponds to a point on the circle. Build a code to visualize the oscillators as blue dots on the unit circle. Your output should be similar to Figure 1, but feel free to show it in your own style!\n\n\n\n\n\n\n\n\nFigure 1: Sample visualization of oscillators on the unit circle. Each blue dot represents an oscillator with phase \\(\\theta_i\\).\n\n\n\n\n\nIf you don’t know how to achieve the plot above, feel free to expand some of the hints below.\n\n\n\n\n\n\nHow to compute the positions of the oscillators (click to expand)\n\n\n\n\n\nTo compute the x and y coordinates for the plot, you can use NumPy’s cos and sin functions applied to the theta array:\nx = np.cos(theta)\ny = np.sin(theta)\n(Remember to import numpy first!)\n\n\n\n\n\n\n\n\n\nHow to create the plot (click to expand)\n\n\n\n\n\nTo create the plot, you can use Matplotlib’s subplots function to set up the figure and axes, and then use scatter to plot the points. Here’s a complete example:\n# First, we prepare the figure and axes\nfig, ax = plt.subplots(figsize=(6, 6))\n# fig is the Figure, a \"canvas\" where everything is drawn\n# ax is the Axes, a \"subplot\" where we can plot data\n# A single figure can have multiple axes (e.g. for subplots)\nax.set_title(\"Kuramoto Model\")  # Title of the plot\nax.set_xlabel(\"Cos(theta)\")  # Name of x-axis\nax.set_ylabel(\"Sin(theta)\")  # Name of y-axis\nax.set_xlim(-1.1, 1.1)  # Limits for x-axis\nax.set_ylim(-1.1, 1.1)  # Limits for y-axis\nax.set_aspect(\"equal\")  # Make the circle look circular\nax.grid(True)  # Show grid lines\n# Draw unit circle (optional, but it helps to visualize the boundary)\ncircle = plt.Circle((0, 0), 1, color=\"lightgray\", fill=False)\nax.add_artist(circle)\n\n# Now we are ready to plot the oscillators as blue dots\nax.scatter(x, y, s=50, color=\"blue\", alpha=0.5)\n# s is the size of the dots\n# alpha is the transparency (0 is fully transparent, 1 is fully opaque)\n# we want the oscillators to be somewhat transparent so we can see overlaps\n\n# Finally, we show the plot and close it to free up memory\nplt.show()\nplt.close()",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto: Oscillators"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto-oscillators.html#define-the-ode",
-    "href": "modules/ode-coupled/kuramoto-oscillators.html#define-the-ode",
-    "title": "Kuramoto Model",
-    "section": "Define the ODE",
-    "text": "Define the ODE\nChoose between the original pairwise form of the Kuramoto model or the mean field approximation. You can see both forms in the theory page Kuramoto Model. The mean field approximation is often more efficient for large populations, as it avoids computing pairwise interactions.\nFollow the template below to define the ODE function for the Kuramoto model. Call it kuramoto_ode(). The function should compute the derivatives of the phases \\(\\dot\\theta_i\\) based on the current phases \\(\\theta_i\\), natural frequencies \\(\\omega_i\\), and coupling strength \\(K\\).\ndef ode(t, state, *params):\n    # state represents the current values of the variables (e.g., x, y)\n\n    # params are any additional parameters needed to compute the derivatives\n    # each of them is separated by commas\n\n    return dstate_dt  # this should be a sequence of the same length as `state`\nRemember: solve_ivp() requires the time argument even if it is not used.\nBy the way, remember to keep the phases \\(\\theta_i\\) within the range \\([0, 2\\pi]\\) to avoid numerical issues. You can use np.mod(theta, 2 * np.pi) to achieve this.\n\n\n\n\n\n\nSee the full ODE function (click to expand)\n\n\n\n\n\nThe function below is for the mean-field approximation of the Kuramoto model, which is more efficient than computing pairwise interactions. It computes the order parameter at each time step and uses it to calculate the derivatives.\ndef kuramoto_ode(t, theta, omega, coupling_strength=1.0):\n    # Make sure theta stays within [0, 2*pi] to avoid numerical issues\n    theta = np.mod(theta, 2 * np.pi)\n    order_param = np.mean(np.exp(1j * theta))\n    r = np.abs(order_param)\n    phi = np.angle(order_param)\n    dtheta_dt = omega + coupling_strength * r * np.sin(phi - theta)\n    return dtheta_dt\n\n\n\nTo validate that your function works, try running it with the following parameters:\n\nCoupling strength \\(K=10.0\\) (this is a strong coupling regime where synchronization should occur)\nNumber of oscillators \\(N=100\\)\nStandard deviation of natural frequencies \\(\\sigma=1.0\\)\n\nRun the simulation for \\(t \\in [0, 10]\\) and visualize the last state on the unit circle. You should see some degree of synchronization, with the oscillators clustering together. See Figure 2 for a sample output.\n\n\n\n\n\n\n\n\nFigure 2: Visualization of oscillators after running the Kuramoto ODE for K=10. The clustering of the blue dots indicates synchronization.\n\n\n\n\n\n\n\n\n\n\n\nHow to run the simulation (click to expand)\n\n\n\n\n\nYou can use scipy.integrate.solve_ivp() to run the simulation. Here’s a simple example of how to do this:\nfrom scipy.integrate import solve_ivp\n\n# Parameters\ncoupling_strength = 10.0\nnum_oscillators = 100\nsigma = 1.0\nt_span = (0, 10)\n\n# Initialize oscillators\ntheta, omega = initialize_oscillators(num_oscillators, sigma=sigma)\n# Run the simulation\nsol = solve_ivp(\n    kuramoto_ode,\n    t_span,\n    theta,\n    args=(omega, coupling_strength)\n    )\n# The solution `sol.y` contains the phases of the oscillators at each time step.\n# sol.y is a 2D array of shape (num_oscillators, num_time_points)\n# You can visualize the last state using the same plotting code as before.\ntheta_end = sol.y[:, -1] # Get the final state of the phases\nx = np.cos(theta_end)\ny = np.sin(theta_end)\n# Plotting code as before to visualize the final state\n\n\n\nThen, try reducing the coupling strength to \\(K=0.1\\) and observe how the oscillators become more scattered, indicating a more incoherent state. See Figure 3 for a sample output.\n\n\n\n\n\n\n\n\nFigure 3: Visualization of oscillators after running the Kuramoto ODE for K=0.1. The scattering of the blue dots indicates incoherence.",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto: Oscillators"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto-oscillators.html#animate-the-phases",
-    "href": "modules/ode-coupled/kuramoto-oscillators.html#animate-the-phases",
-    "title": "Kuramoto Model",
-    "section": "Animate the Phases",
-    "text": "Animate the Phases\nSeeing the final state of the system is nice and that, but you know what is even better? Seeing it in action! You can use matplotlib.animation to create an animation of the oscillators moving around the unit circle as they evolve according to the Kuramoto ODE. This will allow you to visualize the process of synchronization in real time.\nTo create an animation, make sure you are working on a Python script in your local computer (e.g., kuramoto.py) and run it with python kuramoto.py. It is possible to do animations on Jupyter notebooks, but it is more complicated and may not work in all environments.\nReady? Firt, your script should initialize the oscillators and all parameters that you want to control (e.g., coupling strength, number of oscillators, etc.).\n# Remember to include / import the following functions\n# that you have created earlier:\n# initialize_oscillators()\n# kuramoto_ode()\n\ncoupling_strength = 1.0  # K\nnum_oscillators = 100  # Number of oscillators\nomega = 0.5  # Standard deviation of the natural frequencies\nsigma = 1.0  # Scale of the initial phases\ndt = 0.1  # Time step for the integration time\n\n# Initialize oscillators (phase and natural frequency)\ntheta, omega = initialize_oscillators(\n    num_oscillators,\n    sigma=sigma\n)\nt_span = (0, dt)\n# For the animation, we use a small time span\n# But you can go higher for the static imagine\n# t_span = (0, 100)\nSecond, we need to create a figure and axes. Every element inside this plot should be named, so that we can update it in real time. Follow this template:\n# Initialize the figure and axes\nfig, ax_phase = plt.subplots(figsize=(6, 6))\n\n# Define the labels and size of this plot\nax_phase.set_title(\"Kuramoto Model\")\nax_phase.set_xlabel(\"Cos(theta)\")\nax_phase.set_ylabel(\"Sin(theta)\")\nax_phase.set_xlim(-1.1, 1.1)\nax_phase.set_ylim(-1.1, 1.1)\nax_phase.set_aspect(\"equal\")\nax_phase.grid(True)\n\n# Draw unit circle (optional, but it helps to visualize the boundary)\ncircle = plt.Circle((0, 0), 1, color=\"lightgray\", fill=False)\nax_phase.add_artist(circle)\n\n# Initialize scatter plot for oscillators\nscatter = ax_phase.scatter([], [], s=50, color=\"blue\", alpha=0.25)\n# [] means we are starting with an empty array of points,\n# which we will update in the animation loop\n# s is the size of the dots, and alpha is the transparency\n\n# Initialize line for the phase centroid (order parameter)\n(centroid_line,) = ax_phase.plot([], [], color=\"red\", linewidth=2)\n(centroid_point,) = ax_phase.plot([], [], \"ro\", markersize=8)\n# Same idea here:\n# we start with empty data and update it in the animation loop\nAll the block above will initialize the figure and axes, draw the unit circle, and create empty plot elements for the oscillators and the order parameter. The variables scatter, centroid_line, and centroid_point are references to these plot elements, which we will update in the animation loop.\nNext, we need to define an update function that will be called at each time step of the animation. This function will compute the new positions of the oscillators and the order parameter based on the current state of the system. It should look something like this:\ndef update_function(frame: int):\n    # Acces the variables from the outer scope\n    global theta\n\n    # Solve the ODE system\n    sol = solve_ivp(\n            kuramoto_ode,\n            (0, dt),\n            theta,\n            args=(omega, coupling_strength),\n    )\n    # Update theta with the new values from the solution\n    theta = sol.y[..., -1]\n    \n    # Keep theta within [0, 2 * pi]\n    theta = np.mod(theta, 2 * np.pi)\n\n    # Update scatter plot on the unit circle\n    x = np.cos(theta)\n    y = np.sin(theta)\n    data = np.vstack((x, y)).T\n    scatter.set_offsets(data)\n    return [scatter]\nFinally, we can create the animation using matplotlib.animation.FuncAnimation:\nfrom matplotlib.animation import FuncAnimation\n\nani = FuncAnimation(\n    fig,  # Our figure object\n    update_function,  # Updates the plot at each frame\n    frames=200, # Number of frames in the animation\n    interval=100, # Time between frames in milliseconds\n    blit=True, # Optimize rendering by only updating changed elements\n    )\nplt.show()\nAll done! You should see an animation of the oscillators moving around the unit circle. You can experiment with different parameters (e.g., coupling strength, number of oscillators, etc.) to see how it affects the synchronization process.\n\n\n\n\n\n\nFigure 4: Kuramoto oscillators animation on the unit circle.\n\n\n\nIs your order parameter not moving? If you followed the guide, you might notice that the order parameter does not update in the animation. You will need to compute the order parameter inside the update_function() and update the centroid_line and centroid_point accordingly.",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto: Oscillators"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto-oscillators.html#compare-the-odes",
-    "href": "modules/ode-coupled/kuramoto-oscillators.html#compare-the-odes",
-    "title": "Kuramoto Model",
-    "section": "Compare the ODEs",
-    "text": "Compare the ODEs\nIf you have reached this far, congratulations! You have successfully implemented the Kuramoto model and visualized its dynamics. Now, you can compare the original pairwise form of the ODE with the mean field approximation. Try implementing both versions and see how they differ in terms of computational efficiency and the resulting dynamics. You should find that the mean field approximation is much faster for large populations, while still capturing the essential behavior of synchronization.\n\n\n\n\n\n\nHow do I implement the other ODE?\n\n\n\n\n\nYou just have to create a new kuramoto_ode() function. I recommend you name them differently, for instance kuramoto_ode_pairwise() and kuramoto_ode_meanfield(), so that you can easily switch between them in the animation loop. Follow the equations in the theory page Kuramoto Model.\nIf you have reached this far by implementing one of them, it should be as simple as changing the ODE function in the solve_ivp() call inside the update_function(). For example, if you have implemented the pairwise version, you can switch to the mean field version by changing this line:\nsol = solve_ivp(\n    kuramoto_ode_pairwise, # Change this to the other ODE function\n    (0, dt),\n    theta,\n    args=(omega, coupling_strength),\n    )\nThis is why modularity is important! By keeping your code organized and modular, you can easily swap out different components (like the ODE function) without having to rewrite the entire animation code. This allows you to experiment with different models and see how they compare in terms of dynamics and computational efficiency.\nIn fact, doing modularization well will save you half the work for the assignment where you will implement a different model of coupled oscillators (the bridge of the Millenium).",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto: Oscillators"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto-oscillators.html#whats-next",
-    "href": "modules/ode-coupled/kuramoto-oscillators.html#whats-next",
-    "title": "Kuramoto Model",
-    "section": "What’s Next?",
-    "text": "What’s Next?\nIn the next page, we will explore the bifurcation diagram of the Kuramoto model, which shows how the order parameter changes as a function of the coupling strength. This will help us understand the transition from incoherence to synchronization in this system.\nBifurcation Diagram",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto: Oscillators"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto.html",
-    "href": "modules/ode-coupled/kuramoto.html",
-    "title": "Kuramoto Model",
-    "section": "",
-    "text": "The Kuramoto model describes a population of weakly coupled oscillators. Each oscillator has a phase \\(\\theta_i\\) and a natural frequency \\(\\omega_i\\).\nThe natural frequency of each oscillator (\\(\\omega_i\\)) is drawn from a normal distribution centered at zero, and with standard deviation (scale parameter) \\(\\sigma\\). The density function of this normal distribution is:\n\\[\ng(\\omega) = \\frac{1}{\\sqrt{2\\pi}\\sigma} \\exp\\left(-\\frac{\\omega^2}{2\\sigma^2}\\right).\n\\tag{1}\\]\nThe initial phase of each oscillator (\\(\\theta_i\\)) is drawn from an uniform distribution between \\(0\\) and \\(2\\pi\\).\nFor any system of weakly coupled, nearly identical limit-cycle oscillators, the long-term dynamics are given by phase equations of the following universal form:\n\\[\n\\dot\\theta_i = \\omega_i + \\sum_{j=1}^N \\Gamma_{ij} \\left( \\theta_j - \\theta_i \\right),\\quad i = 1, \\dots, N\n\\tag{2}\\]\nWhere \\(\\Gamma_{ij}(\\theta)\\) is the coupling function that describes how oscillator \\(j\\) influences oscillator \\(i\\) as a function of their phase difference. \\(N\\) is the total number of oscillators in the population.\nThe Kuramoto model corresponds to the simplest possible case of equally weighted, all-to-all, purely sinusoidal coupling:\n\\[\n\\Gamma_{ij}(\\theta) = \\frac{K}{N} \\sin \\left( \\theta_j - \\theta_i \\right) \\tag{3}\\]\nWhere \\(K\\) is the coupling strength. The factor of \\(1/N\\) ensures that the total input to each oscillator remains finite as \\(N\\) increases. The Kuramoto model is a paradigmatic example of how collective synchronization can emerge from simple interactions among heterogeneous oscillators. It has been widely studied in physics, biology, and engineering to understand phenomena such as circadian rhythms, neuronal synchronization, and power grid stability.",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto Model"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto.html#the-order-parameter",
-    "href": "modules/ode-coupled/kuramoto.html#the-order-parameter",
-    "title": "Kuramoto Model",
-    "section": "The Order Parameter",
-    "text": "The Order Parameter\nTo visualize the dynamics of the phases, it is convenient to imagine a swarm of points running around the unit circle in the complex plane.\n\n\n\n\n\n\n\n\nFigure 1: Oscillators (blue dots) on the unit circle. The order parameter (red) points towards the centroid of the phases.\n\n\n\n\n\nThe complex order parameter is a macroscopic quantity that can be interpreted as the collective rhythm produced by the whole population.\n\\[\nr e^{i\\Psi} = \\frac{1}{N} \\sum_{j=1}^N e^{i\\theta_j}\n\\tag{4}\\]\n\\(r\\) is the coherence of the population, which measures how synchronized the oscillators are. It ranges from \\(0\\) (completely incoherent) to \\(1\\) (fully synchronized). \\(\\Psi\\) is the mean phase, which represents the average phase of the population.\nFigure 1 shows a snapshot of the oscillators (blue dots) and the order parameter (red arrow) pointing towards the centroid of the phases. If you want to see this in action, run the script in amlab/odes_coupled/kuramoto.py to animate the oscillators on the unit circle.",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto Model"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto.html#mean-field-approximation",
-    "href": "modules/ode-coupled/kuramoto.html#mean-field-approximation",
-    "title": "Kuramoto Model",
-    "section": "Mean Field Approximation",
-    "text": "Mean Field Approximation\nKuramoto noticed that the governing equation can be rewritten neatly in terms of the order parameter:\n\\[\n\\dot\\theta_i = \\omega_i + K r \\sin(\\Psi - \\theta_i),\\quad i = 1, \\dots, N  \\tag{5}\\]\nThis equation has a simple interpretation: each oscillator is pulled toward the mean phase \\(\\Psi\\) with an effective coupling strength \\(K r\\) that depends on the coherence of the population. This is known as the mean field approximation. It is exact in the limit of infinite \\(N\\) and provides a powerful framework to analyze the dynamics of the system.\nYou can use this form of the equation to implement the ODE function for the Kuramoto model, which is often more efficient than computing pairwise interactions. The order parameter can be computed at each time step using the current phases of the oscillators.",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto Model"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto.html#spontaneous-synchronization",
-    "href": "modules/ode-coupled/kuramoto.html#spontaneous-synchronization",
-    "title": "Kuramoto Model",
-    "section": "Spontaneous Synchronization",
-    "text": "Spontaneous Synchronization\nThe mean field approximation reveals a positive feedback loop that can lead to spontaneous synchronization:\n\nThe phase \\(\\theta_i\\) is pulled toward the mean phase \\(\\Psi\\).\nThe population becomes more coherent. In turn, the order parameter \\(r\\) increases.\nThe effective strength of the coupling \\(K r\\) increases proportionally to the coherence.\n\\(K r\\) tends to recruit even more oscillators into the synchronized cluster, which feeds step 1.\n\nIn other words, the more oscillators are synchronized, the stronger the coupling becomes, which in turn promotes even more synchronization. This positive feedback can lead to a phase transition from incoherence to coherence as the coupling strength \\(K\\) crosses a critical threshold. The critical coupling strength \\(K_c\\) can be derived analytically for certain frequency distributions (e.g. Cauchy) and can be estimated numerically for others (e.g. normal).\n\n\n\n\n\n\n\n\nFigure 2: Bifurcation diagram of the Kuramoto model. The order parameter \\(r_\\infty\\) (steady-state coherence) is plotted as a function of the coupling strength \\(K\\). A phase transition occurs at a critical coupling strength \\(K_c\\), where \\(r_\\infty\\) transitions from near zero (incoherence) to a positive value (synchronization).",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto Model"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto.html#goal-of-this-session",
-    "href": "modules/ode-coupled/kuramoto.html#goal-of-this-session",
-    "title": "Kuramoto Model",
-    "section": "Goal of this Session",
-    "text": "Goal of this Session\nImplement the Kuramoto model in Python, visualize the oscillators on a unit circle and find when the spontaneous synchronization happens.\nPlay with the following parameters and see how they affect the dynamics:\n\nCoupling strength, \\(K &gt; 0\\)\nNumber of oscillators, \\(N\\)\n\nYou can follow two approaches to the ODE function.\n\nPairwise Interactions\nFollow equations Equation 2 and Equation 3 to compute the pairwise interactions between oscillators. This is straightforward but can be computationally expensive for large \\(N\\).\n\\[\n\\dot\\theta_i = \\omega_i + \\sum_{j=1}^N \\Gamma_{ij} \\left( \\theta_j - \\theta_i \\right),\\quad i = 1, \\dots, N\n\\tag{6}\\]\n\\[\n\\Gamma_{ij}(\\theta) = \\frac{K}{N} \\sin \\left( \\theta_j - \\theta_i \\right) \\tag{7}\\]\n\n\nMean Field Approximation\nFollow equation Equation 5 and Equation 4 to compute the dynamics using the order parameter. This is more efficient and provides insight into the collective behavior of the system.\n\\[\n\\dot\\theta_i = \\omega_i + K r \\sin(\\Psi - \\theta_i),\\quad i = 1, \\dots, N  \\tag{8}\\]\n\\[\nr e^{i\\Psi} = \\frac{1}{N} \\sum_{j=1}^N e^{i\\theta_j}\n\\tag{9}\\]\n\nWe will start by initializing the oscillators and plotting them on the unit circle. Then, we will define the ODE function and use scipy.integrate.solve_ivp() to simulate the dynamics. Follow to the next page for the implementation details.\nOscillators and Animation",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto Model"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto.html#reference",
-    "href": "modules/ode-coupled/kuramoto.html#reference",
-    "title": "Kuramoto Model",
-    "section": "Reference",
-    "text": "Reference\nFrom Kuramoto to Crawford: exploring the onset of synchronization in populations of coupled oscillators by Steven H. Strogatz.",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto Model"
-    ]
-  },
-  {
-    "objectID": "syllabus.html",
-    "href": "syllabus.html",
-    "title": "Applied Math Lab",
-    "section": "",
-    "text": "This course has 10 live in-person sessions.\n\n\nSimulate classical one-dimensional ODE models (SIR epidemiological model, spruce budworm population model, Michaelis–Menten enzyme kinetics). Solve ODEs numerically with SciPy in Python, and build/deploy a simple Streamlit web app to explore parameter effects. Groups are assigned and remain for the whole course.\n\n\n\nExplore two-dimensional ODEs via nonlinear oscillatory systems: Van der Pol oscillator and FitzHugh–Nagumo model. Create animations with matplotlib and build interactive Python programs that let users set initial conditions via mouse clicks.\n\n\n\nImplement coupled ODEs, focusing on the Kuramoto model. Animate multiple plots simultaneously (e.g., oscillator evolution and a bifurcation diagram).\n\n\n\nSimulate flocking behavior using the Vicsek model. Implement interaction rules for “boids” and extend the simulation by treating the mouse as a predator and coding avoidance behavior.\n\n\n\nIntroduce partial differential equations through reaction–diffusion models (Gierer–Meinhardt and Gray–Scott). Implement 1D and 2D Laplacians with NumPy and animate spatiotemporal evolution to study Turing instability and pattern formation.\n\n\n\nIntroduce NetworkX: build graphs, compute structural metrics (degree distribution, clustering coefficient, centrality), and visualize different network types. Establish foundations for modeling dynamics on networks.\n\n\n\nSimulate spreading processes (fake news, epidemics) on real-world networks. Retrieve and process open-source network datasets, and investigate how network structure shapes propagation dynamics.\n\n\n\nIntroduce one-dimensional cellular automata as a framework for discrete dynamical systems. Explore deterministic and stochastic CA, and how simple local rules generate complex global behavior.\n\n\n\nApply cellular automata to traffic modeling with the Nagel–Schreckenberg model. Study congestion, flow, and phase transitions by tuning parameters such as vehicle density and maximum speed.\n\n\n\nWrap-up and support session for the final project: address remaining questions, clarify concepts, and help groups prepare deliverables.",
-    "crumbs": [
-      "Getting Started",
-      "Syllabus"
-    ]
-  },
-  {
-    "objectID": "syllabus.html#program",
-    "href": "syllabus.html#program",
-    "title": "Applied Math Lab",
-    "section": "",
-    "text": "This course has 10 live in-person sessions.\n\n\nSimulate classical one-dimensional ODE models (SIR epidemiological model, spruce budworm population model, Michaelis–Menten enzyme kinetics). Solve ODEs numerically with SciPy in Python, and build/deploy a simple Streamlit web app to explore parameter effects. Groups are assigned and remain for the whole course.\n\n\n\nExplore two-dimensional ODEs via nonlinear oscillatory systems: Van der Pol oscillator and FitzHugh–Nagumo model. Create animations with matplotlib and build interactive Python programs that let users set initial conditions via mouse clicks.\n\n\n\nImplement coupled ODEs, focusing on the Kuramoto model. Animate multiple plots simultaneously (e.g., oscillator evolution and a bifurcation diagram).\n\n\n\nSimulate flocking behavior using the Vicsek model. Implement interaction rules for “boids” and extend the simulation by treating the mouse as a predator and coding avoidance behavior.\n\n\n\nIntroduce partial differential equations through reaction–diffusion models (Gierer–Meinhardt and Gray–Scott). Implement 1D and 2D Laplacians with NumPy and animate spatiotemporal evolution to study Turing instability and pattern formation.\n\n\n\nIntroduce NetworkX: build graphs, compute structural metrics (degree distribution, clustering coefficient, centrality), and visualize different network types. Establish foundations for modeling dynamics on networks.\n\n\n\nSimulate spreading processes (fake news, epidemics) on real-world networks. Retrieve and process open-source network datasets, and investigate how network structure shapes propagation dynamics.\n\n\n\nIntroduce one-dimensional cellular automata as a framework for discrete dynamical systems. Explore deterministic and stochastic CA, and how simple local rules generate complex global behavior.\n\n\n\nApply cellular automata to traffic modeling with the Nagel–Schreckenberg model. Study congestion, flow, and phase transitions by tuning parameters such as vehicle density and maximum speed.\n\n\n\nWrap-up and support session for the final project: address remaining questions, clarify concepts, and help groups prepare deliverables.",
-    "crumbs": [
-      "Getting Started",
-      "Syllabus"
-    ]
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Applied Math Modeling (Python)",
-    "section": "",
-    "text": "Welcome! This site collects the notes, code, and datasets for the Applied Math Lab.",
-    "crumbs": [
-      "Getting Started",
-      "Home"
-    ]
-  },
-  {
-    "objectID": "index.html#course-at-a-glance",
-    "href": "index.html#course-at-a-glance",
-    "title": "Applied Math Modeling (Python)",
-    "section": "Course at a glance",
-    "text": "Course at a glance\n\nFormat: 10 live in-person sessions\nTools: Python, NumPy, SciPy, matplotlib, Streamlit, NetworkX\nMain goal: learn modeling by building simulations you can explore and explain",
-    "crumbs": [
-      "Getting Started",
-      "Home"
-    ]
-  },
-  {
-    "objectID": "index.html#how-this-reposite-is-organized",
-    "href": "index.html#how-this-reposite-is-organized",
-    "title": "Applied Math Modeling (Python)",
-    "section": "How this repo/site is organized",
-    "text": "How this repo/site is organized\n\nModules (theory + guided notebooks/notes): modules/\nSession code (classroom scripts and demos): amlab/\nStreamlit app (interactive demos): streamlit/\nDatasets used in network sessions: data/",
-    "crumbs": [
-      "Getting Started",
-      "Home"
-    ]
-  },
-  {
-    "objectID": "index.html#what-you-will-build",
-    "href": "index.html#what-you-will-build",
-    "title": "Applied Math Modeling (Python)",
-    "section": "What you will build",
-    "text": "What you will build\nAcross the course you will implement and experiment with:\n\nODE models (SIR, spruce budworm, Michaelis–Menten)\nNonlinear oscillators (Van der Pol, FitzHugh–Nagumo)\nReaction–diffusion PDEs (finite differences + animations)\nCollective motion (Vicsek collective motion + interaction)\nNetworks (metrics, spreading processes, real datasets)\nCellular automata (1D rules + traffic models)",
-    "crumbs": [
-      "Getting Started",
-      "Home"
-    ]
-  },
-  {
-    "objectID": "index.html#getting-started-locally",
-    "href": "index.html#getting-started-locally",
-    "title": "Applied Math Modeling (Python)",
-    "section": "Getting started locally",
-    "text": "Getting started locally\n\nCreate an environment\nIf you use Conda:\nconda create --name amlab python=3.13\nconda activate amlab\nconda install --yes --file requirements.txt\nIf you prefer pip:\nWindows (PowerShell):\npython -m venv .venv\n.\\.venv\\Scripts\\Activate.ps1\npip install -r requirements.txt\nmacOS/Linux:\npython -m venv .venv\nsource .venv/bin/activate\npip install -r requirements.txt\n\n\nRun the Streamlit app\nstreamlit run ./streamlit/home.py",
-    "crumbs": [
-      "Getting Started",
-      "Home"
-    ]
-  },
-  {
-    "objectID": "index.html#where-to-go-next",
-    "href": "index.html#where-to-go-next",
-    "title": "Applied Math Modeling (Python)",
-    "section": "Where to go next",
-    "text": "Where to go next\n\nStart with Session 1: ODEs in 1D\nReview the full schedule in the Syllabus",
-    "crumbs": [
-      "Getting Started",
-      "Home"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/assignment.html",
-    "href": "modules/ode-coupled/assignment.html",
-    "title": "Assignment",
-    "section": "",
-    "text": "This is a joint assignment with the main course Mathematical Modelling. Follow the official handout posted on the main course Blackboard: Kuramoto_assignment.pdf.\nYour main goal is to simulate the Millennium Bridge crowd–bridge synchrony model from the handout. Conceptually, it is Kuramoto-like: pedestrians are phase oscillators, and their coupling is mediated by the bridge motion (Strogatz et al. (2005); Eckhardt et al. (2007)).\nUpload your submission to the Mathematical Modelling course (it counts towards both courses). This time, assignments are individual.",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Assignment"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/assignment.html#summary-of-goals",
-    "href": "modules/ode-coupled/assignment.html#summary-of-goals",
-    "title": "Assignment",
-    "section": "Summary of Goals",
-    "text": "Summary of Goals\nBelow is a brief summary of the goals; use the handout for full details and instructions.\n\nKuramoto Model (Coupled Oscillators)\nStart with the basic all-to-all Kuramoto ODE (Kuramoto (2003); Strogatz (2000)) \\[\\dot\\theta_i = \\omega_i + \\frac{K}{N}\\sum_{j=1}^N \\sin(\\theta_j-\\theta_i),\\qquad i=1,\\dots,N. \\tag{1}\\]\nFrom this, you can implement the following tasks:\n\nPlot \\(r(t)\\) (order parameter) versus time. \\(r_\\infty\\approx 0\\) for \\(K&lt;K_c\\) (up to fluctuations) and \\(r_\\infty\\in(0,1)\\) for \\(K&gt;K_c\\), with fluctuations typically decreasing like \\(\\mathcal{O}(N^{-1/2})\\).\nAnimate oscillators on the unit circle (optionally plot the centroid \\(r e^{i\\Psi}\\)).\nEstimate \\(K_c\\) numerically by sampling multiple \\(K\\) values and plotting \\(r_\\infty(K)\\) with error bars. We suggest averaging over a tail window to reduce fluctuations.\nCompare with the theory in Strogatz (2000) (implicit curve for \\(r_\\infty(K)\\)) and the special case of the Cauchy distribution.\n\n\n\nMillennium Bridge Crowd Synchrony\nModeling assumptions:\n\nThe bridge is a single lateral vibration mode (damped harmonic oscillator).\nEach pedestrian is a phase oscillator whose lateral forcing is periodic in its stepping phase.\n\nBridge dynamics: \\[M\\,\\ddot X(t)+B\\,\\dot X(t)+KX(t)=\\sum_{i=1}^N G\\sin\\theta_i(t),\\qquad \\Omega=\\sqrt{K/M}. \\tag{2}\\]\nPedestrian phase dynamics (see Strogatz et al. (2005)): \\[\\dot\\theta_i(t)=\\Omega_i + C\\,A(t)\\,\\sin\\big(\\Psi(t)-\\theta_i(t)+\\alpha\\big),\\qquad i=1,\\dots,N. \\tag{3}\\]\nBridge amplitude/phase definitions: \\[X(t)=A(t)\\sin\\Psi(t),\\quad \\dot X(t)=A(t)\\Omega\\cos\\Psi(t), \\tag{4}\\] \\[A(t)=\\sqrt{X(t)^2+\\Big(\\dot X(t)/\\Omega\\Big)^2},\\qquad \\Psi(t)=\\operatorname{atan2}\\!\\Big(X(t),\\dot X(t)/\\Omega\\Big). \\tag{5}\\]\nSynchronization measure: \\[R(t)e^{i\\Phi(t)}=\\frac{1}{N}\\sum_{j=1}^N e^{i\\theta_j(t)}. \\tag{6}\\]\nCritical crowd size (simplest case \\(\\alpha=\\pi/2\\) and symmetric \\(P(\\Omega)\\) about the bridge frequency): \\[N_c=\\frac{2B\\Omega}{\\pi G C\\,P(\\Omega)}. \\tag{7}\\]\nWobbling and synchronization emerge together when \\(N\\) crosses \\(N_c\\) (see also Strogatz et al. (2005)).",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Assignment"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/assignment.html#required-millennium-bridge-experiment",
-    "href": "modules/ode-coupled/assignment.html#required-millennium-bridge-experiment",
-    "title": "Assignment",
-    "section": "Required (Millennium Bridge experiment)",
-    "text": "Required (Millennium Bridge experiment)\nUse scipy.integrate.solve_ivp to run the controlled crowd ramp experiment:\n\nStart with \\(N=N_0\\) pedestrians. Every \\(\\Delta T\\) seconds, increase the crowd by \\(\\Delta N\\) (add new pedestrians with fresh \\(\\theta_i(0)\\) and \\(\\Omega_i\\)) until reaching \\(N_{\\max}\\).\nCompute \\(N_c\\) using the formula in the handout (using your chosen parameters/distribution).\nDefine \\(t_c=\\inf\\{t: N(t)\\ge N_c\\}\\).\nProduce three stacked plots and draw a vertical dashed line at \\(t=t_c\\) labeled “\\(N=N_c\\)”:\n\n\\(N(t)\\) vs \\(t\\) (crowd size staircase)\n\\(A(t)\\) vs \\(t\\) (bridge wobble amplitude)\n\\(R(t)\\) vs \\(t\\) (degree of synchronization)\n\nBriefly describe what happens before/after \\(t_c\\) and whether the observed onset is close to the theoretical prediction.\n\nReference code is available in amlab/odes_coupled/bridge.py. Use it for ideas, but do not copy it.\nGood luck and enjoy your coding!",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Assignment"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/index.html",
-    "href": "modules/ode-coupled/index.html",
-    "title": "Coupled ODEs",
-    "section": "",
-    "text": "In this session we return to ODEs and study coupled oscillators. The main example is the Kuramoto model, where synchronization emerges from weak coupling.",
-    "crumbs": [
-      "Session 3: Coupled ODEs"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/index.html#case-studies",
-    "href": "modules/ode-coupled/index.html#case-studies",
-    "title": "Coupled ODEs",
-    "section": "Case Studies",
-    "text": "Case Studies\nWe will focus on the Kuramoto model, which represents a population of oscillators with distributed natural frequencies. You can read the theory in the following page:\nKuramoto Model\nThe following button will guide you through a basic implementation of the model, including visualizations of the oscillators.\nOscillators and Animation\nNext, we will explore the bifurcation diagram of the Kuramoto model, which shows how the order parameter changes as a function of the coupling strength.\nBifurcation Diagram\nFinally, we merge the two graphs together into a full simulation with sliders to control parameters in real time.\nFull Simulation\nAnd once that is ready, we will apply the same ideas to a more complex system: the Millennium Bridge crowd–bridge synchrony model.\nAssignment",
-    "crumbs": [
-      "Session 3: Coupled ODEs"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/index.html#what-do-we-need",
-    "href": "modules/ode-coupled/index.html#what-do-we-need",
-    "title": "Coupled ODEs",
-    "section": "What do we need?",
-    "text": "What do we need?\n\nscipy\nWe are back to ODEs. Use scipy.integrate.solve_ivp().\n\n\nmatplotlib.pyplot\nInitialize the figure and axes and draw static elements.\n\n\nmatplotlib.animation\nUpdate plot elements in real time for animations.\n\n\nmatplotlib.Slider\nAdd sliders so users can interact with parameters.",
-    "crumbs": [
-      "Session 3: Coupled ODEs"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/index.html#references",
-    "href": "modules/ode-coupled/index.html#references",
-    "title": "Coupled ODEs",
-    "section": "References",
-    "text": "References\n\nFrom Kuramoto to Crawford: exploring the onset of synchronization in populations of coupled oscillators by Steven H. Strogatz.",
-    "crumbs": [
-      "Session 3: Coupled ODEs"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto-full.html",
-    "href": "modules/ode-coupled/kuramoto-full.html",
-    "title": "Kuramoto Model",
-    "section": "",
-    "text": "This part is optional and is meant to be a fun extension if you want to build a full simulation with sliders and live plots. It combines the previous two pages into a single interactive experience.\nIf you want to skip this part, you can go directly to the next page, which contains an assignment based on the same ideas.\nAssignment",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto: Full Simulation"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto-full.html#template",
-    "href": "modules/ode-coupled/kuramoto-full.html#template",
-    "title": "Kuramoto Model",
-    "section": "Template",
-    "text": "Template\nYou can start from the template in amlab/odes_coupled/kuramoto_full_template.py and fill in the missing parts. The template includes the structure for sliders, animation, and order parameter computation, so you can focus on implementing the Kuramoto model dynamics and visualizations.\nAlternatively, you can build the full simulation from scratch by following the steps outlined in the previous pages and combining them together.",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto: Full Simulation"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto-full.html#order-parameter",
-    "href": "modules/ode-coupled/kuramoto-full.html#order-parameter",
-    "title": "Kuramoto Model",
-    "section": "Order Parameter",
-    "text": "Order Parameter\nComplete the function that computes the order parameter:\ndef kuramoto_order_parameter(theta: np.ndarray) -&gt; tuple:\n    # TODO: compute r * exp(i * phi)\n    order_param =  # replace this line\n    r = np.abs(order_param)\n    phi = np.angle(order_param)\n    rcosphi = np.real(order_param)\n    rsinphi = np.imag(order_param)\n    return r, phi, rcosphi, rsinphi\n\n\n\n\n\n\nHint: Order parameter (click to expand)\n\n\n\n\n\ndef kuramoto_order_parameter(theta: np.ndarray) -&gt; tuple:\n    order_param = np.mean(np.exp(1j * theta), axis=0)\n    r = np.abs(order_param)\n    phi = np.angle(order_param)\n    rcosphi = np.real(order_param)\n    rsinphi = np.imag(order_param)\n    return r, phi, rcosphi, rsinphi",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto: Full Simulation"
-    ]
-  },
-  {
-    "objectID": "modules/ode-coupled/kuramoto-full.html#sliders",
-    "href": "modules/ode-coupled/kuramoto-full.html#sliders",
-    "title": "Kuramoto Model",
-    "section": "Sliders",
-    "text": "Sliders\nUse sliders to update the coupling strength, number of oscillators, and the distribution scale. The template shows how to restart the animation when values change.\n\n\n\n\n\n\nHint: Slider update (click to expand)\n\n\n\n\n\ndef update_sliders(_):\n    nonlocal coupling_strength, num_oscillators, sigma, theta, omega\n    coupling_strength = slider_coupling.val\n    num_oscillators = int(slider_num_oscillators.val)\n    sigma = slider_sigma.val\n    theta, omega = initialize_oscillators(num_oscillators, sigma=sigma)\n\n\n\nWhen you finish, run the full simulation and explore how synchronization changes as you vary \\(K\\).",
-    "crumbs": [
-      "Session 3: Coupled ODEs",
-      "Kuramoto: Full Simulation"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/assignment.html",
-    "href": "modules/collective-motion/assignment.html",
-    "title": "Assignment",
-    "section": "",
-    "text": "Simulate the Couzin model and report your findings.\nYou can follow the guide here:\nCouzin Model",
-    "crumbs": [
-      "Session 4: Collective Motion",
-      "Assignment"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/assignment.html#required",
-    "href": "modules/collective-motion/assignment.html#required",
-    "title": "Assignment",
-    "section": "Required",
-    "text": "Required\n\nImplement the Couzin rules and motion.\nImplement an animation that shows the individuals moving. You can see an example in the Vicsek animation chapter.\nImplement an order parameter that quantifies the degree of alignment in the system. Read the original paper (Couzin et al. 2002) to find out how they defined it. You can also check the Vicsek order parameter for inspiration.\nExplore the parameter space and report your insights. Find the four collective dynamical behaviours described in the original paper (Couzin et al. 2002).\n\nUpload the code and a short report (1-2 pages done in LaTeX) describing your findings to the course platform.",
-    "crumbs": [
-      "Session 4: Collective Motion",
-      "Assignment"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/assignment.html#extra-mile-optional",
-    "href": "modules/collective-motion/assignment.html#extra-mile-optional",
-    "title": "Assignment",
-    "section": "Extra Mile (Optional)",
-    "text": "Extra Mile (Optional)\n\nAdd sliders to allow change parameters (of your choice) on real time.\nImplement the model in 3D, following the original paper (Couzin et al. 2002).\n\nGood luck and enjoy your coding!",
-    "crumbs": [
-      "Session 4: Collective Motion",
-      "Assignment"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/index.html",
-    "href": "modules/collective-motion/index.html",
-    "title": "Collective Motion",
-    "section": "",
-    "text": "In this session we study collective motion: how local alignment rules create global order. The main example is the Vicsek model, with optional predator interaction.",
-    "crumbs": [
-      "Session 4: Collective Motion"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/index.html#case-studies",
-    "href": "modules/collective-motion/index.html#case-studies",
-    "title": "Collective Motion",
-    "section": "Case Studies",
-    "text": "Case Studies\nVicsek Model Vicsek Animation\nCouzin Model Assignment",
-    "crumbs": [
-      "Session 4: Collective Motion"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/index.html#what-do-we-need",
-    "href": "modules/collective-motion/index.html#what-do-we-need",
-    "title": "Collective Motion",
-    "section": "What do we need?",
-    "text": "What do we need?\n\nmatplotlib.pyplot\nInitialize the figure and axes and draw static elements.\n\n\nmatplotlib.animation\nUpdate plot elements in real time for animations.\n\n\nmatplotlib.Slider\nAdd sliders so users can interact with parameters.\n\n\nWhy not use scipy.solve_ivp here?\nIn previous sessions, we used ODE solvers like scipy.solve_ivp to study continuous-time dynamical systems. The Vicsek model, however, is fundamentally a discrete-time, agent-based model: at each step, all particles update their direction and position based on their neighbors and some noise. This update is not described by a differential equation, but by a set of rules applied at each time step. Therefore, we implement the Vicsek model using a simple loop, not an ODE solver.",
-    "crumbs": [
-      "Session 4: Collective Motion"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/index.html#references",
-    "href": "modules/collective-motion/index.html#references",
-    "title": "Collective Motion",
-    "section": "References",
-    "text": "References\n\n(Vicsek et al. 1995)\nCheck this cool simulation. This explorable illustrates of an intuitive dynamic model for collective motion (swarming) in animal groups. The model can be used to describe collective behavior observed in schooling fish or flocking birds, for example. The details of the model are described in (Couzin et al. 2002).",
-    "crumbs": [
-      "Session 4: Collective Motion"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/couzin.html",
-    "href": "modules/collective-motion/couzin.html",
-    "title": "Couzin Model",
-    "section": "",
-    "text": "These are its behavioral rules, as summarized in (Couzin et al. 2002):",
-    "crumbs": [
-      "Session 4: Collective Motion",
-      "Couzin Model"
-    ]
-  },
-  {
-    "objectID": "modules/collective-motion/couzin.html#behavioral-rules",
-    "href": "modules/collective-motion/couzin.html#behavioral-rules",
-    "title": "Couzin Model",
-    "section": "Behavioral Rules",
-    "text": "Behavioral Rules\n\\(N\\) individuals (\\(i=1,2,\\dots,N\\)) with position vectors \\(\\mathbf{c}_i\\) and unit direction vectors \\(\\mathbf{vi}\\) are simulated in continuous two-dimensional space (the original paper did it in 3D). Time is partitioned into discrete time steps \\(t\\) with a regular spacing \\(\\tau = 0.1\\) seconds, corresponding to the response latency of fish. In each time step, individuals assess the position and/or orientation of \\(n\\) neigbours within three non-overlapping behavioral zones. This information is used to determine a desired direction for each individual for the successive time step \\(\\mathbf{d}_i(t+\\tau)\\) using the following rules.\n\nRule 1: Avoidance\nEach individual attempts to maintain a minimum distance from others within a “zone of repulsion” (), modelled as a circle, centred on the individual, with radius \\(r_r\\). If \\(n_r\\) neighbours are present in the at time \\(t\\), individual \\(i\\) responds by moving away from neighbours within this zone:\n\\[\n\\mathbf{d}_r(t+\\tau) = -\\sum^{n_r}_{j \\ineq i} \\frac{\\mathbf{r}_{ij}(t)}{|\\mathbf{r}_{ij}(t)|}\n\\tag{1}\\]\nwhere \\(\\mathbf{r}_{ij}\\) is the unit vector in the direction of neighbour \\(j\\).\n\\[\n\\mathbf{r}_{ij} = (\\mathbf{c}_j - \\mathbf{c}_i) / |(\\mathbf{c}_j - \\mathbf{c}_i)|\n\\tag{2}\\]\nThis behavioural rule has the highest priority in the model, so that if \\(n_r &gt; 0\\), the desired direction \\(\\mathbf{d}_i(t+\\tau) = \\mathbf{d}_r(t+\\tau)\\). The zone of repulsion can be interpreted as individuals maintaining personal space, or avoiding collisions.\n\n\nRule 2: Orienation and Attraction\nIf no neighbours are within the zone of repulsion (\\(n_r=0\\)), the individual responds to others within the “zone of orientation” () and the “zone of attraction” (). These zones are circular, except for a surface behind the individual within which neighbours are undetectable. This “blind surfuce” is defined as a triangle with angle \\((360 - \\alpha)^\\circ\\), where \\(\\alpha\\) is defined as the field of perception.\nThe zone of orientation contains \\(n_o\\) detectable neighbours with \\(r_r \\leq |(\\mathbf{c}_j - \\mathbf{c}_i)| &lt; r_o\\) and the zone of attraction \\(n_a\\) detectable neighbours with \\(r_o \\leq |(\\mathbf{c}_j - \\mathbf{c}_i)| \\leq r_a\\).\nAn individual will attempt to align itself with neighbours within the zone of orientation, giving\n\\[\n\\mathbf{d}_o(t+\\tau) = \\sum^{n_o}_{j=1} \\frac{\\mathbf{v}_j(t)}{|\\mathbf{v}_j(t)|}\n\\] {?@eq-orientation}\nand towards the poisitions of individuals within the zone of attraction\n\\[\n\\mathbf{d}_a(t+\\tau) = \\sum^{n_a}_{j \\ineq i} \\frac{\\mathbf{v}_j(t)}{|\\mathbf{v}_j(t)|}\n\\] {?@eq-attraction}\nIf neighbours are found in both orientation and attraction zones, then\n\\[\n\\mathbf{d}_i(t+\\tau) = \\frac{1}{2} \\left[ \\mathbf{d}_o(t+\\tau) + \\mathbf{d}_a(t+\\tau)\\right]\n\\tag{3}\\]\nIn the eventuality that the social forces result in a zero vector, or if no individuals are detected, then\n\\[\n\\mathbf{d}_i(t+\\tau) = \\mathbf{v}_i(t)\n\\]\n\n\nRandomness\nDecision making in animals is subject to stochastic effects (e.g. sensory error, movement error). This is simnulated by modifying \\(\\mathbf{d}_i(t+\\tau)\\) by rotating it by an angle taken at random from a circully wrapped Gaussian distribution with standard deviation \\(\\sigma\\).\n\n\nMotion\nAfter the above process has been performed for every individual they turn towards the direction vector \\(\\mathbf{d}_i(t+\\tau)\\) by the turning rate \\(\\theta\\). Provided the angle between $\\(\\mathbf{v}_i(t)\\) and \\(\\mathbf{d}_i(t+\\tau)\\) is less than the maximum turning angle \\(\\theta \\tau\\), then \\(\\mathbf{v}_i(t+\\tau) = \\mathbf{d}_i(t+\\tau)\\); if not, the individual rotates by \\(\\theta \\tau\\) towards the desired direction.",
-    "crumbs": [
-      "Session 4: Collective Motion",
-      "Couzin Model"
     ]
   },
   {
