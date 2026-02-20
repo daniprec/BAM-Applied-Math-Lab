@@ -78,54 +78,55 @@ def vicsek_equations(
     np.ndarray
         Updated angle of the particles.
     """
-    # Compute distance matrix and neighbor matrix
+    # Compute distance matrix and neighbor matrix (periodic boundary)
     d_matrix = scipy.spatial.distance.pdist(xy.T)
     d_matrix = scipy.spatial.distance.squareform(d_matrix)
     neighbors = d_matrix <= radius_interaction
-    # Compute mean angle of neighbors
-    term_theta_avg = theta @ neighbors / np.sum(neighbors, axis=1)
-    # Add noise
-    term_noise = eta * np.pi * np.random.uniform(-1, 1, len(theta))
-    # Update angle
-    theta = term_theta_avg + term_noise
-    theta = np.mod(theta, 2 * np.pi)
+    num_boids = xy.shape[1]
+    sin_theta = np.sin(theta)
+    cos_theta = np.cos(theta)
+    # Vectorial average of neighbor directions (original Vicsek)
+    sum_sin = neighbors @ sin_theta  # (N,)
+    sum_cos = neighbors @ cos_theta  # (N,)
+    count = neighbors.sum(axis=1)
+    mean_sin = sum_sin / count
+    mean_cos = sum_cos / count
+    theta_avg = np.arctan2(mean_sin, mean_cos)
+    # Add noise: uniform in [-eta/2, eta/2]
+    noise_arr = eta * (np.random.uniform(size=num_boids) - 0.5)
+    theta_new = theta_avg + noise_arr
+    theta_new = np.mod(theta_new, 2 * np.pi)
 
-    # REPULSION FROM PREDATOR
-    # Compute distances to the predator
+    # REPULSION FROM PREDATOR (additive effect)
     d_pred = np.linalg.norm(xy - xy_pred[:, np.newaxis], axis=0)
-    # Mask for boids within the predator radius
     affected = d_pred <= radius_predator
-    # Compute repulsion direction (away from predator)
-    repulsion_angle = np.arctan2(xy[1] - xy_pred[1], xy[0] - xy_pred[0])
-    term_predator = strength_predator * (repulsion_angle - theta) * affected
-    # Update angle
-    theta = theta + term_predator
-    theta = np.mod(theta, 2 * np.pi)
+    if np.any(affected):
+        repulsion_angle = np.arctan2(xy[1] - xy_pred[1], xy[0] - xy_pred[0])
+        # Add repulsion only to affected boids
+        theta_new[affected] += strength_predator * (
+            repulsion_angle[affected] - theta_new[affected]
+        )
+        theta_new = np.mod(theta_new, 2 * np.pi)
 
     # Update position
-    v = v0 * np.array([np.cos(theta), np.sin(theta)])
-    xy = xy + dt * v
-    # Boundary conditions: periodic
-    xy = np.mod(xy, box_size)
+    v = v0 * np.array([np.cos(theta_new), np.sin(theta_new)])
+    xy_new = xy + dt * v
+    # Periodic boundary conditions
+    xy_new = np.mod(xy_new, box_size)
 
-    return xy, theta
+    return xy_new, theta_new
 
 
 def vicsek_order_parameter(theta: np.ndarray) -> float:
     """
-    Compute the order parameter of the Vicsek model.
-
-    Parameters
-    ----------
-    theta : np.ndarray
-        Angle of the particles.
-
-    Returns
-    -------
-    float
-        Order parameter of the Vicsek model.
+    Compute the normalized order parameter (mean velocity divided by v0), as in Vicsek et al. (1995).
     """
-    return np.abs(np.mean(np.exp(1j * theta)))
+    v0 = 0.03  # Default, or pass as argument if needed
+    vx = v0 * np.cos(theta)
+    vy = v0 * np.sin(theta)
+    avg_vx = np.mean(vx)
+    avg_vy = np.mean(vy)
+    return float(np.sqrt(avg_vx**2 + avg_vy**2) / v0)
 
 
 def run_simulation(dt: float = 1):
@@ -162,13 +163,24 @@ def run_simulation(dt: float = 1):
     ax_sliders: Axes = axs[1, 0]
     ax_noise: Axes = axs[1, 1]
 
-    # Initialize quiver plot
-    plt_particles = ax_plane.quiver(
+    # Show last TAIL_LEN positions of each particle (tail effect)
+    TAIL_LEN = 20
+    xy_tail = np.repeat(xy[:, :, np.newaxis], TAIL_LEN, axis=2)
+    (plt_particles,) = ax_plane.plot(
+        xy_tail[0].flatten(),
+        xy_tail[1].flatten(),
+        color="grey",
+        linestyle="",
+        marker=".",
+        markersize=2,
+    )
+    (plt_current,) = ax_plane.plot(
         xy[0],
         xy[1],
-        np.cos(theta),
-        np.sin(theta),
-        angles="xy",
+        linestyle="",
+        marker="o",
+        color="black",
+        markersize=3,
     )
     ax_plane.set_xlim(0, box_size)
     ax_plane.set_ylim(0, box_size)
@@ -203,8 +215,8 @@ def run_simulation(dt: float = 1):
     def update_animation(frame: int):
         nonlocal xy, theta, noise_eta, v0, radius_interaction, box_size
         nonlocal xy_pred, radius_predator, strength_predator
-        nonlocal ls_order_param, dict_noise
-
+        nonlocal ls_order_param, dict_noise, xy_tail
+        # Advance Vicsek with predator
         xy, theta = vicsek_equations(
             xy,
             theta,
@@ -218,11 +230,13 @@ def run_simulation(dt: float = 1):
             strength_predator=strength_predator,
         )
 
-        # Update quiver plot
-        plt_particles.set_offsets(xy.T)
-        plt_particles.set_UVC(np.cos(theta), np.sin(theta))
+        # Update tails
+        xy_tail = np.roll(xy_tail, shift=-1, axis=2)
+        xy_tail[:, :, -1] = xy
+        plt_particles.set_data(xy_tail[0].flatten(), xy_tail[1].flatten())
+        plt_current.set_data(xy[0], xy[1])
 
-        # Update predator circle when the predator is present
+        # Update predator circle
         circle_predator.set_center(xy_pred)
         circle_predator.set_radius(radius_predator)
 
@@ -235,8 +249,11 @@ def run_simulation(dt: float = 1):
         order_param = np.mean(ls_order_param[-1000:])
         dict_noise[noise_eta] = order_param
         dict_noise = dict(sorted(dict_noise.items()))
-        line_noise.set_data(*zip(*dict_noise.items()))
-        return plt_particles, circle_predator, line_order_param, line_noise
+        if dict_noise:
+            line_noise.set_data(*zip(*dict_noise.items()))
+        else:
+            line_noise.set_data([], [])
+        return plt_particles, plt_current, circle_predator, line_order_param, line_noise
 
     ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)
 
@@ -319,29 +336,15 @@ def run_simulation(dt: float = 1):
     slider_strength_predator.on_changed(update_sliders)
 
     # A special case must be done for the number of boids as it requires to reinitialize the particles
+
     def update_num_boids(_):
-        nonlocal xy, theta, num_boids, plt_particles
-        # Pause animation
+        nonlocal xy, theta, num_boids, plt_particles, plt_current, xy_tail
         ani.event_source.stop()
-
-        # Update number of boids
         num_boids = int(slider_num_boids.val)
-        # Reinitialize particles
         xy, theta = initialize_particles(num_boids, box_size=box_size)
-
-        # Because the number of particles has changed, we need to redefine the quiver plot
-        # This is because the number of particles on the plot is fixed at the beginning
-        # and cannot be changed dynamically
-        plt_particles.remove()  # Remove old quiver plot
-        plt_particles = ax_plane.quiver(
-            xy[0],
-            xy[1],
-            np.cos(theta),
-            np.sin(theta),
-            angles="xy",
-        )
-
-        # Reinitialize the animation
+        xy_tail = np.repeat(xy[:, :, np.newaxis], TAIL_LEN, axis=2)
+        plt_particles.set_data(xy_tail[0].flatten(), xy_tail[1].flatten())
+        plt_current.set_data(xy[0], xy[1])
         ani.event_source.start()
 
     slider_num_boids.on_changed(update_num_boids)
