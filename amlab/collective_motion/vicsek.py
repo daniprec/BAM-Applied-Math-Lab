@@ -172,6 +172,7 @@ def plot_avg_velocity_vs_noise(
     noise_range: tuple[float, float] = (0.0, 5.0),
     noise_steps: int = 10,
     n_realizations: int = 1,
+    verbose: bool = False,
 ) -> None:
     """
     Plot the time-averaged normalized order parameter vs noise for different system sizes (N),
@@ -199,7 +200,8 @@ def plot_avg_velocity_vs_noise(
     for idx, nb in enumerate(num_boids_list):
         box_size = np.sqrt(nb / density)
         avg_orders = []
-        print(f"Simulating for N={nb}, L={box_size:.2f}, density={density}")
+        if verbose:
+            print(f"Simulating for N={nb}, L={box_size:.2f}, density={density}")
         for noise in noises:
             vals = []
             for rep in range(n_realizations):
@@ -207,7 +209,8 @@ def plot_avg_velocity_vs_noise(
                 vals.append(val)
             mean_val = float(np.mean(vals))
             avg_orders.append(mean_val)
-            print(f"    noise={noise:.3f}, phi={mean_val:.4f}")
+            if verbose:
+                print(f"    noise={noise:.3f}, phi={mean_val:.4f}")
         marker = markers[idx % len(markers)]
         plt.scatter(
             noises, avg_orders, label=f"N={nb}, L={box_size:.1f}", marker=marker, s=60
@@ -224,6 +227,7 @@ def plot_avg_velocity_vs_density(
     density_steps: int = 20,
     noise: float = 2.0,
     box_size: float = 5,
+    verbose: bool = False,
 ) -> None:
     """
     Plot the time-averaged normalized order parameter vs density for a fixed noise.
@@ -253,15 +257,17 @@ def plot_avg_velocity_vs_density(
         num_boids = int(density * box_size**2)
         # If the number of boids is too small, skip to avoid noisy results
         if num_boids <= 5:
-            print(
-                f"Box size: {box_size}, density: {density:.2f}, num_boids: {num_boids} (skipped)"
-            )
+            if verbose:
+                print(
+                    f"Box size: {box_size}, density: {density:.2f}, num_boids: {num_boids} (skipped)"
+                )
             continue
         avg_v = simulate_vicsek(num_boids=num_boids, noise=noise, density=density)
         avg_velocities.append(avg_v)
-        print(
-            f"Box size: {box_size}, density: {density:.2f}, avg velocity: {avg_v:.4f}"
-        )
+        if verbose:
+            print(
+                f"Box size: {box_size}, density: {density:.2f}, avg velocity: {avg_v:.4f}"
+            )
     # Crop densities to match the length of avg_velocities (in case some were skipped)
     densities = densities[-len(avg_velocities) :]
     plt.scatter(densities, avg_velocities, marker="o")

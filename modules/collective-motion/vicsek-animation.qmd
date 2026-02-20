@@ -1,5 +1,738 @@
 ---
-title: "Vicsek Animation"
-subtitle: "Animating the Vicsek Model"
+title: "Vicsek Model"
+subtitle: "Interactive Animation (step-by-step)"
 format: html
 ---
+
+In this chapter I will guide you to build an **interactive Vicsek animation** in Matplotlib, *one step at a time*.
+
+You already have the Vicsek functions implemented (e.g. `initialize_particles`, `vicsek_equations`, `vicsek_order_parameter`).  
+Your job here is to **assemble** them into:
+
+- a 2D particle animation (with a short *tail*),
+- a live plot of the **order parameter** over time,
+- and sliders to change parameters on the fly.
+
+---
+
+## What you will build
+
+A $2 \times 2$ layout:
+
+- **Top-left:** particle positions (with a tail).
+- **Top-right:** order parameter over time.
+- **Bottom-left:** sliders.
+- **Bottom-right:** order parameter vs noise (a crude "phase diagram") as you explore.
+
+**Keep it incremental:** Run your code after each step.   If something breaks, you only have *one* new thing to debug.
+
+---
+
+## Imports and Model Functions
+
+Create a new script named `vicsek_animation.py`. At the end of this page you will have a complete version.
+
+Fill in the missing imports:
+
+```python
+import sys
+
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import numpy as np
+from matplotlib.axes import Axes
+
+# make sure Python can find your package/module
+sys.path.append(".")
+
+# import Vicsek utilities from your project
+from amlab.collective_motion.vicsek import initialize_particles, vicsek_equations, vicsek_order_parameter
+```
+
+::: {.callout-tip collapse="true"}
+## Common import issues
+- If you get `ModuleNotFoundError`, you likely need `sys.path.append(".")` (or adjust it to your repo root).
+- Prefer importing from your package (e.g. `amlab...`) rather than relative imports.
+:::
+
+---
+
+## The Main Function
+
+We will put everything inside a function so you can run it with different `dt`.
+
+Create a function skeleton and choose parameter defaults.
+
+```python
+def run_simulation(dt: float = 1.0) -> None:
+    """Run an interactive Vicsek animation (Matplotlib)."""
+    # TODO: choose defaults
+    num_boids = 
+    noise_eta = 
+    box_size = 
+    radius_interaction = 
+    v0 = 
+
+    # Sliding window length for order parameter plot
+    ORDER_WINDOW = 3000
+
+    # Tail length for trajectory visualization
+    TAIL_LEN = 20
+
+    # TODO: initialize the state (xy, theta)
+
+    # TODO: store order parameter history
+
+    # TODO: store explored noise->order mapping
+
+    # We stop here for now.
+    return
+```
+
+::: {.callout-tip collapse="true"}
+## Why a sliding window?
+If you store the full time series, your plot and memory will grow forever.
+
+A fixed-length list (window) gives you:
+- stable performance,
+- and a plot that focuses on *recent* behavior.
+:::
+
+---
+
+## Create the Figure Layout
+
+We want a large space for particles, and a smaller area for sliders + extra diagnostics.
+
+Create the subplots and name the axes.
+
+```python
+def make_figure():
+    # Create a 2x2 grid
+    fig, axs = plt.subplots(
+        2, 2,
+        figsize=(12, 8),
+        height_ratios=[4, 1],  # top row larger than bottom row
+    )
+
+    ax_plane: Axes = axs[0, 0]
+    ax_order: Axes = axs[0, 1]
+    ax_sliders: Axes = axs[1, 0]
+    ax_noise: Axes = axs[1, 1]
+
+    # Sliders live in an empty axis
+    ax_sliders.axis("off")
+
+    return fig, ax_plane, ax_order, ax_sliders, ax_noise
+```
+
+---
+
+## Draw Particles
+
+In order to convey the movement of the particles, we want them to look like "tadpoles": a big head with a smaller tail. In practice, we will be plotting their current position as the "head", using a bigger marker, and their recent trajectory as the "tail", using many small points. This will show the direction of movement and give a better sense of the dynamics. We will use **two** artists:
+
+- one for the **tail** (many tiny points),
+- one for the **current** positions (bigger markers).
+
+Translating this to code, we will 
+- create `xy_tail` with shape `(2, N, TAIL_LEN)`, and
+- create the two `Line2D` artists with `ax_plane.plot(...)`.
+
+```python
+def init_particles_plot(ax_plane: Axes, xy: np.ndarray, box_size: float, tail_len: int):
+    # build a tail tensor by repeating xy across a third axis
+    xy_tail = np.repeat(xy[:, :, np.newaxis], tail_len, axis=2)
+
+    # tail (small grey points)
+    (plt_particles,) = ax_plane.plot(
+        xy_tail[0].flatten(), xy_tail[1].flatten(),
+        linestyle="", marker=".", markersize=2, color="grey"
+    )
+
+    # current positions (bigger black circles)
+    (plt_current,) = ax_plane.plot(
+        xy[0], xy[1],
+        linestyle="", marker="o", markersize=3, color="black"
+    )
+
+    # set plot limits
+    ax_plane.set_xlim(0, box_size)
+    ax_plane.set_ylim(0, box_size)
+    ax_plane.set_aspect("equal")
+
+    return xy_tail, plt_particles, plt_current
+```
+
+::: {.callout-tip collapse="true"}
+## Tail trick (fast and simple)
+Store the last `TAIL_LEN` positions:
+
+- shift the tensor with `np.roll(...)`,
+- write the newest positions into the last slice.
+
+This avoids creating new arrays each frame.
+:::
+
+---
+
+## Initialize the Order-Parameter Plot
+
+The next plot will show the order parameter $r$ over time.
+
+```{python}
+#| label: vicsek-anim-order-plot
+#| echo: false
+import matplotlib.pyplot as plt
+import numpy as np
+
+t = np.arange(100)
+r = np.random.uniform(0.0, 1.0, size=100)
+r = np.cumprod(r)
+r = np.clip(r, 0, 1)
+
+plt.plot(t, r)
+plt.xlabel("Time")
+plt.ylabel("Order parameter (r)")
+plt.grid(True)
+plt.show()
+```
+
+We will update the line data at each animation frame.
+
+Create an empty line in `ax_order` and set labels/limits.
+
+```python
+def init_order_plot(ax_order: Axes, order_window: int):
+    # TODO: create the line artist
+    # HINT: this is similar to how you created the particle artists,
+    # but with empty data
+
+    # TODO: set axes cosmetics
+    # limits, labels, grid
+
+    # TODO: return relevant variables
+```
+
+::: {.callout-tip collapse="true"}
+## Solved
+
+```python
+def init_order_plot(ax_order: Axes, order_window: int):
+    (line_order_param,) = ax_order.plot([], [])
+    ax_order.set_xlim(0, order_window - 1)
+    ax_order.set_ylim(0, 1)
+    ax_order.set_xlabel("Time")
+    ax_order.set_ylabel("Order parameter (r)")
+    ax_order.grid(True)
+    return line_order_param
+```
+:::
+
+---
+
+## Initialize the Noise Diagnostic Plot
+
+Here we store a dictionary:
+
+\[
+\eta \mapsto \text{(recent average of } r \text{)}
+\]
+
+**Task:** initialize an empty line (red markers).
+
+```{python}
+#| label: vicsek-anim-step5-noise-plot
+#| echo: true
+
+def init_noise_plot(ax_noise: Axes):
+    # TODO: create the line artist
+    # (line_noise,) = ax_noise.plot([], [], color="red", marker="o", linestyle="--")
+
+    # TODO: set limits and labels (match your slider range)
+    # ax_noise.set_xlim(0, 5)
+    # ax_noise.set_ylim(0, 1)
+    # ax_noise.set_xlabel("Noise (eta)")
+    # ax_noise.set_ylabel("Order param (r)")
+
+    # return line_noise
+    ...
+```
+
+---
+
+## Write the Animation Update Function
+
+This is the core loop:
+
+1. advance the Vicsek dynamics by one step (`vicsek_equations`)
+2. update `xy_tail`
+3. update the particle artists
+4. update order-parameter history + plot
+5. update the noise diagnostic
+
+**Task:** implement `update_animation(frame)`.
+
+Use this checklist:
+
+- [ ] call `vicsek_equations(...)`
+- [ ] update `xy_tail` with `np.roll(...)`
+- [ ] `plt_particles.set_data(...)` and `plt_current.set_data(...)`
+- [ ] append `vicsek_order_parameter(theta)` to the window list
+- [ ] set line data for the order parameter plot
+- [ ] compute a *recent average* (e.g. last third of the window)
+- [ ] update `dict_noise[noise_eta]` and redraw the noise curve
+
+```{python}
+#| label: vicsek-anim-step6-update
+#| echo: true
+
+def make_update_fn(
+    *,
+    dt: float,
+    TAIL_LEN: int,
+    ORDER_WINDOW: int,
+    ax_plane: Axes,
+    plt_particles,
+    plt_current,
+    line_order_param,
+    line_noise,
+):
+    # You will capture state with closures + `nonlocal`.
+    # This is the simplest pattern in Matplotlib animations.
+
+    # TODO: initialize these in run_simulation and pass them in
+    xy = None
+    theta = None
+    xy_tail = None
+    noise_eta = None
+    radius_interaction = None
+    v0 = None
+    box_size = None
+    dict_noise = None
+    ls_order_param = None
+
+    def update_animation(frame: int):
+        nonlocal xy, theta, xy_tail, noise_eta, radius_interaction, v0, box_size, dict_noise, ls_order_param
+
+        # 1) Vicsek step
+        # xy, theta = vicsek_equations(
+        #     xy, theta,
+        #     v0=v0, dt=dt,
+        #     radius_interaction=radius_interaction,
+        #     box_size=box_size,
+        #     noise=noise_eta,
+        # )
+
+        # 2) Tail update
+        # xy_tail = np.roll(xy_tail, shift=-1, axis=2)
+        # xy_tail[:, :, -1] = xy
+
+        # 3) Particle artists
+        # plt_particles.set_data(xy_tail[0].flatten(), xy_tail[1].flatten())
+        # plt_current.set_data(xy[0], xy[1])
+
+        # 4) Order parameter window + plot
+        # ls_order_param.append(vicsek_order_parameter(theta))
+        # ls_order_param = ls_order_param[-ORDER_WINDOW:]
+        # x_vals = np.arange(len(ls_order_param))
+        # line_order_param.set_data(x_vals, ls_order_param)
+
+        # 5) Noise diagnostic (recent average)
+        # order_param = np.mean(ls_order_param[-ORDER_WINDOW // 3 :])
+        # dict_noise[noise_eta] = order_param
+        # dict_noise = dict(sorted(dict_noise.items()))
+        # if dict_noise:
+        #     line_noise.set_data(*zip(*dict_noise.items()))
+        # else:
+        #     line_noise.set_data([], [])
+
+        return (plt_particles, plt_current, line_order_param, line_noise)
+
+    return update_animation
+```
+
+::: {.callout-tip collapse="true"}
+### Tip: blitting requires you to return artists
+If you set `blit=True`, your update function **must** return an iterable of the artists that changed.
+:::
+
+---
+
+## Step 7 — Create the animation object
+
+Matplotlib uses `FuncAnimation`.
+
+**Task:** create:
+
+```python
+ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)
+```
+
+- `interval=0` makes it as fast as your computer can handle.
+- You can set a larger interval (e.g. 20 ms) to reduce CPU usage.
+
+```{python}
+#| label: vicsek-anim-step7-ani
+#| echo: true
+
+def make_animation(fig, update_animation):
+    # TODO: create FuncAnimation
+    # ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)
+    # return ani
+    ...
+```
+
+---
+
+## Step 8 — Add sliders
+
+We want sliders for:
+
+- Number of boids (special: requires reinitializing particles)
+- Interaction radius
+- Noise
+- Speed
+- Box size
+
+### Step 8A — Create slider axes
+
+We’ll create little inset axes inside `ax_sliders`:
+
+```{python}
+#| label: vicsek-anim-step8a-slider-axes
+#| echo: true
+
+def make_slider_axes(ax_sliders: Axes):
+    ax_sliders.axis("off")
+
+    ax_num_boids = ax_sliders.inset_axes([0.0, 1.2, 0.8, 0.1])
+    ax_radius_interaction = ax_sliders.inset_axes([0.0, 1.0, 0.8, 0.1])
+    ax_noise_eta = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])
+    ax_v0 = ax_sliders.inset_axes([0.0, 0.6, 0.8, 0.1])
+    ax_box_size = ax_sliders.inset_axes([0.0, 0.4, 0.8, 0.1])
+
+    return ax_num_boids, ax_radius_interaction, ax_noise_eta, ax_v0, ax_box_size
+```
+
+### Step 8B — Create the slider widgets
+
+Matplotlib’s `Slider` lives in `matplotlib.widgets`.
+
+**Task:** import it and create the sliders.
+
+```{python}
+#| label: vicsek-anim-step8b-slider-widgets
+#| echo: true
+
+from matplotlib.widgets import Slider
+
+def make_sliders(
+    *,
+    ax_num_boids,
+    ax_radius_interaction,
+    ax_noise_eta,
+    ax_v0,
+    ax_box_size,
+    num_boids: int,
+    radius_interaction: float,
+    noise_eta: float,
+    v0: float,
+    box_size: float,
+):
+    # TODO: adjust ranges/steps to your preference
+    slider_num_boids = Slider(ax_num_boids, "Number of boids", 100, 1000, valinit=num_boids, valstep=100)
+    slider_radius_interaction = Slider(ax_radius_interaction, "Interaction radius", 0, 50, valinit=radius_interaction, valstep=1)
+    slider_noise_eta = Slider(ax_noise_eta, "Noise", 0.0, 5.0, valinit=noise_eta, valstep=0.01)
+    slider_v0 = Slider(ax_v0, "Speed", 0.0, 0.1, valinit=v0, valstep=0.01)
+    slider_box_size = Slider(ax_box_size, "Dimension", 1, 50, valinit=box_size, valstep=1)
+
+    return slider_num_boids, slider_radius_interaction, slider_noise_eta, slider_v0, slider_box_size
+```
+
+---
+
+## Step 9 — Slider callbacks
+
+We need **two** callbacks:
+
+1. A general callback that updates parameters **without** reinitializing particles.
+2. A special callback for `num_boids` that **reinitializes** the system and updates the tail tensor.
+
+**Task:** implement both callbacks and connect them with `on_changed`.
+
+```{python}
+#| label: vicsek-anim-step9-callbacks
+#| echo: true
+
+def connect_slider_callbacks(
+    *,
+    ani,
+    slider_radius_interaction,
+    slider_noise_eta,
+    slider_v0,
+    slider_box_size,
+    slider_num_boids,
+    ax_plane: Axes,
+):
+    # This function will depend on your state variables.
+    # The simplest approach: define the callbacks INSIDE run_simulation
+    # so they can use `nonlocal` to access xy, theta, etc.
+    ...
+```
+
+::: {.callout-tip collapse="true"}
+### Tip: pause the animation during parameter changes
+Inside a callback:
+
+```python
+ani.event_source.stop()
+# update parameters / reinit
+ani.event_source.start()
+```
+
+This reduces glitches while you resize arrays or change plot limits.
+:::
+
+---
+
+## Step 10 — Put it all together (full script)
+
+At this point you’ve built every piece.  
+Below is a complete solution script that you can compare with yours.
+
+::: {.callout-tip collapse="true"}
+## Full `vicsek_animation.py` (solution)
+
+```python
+import sys
+
+import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.axes import Axes
+from matplotlib.widgets import Slider
+
+sys.path.append(".")  # Add parent directory to path to import vicsek.py
+from amlab.collective_motion.vicsek import (
+    initialize_particles,
+    vicsek_equations,
+    vicsek_order_parameter,
+)
+
+
+def run_simulation(dt: float = 1):
+    # Initialize parameters (will be changed with sliders)
+    num_boids = 300
+    noise_eta = 0.1
+    box_size = 25
+    radius_interaction = 1
+    v0 = 0.03
+
+    # Sliding window length for order parameter
+    ORDER_WINDOW = 3000
+    # Tail length for trajectory visualization
+    TAIL_LEN = 20
+
+    # Initialize particles
+    xy, theta = initialize_particles(num_boids, box_size=box_size)
+    ls_order_param = [0] * ORDER_WINDOW
+    dict_noise = {}
+
+    # Plot particles to the left, order parameter to the right
+    fig, axs = plt.subplots(2, 2, figsize=(12, 8), height_ratios=[4, 1])
+    ax_plane: Axes = axs[0, 0]
+    ax_order: Axes = axs[0, 1]
+    ax_sliders: Axes = axs[1, 0]
+    ax_noise: Axes = axs[1, 1]
+
+    # Show last TAIL_LEN positions of each particle (tail effect)
+    xy_tail = np.repeat(xy[:, :, np.newaxis], TAIL_LEN, axis=2)
+
+    (plt_particles,) = ax_plane.plot(
+        xy_tail[0].flatten(),
+        xy_tail[1].flatten(),
+        color="grey",
+        linestyle="",
+        marker=".",
+        markersize=2,
+    )
+    (plt_current,) = ax_plane.plot(
+        xy[0],
+        xy[1],
+        linestyle="",
+        marker="o",
+        color="black",
+        markersize=3,
+    )
+    ax_plane.set_xlim(0, box_size)
+    ax_plane.set_ylim(0, box_size)
+    ax_plane.set_aspect("equal")
+
+    # Initialize order parameter
+    (line_order_param,) = ax_order.plot([], [])
+    ax_order.set_xlim(0, ORDER_WINDOW - 1)
+    ax_order.set_ylim(0, 1)
+    ax_order.set_xlabel("Time")
+    ax_order.set_ylabel("Order parameter (r)")
+    ax_order.grid(True)
+
+    # Initialize order parameter vs noise
+    (line_noise,) = ax_noise.plot([], [], color="red", marker="o", linestyle="--")
+    ax_noise.set_xlim(0, 5)
+    ax_noise.set_ylim(0, 1)
+    ax_noise.set_xlabel("Noise (eta)")
+    ax_noise.set_ylabel("Order param (r)")
+
+    # Clear axis for the sliders
+    ax_sliders.axis("off")
+
+    # --------------------------------
+    # ANIMATION
+    # --------------------------------
+
+    def update_animation(frame: int):
+        nonlocal xy, xy_tail, theta, noise_eta, v0, radius_interaction, box_size, dict_noise, ls_order_param
+        xy, theta = vicsek_equations(
+            xy,
+            theta,
+            v0=v0,
+            dt=dt,
+            radius_interaction=radius_interaction,
+            box_size=box_size,
+            noise=noise_eta,
+        )
+
+        # Update tails
+        xy_tail = np.roll(xy_tail, shift=-1, axis=2)
+        xy_tail[:, :, -1] = xy
+        plt_particles.set_data(xy_tail[0].flatten(), xy_tail[1].flatten())
+        plt_current.set_data(xy[0], xy[1])
+
+        # Update order parameter
+        ls_order_param.append(vicsek_order_parameter(theta))
+        ls_order_param = ls_order_param[-ORDER_WINDOW:]
+        x_vals = np.arange(len(ls_order_param))
+        line_order_param.set_data(x_vals, ls_order_param)
+
+        # Average the last ORDER_WINDOW//3 values to get the order parameter (similar to Couzin)
+        order_param = np.mean(ls_order_param[-ORDER_WINDOW // 3 :])
+        dict_noise[noise_eta] = order_param
+        dict_noise = dict(sorted(dict_noise.items()))
+        if dict_noise:
+            line_noise.set_data(*zip(*dict_noise.items()))
+        else:
+            line_noise.set_data([], [])
+        return (plt_particles, plt_current, line_order_param, line_noise)
+
+    ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)
+
+    # --------------------------------
+    # SLIDERS
+    # --------------------------------
+
+    # Add sliders
+    ax_num_boids = ax_sliders.inset_axes([0.0, 1.2, 0.8, 0.1])
+    ax_radius_interaction = ax_sliders.inset_axes([0.0, 1.0, 0.8, 0.1])
+    ax_noise_eta = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])
+    ax_v0 = ax_sliders.inset_axes([0.0, 0.6, 0.8, 0.1])
+    ax_box_size = ax_sliders.inset_axes([0.0, 0.4, 0.8, 0.1])
+
+    slider_num_boids = Slider(
+        ax_num_boids, "Number of boids", 100, 1000, valinit=num_boids, valstep=100
+    )
+    slider_radius_interaction = Slider(
+        ax_radius_interaction,
+        "Interaction radius",
+        0,
+        50,
+        valinit=radius_interaction,
+        valstep=1,
+    )
+    slider_noise_eta = Slider(
+        ax_noise_eta, "Noise", 0.0, 5.0, valinit=noise_eta, valstep=0.01
+    )
+    slider_v0 = Slider(ax_v0, "Speed", 0.0, 0.1, valinit=v0, valstep=0.01)
+    slider_box_size = Slider(
+        ax_box_size, "Dimension", 1, 50, valinit=box_size, valstep=1
+    )
+
+    def update_sliders(_):
+        nonlocal xy, radius_interaction, noise_eta, v0, box_size
+        # Pause animation
+        ani.event_source.stop()
+
+        # Update parameters with sliders
+        noise_eta = slider_noise_eta.val
+        v0 = slider_v0.val
+        box_size = slider_box_size.val
+        radius_interaction = slider_radius_interaction.val
+
+        # Update plot limits
+        ax_plane.set_xlim(0, box_size)
+        ax_plane.set_ylim(0, box_size)
+        ax_plane.set_aspect("equal")
+
+        # Reinitialize the animation
+        ani.event_source.start()
+
+    slider_radius_interaction.on_changed(update_sliders)
+    slider_noise_eta.on_changed(update_sliders)
+    slider_v0.on_changed(update_sliders)
+    slider_box_size.on_changed(update_sliders)
+
+    # A special case must be done for the number of boids as it requires to reinitialize the particles
+    def update_num_boids(_):
+        nonlocal xy, theta, num_boids, plt_particles, xy_tail
+        # Pause animation
+        ani.event_source.stop()
+
+        # Update number of boids
+        num_boids = int(slider_num_boids.val)
+        # Reinitialize particles
+        xy, theta = initialize_particles(num_boids, box_size=box_size)
+        xy_tail = np.repeat(xy[:, :, np.newaxis], TAIL_LEN, axis=2)
+        # Update the Line2D object to match new number of particles
+        plt_particles.set_data(xy_tail[0].flatten(), xy_tail[1].flatten())
+
+        # Reinitialize the animation
+        ani.event_source.start()
+
+    slider_num_boids.on_changed(update_num_boids)
+
+    # --------------------------------
+    # SHOW
+    # --------------------------------
+
+    plt.tight_layout()
+    plt.show()
+
+
+if __name__ == "__main__":
+    run_simulation()
+```
+:::
+
+---
+
+## Checklist (debugging)
+
+If your animation is blank:
+
+- Did you return the artists in `update_animation`?
+- Did you set axis limits (`set_xlim`, `set_ylim`)?
+- Are `xy` and `theta` updated each frame?
+
+If sliders do nothing:
+
+- Did you call `slider.on_changed(...)`?
+- Are you updating the right variables (`nonlocal`)?
+
+---
+
+## Optional extensions
+
+1. **Color by heading**: map `theta` to a colormap for the current points.
+2. **Quiver plot**: show velocity vectors for a subset of particles.
+3. **Pause button**: add a Matplotlib `Button` widget.
+
