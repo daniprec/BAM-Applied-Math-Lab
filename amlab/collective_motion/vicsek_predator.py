@@ -43,10 +43,9 @@ def vicsek_equations(
     v0: float = 0.03,
     xy_pred: np.ndarray = np.array([-1000, -1000]),
     radius_predator: float = 1,
-    strength_predator: float = 0.1,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
-    Update the state of the particles based on the Vicsek model.
+    Update the state of the particles based on the Vicsek model with predator avoidance (Couzin rule).
 
     Parameters
     ----------
@@ -68,8 +67,6 @@ def vicsek_equations(
         Position of the predator, default is far away [-1000, -1000].
     radius_predator : float, optional
         Radius of the predator, default is 1.
-    strength_predator : float, optional
-        Strength of the repulsion from the predator, default is 0.1.
 
     Returns
     -------
@@ -85,27 +82,25 @@ def vicsek_equations(
     num_boids = xy.shape[1]
     sin_theta = np.sin(theta)
     cos_theta = np.cos(theta)
-    # Vectorial average of neighbor directions (original Vicsek)
+    # Couzin rule: predator avoidance takes absolute priority
+    d_pred = np.linalg.norm(xy - xy_pred[:, np.newaxis], axis=0)
+    affected = d_pred <= radius_predator
+
+    # Default: compute Vicsek update for all
     sum_sin = neighbors @ sin_theta  # (N,)
     sum_cos = neighbors @ cos_theta  # (N,)
     count = neighbors.sum(axis=1)
     mean_sin = sum_sin / count
     mean_cos = sum_cos / count
     theta_avg = np.arctan2(mean_sin, mean_cos)
-    # Add noise: uniform in [-eta/2, eta/2]
     noise_arr = eta * (np.random.uniform(size=num_boids) - 0.5)
     theta_new = theta_avg + noise_arr
     theta_new = np.mod(theta_new, 2 * np.pi)
 
-    # REPULSION FROM PREDATOR (additive effect)
-    d_pred = np.linalg.norm(xy - xy_pred[:, np.newaxis], axis=0)
-    affected = d_pred <= radius_predator
+    # For affected boids, OVERRIDE with direction away from predator (ignore alignment/noise)
     if np.any(affected):
         repulsion_angle = np.arctan2(xy[1] - xy_pred[1], xy[0] - xy_pred[0])
-        # Add repulsion only to affected boids
-        theta_new[affected] += strength_predator * (
-            repulsion_angle[affected] - theta_new[affected]
-        )
+        theta_new[affected] = repulsion_angle[affected]
         theta_new = np.mod(theta_new, 2 * np.pi)
 
     # Update position
@@ -149,7 +144,6 @@ def run_simulation(dt: float = 1):
     v0 = 0.03
     xy_pred = np.array([-1000, -1000])
     radius_predator = 1
-    strength_predator = 0.1
 
     # Initialize particles
     xy, theta = initialize_particles(num_boids, box_size=box_size)
@@ -214,7 +208,7 @@ def run_simulation(dt: float = 1):
 
     def update_animation(frame: int):
         nonlocal xy, theta, noise_eta, v0, radius_interaction, box_size
-        nonlocal xy_pred, radius_predator, strength_predator
+        nonlocal xy_pred, radius_predator
         nonlocal ls_order_param, dict_noise, xy_tail
         # Advance Vicsek with predator
         xy, theta = vicsek_equations(
@@ -227,7 +221,6 @@ def run_simulation(dt: float = 1):
             eta=noise_eta,
             xy_pred=xy_pred,
             radius_predator=radius_predator,
-            strength_predator=strength_predator,
         )
 
         # Update tails
@@ -268,7 +261,6 @@ def run_simulation(dt: float = 1):
     ax_v0 = ax_sliders.inset_axes([0.0, 0.6, 0.8, 0.1])
     ax_box_size = ax_sliders.inset_axes([0.0, 0.4, 0.8, 0.1])
     ax_radius_predator = ax_sliders.inset_axes([0.0, 0.2, 0.8, 0.1])
-    ax_strength_predator = ax_sliders.inset_axes([0.0, 0.0, 0.8, 0.1])
 
     # Create sliders in the inset axes
     slider_num_boids = plt.Slider(
@@ -297,18 +289,10 @@ def run_simulation(dt: float = 1):
         valinit=radius_predator,
         valstep=1,
     )
-    slider_strength_predator = plt.Slider(
-        ax_strength_predator,
-        "Predator strength",
-        0,
-        1,
-        valinit=strength_predator,
-        valstep=0.1,
-    )
 
     def update_sliders(_):
         nonlocal xy, radius_interaction, noise_eta, v0, box_size
-        nonlocal radius_predator, strength_predator
+        nonlocal radius_predator
         # Pause animation
         ani.event_source.stop()
 
@@ -318,7 +302,6 @@ def run_simulation(dt: float = 1):
         box_size = slider_box_size.val
         radius_interaction = slider_radius_interaction.val
         radius_predator = slider_radius_predator.val
-        strength_predator = slider_strength_predator.val
 
         # Update plot limits
         ax_plane.set_xlim(0, box_size)
@@ -333,7 +316,6 @@ def run_simulation(dt: float = 1):
     slider_v0.on_changed(update_sliders)
     slider_box_size.on_changed(update_sliders)
     slider_radius_predator.on_changed(update_sliders)
-    slider_strength_predator.on_changed(update_sliders)
 
     # A special case must be done for the number of boids as it requires to reinitialize the particles
 
