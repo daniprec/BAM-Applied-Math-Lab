@@ -1,0 +1,91 @@
+---
+title: "SIS Model on Networks"
+format: html
+---
+
+# SIS Model on Networks
+
+This module demonstrates how to simulate the SIS (Susceptible-Infected-Susceptible) epidemic model on networks using NetworkX. You will learn how network structure affects the spread and persistence of epidemics.
+
+## What is the SIS Model?
+
+- **States:** Each node can be Susceptible (S) or Infected (I).
+- **Transitions:**
+  - S → I: A susceptible node becomes infected if it has an infected neighbor (with probability $\beta$).
+  - I → S: An infected node recovers and becomes susceptible again (with probability $\mu$).
+- **No permanent immunity:** Nodes can be reinfected after recovery.
+
+## Step 1: Create a Network
+
+You can use any NetworkX graph (random, small-world, scale-free, or real data).
+
+```{python}
+import networkx as nx
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Example: random graph
+g = nx.gnp_random_graph(n=50, p=0.1)
+```
+
+## Step 2: Initialize States
+
+```{python}
+# All nodes start susceptible except a few infected
+state = {node: 'S' for node in g.nodes()}
+initial_infected = np.random.choice(g.nodes(), size=5, replace=False)
+for node in initial_infected:
+    state[node] = 'I'
+```
+
+## Step 3: SIS Simulation Function
+
+```{python}
+def run_sis(g, beta=0.2, mu=0.1, steps=50):
+    state = {node: 'S' for node in g.nodes()}
+    infected_counts = []
+    initial_infected = np.random.choice(g.nodes(), size=5, replace=False)
+    for node in initial_infected:
+        state[node] = 'I'
+    for t in range(steps):
+        new_state = state.copy()
+        for node in g.nodes():
+            if state[node] == 'S':
+                # Check infected neighbors
+                infected_neighbors = [nbr for nbr in g.neighbors(node) if state[nbr] == 'I']
+                if infected_neighbors and np.random.rand() < 1 - (1 - beta)**len(infected_neighbors):
+                    new_state[node] = 'I'
+            elif state[node] == 'I':
+                if np.random.rand() < mu:
+                    new_state[node] = 'S'
+        state = new_state
+        infected_counts.append(sum(1 for s in state.values() if s == 'I'))
+    return infected_counts
+```
+
+## Step 4: Run and Visualize
+
+```{python}
+counts = run_sis(g, beta=0.2, mu=0.1, steps=100)
+plt.plot(counts)
+plt.xlabel('Time step')
+plt.ylabel('Number of infected nodes')
+plt.title('SIS Model Epidemic Curve')
+plt.show()
+```
+
+## Step 5: Experiment
+
+- Try different network types (random, small-world, scale-free).
+- Vary $\beta$ and $\mu$ to see the epidemic threshold.
+- Analyze how network structure (degree, clustering) affects persistence.
+
+## Discussion
+
+
+
+## What's Next?
+
+Try the SIR model and compare how permanent immunity changes the outcome!
+
+[SIR Model](sir.qmd){.btn .btn-primary}

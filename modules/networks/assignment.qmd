@@ -4,18 +4,172 @@ subtitle: "Networks: Real-World Data"
 format: html
 ---
 
-Pick **one** dataset (USA Flights or Enron) and complete the tasks below.
+
+For this assignment, you may use either the **Enron email network** or the **USA Flights network** dataset. Below you'll find practical code snippets and tips to help you get started with analysis and simulation.
+
+---
+
+## Working with the Enron Email Network
+
+The Enron email dataset can be represented as a graph where nodes are email addresses and edges represent communication. It is widely used to study centrality, communities, and robustness.
+
+```{python}
+#| label: fig-enron-degree
+#| fig-cap: 'Enron network: degree histogram (log scale).'
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+
+import matplotlib.pyplot as plt
+import networkx as nx
+
+path = "data/ia-enron-only/ia-enron-only.edges"
+G = nx.read_edgelist(path)
+
+degrees = [d for _, d in G.degree()]
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.hist(degrees, bins=50)
+ax.set_xlabel("Degree")
+ax.set_ylabel("Count")
+ax.set_yscale("log")
+ax.set_title("Enron degree distribution")
+plt.show()
+plt.close()
+```
+
+### Load the graph
+
+```python
+import networkx as nx
+
+G = nx.read_edgelist("data/ia-enron-only/ia-enron-only.edges")
+```
+
+### Centrality metrics
+
+Compute the top nodes by betweenness centrality.
+
+```python
+import networkx as nx
+
+bc = nx.betweenness_centrality(G)
+# TODO: sort and print top 10 nodes
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: Top 10 by betweenness (click to expand)
+
+```python
+bc = nx.betweenness_centrality(G)
+top10 = sorted(bc.items(), key=lambda x: x[1], reverse=True)[:10]
+print(top10)
+```
+:::
+
+### Questions to explore
+
+- Which nodes act as brokers in the network?
+- How does the graph change if you remove high-betweenness nodes?
+- Can you detect communities with a simple algorithm?
+
+---
+
+## Working with the USA Flights Network
+
+The OpenFlights USA dataset represents airports as nodes and flight routes as edges. It is commonly used to study connectivity, robustness, and hub structure.
+
+```{python}
+#| label: fig-usa-flights
+#| fig-cap: 'USA flights: subgraph snapshot (random sample of airports).'
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+
+import random
+
+import matplotlib.pyplot as plt
+import networkx as nx
+
+path = "data/openflights/openflights_usa.graphml.gz"
+G = nx.read_graphml(path)
+G = nx.Graph(G)
+
+# Sample a manageable subgraph for visualization
+nodes = list(G.nodes)
+random.seed(1)
+sub_nodes = random.sample(nodes, k=min(250, len(nodes)))
+H = G.subgraph(sub_nodes).copy()
+
+pos = nx.spring_layout(H, seed=1)
+fig, ax = plt.subplots(figsize=(7, 4))
+nx.draw(H, pos=pos, node_size=10, edge_color="#999", node_color="#1f77b4", ax=ax)
+ax.set_title("OpenFlights USA (sample)")
+plt.show()
+plt.close()
+```
+
+### Load the graph
+
+The dataset is provided as GraphML and edge lists under [data/openflights](../../data/openflights/).
+
+```python
+import networkx as nx
+
+G = nx.read_graphml("data/openflights/openflights_usa.graphml.gz")
+```
+
+### Basic checks
+
+Try these metrics:
+
+```python
+num_nodes = G.number_of_nodes()
+num_edges = G.number_of_edges()
+avg_degree = sum(dict(G.degree()).values()) / num_nodes
+
+print(num_nodes, num_edges, avg_degree)
+```
+
+### Explore hubs
+
+Compute the top airports by degree centrality.
+
+```python
+import networkx as nx
+
+centrality = nx.degree_centrality(G)
+# TODO: sort and print top 10 airports
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: Top 10 by degree (click to expand)
+
+```python
+centrality = nx.degree_centrality(G)
+top10 = sorted(centrality.items(), key=lambda x: x[1], reverse=True)[:10]
+print(top10)
+```
+:::
+
+### Questions to explore
+
+- Which airports act as hubs?
+- How does the network change if you remove the top hub?
+- Is the graph connected, or are there isolated components?
+
+---
 
 ## Required
 
-1. Load the graph with NetworkX and report nodes/edges.
+1. Load your chosen network (Enron email or USA Flights) with NetworkX and report the number of nodes and edges.
 2. Compute and list the top 10 nodes by degree centrality.
-3. Compute one additional metric (betweenness, clustering, or PageRank).
+3. Compute one additional metric (betweenness, clustering, or PageRank) and interpret the result.
 4. Visualize the graph (full or sampled) and include a short interpretation.
+5. Simulate the SIR or SIS model on your chosen network. Plot the epidemic curve and discuss how network structure affects the spread.
 
 ## Extra Mile (Optional)
 
-- Remove a high-centrality node and analyze changes in connectivity.
+- Remove a high-centrality node and analyze changes in connectivity and epidemic outcome.
 - Compare two different centrality metrics and discuss differences.
 - Try a community detection method and summarize results.
 

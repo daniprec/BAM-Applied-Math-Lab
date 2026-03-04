@@ -1,0 +1,99 @@
+---
+title: "SIR Model on Networks"
+format: html
+---
+
+# SIR Model on Networks
+
+This module demonstrates how to simulate the SIR (Susceptible-Infected-Recovered) epidemic model on networks using NetworkX. You will see how network structure and model parameters affect the spread and final size of an epidemic.
+
+## What is the SIR Model?
+
+- **States:** Each node can be Susceptible (S), Infected (I), or Recovered (R).
+- **Transitions:**
+  - S → I: A susceptible node becomes infected if it has an infected neighbor (with probability $\beta$).
+  - I → R: An infected node recovers and becomes permanently immune (with probability $\mu$).
+- **Permanent immunity:** Recovered nodes cannot be infected again.
+
+## Step 1: Create a Network
+
+You can use any NetworkX graph (random, small-world, scale-free, or real data).
+
+```{python}
+import networkx as nx
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Example: random graph
+g = nx.gnp_random_graph(n=50, p=0.1)
+```
+
+## Step 2: Initialize States
+
+```{python}
+# All nodes start susceptible except a few infected
+state = {node: 'S' for node in g.nodes()}
+initial_infected = np.random.choice(g.nodes(), size=5, replace=False)
+for node in initial_infected:
+    state[node] = 'I'
+```
+
+## Step 3: SIR Simulation Function
+
+```{python}
+def run_sir(g, beta=0.2, mu=0.1, steps=50):
+    state = {node: 'S' for node in g.nodes()}
+    infected_counts = []
+    recovered_counts = []
+    initial_infected = np.random.choice(g.nodes(), size=5, replace=False)
+    for node in initial_infected:
+        state[node] = 'I'
+    for t in range(steps):
+        new_state = state.copy()
+        for node in g.nodes():
+            if state[node] == 'S':
+                infected_neighbors = [nbr for nbr in g.neighbors(node) if state[nbr] == 'I']
+                if infected_neighbors and np.random.rand() < 1 - (1 - beta)**len(infected_neighbors):
+                    new_state[node] = 'I'
+            elif state[node] == 'I':
+                if np.random.rand() < mu:
+                    new_state[node] = 'R'
+        state = new_state
+        infected_counts.append(sum(1 for s in state.values() if s == 'I'))
+        recovered_counts.append(sum(1 for s in state.values() if s == 'R'))
+    return infected_counts, recovered_counts
+```
+
+## Step 4: Run and Visualize
+
+```{python}
+infected, recovered = run_sir(g, beta=0.2, mu=0.1, steps=100)
+plt.plot(infected, label='Infected')
+plt.plot(recovered, label='Recovered')
+plt.xlabel('Time step')
+plt.ylabel('Number of nodes')
+plt.title('SIR Model Epidemic Curve')
+plt.legend()
+plt.show()
+```
+
+## Step 5: Experiment
+
+- Try different network types (random, small-world, scale-free).
+- Vary $\beta$ and $\mu$ to see the epidemic threshold and final epidemic size.
+- Analyze how network structure (degree, clustering) affects the spread and peak.
+
+## Discussion
+
+
+
+## What's Next?
+
+
+You've completed the epidemic modeling pipeline! Try experimenting with different networks, parameters, or move on to advanced topics in network science.
+
+**Next:**
+- Compare SIS and SIR results. How does permanent immunity change the outcome?
+- Ready to apply your knowledge to real-world data? Try the assignment:
+
+[Assignment: Networks & Real-World Data](assignment.qmd){.btn .btn-secondary}
