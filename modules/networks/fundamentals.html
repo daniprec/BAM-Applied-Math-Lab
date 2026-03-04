@@ -1,0 +1,2129 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.549">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Applied Math Lab - NetworkX Fundamentals</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../modules/networks/models.html" rel="next">
+<link href="../../modules/networks/index.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../assets/styles.css">
+</head>
+
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../modules/networks/index.html">Session 5: Networks</a></li><li class="breadcrumb-item"><a href="../../modules/networks/fundamentals.html">Network Fundamentals</a></li></ol></nav>
+        <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">Applied Math Lab</a> 
+    </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="false">
+ <span class="menu-text">Getting Started</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../syllabus.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Syllabus</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/ode-1d/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Session 1: ODEs in 1D</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/ode-1d/sir.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SIR Epidemic Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/ode-1d/michaelis-menten.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Michaelis–Menten Kinetics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/ode-1d/spruce-budworm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Spruce Budworm Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/ode-1d/assignment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Assignment</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/ode-2d/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Session 2: ODEs in 2D</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/ode-2d/cdima.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">CDIMA Reaction</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/ode-2d/van-der-pol.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Van der Pol Oscillator</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/ode-2d/fitzhugh-nagumo.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FitzHugh–Nagumo Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/ode-2d/animation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Animation Template</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/ode-2d/assignment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Assignment</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/ode-coupled/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Session 3: Coupled ODEs</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/ode-coupled/kuramoto.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kuramoto Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/ode-coupled/kuramoto-oscillators.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kuramoto: Oscillators</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/ode-coupled/kuramoto-diagram.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kuramoto: Bifurcation Diagram</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/ode-coupled/kuramoto-full.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kuramoto: Full Simulation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/ode-coupled/assignment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Assignment</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/collective-motion/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Session 4: Collective Motion</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-motion/vicsek.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Vicsek Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-motion/vicsek-validation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Vicsek Validation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-motion/vicsek-animation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Vicsek Animation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-motion/vicsek-animation-interactive.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Vicsek Animation (Interactive)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-motion/couzin.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Couzin Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-motion/vicsek-predator.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Vicsek with Predator</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-motion/assignment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Assignment</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/networks/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Session 5: Networks</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/fundamentals.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Network Fundamentals</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Network Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/sis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SIS Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/sir.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SIR Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/assignment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Assignment</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/network-dynamics/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Session 6: Network Dynamics</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/network-dynamics/sis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SIS Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/network-dynamics/daley-kendall.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Daley-Kendall Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/network-dynamics/assignment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Assignment</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/pde-1d/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Session 7: PDEs</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pde-1d/gierer-meinhardt.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gierer-Meinhardt 1D</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pde-1d/turing-instability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Turing Instability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pde-1d/assignment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Assignment</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pde-2d/gierer-meinhardt.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gierer-Meinhardt 2D</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pde-2d/turing-instability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Turing Instability (2D)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pde-2d/gray-scott.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gray-Scott</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pde-2d/gray-scott-art.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gray-Scott: Interaction</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pde-2d/assignment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Assignment</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/cellular-automata/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Session 8: Cellular Automata</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/cellular-automata/cellular-1d.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1D Cellular Automata</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/cellular-automata/assignment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Assignment</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/agent-based-modeling/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Session 9: Agent Based Modeling</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-10" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/agent-based-modeling/traffic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Traffic Models</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/lorenz/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Extra: Lorenz Attractor</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/lorenz/lorenz.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Lorenz Attractor</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/lorenz/assignment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Assignment</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#undirected-graphs" id="toc-undirected-graphs" class="nav-link active" data-scroll-target="#undirected-graphs">Undirected Graphs</a>
+  <ul>
+  <li><a href="#degrees" id="toc-degrees" class="nav-link" data-scroll-target="#degrees">Degrees</a></li>
+  <li><a href="#density" id="toc-density" class="nav-link" data-scroll-target="#density">Density</a></li>
+  </ul></li>
+  <li><a href="#directed-graphs" id="toc-directed-graphs" class="nav-link" data-scroll-target="#directed-graphs">Directed Graphs</a>
+  <ul>
+  <li><a href="#degrees-in-directed-graphs" id="toc-degrees-in-directed-graphs" class="nav-link" data-scroll-target="#degrees-in-directed-graphs">Degrees in Directed Graphs</a></li>
+  <li><a href="#density-of-directed-graphs" id="toc-density-of-directed-graphs" class="nav-link" data-scroll-target="#density-of-directed-graphs">Density of Directed Graphs</a></li>
+  </ul></li>
+  <li><a href="#paths-in-a-graph" id="toc-paths-in-a-graph" class="nav-link" data-scroll-target="#paths-in-a-graph">Paths in a Graph</a>
+  <ul>
+  <li><a href="#paths-in-a-directed-graph" id="toc-paths-in-a-directed-graph" class="nav-link" data-scroll-target="#paths-in-a-directed-graph">Paths in a Directed Graph</a></li>
+  <li><a href="#connectivity" id="toc-connectivity" class="nav-link" data-scroll-target="#connectivity">Connectivity</a></li>
+  <li><a href="#connectivity-of-directed-graphs" id="toc-connectivity-of-directed-graphs" class="nav-link" data-scroll-target="#connectivity-of-directed-graphs">Connectivity of Directed Graphs</a></li>
+  <li><a href="#connected-components" id="toc-connected-components" class="nav-link" data-scroll-target="#connected-components">Connected Components</a></li>
+  <li><a href="#connected-components-in-directed-graphs" id="toc-connected-components-in-directed-graphs" class="nav-link" data-scroll-target="#connected-components-in-directed-graphs">Connected Components in Directed Graphs</a></li>
+  </ul></li>
+  <li><a href="#weighted-edges" id="toc-weighted-edges" class="nav-link" data-scroll-target="#weighted-edges">Weighted Edges</a></li>
+  <li><a href="#exercise-openflights-network" id="toc-exercise-openflights-network" class="nav-link" data-scroll-target="#exercise-openflights-network">Exercise: OpenFlights Network</a></li>
+  <li><a href="#next-steps" id="toc-next-steps" class="nav-link" data-scroll-target="#next-steps">Next Steps…</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/networks/fundamentals.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../modules/networks/index.html">Session 5: Networks</a></li><li class="breadcrumb-item"><a href="../../modules/networks/fundamentals.html">Network Fundamentals</a></li></ol></nav>
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">NetworkX Fundamentals</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>NetworkX is a Python package for the creation, manipulation, and study of the structure, dynamics, and functions of complex networks.</p>
+<p>This notebook serves as a brief introduction to the NetworkX package. It covers the following topics:</p>
+<ul>
+<li>Creating a graph.</li>
+<li>Graph elements: nodes and edges.</li>
+<li>Graph visualization.</li>
+<li>Basic graph properties: number of nodes and edges, degree, path length.</li>
+</ul>
+<p>This tutorial is based on “A First Course in Network Science” by Filippo Menczer. <a href="https://github.com/CambridgeUniversityPress/FirstCourseNetworkScience/tree/master">You can see their official Github repository here.</a>. Please take a look at the folder <a href="../../references/networkx_indiana/">references/networkx_indiana</a> for more information.</p>
+<div id="abde17fc" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<section id="undirected-graphs" class="level2">
+<h2 class="anchored" data-anchor-id="undirected-graphs">Undirected Graphs</h2>
+<div id="9de8a227" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize an empty (undirected) graph</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.Graph()</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Give each a node a 'name', which is a letter in this case.</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>G.add_node(<span class="st">"a"</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># The add_nodes_from method allows adding nodes from a sequence, in this case a list</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>nodes_to_add <span class="op">=</span> [<span class="st">"b"</span>, <span class="st">"c"</span>, <span class="st">"d"</span>]</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>G.add_nodes_from(nodes_to_add)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Add edge from 'a' to 'b'</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Since this graph is undirected, the order doesn't matter here</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>G.add_edge(<span class="st">"a"</span>, <span class="st">"b"</span>)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Just like add_nodes_from, we can add edges from a sequence</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Edges should be specified as 2-tuples</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>edges_to_add <span class="op">=</span> [(<span class="st">"a"</span>, <span class="st">"c"</span>), (<span class="st">"b"</span>, <span class="st">"c"</span>), (<span class="st">"c"</span>, <span class="st">"d"</span>)]</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>G.add_edges_from(edges_to_add)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(G)</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>nx.draw(G, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="fundamentals_files/figure-html/cell-3-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="7114a1e7" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Print basic information about the graph</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(G)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># List all nodes</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Nodes:"</span>, G.nodes())</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># List all edges</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Edges:"</span>, G.edges())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Graph with 4 nodes and 4 edges
+Nodes: ['a', 'b', 'c', 'd']
+Edges: [('a', 'b'), ('a', 'c'), ('b', 'c'), ('c', 'd')]</code></pre>
+</div>
+</div>
+<section id="degrees" class="level3">
+<h3 class="anchored" data-anchor-id="degrees">Degrees</h3>
+<p>We can see the properties of a specific node.</p>
+<p><strong>Degree</strong>: The degree of a node <span class="math inline">\(k\)</span> is the number of edges connected to it.</p>
+<div id="95e5d26b" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Degree of a node</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Degree of 'a':"</span>, G.degree(<span class="st">"a"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Degree of 'a': 2</code></pre>
+</div>
+</div>
+<p>The average degree of a graph is given by:</p>
+<p><span class="math display">\[\langle k \rangle = \frac{2E}{N}\]</span></p>
+<p>where <span class="math inline">\(E\)</span> is the number of edges and <span class="math inline">\(N\)</span> is the number of nodes.</p>
+<div id="2e8e190a" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Average degree of the graph</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>ls_degrees <span class="op">=</span> [G.degree(node) <span class="cf">for</span> node <span class="kw">in</span> G.nodes()]</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>avg_degree <span class="op">=</span> <span class="bu">sum</span>(ls_degrees) <span class="op">/</span> <span class="bu">len</span>(ls_degrees)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Average degree:"</span>, avg_degree)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Average degree: 2.0</code></pre>
+</div>
+</div>
+</section>
+<section id="density" class="level3">
+<h3 class="anchored" data-anchor-id="density">Density</h3>
+<p>A graph <strong>density</strong> is the ratio of the number of edges to the number of possible edges. It is a measure of how many edges are present in the graph compared to the maximum possible number of edges. The density of a graph can be calculated as follows:</p>
+<p><span class="math display">\[
+D = \frac{2|E|}{|V|(|V| - 1)}
+\]</span></p>
+<p>where <span class="math inline">\(|E|\)</span> is the number of edges and <span class="math inline">\(|V|\)</span> is the number of nodes in the graph.</p>
+<div id="9055ad2d" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Density</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Density:"</span>, nx.density(G))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Density: 0.6666666666666666</code></pre>
+</div>
+</div>
+<p>A graph is <strong>sparse</strong> when <span class="math inline">\(D \ll 1\)</span> and <strong>dense</strong> when <span class="math inline">\(D \approx 1\)</span>.</p>
+<hr>
+</section>
+</section>
+<section id="directed-graphs" class="level2">
+<h2 class="anchored" data-anchor-id="directed-graphs">Directed Graphs</h2>
+<div id="eff1dbd9" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize a directed graph</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>D <span class="op">=</span> nx.DiGraph()</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Add edges. The order of the tuple matters here because this is a directed graph</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co"># If a node is not already in the graph, it will be added automatically</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>D.add_edges_from([</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"a"</span>, <span class="st">"b"</span>), (<span class="st">"b"</span>, <span class="st">"c"</span>), (<span class="st">"c"</span>, <span class="st">"d"</span>), (<span class="st">"d"</span>, <span class="st">"a"</span>), (<span class="st">"a"</span>, <span class="st">"e"</span>), (<span class="st">"c"</span>, <span class="st">"a"</span>)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(D)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>nx.draw(D, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="fundamentals_files/figure-html/cell-8-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We can see the same properties of the undirected graph in the directed graph. However, the directed graph has a direction in the edges.</p>
+<div id="89a54a69" class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Print basic information about the graph</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(D)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># List all nodes</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Nodes:"</span>, D.nodes())</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co"># List all edges</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Edges:"</span>, D.edges())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>DiGraph with 5 nodes and 6 edges
+Nodes: ['a', 'b', 'c', 'd', 'e']
+Edges: [('a', 'b'), ('a', 'e'), ('b', 'c'), ('c', 'd'), ('c', 'a'), ('d', 'a')]</code></pre>
+</div>
+</div>
+<section id="degrees-in-directed-graphs" class="level3">
+<h3 class="anchored" data-anchor-id="degrees-in-directed-graphs">Degrees in Directed Graphs</h3>
+<p>Same with a node. It has an in-degree and an out-degree.</p>
+<div id="313e9647" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"In-degree of 'a':"</span>, D.in_degree(<span class="st">"a"</span>))</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Out-degree of 'a':"</span>, D.out_degree(<span class="st">"a"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>In-degree of 'a': 2
+Out-degree of 'a': 2</code></pre>
+</div>
+</div>
+</section>
+<section id="density-of-directed-graphs" class="level3">
+<h3 class="anchored" data-anchor-id="density-of-directed-graphs">Density of Directed Graphs</h3>
+<p>The formula for the density of a directed graph is the same as the formula for the density of an undirected graph, but in this case there are two times more possible edges. The density of a directed graph can be calculated as follows:</p>
+<p><span class="math display">\[
+D = \frac{|E|}{|V|(|V| - 1)}
+\]</span></p>
+<p>where <span class="math inline">\(|E|\)</span> is the number of edges and <span class="math inline">\(|V|\)</span> is the number of nodes in the graph.</p>
+<div id="c4a3f074" class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Density of a directed graph</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Density:"</span>, nx.density(D))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Density: 0.3</code></pre>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="paths-in-a-graph" class="level2">
+<h2 class="anchored" data-anchor-id="paths-in-a-graph">Paths in a Graph</h2>
+<div id="116e63e2" class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize an undirected graph</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.Graph()</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Add edges</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>G.add_edges_from([</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"a"</span>, <span class="st">"b"</span>), (<span class="st">"b"</span>, <span class="st">"c"</span>), (<span class="st">"c"</span>, <span class="st">"d"</span>), (<span class="st">"d"</span>, <span class="st">"a"</span>), (<span class="st">"a"</span>, <span class="st">"e"</span>), (<span class="st">"c"</span>, <span class="st">"a"</span>)</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(G)</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>nx.draw(G, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="fundamentals_files/figure-html/cell-12-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>A <strong>path</strong> in a network is a sequence of edges connecting two nodes.</p>
+<div id="38b452af" class="cell" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(nx.has_path(G, <span class="st">"c"</span>, <span class="st">"e"</span>))</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(nx.shortest_path(G, <span class="st">"c"</span>, <span class="st">"e"</span>))</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co"># The second command will raise an error if the graph is not connected</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>True
+['c', 'a', 'e']</code></pre>
+</div>
+</div>
+<p>There can be more than one path between two nodes.</p>
+<div id="289007ee" class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="bu">list</span>(nx.all_simple_paths(G, <span class="st">"c"</span>, <span class="st">"e"</span>))</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co"># This command will raise an error if the graph is not connected</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="13">
+<pre><code>[['c', 'b', 'a', 'e'], ['c', 'd', 'a', 'e'], ['c', 'a', 'e']]</code></pre>
+</div>
+</div>
+<p>The <strong>diameter</strong> of a graph is the longest shortest path between any two nodes.</p>
+<div id="f540a149" class="cell" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Diameter:"</span>, nx.diameter(G))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Diameter: 2</code></pre>
+</div>
+</div>
+<p>The <strong>average path length (APL)</strong> is the average of the shortest paths between all pairs of nodes.</p>
+<div id="8b0f267a" class="cell" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Average shortest path length:"</span>, nx.average_shortest_path_length(G))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Average shortest path length: 1.4</code></pre>
+</div>
+</div>
+<section id="paths-in-a-directed-graph" class="level3">
+<h3 class="anchored" data-anchor-id="paths-in-a-directed-graph">Paths in a Directed Graph</h3>
+<div id="48974537" class="cell" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize a directed graph</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>D <span class="op">=</span> nx.DiGraph()</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Add edges</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>D.add_edges_from([</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"a"</span>, <span class="st">"b"</span>), (<span class="st">"b"</span>, <span class="st">"c"</span>), (<span class="st">"c"</span>, <span class="st">"d"</span>), (<span class="st">"d"</span>, <span class="st">"a"</span>), (<span class="st">"a"</span>, <span class="st">"e"</span>), (<span class="st">"c"</span>, <span class="st">"a"</span>),</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"x"</span>, <span class="st">"y"</span>), (<span class="st">"y"</span>, <span class="st">"z"</span>), (<span class="st">"z"</span>, <span class="st">"x"</span>), (<span class="st">"e"</span>, <span class="st">"x"</span>)</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(D)</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>nx.draw(D, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="fundamentals_files/figure-html/cell-17-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="955c43d7" class="cell" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Can we reach 'c' from 'z'?</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>nx.has_path(D, <span class="st">"c"</span>, <span class="st">"z"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="17">
+<pre><code>True</code></pre>
+</div>
+</div>
+<div id="1fdf0ebe" class="cell" data-execution_count="18">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Can we reach 'z' from 'c'?</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>nx.has_path(D, <span class="st">"z"</span>, <span class="st">"c"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="18">
+<pre><code>False</code></pre>
+</div>
+</div>
+<p><strong>Exercise.</strong> Create a path from “z” to “c” in the directed graph <code>D</code>, so that the shortest path has a length of 4.</p>
+<div id="0fc15fc3" class="cell" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="connectivity" class="level3">
+<h3 class="anchored" data-anchor-id="connectivity">Connectivity</h3>
+<p>A graph is <strong>connected</strong> when we can reach any node from any other node by following the edges. This means, there exists a path between any two nodes.</p>
+<div id="3013bec3" class="cell" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize an undirected graph</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.Graph()</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Add edges</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>G.add_edges_from([</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"a"</span>, <span class="st">"b"</span>), (<span class="st">"b"</span>, <span class="st">"c"</span>), (<span class="st">"c"</span>, <span class="st">"d"</span>), (<span class="st">"d"</span>, <span class="st">"a"</span>), (<span class="st">"a"</span>, <span class="st">"e"</span>), (<span class="st">"c"</span>, <span class="st">"a"</span>)</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(G)</span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>nx.draw(G, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is connected:"</span>, nx.is_connected(G))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="fundamentals_files/figure-html/cell-21-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Is connected: True</code></pre>
+</div>
+</div>
+<div id="6fda2f04" class="cell" data-execution_count="21">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove a node</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">"a"</span> <span class="kw">in</span> G.nodes():</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    G.remove_node(<span class="st">"a"</span>)</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Is connected now?</span></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is connected:"</span>, nx.is_connected(G))</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(G)</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>nx.draw(G, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Is connected: False</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="fundamentals_files/figure-html/cell-22-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="connectivity-of-directed-graphs" class="level3">
+<h3 class="anchored" data-anchor-id="connectivity-of-directed-graphs">Connectivity of Directed Graphs</h3>
+<p>The <strong>connectivity</strong> of a directed graph is defined by the <strong>strongly connected components</strong>. A directed graph is <strong>strongly connected</strong> if there is a directed path from any node to any other node. Conversely, a directed graph is <strong>weakly connected</strong> if there is an undirected path from any node to any other node.</p>
+<div id="1097532f" class="cell" data-execution_count="22">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize a directed graph</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>D <span class="op">=</span> nx.DiGraph()</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Add edges. The order of the tuple matters here because this is a directed graph</span></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a><span class="co"># If a node is not already in the graph, it will be added automatically</span></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>D.add_edges_from([</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"a"</span>, <span class="st">"b"</span>), (<span class="st">"b"</span>, <span class="st">"c"</span>), (<span class="st">"c"</span>, <span class="st">"d"</span>), (<span class="st">"d"</span>, <span class="st">"a"</span>), (<span class="st">"a"</span>, <span class="st">"e"</span>), (<span class="st">"c"</span>, <span class="st">"a"</span>)</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(D)</span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>nx.draw(D, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is strongly connected:"</span>, nx.is_strongly_connected(D))</span>
+<span id="cb37-16"><a href="#cb37-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is weakly connected:"</span>, nx.is_weakly_connected(D))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="fundamentals_files/figure-html/cell-23-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Is strongly connected: False
+Is weakly connected: True</code></pre>
+</div>
+</div>
+<p><strong>Exercise.</strong> Make a copy of graph <code>D</code> and name it <code>D_strong</code>. Turn it into a strongly connected graph.</p>
+<div id="ce253e6e" class="cell" data-execution_count="23">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>Exercise.</strong> Make a copy of graph <code>D</code> and name it <code>D_uncon</code>. Turn it into a unconnected graph.</p>
+<div id="1350150a" class="cell" data-execution_count="24">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="connected-components" class="level3">
+<h3 class="anchored" data-anchor-id="connected-components">Connected Components</h3>
+<p>A <strong>connected component</strong> is a connected subnetwork.</p>
+<p>The largest one is called giant component; it often includes a substantial portion of the network.</p>
+<p>A singleton is the smallest-possible connected component.</p>
+<div id="c4bd8db9" class="cell" data-execution_count="25">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize an undirected graph</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.Graph()</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Add edges</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>G.add_edges_from([</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"a"</span>, <span class="st">"b"</span>), (<span class="st">"b"</span>, <span class="st">"c"</span>), (<span class="st">"c"</span>, <span class="st">"d"</span>), (<span class="st">"d"</span>, <span class="st">"a"</span>), (<span class="st">"a"</span>, <span class="st">"e"</span>), (<span class="st">"c"</span>, <span class="st">"a"</span>),</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"x"</span>, <span class="st">"y"</span>), (<span class="st">"y"</span>, <span class="st">"z"</span>), (<span class="st">"z"</span>, <span class="st">"x"</span>)</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(G)</span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>nx.draw(G, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="fundamentals_files/figure-html/cell-26-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The <code>nx.connected_components()</code> function takes a graph and returns a list of sets of node names, one such set for each connected component. Verify that the two sets in the following list correspond to the two connected components in the drawing of the graph above:</p>
+<div id="94f99f26" class="cell" data-execution_count="26">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="bu">list</span>(nx.connected_components(G))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="26">
+<pre><code>[{'a', 'b', 'c', 'd', 'e'}, {'x', 'y', 'z'}]</code></pre>
+</div>
+</div>
+<p><strong>Exercise.</strong> How many connected components are there in the graph <code>G</code> below?</p>
+<div id="f446c3be" class="cell" data-execution_count="27">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>list_edges <span class="op">=</span> [(<span class="st">"x"</span>, <span class="st">"y"</span>), (<span class="st">"y"</span>, <span class="st">"z"</span>), (<span class="st">"z"</span>, <span class="st">"x"</span>), (<span class="st">"r"</span>, <span class="st">"s"</span>)]</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>G.add_edges_from(list_edges)</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(G)</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>nx.draw(G, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="fundamentals_files/figure-html/cell-28-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="connected-components-in-directed-graphs" class="level3">
+<h3 class="anchored" data-anchor-id="connected-components-in-directed-graphs">Connected Components in Directed Graphs</h3>
+<p>In a directed graph, we can have <strong>strongly connected components</strong> and <strong>weakly connected components</strong>.</p>
+<div id="6447bb1a" class="cell" data-execution_count="28">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize a directed graph</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>D <span class="op">=</span> nx.DiGraph()</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Add edges</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>D.add_edges_from([</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"a"</span>, <span class="st">"b"</span>), (<span class="st">"b"</span>, <span class="st">"c"</span>), (<span class="st">"c"</span>, <span class="st">"d"</span>), (<span class="st">"d"</span>, <span class="st">"a"</span>), (<span class="st">"a"</span>, <span class="st">"e"</span>), (<span class="st">"c"</span>, <span class="st">"a"</span>),</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"x"</span>, <span class="st">"y"</span>), (<span class="st">"y"</span>, <span class="st">"z"</span>), (<span class="st">"z"</span>, <span class="st">"x"</span>)</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(D)</span>
+<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a>nx.draw(D, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="fundamentals_files/figure-html/cell-29-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>A directed graph is <strong>strongly connected</strong> if there is a directed path from any node to any other node.</p>
+<div id="7b00c4fb" class="cell" data-execution_count="29">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is strongly connected:"</span>, nx.is_strongly_connected(D))</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">list</span>(nx.strongly_connected_components(D)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Is strongly connected: False
+[{'e'}, {'b', 'd', 'a', 'c'}, {'z', 'y', 'x'}]</code></pre>
+</div>
+</div>
+<p>A directed graph is <strong>weakly connected</strong> if there is an undirected path from any node to any other node.</p>
+<div id="1e0be8e9" class="cell" data-execution_count="30">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is weakly connected:"</span>, nx.is_weakly_connected(D))</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">list</span>(nx.weakly_connected_components(D)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Is weakly connected: False
+[{'b', 'd', 'c', 'e', 'a'}, {'z', 'y', 'x'}]</code></pre>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="weighted-edges" class="level2">
+<h2 class="anchored" data-anchor-id="weighted-edges">Weighted Edges</h2>
+<div id="6b55f763" class="cell" data-execution_count="31">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize a directed graph</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>D <span class="op">=</span> nx.DiGraph()</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Add weighted edges</span></span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>D.add_weighted_edges_from([</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"a"</span>, <span class="st">"b"</span>, <span class="dv">1</span>), (<span class="st">"b"</span>, <span class="st">"c"</span>, <span class="dv">2</span>), (<span class="st">"c"</span>, <span class="st">"d"</span>, <span class="dv">3</span>), (<span class="st">"d"</span>, <span class="st">"a"</span>, <span class="dv">4</span>), (<span class="st">"a"</span>, <span class="st">"e"</span>, <span class="dv">5</span>), (<span class="st">"c"</span>, <span class="st">"a"</span>, <span class="dv">6</span>)</span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Choose a layout (required to add the weights)</span></span>
+<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(D)</span>
+<span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb50-12"><a href="#cb50-12" aria-hidden="true" tabindex="-1"></a>nx.draw(D, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb50-13"><a href="#cb50-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the edge labels</span></span>
+<span id="cb50-14"><a href="#cb50-14" aria-hidden="true" tabindex="-1"></a>edge_labels <span class="op">=</span> nx.get_edge_attributes(D, <span class="st">"weight"</span>)</span>
+<span id="cb50-15"><a href="#cb50-15" aria-hidden="true" tabindex="-1"></a>nx.draw_networkx_edge_labels(D, pos<span class="op">=</span>pos, edge_labels<span class="op">=</span>edge_labels)</span>
+<span id="cb50-16"><a href="#cb50-16" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb50-17"><a href="#cb50-17" aria-hidden="true" tabindex="-1"></a>plt.close()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="fundamentals_files/figure-html/cell-32-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+</section>
+<section id="exercise-openflights-network" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-openflights-network">Exercise: OpenFlights Network</h2>
+<p>This repository contains several example network datasets. Among these is a network of US air travel routes:</p>
+<div id="57f04ed6" class="cell" data-execution_count="32">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.read_graphml(<span class="st">"./data/openflights/openflights_usa.graphml.gz"</span>)</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(G)</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Nodes:"</span>, G.nodes())</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(G)</span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>nx.draw(G, pos<span class="op">=</span>pos, node_size<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Graph with 546 nodes and 2781 edges
+Nodes: ['RDD', 'EUG', 'IDA', 'MFR', 'RDM', 'OOK', 'ABL', 'BKC', 'ITO', 'OBU', 'ORV', 'WLK', 'KTS', 'CAK', 'HSV', 'PKB', 'MGM', 'TRI', 'PAH', 'KKA', 'SMK', 'SKK', 'TNC', 'AKB', 'PGA', 'FCA', 'MBS', 'BGM', 'KFP', 'NLG', 'KLW', 'KWN', 'HNM', 'KYU', 'SCM', 'BTI', 'NME', 'KKH', 'NIB', 'PSG', 'AIN', 'CIC', 'KUK', 'WNA', 'IRC', 'SFB', 'SLQ', 'JST', 'HKB', 'MLY', 'CLM', 'KWT', 'ELI', 'GLV', 'PSM', 'TLA', 'WAA', 'MSO', 'HVR', 'HHH', 'GRK', 'TVF', 'SGY', 'MLL', 'RBY', 'EGE', 'CSG', 'LAW', 'FLG', 'ANV', 'TWF', 'MVY', 'KVC', 'STC', 'GTR', 'ERI', 'HYA', 'PTH', 'AUK', 'MGW', 'CRW', 'AVP', 'BJI', 'FAR', 'KPN', 'GCC', 'SVA', 'SCE', 'HGR', 'KOT', 'MEI', 'SPI', 'CEZ', 'HDN', 'LBL', 'COD', 'SGF', 'JLN', 'ABE', 'XNA', 'SBN', 'CKB', 'LRD', 'ORH', 'ACV', 'OAJ', 'DBQ', 'GGG', 'PVC', 'KTN', 'GGW', 'OGD', 'PIH', 'PDT', 'LUR', 'PIZ', 'RAP', 'BTT', 'FYU', 'ATK', 'TLJ', 'SNP', 'IGG', 'STG', 'ILI', 'PTU', 'AZA', 'FSM', 'KAL', 'GFK', 'KSM', 'PRC', 'TTN', 'BOS', 'KVL', 'OAK', 'OMA', 'HOT', 'OGG', 'ICT', 'MCI', 'MSN', 'DLG', 'HRO', 'PHX', 'BGR', 'BUF', 'GEG', 'SFO', 'GNV', 'MEM', 'ELD', 'PVU', 'LAX', 'CLE', 'WTK', 'CVG', 'AIA', 'JNU', 'LFT', 'EWR', 'BOI', 'GCK', 'MOT', 'DAL', 'HLN', 'LCH', 'KOA', 'MYR', 'ACK', 'DCA', 'LAM', 'ACY', 'PUB', 'PQI', 'ADQ', 'FLL', 'INL', 'SLC', 'HON', 'MDT', 'LNK', 'LAN', 'MUE', 'MSS', 'IAH', 'SOW', 'BFL', 'ELP', 'HRL', 'MMU', 'PNS', 'HOU', 'PIT', 'BRW', 'ECP', 'MMH', 'MIA', 'SEA', 'CHA', 'JAN', 'GAM', 'LGB', 'IPT', 'IND', 'KQA', 'HPN', 'JBR', 'ALW', 'YUM', 'CNM', 'DLH', 'BET', 'PKA', 'LIH', 'YAK', 'ATY', 'RIC', 'SHV', 'CDV', 'ORF', 'BPT', 'SAV', 'OME', 'PIE', 'MQT', 'SCC', 'SAT', 'ROC', 'TEB', 'BKW', 'RDU', 'DAY', 'ENA', 'LAS', 'IAG', 'IAN', 'PHF', 'TUS', 'BRL', 'AKP', 'PVD', 'SBY', 'CEC', 'BUR', 'DTW', 'TPA', 'EEK', 'MYU', 'SPS', 'HIB', 'SHH', 'MAF', 'GRB', 'LUK', 'ARC', 'AGS', 'ISN', 'LIT', 'SWF', 'HOM', 'TBN', 'ABR', 'ABY', 'AHN', 'DFW', 'MLB', 'APN', 'AUS', 'BFD', 'BFF', 'TYS', 'BQK', 'STL', 'GRR', 'CGI', 'CIU', 'ATL', 'DRG', 'CMX', 'DDC', 'DUJ', 'EAU', 'EKO', 'EWB', 'BNA', 'FAT', 'GRI', 'OTZ', 'HTS', 'TOG', 'IRK', 'LGA', 'TLH', 'LBE', 'LBF', 'AUG', 'LMT', 'IPL', 'MKL', 'LYH', 'MKG', 'MSL', 'FAY', 'OWB', 'BTV', 'JAX', 'DRO', 'IAD', 'CLL', 'MKE', 'ABI', 'COU', 'PDX', 'SHR', 'PBI', 'SLN', 'SMX', 'TUP', 'UIN', 'VCT', 'HNL', 'DSM', 'EWN', 'SAN', 'MLU', 'AOO', 'ONT', 'ROW', 'BRO', 'DHN', 'FMN', 'CRP', 'SYR', 'MDW', 'SJC', 'HOB', 'DEN', 'PHL', 'SUX', 'MCN', 'NUL', 'LAR', 'CMH', 'GAL', 'IMT', 'AET', 'ACT', 'TXK', 'PBG', 'VEE', 'ANC', 'LEB', 'BLI', 'WBQ', 'MOB', 'SAF', 'CEM', 'LNS', 'ALO', 'BLV', 'SHG', 'RSW', 'AKN', 'JHM', 'JFK', 'MKK', 'CYS', 'SCK', 'CHS', 'RNO', 'MTJ', 'RIW', 'BHM', 'VIS', 'MOD', 'SMF', 'COS', 'SDP', 'MCE', 'OTH', 'CDC', 'BDL', 'MFE', 'GCN', 'LBB', 'ORD', 'FAI', 'PIB', 'ART', 'PSP', 'AMA', 'SJT', 'FOE', 'EAT', 'ILM', 'BTR', 'PIR', 'TYR', 'BWI', 'LNY', 'AEX', 'PLN', 'CDB', 'TUL', 'SIT', 'ISP', 'MSP', 'ILG', 'DUT', 'MSY', 'PWM', 'OKC', 'ALB', 'VDZ', 'SNA', 'RHI', 'CPR', 'VPS', 'EYW', 'CLT', 'RKS', 'MCO', 'FLO', 'GTF', 'YNG', 'ESD', 'RUT', 'BRD', 'LWB', 'PGV', 'CYF', 'SBP', 'WSN', 'AGN', 'SLK', 'WMO', 'ELV', 'ADK', 'GST', 'OGS', 'HCR', 'HNS', 'KLG', 'MCG', 'ESC', 'ANI', 'STS', 'WRG', 'BFI', 'ASE', 'VLD', 'HPB', 'EMK', 'WRL', 'PUW', 'LWS', 'ELM', 'ITH', 'MRY', 'SBA', 'DAB', 'RSH', 'YKM', 'CAE', 'LCK', 'UNK', 'UST', 'GUC', 'MBL', 'PGD', 'JHW', 'CLD', 'SHD', 'DIK', 'SDY', 'CDR', 'KPV', 'MCK', 'GDV', 'OLF', 'ALS', 'CNY', 'VEL', 'HVN', 'AVL', 'GSO', 'FSD', 'FRD', 'MHT', 'APF', 'EGX', 'SDF', 'CHO', 'ROA', 'LEX', 'EVV', 'ABQ', 'BZN', 'BIL', 'BTM', 'TVC', 'KWK', 'BHB', 'RKD', 'JAC', 'RFD', 'SHX', 'CIK', 'GSP', 'HUS', 'HSL', 'BMI', 'GPT', 'AZO', 'TOL', 'FWA', 'DEC', 'CID', 'LSE', 'CWA', 'PIA', 'ATW', 'RST', 'CMI', 'MHK', 'MOU', 'FNT', 'FKL', 'GJT', 'SGU', 'VAK', 'SRQ', 'HNH', 'MLI', 'MTM', 'HYG', 'GLH', 'BIS', 'PSC', 'PIP', 'MWA', 'AKK', 'KYK', 'KLN', 'NUI']</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="fundamentals_files/figure-html/cell-33-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The nodes in this graph are airports, represented by their <a href="https://en.wikipedia.org/wiki/List_of_airports_by_IATA_code:_A">IATA codes</a>; two nodes are connected with an edge if there is a scheduled flight directly connecting these two airports. We’ll assume this graph to be undirected since a flight in one direction usually means there is a return flight.</p>
+<p>Thus this graph has edges</p>
+<pre><code>[('HOM', 'ANC'), ('BGM', 'PHL'), ('BGM', 'IAD'), ...]</code></pre>
+<p>where ANC is Anchorage, IAD is Washington Dulles, etc.</p>
+<p>These nodes also have <strong>attributes</strong> associated with them, containing additional information about the airports, in the form of a dictionary:</p>
+<div id="f8ec9f9d" class="cell" data-execution_count="33">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>G.nodes[<span class="st">"IND"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="33">
+<pre><code>{'name': 'Indianapolis International Airport',
+ 'latitude': 39.7173,
+ 'longitude': -86.294403,
+ 'IATA': 'IND'}</code></pre>
+</div>
+</div>
+<p><strong>Exercise.</strong> Is there a direct flight between Indianapolis and Fairbanks, Alaska (FAI)? A direct flight is one with no intermediate stops.</p>
+<div id="392fcd7c" class="cell" data-execution_count="34">
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>Exercise.</strong> If I wanted to fly from Indianapolis (IND) to Fairbanks, Alaska (FAI) what would be an itinerary with the fewest number of flights?</p>
+<div id="a44e01cd" class="cell" data-execution_count="35">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>Exercise.</strong> Is it possible to travel from any airport in the US to any other airport in the US, possibly using connecting flights? In other words, does there exist a path in the network between every possible pair of airports (is the graph connected)?</p>
+<div id="83f75c17" class="cell" data-execution_count="36">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>Exercise.</strong> Which airports are the most important for connectivity?</p>
+<div id="e5a9f2c4" class="cell" data-execution_count="37">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>Exercise.</strong> What happens if a major hub is removed?</p>
+<div id="fe4c743b" class="cell" data-execution_count="38">
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+</section>
+<section id="next-steps" class="level2">
+<h2 class="anchored" data-anchor-id="next-steps">Next Steps…</h2>
+<p>Ready to build and analyze synthetic networks? Continue to:</p>
+<p><a href="../../modules/networks/models.html" class="btn btn-primary">Network Models</a></p>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../modules/networks/index.html" class="pagination-link  aria-label=" session="" 5:="" networks"="">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Session 5: Networks</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../modules/networks/models.html" class="pagination-link" aria-label="Network Models">
+        <span class="nav-page-text">Network Models</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb61" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "NetworkX Fundamentals"</span></span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
+<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a>NetworkX is a Python package for the creation, manipulation, and study of the structure, dynamics, and functions of complex networks.</span>
+<span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-8"><a href="#cb61-8" aria-hidden="true" tabindex="-1"></a>This notebook serves as a brief introduction to the NetworkX package. It covers the following topics:</span>
+<span id="cb61-9"><a href="#cb61-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-10"><a href="#cb61-10" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Creating a graph.</span>
+<span id="cb61-11"><a href="#cb61-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Graph elements: nodes and edges.</span>
+<span id="cb61-12"><a href="#cb61-12" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Graph visualization.</span>
+<span id="cb61-13"><a href="#cb61-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Basic graph properties: number of nodes and edges, degree, path length.</span>
+<span id="cb61-14"><a href="#cb61-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-15"><a href="#cb61-15" aria-hidden="true" tabindex="-1"></a>This tutorial is based on "A First Course in Network Science" by Filippo Menczer. <span class="co">[</span><span class="ot">You can see their official Github repository here.</span><span class="co">](https://github.com/CambridgeUniversityPress/FirstCourseNetworkScience/tree/master)</span>. Please take a look at the folder <span class="co">[</span><span class="ot">references/networkx_indiana</span><span class="co">](../../references/networkx_indiana/)</span> for more information.</span>
+<span id="cb61-16"><a href="#cb61-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-19"><a href="#cb61-19" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-20"><a href="#cb61-20" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb61-21"><a href="#cb61-21" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
+<span id="cb61-22"><a href="#cb61-22" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-23"><a href="#cb61-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-24"><a href="#cb61-24" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb61-25"><a href="#cb61-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-26"><a href="#cb61-26" aria-hidden="true" tabindex="-1"></a><span class="fu">## Undirected Graphs</span></span>
+<span id="cb61-27"><a href="#cb61-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-30"><a href="#cb61-30" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-31"><a href="#cb61-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize an empty (undirected) graph</span></span>
+<span id="cb61-32"><a href="#cb61-32" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.Graph()</span>
+<span id="cb61-33"><a href="#cb61-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-34"><a href="#cb61-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Give each a node a 'name', which is a letter in this case.</span></span>
+<span id="cb61-35"><a href="#cb61-35" aria-hidden="true" tabindex="-1"></a>G.add_node(<span class="st">"a"</span>)</span>
+<span id="cb61-36"><a href="#cb61-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-37"><a href="#cb61-37" aria-hidden="true" tabindex="-1"></a><span class="co"># The add_nodes_from method allows adding nodes from a sequence, in this case a list</span></span>
+<span id="cb61-38"><a href="#cb61-38" aria-hidden="true" tabindex="-1"></a>nodes_to_add <span class="op">=</span> [<span class="st">"b"</span>, <span class="st">"c"</span>, <span class="st">"d"</span>]</span>
+<span id="cb61-39"><a href="#cb61-39" aria-hidden="true" tabindex="-1"></a>G.add_nodes_from(nodes_to_add)</span>
+<span id="cb61-40"><a href="#cb61-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-41"><a href="#cb61-41" aria-hidden="true" tabindex="-1"></a><span class="co"># Add edge from 'a' to 'b'</span></span>
+<span id="cb61-42"><a href="#cb61-42" aria-hidden="true" tabindex="-1"></a><span class="co"># Since this graph is undirected, the order doesn't matter here</span></span>
+<span id="cb61-43"><a href="#cb61-43" aria-hidden="true" tabindex="-1"></a>G.add_edge(<span class="st">"a"</span>, <span class="st">"b"</span>)</span>
+<span id="cb61-44"><a href="#cb61-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-45"><a href="#cb61-45" aria-hidden="true" tabindex="-1"></a><span class="co"># Just like add_nodes_from, we can add edges from a sequence</span></span>
+<span id="cb61-46"><a href="#cb61-46" aria-hidden="true" tabindex="-1"></a><span class="co"># Edges should be specified as 2-tuples</span></span>
+<span id="cb61-47"><a href="#cb61-47" aria-hidden="true" tabindex="-1"></a>edges_to_add <span class="op">=</span> [(<span class="st">"a"</span>, <span class="st">"c"</span>), (<span class="st">"b"</span>, <span class="st">"c"</span>), (<span class="st">"c"</span>, <span class="st">"d"</span>)]</span>
+<span id="cb61-48"><a href="#cb61-48" aria-hidden="true" tabindex="-1"></a>G.add_edges_from(edges_to_add)</span>
+<span id="cb61-49"><a href="#cb61-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-50"><a href="#cb61-50" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb61-51"><a href="#cb61-51" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(G)</span>
+<span id="cb61-52"><a href="#cb61-52" aria-hidden="true" tabindex="-1"></a>nx.draw(G, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb61-53"><a href="#cb61-53" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb61-54"><a href="#cb61-54" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-55"><a href="#cb61-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-58"><a href="#cb61-58" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-59"><a href="#cb61-59" aria-hidden="true" tabindex="-1"></a><span class="co"># Print basic information about the graph</span></span>
+<span id="cb61-60"><a href="#cb61-60" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(G)</span>
+<span id="cb61-61"><a href="#cb61-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-62"><a href="#cb61-62" aria-hidden="true" tabindex="-1"></a><span class="co"># List all nodes</span></span>
+<span id="cb61-63"><a href="#cb61-63" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Nodes:"</span>, G.nodes())</span>
+<span id="cb61-64"><a href="#cb61-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-65"><a href="#cb61-65" aria-hidden="true" tabindex="-1"></a><span class="co"># List all edges</span></span>
+<span id="cb61-66"><a href="#cb61-66" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Edges:"</span>, G.edges())</span>
+<span id="cb61-67"><a href="#cb61-67" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-68"><a href="#cb61-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-69"><a href="#cb61-69" aria-hidden="true" tabindex="-1"></a><span class="fu">### Degrees</span></span>
+<span id="cb61-70"><a href="#cb61-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-71"><a href="#cb61-71" aria-hidden="true" tabindex="-1"></a>We can see the properties of a specific node.</span>
+<span id="cb61-72"><a href="#cb61-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-73"><a href="#cb61-73" aria-hidden="true" tabindex="-1"></a>**Degree**: The degree of a node $k$ is the number of edges connected to it.</span>
+<span id="cb61-74"><a href="#cb61-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-77"><a href="#cb61-77" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-78"><a href="#cb61-78" aria-hidden="true" tabindex="-1"></a><span class="co"># Degree of a node</span></span>
+<span id="cb61-79"><a href="#cb61-79" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Degree of 'a':"</span>, G.degree(<span class="st">"a"</span>))</span>
+<span id="cb61-80"><a href="#cb61-80" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-81"><a href="#cb61-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-82"><a href="#cb61-82" aria-hidden="true" tabindex="-1"></a>The average degree of a graph is given by:</span>
+<span id="cb61-83"><a href="#cb61-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-84"><a href="#cb61-84" aria-hidden="true" tabindex="-1"></a>$$\langle k \rangle = \frac{2E}{N}$$</span>
+<span id="cb61-85"><a href="#cb61-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-86"><a href="#cb61-86" aria-hidden="true" tabindex="-1"></a>where $E$ is the number of edges and $N$ is the number of nodes.</span>
+<span id="cb61-87"><a href="#cb61-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-90"><a href="#cb61-90" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-91"><a href="#cb61-91" aria-hidden="true" tabindex="-1"></a><span class="co"># Average degree of the graph</span></span>
+<span id="cb61-92"><a href="#cb61-92" aria-hidden="true" tabindex="-1"></a>ls_degrees <span class="op">=</span> [G.degree(node) <span class="cf">for</span> node <span class="kw">in</span> G.nodes()]</span>
+<span id="cb61-93"><a href="#cb61-93" aria-hidden="true" tabindex="-1"></a>avg_degree <span class="op">=</span> <span class="bu">sum</span>(ls_degrees) <span class="op">/</span> <span class="bu">len</span>(ls_degrees)</span>
+<span id="cb61-94"><a href="#cb61-94" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Average degree:"</span>, avg_degree)</span>
+<span id="cb61-95"><a href="#cb61-95" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-96"><a href="#cb61-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-97"><a href="#cb61-97" aria-hidden="true" tabindex="-1"></a><span class="fu">### Density</span></span>
+<span id="cb61-98"><a href="#cb61-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-99"><a href="#cb61-99" aria-hidden="true" tabindex="-1"></a>A graph **density** is the ratio of the number of edges to the number of possible edges. It is a measure of how many edges are present in the graph compared to the maximum possible number of edges. The density of a graph can be calculated as follows:</span>
+<span id="cb61-100"><a href="#cb61-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-101"><a href="#cb61-101" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb61-102"><a href="#cb61-102" aria-hidden="true" tabindex="-1"></a>D = \frac{2|E|}{|V|(|V| - 1)}</span>
+<span id="cb61-103"><a href="#cb61-103" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb61-104"><a href="#cb61-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-105"><a href="#cb61-105" aria-hidden="true" tabindex="-1"></a>where $|E|$ is the number of edges and $|V|$ is the number of nodes in the graph.</span>
+<span id="cb61-106"><a href="#cb61-106" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-109"><a href="#cb61-109" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-110"><a href="#cb61-110" aria-hidden="true" tabindex="-1"></a><span class="co"># Density</span></span>
+<span id="cb61-111"><a href="#cb61-111" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Density:"</span>, nx.density(G))</span>
+<span id="cb61-112"><a href="#cb61-112" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-113"><a href="#cb61-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-114"><a href="#cb61-114" aria-hidden="true" tabindex="-1"></a>A graph is **sparse** when $D \ll 1$ and **dense** when $D \approx 1$.</span>
+<span id="cb61-115"><a href="#cb61-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-116"><a href="#cb61-116" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb61-117"><a href="#cb61-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-118"><a href="#cb61-118" aria-hidden="true" tabindex="-1"></a><span class="fu">## Directed Graphs</span></span>
+<span id="cb61-119"><a href="#cb61-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-122"><a href="#cb61-122" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-123"><a href="#cb61-123" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize a directed graph</span></span>
+<span id="cb61-124"><a href="#cb61-124" aria-hidden="true" tabindex="-1"></a>D <span class="op">=</span> nx.DiGraph()</span>
+<span id="cb61-125"><a href="#cb61-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-126"><a href="#cb61-126" aria-hidden="true" tabindex="-1"></a><span class="co"># Add edges. The order of the tuple matters here because this is a directed graph</span></span>
+<span id="cb61-127"><a href="#cb61-127" aria-hidden="true" tabindex="-1"></a><span class="co"># If a node is not already in the graph, it will be added automatically</span></span>
+<span id="cb61-128"><a href="#cb61-128" aria-hidden="true" tabindex="-1"></a>D.add_edges_from([</span>
+<span id="cb61-129"><a href="#cb61-129" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"a"</span>, <span class="st">"b"</span>), (<span class="st">"b"</span>, <span class="st">"c"</span>), (<span class="st">"c"</span>, <span class="st">"d"</span>), (<span class="st">"d"</span>, <span class="st">"a"</span>), (<span class="st">"a"</span>, <span class="st">"e"</span>), (<span class="st">"c"</span>, <span class="st">"a"</span>)</span>
+<span id="cb61-130"><a href="#cb61-130" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb61-131"><a href="#cb61-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-132"><a href="#cb61-132" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb61-133"><a href="#cb61-133" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(D)</span>
+<span id="cb61-134"><a href="#cb61-134" aria-hidden="true" tabindex="-1"></a>nx.draw(D, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb61-135"><a href="#cb61-135" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb61-136"><a href="#cb61-136" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-137"><a href="#cb61-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-138"><a href="#cb61-138" aria-hidden="true" tabindex="-1"></a>We can see the same properties of the undirected graph in the directed graph. However, the directed graph has a direction in the edges.</span>
+<span id="cb61-139"><a href="#cb61-139" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-142"><a href="#cb61-142" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-143"><a href="#cb61-143" aria-hidden="true" tabindex="-1"></a><span class="co"># Print basic information about the graph</span></span>
+<span id="cb61-144"><a href="#cb61-144" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(D)</span>
+<span id="cb61-145"><a href="#cb61-145" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-146"><a href="#cb61-146" aria-hidden="true" tabindex="-1"></a><span class="co"># List all nodes</span></span>
+<span id="cb61-147"><a href="#cb61-147" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Nodes:"</span>, D.nodes())</span>
+<span id="cb61-148"><a href="#cb61-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-149"><a href="#cb61-149" aria-hidden="true" tabindex="-1"></a><span class="co"># List all edges</span></span>
+<span id="cb61-150"><a href="#cb61-150" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Edges:"</span>, D.edges())</span>
+<span id="cb61-151"><a href="#cb61-151" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-152"><a href="#cb61-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-153"><a href="#cb61-153" aria-hidden="true" tabindex="-1"></a><span class="fu">### Degrees in Directed Graphs</span></span>
+<span id="cb61-154"><a href="#cb61-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-155"><a href="#cb61-155" aria-hidden="true" tabindex="-1"></a>Same with a node. It has an in-degree and an out-degree.</span>
+<span id="cb61-156"><a href="#cb61-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-159"><a href="#cb61-159" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-160"><a href="#cb61-160" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"In-degree of 'a':"</span>, D.in_degree(<span class="st">"a"</span>))</span>
+<span id="cb61-161"><a href="#cb61-161" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Out-degree of 'a':"</span>, D.out_degree(<span class="st">"a"</span>))</span>
+<span id="cb61-162"><a href="#cb61-162" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-163"><a href="#cb61-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-164"><a href="#cb61-164" aria-hidden="true" tabindex="-1"></a><span class="fu">### Density of Directed Graphs</span></span>
+<span id="cb61-165"><a href="#cb61-165" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-166"><a href="#cb61-166" aria-hidden="true" tabindex="-1"></a>The formula for the density of a directed graph is the same as the formula for the density of an undirected graph, but in this case there are two times more possible edges. The density of a directed graph can be calculated as follows:</span>
+<span id="cb61-167"><a href="#cb61-167" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-168"><a href="#cb61-168" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb61-169"><a href="#cb61-169" aria-hidden="true" tabindex="-1"></a>D = \frac{|E|}{|V|(|V| - 1)}</span>
+<span id="cb61-170"><a href="#cb61-170" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb61-171"><a href="#cb61-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-172"><a href="#cb61-172" aria-hidden="true" tabindex="-1"></a>where $|E|$ is the number of edges and $|V|$ is the number of nodes in the graph.</span>
+<span id="cb61-173"><a href="#cb61-173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-176"><a href="#cb61-176" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-177"><a href="#cb61-177" aria-hidden="true" tabindex="-1"></a><span class="co"># Density of a directed graph</span></span>
+<span id="cb61-178"><a href="#cb61-178" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Density:"</span>, nx.density(D))</span>
+<span id="cb61-179"><a href="#cb61-179" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-180"><a href="#cb61-180" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-181"><a href="#cb61-181" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb61-182"><a href="#cb61-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-183"><a href="#cb61-183" aria-hidden="true" tabindex="-1"></a><span class="fu">## Paths in a Graph</span></span>
+<span id="cb61-184"><a href="#cb61-184" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-187"><a href="#cb61-187" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-188"><a href="#cb61-188" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize an undirected graph</span></span>
+<span id="cb61-189"><a href="#cb61-189" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.Graph()</span>
+<span id="cb61-190"><a href="#cb61-190" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-191"><a href="#cb61-191" aria-hidden="true" tabindex="-1"></a><span class="co"># Add edges</span></span>
+<span id="cb61-192"><a href="#cb61-192" aria-hidden="true" tabindex="-1"></a>G.add_edges_from([</span>
+<span id="cb61-193"><a href="#cb61-193" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"a"</span>, <span class="st">"b"</span>), (<span class="st">"b"</span>, <span class="st">"c"</span>), (<span class="st">"c"</span>, <span class="st">"d"</span>), (<span class="st">"d"</span>, <span class="st">"a"</span>), (<span class="st">"a"</span>, <span class="st">"e"</span>), (<span class="st">"c"</span>, <span class="st">"a"</span>)</span>
+<span id="cb61-194"><a href="#cb61-194" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb61-195"><a href="#cb61-195" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-196"><a href="#cb61-196" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb61-197"><a href="#cb61-197" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(G)</span>
+<span id="cb61-198"><a href="#cb61-198" aria-hidden="true" tabindex="-1"></a>nx.draw(G, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb61-199"><a href="#cb61-199" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb61-200"><a href="#cb61-200" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-201"><a href="#cb61-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-202"><a href="#cb61-202" aria-hidden="true" tabindex="-1"></a>A **path** in a network is a sequence of edges connecting two nodes.</span>
+<span id="cb61-203"><a href="#cb61-203" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-206"><a href="#cb61-206" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-207"><a href="#cb61-207" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(nx.has_path(G, <span class="st">"c"</span>, <span class="st">"e"</span>))</span>
+<span id="cb61-208"><a href="#cb61-208" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(nx.shortest_path(G, <span class="st">"c"</span>, <span class="st">"e"</span>))</span>
+<span id="cb61-209"><a href="#cb61-209" aria-hidden="true" tabindex="-1"></a><span class="co"># The second command will raise an error if the graph is not connected</span></span>
+<span id="cb61-210"><a href="#cb61-210" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-211"><a href="#cb61-211" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-212"><a href="#cb61-212" aria-hidden="true" tabindex="-1"></a>There can be more than one path between two nodes.</span>
+<span id="cb61-213"><a href="#cb61-213" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-216"><a href="#cb61-216" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-217"><a href="#cb61-217" aria-hidden="true" tabindex="-1"></a><span class="bu">list</span>(nx.all_simple_paths(G, <span class="st">"c"</span>, <span class="st">"e"</span>))</span>
+<span id="cb61-218"><a href="#cb61-218" aria-hidden="true" tabindex="-1"></a><span class="co"># This command will raise an error if the graph is not connected</span></span>
+<span id="cb61-219"><a href="#cb61-219" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-220"><a href="#cb61-220" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-221"><a href="#cb61-221" aria-hidden="true" tabindex="-1"></a>The **diameter** of a graph is the longest shortest path between any two nodes.</span>
+<span id="cb61-222"><a href="#cb61-222" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-225"><a href="#cb61-225" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-226"><a href="#cb61-226" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Diameter:"</span>, nx.diameter(G))</span>
+<span id="cb61-227"><a href="#cb61-227" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-228"><a href="#cb61-228" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-229"><a href="#cb61-229" aria-hidden="true" tabindex="-1"></a>The **average path length (APL)** is the average of the shortest paths between all pairs of nodes.</span>
+<span id="cb61-230"><a href="#cb61-230" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-233"><a href="#cb61-233" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-234"><a href="#cb61-234" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Average shortest path length:"</span>, nx.average_shortest_path_length(G))</span>
+<span id="cb61-235"><a href="#cb61-235" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-236"><a href="#cb61-236" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-237"><a href="#cb61-237" aria-hidden="true" tabindex="-1"></a><span class="fu">### Paths in a Directed Graph</span></span>
+<span id="cb61-238"><a href="#cb61-238" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-241"><a href="#cb61-241" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-242"><a href="#cb61-242" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize a directed graph</span></span>
+<span id="cb61-243"><a href="#cb61-243" aria-hidden="true" tabindex="-1"></a>D <span class="op">=</span> nx.DiGraph()</span>
+<span id="cb61-244"><a href="#cb61-244" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-245"><a href="#cb61-245" aria-hidden="true" tabindex="-1"></a><span class="co"># Add edges</span></span>
+<span id="cb61-246"><a href="#cb61-246" aria-hidden="true" tabindex="-1"></a>D.add_edges_from([</span>
+<span id="cb61-247"><a href="#cb61-247" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"a"</span>, <span class="st">"b"</span>), (<span class="st">"b"</span>, <span class="st">"c"</span>), (<span class="st">"c"</span>, <span class="st">"d"</span>), (<span class="st">"d"</span>, <span class="st">"a"</span>), (<span class="st">"a"</span>, <span class="st">"e"</span>), (<span class="st">"c"</span>, <span class="st">"a"</span>),</span>
+<span id="cb61-248"><a href="#cb61-248" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"x"</span>, <span class="st">"y"</span>), (<span class="st">"y"</span>, <span class="st">"z"</span>), (<span class="st">"z"</span>, <span class="st">"x"</span>), (<span class="st">"e"</span>, <span class="st">"x"</span>)</span>
+<span id="cb61-249"><a href="#cb61-249" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb61-250"><a href="#cb61-250" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-251"><a href="#cb61-251" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb61-252"><a href="#cb61-252" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(D)</span>
+<span id="cb61-253"><a href="#cb61-253" aria-hidden="true" tabindex="-1"></a>nx.draw(D, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb61-254"><a href="#cb61-254" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb61-255"><a href="#cb61-255" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-256"><a href="#cb61-256" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-259"><a href="#cb61-259" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-260"><a href="#cb61-260" aria-hidden="true" tabindex="-1"></a><span class="co"># Can we reach 'c' from 'z'?</span></span>
+<span id="cb61-261"><a href="#cb61-261" aria-hidden="true" tabindex="-1"></a>nx.has_path(D, <span class="st">"c"</span>, <span class="st">"z"</span>)</span>
+<span id="cb61-262"><a href="#cb61-262" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-263"><a href="#cb61-263" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-266"><a href="#cb61-266" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-267"><a href="#cb61-267" aria-hidden="true" tabindex="-1"></a><span class="co"># Can we reach 'z' from 'c'?</span></span>
+<span id="cb61-268"><a href="#cb61-268" aria-hidden="true" tabindex="-1"></a>nx.has_path(D, <span class="st">"z"</span>, <span class="st">"c"</span>)</span>
+<span id="cb61-269"><a href="#cb61-269" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-270"><a href="#cb61-270" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-271"><a href="#cb61-271" aria-hidden="true" tabindex="-1"></a>**Exercise.** Create a path from "z" to "c" in the directed graph <span class="in">`D`</span>, so that the shortest path has a length of 4.</span>
+<span id="cb61-272"><a href="#cb61-272" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-275"><a href="#cb61-275" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-276"><a href="#cb61-276" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span>
+<span id="cb61-277"><a href="#cb61-277" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-278"><a href="#cb61-278" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-279"><a href="#cb61-279" aria-hidden="true" tabindex="-1"></a><span class="fu">### Connectivity</span></span>
+<span id="cb61-280"><a href="#cb61-280" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-281"><a href="#cb61-281" aria-hidden="true" tabindex="-1"></a>A graph is **connected** when we can reach any node from any other node by following the edges. This means, there exists a path between any two nodes.</span>
+<span id="cb61-282"><a href="#cb61-282" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-285"><a href="#cb61-285" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-286"><a href="#cb61-286" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize an undirected graph</span></span>
+<span id="cb61-287"><a href="#cb61-287" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.Graph()</span>
+<span id="cb61-288"><a href="#cb61-288" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-289"><a href="#cb61-289" aria-hidden="true" tabindex="-1"></a><span class="co"># Add edges</span></span>
+<span id="cb61-290"><a href="#cb61-290" aria-hidden="true" tabindex="-1"></a>G.add_edges_from([</span>
+<span id="cb61-291"><a href="#cb61-291" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"a"</span>, <span class="st">"b"</span>), (<span class="st">"b"</span>, <span class="st">"c"</span>), (<span class="st">"c"</span>, <span class="st">"d"</span>), (<span class="st">"d"</span>, <span class="st">"a"</span>), (<span class="st">"a"</span>, <span class="st">"e"</span>), (<span class="st">"c"</span>, <span class="st">"a"</span>)</span>
+<span id="cb61-292"><a href="#cb61-292" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb61-293"><a href="#cb61-293" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-294"><a href="#cb61-294" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb61-295"><a href="#cb61-295" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(G)</span>
+<span id="cb61-296"><a href="#cb61-296" aria-hidden="true" tabindex="-1"></a>nx.draw(G, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb61-297"><a href="#cb61-297" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb61-298"><a href="#cb61-298" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-299"><a href="#cb61-299" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is connected:"</span>, nx.is_connected(G))</span>
+<span id="cb61-300"><a href="#cb61-300" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-301"><a href="#cb61-301" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-304"><a href="#cb61-304" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-305"><a href="#cb61-305" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove a node</span></span>
+<span id="cb61-306"><a href="#cb61-306" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">"a"</span> <span class="kw">in</span> G.nodes():</span>
+<span id="cb61-307"><a href="#cb61-307" aria-hidden="true" tabindex="-1"></a>    G.remove_node(<span class="st">"a"</span>)</span>
+<span id="cb61-308"><a href="#cb61-308" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-309"><a href="#cb61-309" aria-hidden="true" tabindex="-1"></a><span class="co"># Is connected now?</span></span>
+<span id="cb61-310"><a href="#cb61-310" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is connected:"</span>, nx.is_connected(G))</span>
+<span id="cb61-311"><a href="#cb61-311" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-312"><a href="#cb61-312" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb61-313"><a href="#cb61-313" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(G)</span>
+<span id="cb61-314"><a href="#cb61-314" aria-hidden="true" tabindex="-1"></a>nx.draw(G, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb61-315"><a href="#cb61-315" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb61-316"><a href="#cb61-316" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-317"><a href="#cb61-317" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-318"><a href="#cb61-318" aria-hidden="true" tabindex="-1"></a><span class="fu">### Connectivity of Directed Graphs</span></span>
+<span id="cb61-319"><a href="#cb61-319" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-320"><a href="#cb61-320" aria-hidden="true" tabindex="-1"></a>The **connectivity** of a directed graph is defined by the **strongly connected components**. A directed graph is **strongly connected** if there is a directed path from any node to any other node. Conversely, a directed graph is **weakly connected** if there is an undirected path from any node to any other node.</span>
+<span id="cb61-321"><a href="#cb61-321" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-324"><a href="#cb61-324" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-325"><a href="#cb61-325" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize a directed graph</span></span>
+<span id="cb61-326"><a href="#cb61-326" aria-hidden="true" tabindex="-1"></a>D <span class="op">=</span> nx.DiGraph()</span>
+<span id="cb61-327"><a href="#cb61-327" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-328"><a href="#cb61-328" aria-hidden="true" tabindex="-1"></a><span class="co"># Add edges. The order of the tuple matters here because this is a directed graph</span></span>
+<span id="cb61-329"><a href="#cb61-329" aria-hidden="true" tabindex="-1"></a><span class="co"># If a node is not already in the graph, it will be added automatically</span></span>
+<span id="cb61-330"><a href="#cb61-330" aria-hidden="true" tabindex="-1"></a>D.add_edges_from([</span>
+<span id="cb61-331"><a href="#cb61-331" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"a"</span>, <span class="st">"b"</span>), (<span class="st">"b"</span>, <span class="st">"c"</span>), (<span class="st">"c"</span>, <span class="st">"d"</span>), (<span class="st">"d"</span>, <span class="st">"a"</span>), (<span class="st">"a"</span>, <span class="st">"e"</span>), (<span class="st">"c"</span>, <span class="st">"a"</span>)</span>
+<span id="cb61-332"><a href="#cb61-332" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb61-333"><a href="#cb61-333" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-334"><a href="#cb61-334" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb61-335"><a href="#cb61-335" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(D)</span>
+<span id="cb61-336"><a href="#cb61-336" aria-hidden="true" tabindex="-1"></a>nx.draw(D, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb61-337"><a href="#cb61-337" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb61-338"><a href="#cb61-338" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-339"><a href="#cb61-339" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is strongly connected:"</span>, nx.is_strongly_connected(D))</span>
+<span id="cb61-340"><a href="#cb61-340" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is weakly connected:"</span>, nx.is_weakly_connected(D))</span>
+<span id="cb61-341"><a href="#cb61-341" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-342"><a href="#cb61-342" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-343"><a href="#cb61-343" aria-hidden="true" tabindex="-1"></a>**Exercise.** Make a copy of graph <span class="in">`D`</span> and name it <span class="in">`D_strong`</span>. Turn it into a strongly connected graph.</span>
+<span id="cb61-344"><a href="#cb61-344" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-347"><a href="#cb61-347" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-348"><a href="#cb61-348" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span>
+<span id="cb61-349"><a href="#cb61-349" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-350"><a href="#cb61-350" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-351"><a href="#cb61-351" aria-hidden="true" tabindex="-1"></a>**Exercise.** Make a copy of graph <span class="in">`D`</span> and name it <span class="in">`D_uncon`</span>. Turn it into a unconnected graph.</span>
+<span id="cb61-352"><a href="#cb61-352" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-355"><a href="#cb61-355" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-356"><a href="#cb61-356" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span>
+<span id="cb61-357"><a href="#cb61-357" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-358"><a href="#cb61-358" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-359"><a href="#cb61-359" aria-hidden="true" tabindex="-1"></a><span class="fu">### Connected Components</span></span>
+<span id="cb61-360"><a href="#cb61-360" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-361"><a href="#cb61-361" aria-hidden="true" tabindex="-1"></a>A **connected component** is a connected subnetwork.</span>
+<span id="cb61-362"><a href="#cb61-362" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-363"><a href="#cb61-363" aria-hidden="true" tabindex="-1"></a>The largest one is called giant component; it often includes a substantial portion of the network.</span>
+<span id="cb61-364"><a href="#cb61-364" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-365"><a href="#cb61-365" aria-hidden="true" tabindex="-1"></a>A singleton is the smallest-possible connected component.</span>
+<span id="cb61-366"><a href="#cb61-366" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-369"><a href="#cb61-369" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-370"><a href="#cb61-370" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize an undirected graph</span></span>
+<span id="cb61-371"><a href="#cb61-371" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.Graph()</span>
+<span id="cb61-372"><a href="#cb61-372" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-373"><a href="#cb61-373" aria-hidden="true" tabindex="-1"></a><span class="co"># Add edges</span></span>
+<span id="cb61-374"><a href="#cb61-374" aria-hidden="true" tabindex="-1"></a>G.add_edges_from([</span>
+<span id="cb61-375"><a href="#cb61-375" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"a"</span>, <span class="st">"b"</span>), (<span class="st">"b"</span>, <span class="st">"c"</span>), (<span class="st">"c"</span>, <span class="st">"d"</span>), (<span class="st">"d"</span>, <span class="st">"a"</span>), (<span class="st">"a"</span>, <span class="st">"e"</span>), (<span class="st">"c"</span>, <span class="st">"a"</span>),</span>
+<span id="cb61-376"><a href="#cb61-376" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"x"</span>, <span class="st">"y"</span>), (<span class="st">"y"</span>, <span class="st">"z"</span>), (<span class="st">"z"</span>, <span class="st">"x"</span>)</span>
+<span id="cb61-377"><a href="#cb61-377" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb61-378"><a href="#cb61-378" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-379"><a href="#cb61-379" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb61-380"><a href="#cb61-380" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(G)</span>
+<span id="cb61-381"><a href="#cb61-381" aria-hidden="true" tabindex="-1"></a>nx.draw(G, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb61-382"><a href="#cb61-382" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb61-383"><a href="#cb61-383" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-384"><a href="#cb61-384" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-385"><a href="#cb61-385" aria-hidden="true" tabindex="-1"></a>The <span class="in">`nx.connected_components()`</span> function takes a graph and returns a list of sets of node names, one such set for each connected component. Verify that the two sets in the following list correspond to the two connected components in the drawing of the graph above:</span>
+<span id="cb61-386"><a href="#cb61-386" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-389"><a href="#cb61-389" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-390"><a href="#cb61-390" aria-hidden="true" tabindex="-1"></a><span class="bu">list</span>(nx.connected_components(G))</span>
+<span id="cb61-391"><a href="#cb61-391" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-392"><a href="#cb61-392" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-393"><a href="#cb61-393" aria-hidden="true" tabindex="-1"></a>**Exercise.** How many connected components are there in the graph <span class="in">`G`</span> below?</span>
+<span id="cb61-394"><a href="#cb61-394" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-397"><a href="#cb61-397" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-398"><a href="#cb61-398" aria-hidden="true" tabindex="-1"></a>list_edges <span class="op">=</span> [(<span class="st">"x"</span>, <span class="st">"y"</span>), (<span class="st">"y"</span>, <span class="st">"z"</span>), (<span class="st">"z"</span>, <span class="st">"x"</span>), (<span class="st">"r"</span>, <span class="st">"s"</span>)]</span>
+<span id="cb61-399"><a href="#cb61-399" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-400"><a href="#cb61-400" aria-hidden="true" tabindex="-1"></a>G.add_edges_from(list_edges)</span>
+<span id="cb61-401"><a href="#cb61-401" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-402"><a href="#cb61-402" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(G)</span>
+<span id="cb61-403"><a href="#cb61-403" aria-hidden="true" tabindex="-1"></a>nx.draw(G, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb61-404"><a href="#cb61-404" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb61-405"><a href="#cb61-405" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-406"><a href="#cb61-406" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-407"><a href="#cb61-407" aria-hidden="true" tabindex="-1"></a><span class="fu">### Connected Components in Directed Graphs</span></span>
+<span id="cb61-408"><a href="#cb61-408" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-409"><a href="#cb61-409" aria-hidden="true" tabindex="-1"></a>In a directed graph, we can have **strongly connected components** and **weakly connected components**.</span>
+<span id="cb61-410"><a href="#cb61-410" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-413"><a href="#cb61-413" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-414"><a href="#cb61-414" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize a directed graph</span></span>
+<span id="cb61-415"><a href="#cb61-415" aria-hidden="true" tabindex="-1"></a>D <span class="op">=</span> nx.DiGraph()</span>
+<span id="cb61-416"><a href="#cb61-416" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-417"><a href="#cb61-417" aria-hidden="true" tabindex="-1"></a><span class="co"># Add edges</span></span>
+<span id="cb61-418"><a href="#cb61-418" aria-hidden="true" tabindex="-1"></a>D.add_edges_from([</span>
+<span id="cb61-419"><a href="#cb61-419" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"a"</span>, <span class="st">"b"</span>), (<span class="st">"b"</span>, <span class="st">"c"</span>), (<span class="st">"c"</span>, <span class="st">"d"</span>), (<span class="st">"d"</span>, <span class="st">"a"</span>), (<span class="st">"a"</span>, <span class="st">"e"</span>), (<span class="st">"c"</span>, <span class="st">"a"</span>),</span>
+<span id="cb61-420"><a href="#cb61-420" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"x"</span>, <span class="st">"y"</span>), (<span class="st">"y"</span>, <span class="st">"z"</span>), (<span class="st">"z"</span>, <span class="st">"x"</span>)</span>
+<span id="cb61-421"><a href="#cb61-421" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb61-422"><a href="#cb61-422" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-423"><a href="#cb61-423" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb61-424"><a href="#cb61-424" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(D)</span>
+<span id="cb61-425"><a href="#cb61-425" aria-hidden="true" tabindex="-1"></a>nx.draw(D, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb61-426"><a href="#cb61-426" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb61-427"><a href="#cb61-427" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-428"><a href="#cb61-428" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-429"><a href="#cb61-429" aria-hidden="true" tabindex="-1"></a>A directed graph is **strongly connected** if there is a directed path from any node to any other node.</span>
+<span id="cb61-430"><a href="#cb61-430" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-433"><a href="#cb61-433" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-434"><a href="#cb61-434" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is strongly connected:"</span>, nx.is_strongly_connected(D))</span>
+<span id="cb61-435"><a href="#cb61-435" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">list</span>(nx.strongly_connected_components(D)))</span>
+<span id="cb61-436"><a href="#cb61-436" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-437"><a href="#cb61-437" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-438"><a href="#cb61-438" aria-hidden="true" tabindex="-1"></a>A directed graph is **weakly connected** if there is an undirected path from any node to any other node.</span>
+<span id="cb61-439"><a href="#cb61-439" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-442"><a href="#cb61-442" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-443"><a href="#cb61-443" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is weakly connected:"</span>, nx.is_weakly_connected(D))</span>
+<span id="cb61-444"><a href="#cb61-444" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">list</span>(nx.weakly_connected_components(D)))</span>
+<span id="cb61-445"><a href="#cb61-445" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-446"><a href="#cb61-446" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-447"><a href="#cb61-447" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb61-448"><a href="#cb61-448" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-449"><a href="#cb61-449" aria-hidden="true" tabindex="-1"></a><span class="fu">## Weighted Edges</span></span>
+<span id="cb61-450"><a href="#cb61-450" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-453"><a href="#cb61-453" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-454"><a href="#cb61-454" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize a directed graph</span></span>
+<span id="cb61-455"><a href="#cb61-455" aria-hidden="true" tabindex="-1"></a>D <span class="op">=</span> nx.DiGraph()</span>
+<span id="cb61-456"><a href="#cb61-456" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-457"><a href="#cb61-457" aria-hidden="true" tabindex="-1"></a><span class="co"># Add weighted edges</span></span>
+<span id="cb61-458"><a href="#cb61-458" aria-hidden="true" tabindex="-1"></a>D.add_weighted_edges_from([</span>
+<span id="cb61-459"><a href="#cb61-459" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"a"</span>, <span class="st">"b"</span>, <span class="dv">1</span>), (<span class="st">"b"</span>, <span class="st">"c"</span>, <span class="dv">2</span>), (<span class="st">"c"</span>, <span class="st">"d"</span>, <span class="dv">3</span>), (<span class="st">"d"</span>, <span class="st">"a"</span>, <span class="dv">4</span>), (<span class="st">"a"</span>, <span class="st">"e"</span>, <span class="dv">5</span>), (<span class="st">"c"</span>, <span class="st">"a"</span>, <span class="dv">6</span>)</span>
+<span id="cb61-460"><a href="#cb61-460" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb61-461"><a href="#cb61-461" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-462"><a href="#cb61-462" aria-hidden="true" tabindex="-1"></a><span class="co"># Choose a layout (required to add the weights)</span></span>
+<span id="cb61-463"><a href="#cb61-463" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(D)</span>
+<span id="cb61-464"><a href="#cb61-464" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb61-465"><a href="#cb61-465" aria-hidden="true" tabindex="-1"></a>nx.draw(D, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb61-466"><a href="#cb61-466" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the edge labels</span></span>
+<span id="cb61-467"><a href="#cb61-467" aria-hidden="true" tabindex="-1"></a>edge_labels <span class="op">=</span> nx.get_edge_attributes(D, <span class="st">"weight"</span>)</span>
+<span id="cb61-468"><a href="#cb61-468" aria-hidden="true" tabindex="-1"></a>nx.draw_networkx_edge_labels(D, pos<span class="op">=</span>pos, edge_labels<span class="op">=</span>edge_labels)</span>
+<span id="cb61-469"><a href="#cb61-469" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb61-470"><a href="#cb61-470" aria-hidden="true" tabindex="-1"></a>plt.close()</span>
+<span id="cb61-471"><a href="#cb61-471" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-472"><a href="#cb61-472" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-473"><a href="#cb61-473" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb61-474"><a href="#cb61-474" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-475"><a href="#cb61-475" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercise: OpenFlights Network</span></span>
+<span id="cb61-476"><a href="#cb61-476" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-477"><a href="#cb61-477" aria-hidden="true" tabindex="-1"></a>This repository contains several example network datasets. Among these is a network of US air travel routes:</span>
+<span id="cb61-478"><a href="#cb61-478" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-481"><a href="#cb61-481" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-482"><a href="#cb61-482" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.read_graphml(<span class="st">"./data/openflights/openflights_usa.graphml.gz"</span>)</span>
+<span id="cb61-483"><a href="#cb61-483" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-484"><a href="#cb61-484" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(G)</span>
+<span id="cb61-485"><a href="#cb61-485" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Nodes:"</span>, G.nodes())</span>
+<span id="cb61-486"><a href="#cb61-486" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-487"><a href="#cb61-487" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(G)</span>
+<span id="cb61-488"><a href="#cb61-488" aria-hidden="true" tabindex="-1"></a>nx.draw(G, pos<span class="op">=</span>pos, node_size<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb61-489"><a href="#cb61-489" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb61-490"><a href="#cb61-490" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-491"><a href="#cb61-491" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-492"><a href="#cb61-492" aria-hidden="true" tabindex="-1"></a>The nodes in this graph are airports, represented by their <span class="co">[</span><span class="ot">IATA codes</span><span class="co">](https://en.wikipedia.org/wiki/List_of_airports_by_IATA_code:_A)</span>; two nodes are connected with an edge if there is a scheduled flight directly connecting these two airports. We'll assume this graph to be undirected since a flight in one direction usually means there is a return flight.</span>
+<span id="cb61-493"><a href="#cb61-493" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-494"><a href="#cb61-494" aria-hidden="true" tabindex="-1"></a>Thus this graph has edges</span>
+<span id="cb61-495"><a href="#cb61-495" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-496"><a href="#cb61-496" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-497"><a href="#cb61-497" aria-hidden="true" tabindex="-1"></a><span class="in">[('HOM', 'ANC'), ('BGM', 'PHL'), ('BGM', 'IAD'), ...]</span></span>
+<span id="cb61-498"><a href="#cb61-498" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-499"><a href="#cb61-499" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-500"><a href="#cb61-500" aria-hidden="true" tabindex="-1"></a>where ANC is Anchorage, IAD is Washington Dulles, etc.</span>
+<span id="cb61-501"><a href="#cb61-501" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-502"><a href="#cb61-502" aria-hidden="true" tabindex="-1"></a>These nodes also have **attributes** associated with them, containing additional information about the airports, in the form of a dictionary:</span>
+<span id="cb61-503"><a href="#cb61-503" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-506"><a href="#cb61-506" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-507"><a href="#cb61-507" aria-hidden="true" tabindex="-1"></a>G.nodes[<span class="st">"IND"</span>]</span>
+<span id="cb61-508"><a href="#cb61-508" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-509"><a href="#cb61-509" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-510"><a href="#cb61-510" aria-hidden="true" tabindex="-1"></a>**Exercise.** Is there a direct flight between Indianapolis and Fairbanks, Alaska (FAI)? A direct flight is one with no intermediate stops.</span>
+<span id="cb61-511"><a href="#cb61-511" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-514"><a href="#cb61-514" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-515"><a href="#cb61-515" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span>
+<span id="cb61-516"><a href="#cb61-516" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-517"><a href="#cb61-517" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-518"><a href="#cb61-518" aria-hidden="true" tabindex="-1"></a>**Exercise.** If I wanted to fly from Indianapolis (IND) to Fairbanks, Alaska (FAI) what would be an itinerary with the fewest number of flights?</span>
+<span id="cb61-519"><a href="#cb61-519" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-522"><a href="#cb61-522" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-523"><a href="#cb61-523" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span>
+<span id="cb61-524"><a href="#cb61-524" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-525"><a href="#cb61-525" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-526"><a href="#cb61-526" aria-hidden="true" tabindex="-1"></a>**Exercise.** Is it possible to travel from any airport in the US to any other airport in the US, possibly using connecting flights? In other words, does there exist a path in the network between every possible pair of airports (is the graph connected)?</span>
+<span id="cb61-527"><a href="#cb61-527" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-530"><a href="#cb61-530" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-531"><a href="#cb61-531" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span>
+<span id="cb61-532"><a href="#cb61-532" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-533"><a href="#cb61-533" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-534"><a href="#cb61-534" aria-hidden="true" tabindex="-1"></a>**Exercise.** Which airports are the most important for connectivity?</span>
+<span id="cb61-535"><a href="#cb61-535" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-538"><a href="#cb61-538" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-539"><a href="#cb61-539" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span>
+<span id="cb61-540"><a href="#cb61-540" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-541"><a href="#cb61-541" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-542"><a href="#cb61-542" aria-hidden="true" tabindex="-1"></a>**Exercise.** What happens if a major hub is removed?</span>
+<span id="cb61-543"><a href="#cb61-543" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-546"><a href="#cb61-546" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb61-547"><a href="#cb61-547" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span>
+<span id="cb61-548"><a href="#cb61-548" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb61-549"><a href="#cb61-549" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-550"><a href="#cb61-550" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb61-551"><a href="#cb61-551" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-552"><a href="#cb61-552" aria-hidden="true" tabindex="-1"></a><span class="fu">## Next Steps...</span></span>
+<span id="cb61-553"><a href="#cb61-553" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-554"><a href="#cb61-554" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-555"><a href="#cb61-555" aria-hidden="true" tabindex="-1"></a>Ready to build and analyze synthetic networks? Continue to:</span>
+<span id="cb61-556"><a href="#cb61-556" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-557"><a href="#cb61-557" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Network Models</span><span class="co">](models.qmd)</span>{.btn .btn-primary}</span>
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>By Daniel Precioso Garcelán. Contact: daniel.precioso@ie.edu</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/networks/fundamentals.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/daniprec/BAM-Applied-Math-Lab">
+      <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
