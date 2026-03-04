@@ -14,7 +14,6 @@ At a high level:
 ├─ index.qmd
 ├─ syllabus.qmd
 ├─ requirements.txt
-├─ config.toml
 ├─ amlab/
 ├─ data/
 ├─ img/
@@ -27,7 +26,6 @@ At a high level:
 Brief explanation:
 
 - **\_quarto.yml**: Quarto website configuration (navbar/sidebar/theme, site structure).
-- **config.toml**: Project configuration (course/site settings).
 - **index.qmd**: Website home page.
 - **requirements.txt**: Python dependencies used across sessions and apps.
 - **syllabus.qmd**: Course syllabus / program overview.
