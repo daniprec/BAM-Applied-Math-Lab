@@ -4,12 +4,39 @@ subtitle: "Real-World Data"
 format: html
 ---
 
+In this assignment you will pick **one** real network and do two things, in order:
 
-For this assignment, you may use either the **Enron email network** or the **USA Flights network** dataset. Below you'll find practical code snippets and tips to help you get started with analysis and simulation.
+1. **Characterize the network** (basic structural properties).
+2. **Simulate epidemics on it** with **both** SIS and SIR.
 
----
+These networks are meaningful contexts for epidemics:
 
-## Working with the Enron Email Network
+- **Enron email** approximates a *contact/communication* network between people.
+- **USA Flights** approximates a *mobility/transport* network connecting locations.
+
+Your goal is not only to "run code", but to justify what you measure, make your results reproducible, and interpret them.
+
+::: {.callout-note}
+## Submission (Deliverable)
+
+Submit **two files**:
+
+1. **Code**: a notebook/script that reproduces all figures and numbers (must run end-to-end).
+2. **Short report (PDF using LaTeX, 2–3 pages)** with:
+	- a table of core network metrics,
+	- at least 1 structural plot (e.g., degree histogram),
+	- top-10 nodes by degree centrality + one additional centrality metric (with interpretation),
+	- 1 SIS figure and 1 SIR figure (mean over multiple runs),
+	- a concise interpretation answering the questions under "Discuss".
+
+Your report must state the exact parameters you used ($\beta, \mu$, initial infected, number of runs, and the seed protocol).
+:::
+
+## Setup (Reproducibility)
+
+Use a fixed seed for reproducible results. When running multiple trials, use `SEED + r` (where `r` is the trial index) so trials differ but remain reproducible.
+
+## Option A — Enron Email Network (person-to-person connections)
 
 The Enron email dataset can be represented as a graph where nodes are email addresses and edges represent communication. It is widely used to study centrality, communities, and robustness.
 
@@ -19,10 +46,6 @@ The Enron email dataset can be represented as a graph where nodes are email addr
 #| fig-width: 7
 #| fig-height: 4
 #| echo: false
-
-import matplotlib.pyplot as plt
-import networkx as nx
-
 path = "data/ia-enron-only/ia-enron-only.edges"
 G = nx.read_edgelist(path)
 
@@ -37,15 +60,40 @@ plt.show()
 plt.close()
 ```
 
-### Load the graph
+### Step A1 — Load and sanity-check
+
+The dataset is provided as an edge list under [data/ia-enron-only](../../data/ia-enron-only/).
 
 ```python
 import networkx as nx
 
 G = nx.read_edgelist("data/ia-enron-only/ia-enron-only.edges")
+G = nx.Graph(G)  # ensure undirected simple graph
+
+print("N, E =", G.number_of_nodes(), G.number_of_edges())
+print("Self-loops:", nx.number_of_selfloops(G))
 ```
 
-### Centrality metrics
+If the graph is disconnected, you may choose to work on the **largest connected component** for path-based metrics:
+
+```python
+largest_cc_nodes = max(nx.connected_components(G), key=len)
+H = G.subgraph(largest_cc_nodes).copy()
+print("Largest CC size:", H.number_of_nodes())
+```
+
+### Step A2 — Basic properties (required)
+
+Using definitions from [Connectivity](connectivity.qmd), report at least:
+
+- $N$, $E$, average degree, density
+- number of connected components + size of largest component
+- clustering (average clustering and/or transitivity)
+- top-10 nodes by degree centrality + one additional centrality metric (betweenness, PageRank, etc.)
+
+You may also report average shortest path length / diameter **on the largest component**.
+
+### Centrality Metrics
 
 Compute the top nodes by betweenness centrality.
 
@@ -56,25 +104,13 @@ bc = nx.betweenness_centrality(G)
 # TODO: sort and print top 10 nodes
 ```
 
-::: {.callout-tip collapse="true"}
-## Hint: Top 10 by betweenness (click to expand)
+### Questions to Explore
 
-```python
-bc = nx.betweenness_centrality(G)
-top10 = sorted(bc.items(), key=lambda x: x[1], reverse=True)[:10]
-print(top10)
-```
-:::
-
-### Questions to explore
-
-- Which nodes act as brokers in the network?
-- How does the graph change if you remove high-betweenness nodes?
+- Which nodes act as brokers (hubs) in the network?
+- How does the graph change if you remove high-betweenness nodes? Answering this questions will be relevant for the epidemic simulations later.
 - Can you detect communities with a simple algorithm?
 
----
-
-## Working with the USA Flights Network
+## Option B — USA Flights Network (mobility connections)
 
 The OpenFlights USA dataset represents airports as nodes and flight routes as edges. It is commonly used to study connectivity, robustness, and hub structure.
 
@@ -84,11 +120,7 @@ The OpenFlights USA dataset represents airports as nodes and flight routes as ed
 #| fig-width: 7
 #| fig-height: 4
 #| echo: false
-
 import random
-
-import matplotlib.pyplot as plt
-import networkx as nx
 
 path = "data/openflights/openflights_usa.graphml.gz"
 G = nx.read_graphml(path)
@@ -96,11 +128,11 @@ G = nx.Graph(G)
 
 # Sample a manageable subgraph for visualization
 nodes = list(G.nodes)
-random.seed(1)
+random.seed(SEED)
 sub_nodes = random.sample(nodes, k=min(250, len(nodes)))
 H = G.subgraph(sub_nodes).copy()
 
-pos = nx.spring_layout(H, seed=1)
+pos = nx.spring_layout(H, seed=SEED)
 fig, ax = plt.subplots(figsize=(7, 4))
 nx.draw(H, pos=pos, node_size=10, edge_color="#999", node_color="#1f77b4", ax=ax)
 ax.set_title("OpenFlights USA (sample)")
@@ -108,7 +140,7 @@ plt.show()
 plt.close()
 ```
 
-### Load the graph
+### Step B1 — Load and sanity-check
 
 The dataset is provided as GraphML and edge lists under [data/openflights](../../data/openflights/).
 
@@ -116,9 +148,15 @@ The dataset is provided as GraphML and edge lists under [data/openflights](../..
 import networkx as nx
 
 G = nx.read_graphml("data/openflights/openflights_usa.graphml.gz")
+G = nx.Graph(G)  # simplify to undirected graph for this assignment
+
+print("N, E =", G.number_of_nodes(), G.number_of_edges())
+print("Is connected?", nx.is_connected(G))
 ```
 
-### Basic checks
+### Step B2 — Basic properties (required)
+
+In addition to core connectivity/clustering metrics, report the top-10 nodes by degree centrality and one other centrality metric (betweenness, PageRank, etc.) with a brief interpretation.
 
 Try these metrics:
 
@@ -130,7 +168,7 @@ avg_degree = sum(dict(G.degree()).values()) / num_nodes
 print(num_nodes, num_edges, avg_degree)
 ```
 
-### Explore hubs
+### Explore Hubs
 
 Compute the top airports by degree centrality.
 
@@ -141,37 +179,74 @@ centrality = nx.degree_centrality(G)
 # TODO: sort and print top 10 airports
 ```
 
-::: {.callout-tip collapse="true"}
-## Hint: Top 10 by degree (click to expand)
+### Questions to Explore
 
-```python
-centrality = nx.degree_centrality(G)
-top10 = sorted(centrality.items(), key=lambda x: x[1], reverse=True)[:10]
-print(top10)
-```
-:::
-
-### Questions to explore
-
-- Which airports act as hubs?
+- Which airports act as hubs? Answering this question will be relevant for the epidemic simulations later.
 - How does the network change if you remove the top hub?
 - Is the graph connected, or are there isolated components?
 
----
+## Epidemics on your Network (Required)
 
-## Required
+You must simulate **both** SIS and SIR on the same chosen network.
 
-1. Load your chosen network (Enron email or USA Flights) with NetworkX and report the number of nodes and edges.
-2. Compute and list the top 10 nodes by degree centrality.
-3. Compute one additional metric (betweenness, clustering, or PageRank) and interpret the result.
-4. Visualize the graph (full or sampled) and include a short interpretation.
-5. Simulate the SIR or SIS model on your chosen network. Plot the epidemic curve and discuss how network structure affects the spread.
+Implementation requirement:
+
+- store node states as a node attribute `state` (as in [SIS Model](sis.qmd) and [SIR Model](sir.qmd)).
+
+Protocol requirement:
+
+- run at least `runs = 20` trials,
+- use `seed_run = SEED + r` for trial `r`,
+- plot the **mean** epidemic curve across trials.
+
+### SIS (Required)
+
+Report and plot:
+
+- mean infected fraction $\mathbb{E}[I(t)/N]$ over time,
+- variability: either show a band (e.g., 25–75%) or overlay 3–5 individual runs.
+
+### SIR (Required)
+
+Report and plot:
+
+- mean curves for $S(t)/N$, $I(t)/N$, $R(t)/N$,
+- **final epidemic size** $R(\infty)/N$ (estimate from your finite simulation horizon).
+
+::: {.callout-tip collapse="true"}
+## Practical tip
+
+For large networks, you can simulate on:
+
+- the full graph (if it runs fast enough), or
+- the largest connected component, or
+- a sampled subgraph (state your sampling method and seed).
+
+The key is that your plots and conclusions must refer to the exact graph you simulated.
+:::
+
+::: {.callout-note}
+## Discuss (answer in the report)
+
+1. Structural: what features suggest "hub-like" spreading vs "cluster-local" spreading?
+2. SIS vs SIR: how does permanent immunity change the long-run behavior?
+3. Can the network become fully infected (all nodes infected) under your parameters? Did you observe it?
+4. Can the network become fully healed (no infected nodes)? How does this differ between SIS and SIR in your simulations?
+5. Sensitivity: if you increase $\beta$ or decrease $\mu$, what changes first: peak height, persistence, or final size?
+:::
 
 ## Extra Mile (Optional)
 
 - Remove a high-centrality node and analyze changes in connectivity and epidemic outcome.
 - Compare two different centrality metrics and discuss differences.
 - Try a community detection method and summarize results.
+
+\vspace{0.5cm}
+
+**Extra-mile epidemic ideas:**
+
+- Hold the **graph fixed** (same graph seed) but vary only the **dynamics seed** to separate "graph randomness" from "process randomness".
+- Compare targeted removal (top-degree or top-betweenness) vs random removal and re-run SIS/SIR.
 
 \vspace{1cm}
 
