@@ -169,10 +169,14 @@ We can also add nodes and edges together using the `add_edge()` method. If we tr
 #| message: true
 # Add an edge between two nodes that do not exist
 G.add_edge("USA", "Canada", distance=3000)
+G.add_edge("Netherlands", "Germany", distance=500)
+G.add_edge("Germany", "France", distance=900)
 
 # In this case, we will have to add the population attribute for the new nodes separately
 G.nodes["USA"]["population"] = 331_000_000
 G.nodes["Canada"]["population"] = 38_000_000
+G.nodes["Netherlands"]["population"] = 17_000_000
+G.nodes["Germany"]["population"] = 83_000_000
 
 # Show the nodes and edges in the graph
 print("Nodes:", G.nodes())
@@ -237,8 +241,9 @@ The `draw()` function has a `pos` parameter that allows us to specify the layout
 ```{python}
 #| echo: true
 #| message: true
-# Use the spring layout for visualization
-pos = nx.spring_layout(G)
+# Use the circular layout for visualization
+# apply distance as weight for the layout
+pos = nx.circular_layout(G, weight='distance')
 nx.draw(
     G,
     pos=pos,  # specify the layout
@@ -265,7 +270,7 @@ population = nx.get_node_attributes(G, 'population')
 # Draw the graph with node sizes proportional to population
 node_sizes = [population[node] / 1_000_000 for node in G.nodes()]  # scale down for visualization
 
-pos = nx.spring_layout(G)
+pos = nx.circular_layout(G, weight='distance')
 
 nx.draw(
     G,
@@ -289,13 +294,13 @@ In this case, the `population` dictionary will not have an entry for that node, 
 #| message: true
 
 # Add a new node without the population attribute
-G.add_edge("France", "Germany", distance=900)
+G.add_edge("Denmark", "Germany", distance=400)
 # Get the population attribute for each node, using 0 as default if not found
 population = nx.get_node_attributes(G, 'population')
 # Draw the graph with node sizes proportional to population
 node_sizes = [population.get(node, 0) / 1_000_000 for node in G.nodes()]  # scale down for visualization
 
-pos = nx.spring_layout(G)
+pos = nx.circular_layout(G, weight='distance')
 
 nx.draw(
     G,
@@ -331,7 +336,7 @@ visited = nx.get_node_attributes(G, 'visited')
 # Define node colors based on the "visited" attribute
 node_colors = ['blue' if visited.get(node, False) else 'red' for node in G.nodes()]
 
-pos = nx.spring_layout(G)
+pos = nx.circular_layout(G, weight='distance')
 
 # Draw the graph with node colors based on the "visited" attribute
 nx.draw(
@@ -357,7 +362,7 @@ We can also visualize edge attributes by showing them as labels on the edges. Fo
 # Get the distance attribute for each edge
 distance = nx.get_edge_attributes(G, 'distance')
 # Draw the graph
-pos = nx.spring_layout(G)
+pos = nx.circular_layout(G, weight='distance')
 nx.draw(
     G,
     pos=pos,
@@ -394,7 +399,7 @@ edge_list = [
 # Create a graph from the edge list
 G_actors = nx.from_edgelist(edge_list)
 # Draw the graph
-pos = nx.shell_layout(G_actors)  # use shell layout for visualization
+pos = nx.spring_layout(G_actors)
 nx.draw(
     G_actors,
     pos=pos,
