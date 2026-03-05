@@ -4,7 +4,7 @@ subtitle: "Guided Exercise"
 format: html
 ---
 
-The SIR (Susceptible–Infected–Recovered) model is the “next step” after SIS: once a node recovers, it becomes **permanently immune**.
+The SIR (Susceptible–Infected–Recovered) model is the "next step" after SIS: once a node recovers, it becomes **permanently immune**.
 
 In this module, we reuse the same ideas from the SIS page (graph models + node attributes) and focus on what is new:
 
@@ -20,11 +20,11 @@ In this module, we reuse the same ideas from the SIS page (graph models + node a
   - $I \to R$: an infected node recovers and becomes permanently immune.
 - **Permanent immunity:** $R$ is an absorbing state (once recovered, always recovered).
 
-### Discrete-time update rule
+### Discrete-Time Update Rule
 
 We simulate in discrete time steps $t = 0, 1, 2, \dots$.
 
-If a susceptible node has $m$ infected neighbors, we use the same “independent trials” rule as SIS:
+If a susceptible node has $m$ infected neighbors, we use the same "independent trials" rule as SIS:
 
 $$
 \mathbb{P}(S \to I) = 1 - (1 - \beta)^m.
@@ -54,9 +54,9 @@ On a finite graph with $\mu > 0$, the process reaches a time $T$ such that there
 
 Intuition (but still rigorous): each node can become infected **at most once** (because $R$ is permanent), so there can be at most $N$ infection events. Since recovery happens with positive probability, infections cannot persist forever.
 
-This means SIR always ends in a “frozen” configuration containing only $S$ and $R$ nodes.
+This means SIR always ends in a "frozen" configuration containing only $S$ and $R$ nodes.
 
-## Imports and parameters
+## Imports and Parameters
 
 ```{python}
 #| message: false
@@ -77,7 +77,7 @@ initial_infected = 5
 N = 100
 ```
 
-## Choose a network
+## Choose a Network
 
 We will reuse the same helper pattern as in the SIS page (see [SIS Model](sis.qmd)).
 
@@ -98,7 +98,7 @@ G = make_graph("random", n=N, seed=SEED)
 print("N, E =", G.number_of_nodes(), G.number_of_edges())
 ```
 
-## Initialize states (node attributes)
+## Initialize States
 
 As in SIS, we store states on the graph using a node attribute called `state`.
 
@@ -122,7 +122,7 @@ print(
 )
 ```
 
-## Implement the SIR dynamics
+## Implement the SIR Dynamics
 
 The update is synchronous: compute all changes from the old state, then apply them.
 
@@ -213,9 +213,9 @@ def run_sir(G, beta, mu, steps=100, initial_infected=5, seed=SEED):
 ```
 :::
 
-## Run and visualize
+## Run and Visualize
 
-The “epidemic curve” in SIR typically shows a single peak in $I(t)$ and then decay to zero.
+The "epidemic curve" in SIR typically shows a single peak in $I(t)$ and then decay to zero.
 
 ```{python}
 #| label: fig-sir-curve
@@ -242,12 +242,12 @@ plt.tight_layout()
 plt.show()
 ```
 
-## New questions to ask in SIR
+## Key Questions to Answer
 
 Here are two precise, testable questions that are *specific* to SIR:
 
 1. **Can the network become fully infected?** i.e., does there exist a time $t$ such that $I(t)=N$?
-2. **Can the network become fully “healed”?** i.e., does there exist a time $t$ such that $I(t)=0$?
+2. **Can the network become fully "healed"?** i.e., does there exist a time $t$ such that $I(t)=0$?
 
 In SIR, the second question has a clean answer:
 
@@ -258,14 +258,14 @@ The first question depends on $(\beta,\mu)$ and the network. It can happen trans
 ::: {.callout-note}
 ## Discuss
 
-- In SIR, is “fully healed” the same as “everyone is susceptible again”? Why not?
-- What does “final epidemic size” mean here? (Hint: look at $R(\infty)$.)
+- In SIR, is "fully healed" the same as "everyone is susceptible again"? Why not?
+- What does "final epidemic size" mean here? (Hint: look at $R(\infty)$.)
 - Can you have an epidemic with a large peak but small final size? Or vice versa?
 - Compare two graphs with the same $N$ and similar average degree: which features (hubs, clustering, path length) do you expect to increase $R(\infty)$?
 :::
 
 ## What's Next?
 
-Compare SIS vs SIR: how does permanent immunity change what happens “in the long run”? Then apply your knowledge to real-world data:
+Compare SIS vs SIR: how does permanent immunity change what happens "in the long run"? Then apply your knowledge to real-world data:
 
 [Assignment: Networks & Real-World Data](assignment.qmd){.btn .btn-secondary}
