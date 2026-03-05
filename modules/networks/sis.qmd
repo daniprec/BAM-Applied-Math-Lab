@@ -1,85 +1,360 @@
 ---
 title: "Networks: SIS Model"
+subtitle: "Guided Exercise"
 format: html
 ---
 
-This module demonstrates how to simulate the SIS (Susceptible-Infected-Susceptible) epidemic model on networks using NetworkX. You will learn how network structure affects the spread and persistence of epidemics.
+The SIS (Susceptible–Infected–Susceptible) is a simple epidemic model of disease spread where individuals can be infected multiple times. In this module, we will implement the SIS model on networks using the NetworkX library in Python. Our goal is to explore how **network structure** (random vs small-world vs scale-free) changes spreading.
 
 ## What is the SIS Model?
 
 - **States:** Each node can be Susceptible (S) or Infected (I).
 - **Transitions:**
-  - S > I: A susceptible node becomes infected if it has an infected neighbor (with probability $\beta$).
-  - I > S: An infected node recovers and becomes susceptible again (with probability $\mu$).
+    - $S \to I$: a susceptible node becomes infected through contacts (infection probability $\beta$).
+    - $I \to S$: an infected node recovers and becomes susceptible again (recovery probability $\mu$).
 - **No permanent immunity:** Nodes can be reinfected after recovery.
 
-## Create a Network
+### Discrete-Time Update Rule
 
-You can use any NetworkX graph (random, small-world, scale-free, or real data).
+We simulate in discrete time steps $t = 0, 1, 2, \dots$.
+
+A susceptible node with $m$ infected neighbors becomes infected with probability:
+
+$$
+\mathbb{P}(S \to I) = 1 - (1 - \beta)^m.
+$$
+
+::: {.callout-tip collapse="true"}
+## Why $1 - (1-\beta)^m$?
+
+If each infected neighbor independently infects you with probability $\beta$, then the probability you avoid infection from all $m$ neighbors is $(1-\beta)^m$.
+So the probability of at least one successful infection is $1-(1-\beta)^m$.
+:::
+
+On the other hand, if a node is infected, it recovers with probability:
+
+$$
+\mathbb{P}(I \to S) = \mu.
+$$
+
+## Goal
+
+Study SIS propagation under different graph models and sizes.
+
+1. Compare **random** (Erdos–Rényi), **small-world** (Watts–Strogatz), and **scale-free-ish** (Barabási–Albert) graphs.
+2. Try sizes like $N \in \{50, 100, 300\}$.
+3. For each case, run 10–30 repetitions and plot the **average infected fraction** over time.
+
+The steps are described in more detail below, but feel free to experiment with different parameters and graph types!
+
+## Imports and Parameters
 
 ```{python}
+#| message: false
+#| warning: false
 import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
+```
 
-# Example: random graph
-g = nx.gnp_random_graph(n=50, p=0.1)
+These are the parameters you can tune:
+
+```{python}
+SEED = 7
+
+# Model parameters
+beta = 0.20  # infection probability per infected neighbor (per step)
+mu = 0.10    # recovery probability (per step)
+
+# Simulation parameters
+steps = 120  # number of time steps to simulate
+initial_infected = 5  # should always be < N
+N = 100  # number of nodes in the graph
+```
+
+## Choose a Network
+
+For your project you will compare several models. Start by picking one. You can see a sample of the three models in the page: [Network Models](models.qmd).
+
+
+::: {.callout-tip collapse="true"}
+## Example of Baseline Graph
+
+```python
+G = nx.erdos_renyi_graph(n=N, p=0.08, seed=SEED)
+# where p is the probability of edge creation
+```
+:::
+
+To make the "compare models" part easier, we will implement a small helper function `make_graph(<model>, <n>)`, where `<model>` is a string specifying the type of graph ("random", "small-world", or "scale-free") and `<n>` is the number of nodes.
+
+```python
+def make_graph(model: str, n: int, seed: int = SEED):
+    """Create a graph model: 'random', 'small-world', or 'scale-free'."""
+    # TODO
+    return G
+```
+
+::: {.callout-tip collapse="true"}
+## Solved: `make_graph()`
+
+```{python}
+#| echo: true
+#| message: false
+#| warning: false
+def make_graph(model: str, n: int, seed: int = SEED):
+    if model == "random":
+        return nx.erdos_renyi_graph(n=n, p=0.08, seed=seed)
+    if model == "small-world":
+        return nx.watts_strogatz_graph(n=n, k=6, p=0.08, seed=seed)
+    if model == "scale-free":
+        return nx.barabasi_albert_graph(n=n, m=2, seed=seed)
+    raise ValueError("model must be one of: 'random', 'small-world', 'scale-free'")
+```
+:::
+
+Now you can easily create different graph types:
+
+```{python}
+G = make_graph("random", n=100)
+print("N, E =", G.number_of_nodes(), G.number_of_edges())
+```
+
+Optional quick visualization:
+
+```{python}
+pos = nx.spring_layout(G)
+nx.draw(G, pos=pos, node_size=50, edge_color="gray")
+plt.title("Baseline network")
+plt.show()
 ```
 
 ## Initialize States
 
+We will store the state of each individual directly on the graph as a **node attribute** called `state`.
+
+For example, we can start with everyone susceptible. We will create the attribute "state" and set it to "S" for all nodes:
+
 ```{python}
-# All nodes start susceptible except a few infected
-state = {node: 'S' for node in g.nodes()}
-initial_infected = np.random.choice(g.nodes(), size=5, replace=False)
-for node in initial_infected:
-    state[node] = 'I'
+nx.set_node_attributes(G, "S", "state")
+
+print("Node 0:", G.nodes[0])  # node attributes are stored in a dictionary
 ```
 
-## SIS Simulation Function
+If we wanted to infect node 20, we could do:
 
 ```{python}
-def run_sis(g, beta=0.2, mu=0.1, steps=50):
-    state = {node: 'S' for node in g.nodes()}
-    infected_counts = []
-    initial_infected = np.random.choice(g.nodes(), size=5, replace=False)
-    for node in initial_infected:
-        state[node] = 'I'
-    for t in range(steps):
-        new_state = state.copy()
-        for node in g.nodes():
-            if state[node] == 'S':
-                # Check infected neighbors
-                infected_neighbors = [nbr for nbr in g.neighbors(node) if state[nbr] == 'I']
-                if infected_neighbors and np.random.rand() < 1 - (1 - beta)**len(infected_neighbors):
-                    new_state[node] = 'I'
-            elif state[node] == 'I':
-                if np.random.rand() < mu:
-                    new_state[node] = 'S'
-        state = new_state
-        infected_counts.append(sum(1 for s in state.values() if s == 'I'))
+node_20 = G.nodes[20]
+node_20["state"] = "I"
+
+print("Node 20:", G.nodes[20])  # now node 20 has state "I"
+```
+
+Alternatively, we could use a dictionary to set the states of multiple nodes at once:
+
+```{python}
+# Infect nodes 20, 35, and 50
+# The rest will be susceptible by default
+state_dict = {node: "I" if node in [20, 35, 50] else "S" for node in G.nodes()}
+nx.set_node_attributes(G, state_dict, "state")
+
+print("Node 20:", G.nodes[20])  # node 20 is infected
+print("Node 21:", G.nodes[21])  # node 21 is susceptible
+```
+
+With that information in mind, you can create a function `initialize_state(<graph>)` that sets all nodes to "S" and then randomly picks a few nodes to set to "I" (the initial infected).
+
+```python
+def initialize_state(G, initial_infected=5, seed=SEED):
+    # TODO: start everyone as 'S' using node attributes
+    # TODO: randomly pick initial_infected nodes and set their node attribute to 'I'
+    # Optional: return G (mutated) for convenience
+    return G
+```
+
+Remember that you can use `np.random.choice` to pick random nodes from the graph. Make sure to set the seed for reproducibility!
+
+::: {.callout-tip collapse="true"}
+## Solved: `initialize_state()`
+
+```{python}
+#| echo: true
+#| message: false
+#| warning: false
+def initialize_state(G, initial_infected=5, seed=SEED):
+    # Choose random nodes to be initially infected
+    ls_infected = np.random.choice(
+        G.nodes(),  # list of all nodes
+        size=initial_infected,  # amount to choose
+        replace=False,  # avoid duplicates
+        random_state=seed)  # for reproducibility
+    # Set all nodes to 'S' and then set the chosen ones to 'I'
+    state = {node: "I" if node in ls_infected else "S" for node in G.nodes()}
+    nx.set_node_attributes(G, state, "state")
+    return G
+```
+:::
+
+Always validate your functions! In this case, we can check that the number of infected nodes is correct:
+
+```{python}
+initialize_state(G, initial_infected=initial_infected, seed=SEED)
+print(
+    "Initially infected:",
+    sum(G.nodes[node]["state"] == "I" for node in G.nodes()),
+)
+```
+
+## Implement the SIS dynamics
+
+We update **synchronously**: compute all changes from the old state, then apply them.
+
+Create a function `step_sis(<graph>, beta, mu)` that performs one step of the SIS update. Remember that `beta` is the infection probability and `mu` is the recovery probability.
+
+```python
+def step_sis(G, beta, mu):
+    # TODO: read current states from G.nodes[u]["state"]
+    # TODO: compute a new_state mapping (synchronous update)
+    # TODO: write new_state back to node attributes
+    return G
+```
+
+Remember that you can loop through all nodes and their neighbors using `G.nodes()` and `G.neighbors(node)`. You can also use `np.random.random()` to generate random numbers for the probabilistic transitions.
+
+::: {.callout-tip collapse="true"}
+## Solved: `step_sis()`
+
+```{python}
+#| echo: true
+#| message: false
+#| warning: false
+def step_sis(G, beta, mu):
+    # Retrieve current states of all nodes
+    current = {node: G.nodes[node]["state"] for node in G.nodes()}
+    new_state = current.copy()  # start with the same state for synchronous update
+    # Loop through all nodes to compute new states
+    for node in G.nodes():
+        if current[node] == "S":
+            # Count infected neighbors
+            m = sum(1 for nbr in G.neighbors(node) if current[nbr] == "I")
+            if m > 0:
+                # Compute infection probability
+                p_infect = 1 - (1 - beta) ** m
+                if np.random.random() < p_infect:
+                    new_state[node] = "I"
+        else:  # current[node] == "I"
+            if np.random.random() < mu:
+                new_state[node] = "S"
+    nx.set_node_attributes(G, new_state, "state")
+    return G
+```
+
+Now wrap it into a simulator that records the number of infected nodes over time. The function `run_sis()` should take a graph and the parameters, run the simulation for a given number of steps, and return a list of the number of infected nodes at each time step.
+
+```python
+def run_sis(G, beta, mu, steps=100, initial_infected=5, seed=SEED):
+    # TODO
     return infected_counts
+```
+
+::: {.callout-tip collapse="true"}
+## Solved: `run_sis()`
+
+```{python}
+#| echo: true
+#| message: false
+#| warning: false
+def run_sis(G, beta, mu, steps=100, initial_infected=5, seed=SEED):
+    # Copy the graph to avoid mutating the original
+    H = G.copy()
+    # Initialize states
+    initialize_state(H, initial_infected=initial_infected, seed=seed)
+    # Count initial number of infected nodes and initialize the list
+    infected_counts = [sum(H.nodes[node]["state"] == "I" for node in H.nodes())]
+    # Apply SIS steps and record infected counts
+    for _ in range(steps):
+        step_sis(H, beta=beta, mu=mu)
+        infected_counts.append(sum(H.nodes[node]["state"] == "I" for node in H.nodes()))
+    return infected_counts
+```
+:::
+
+Execute the function to make sure it runs without errors and returns a reasonable output:
+
+```{python}
+counts = run_sis(G, beta=beta, mu=mu, steps=steps, initial_infected=initial_infected)
+print("Infected counts over time:", counts)
 ```
 
 ## Run and Visualize
 
+Use `matplotlib` to plot the fraction of infected nodes over time. Try to get a graph similar to @sis-plot below.
+
 ```{python}
-counts = run_sis(g, beta=0.2, mu=0.1, steps=100)
-plt.plot(counts)
+#| label: sis-plot
+#| fig-alt: 'Fraction of infected nodes over time for a single run of the SIS model on a random graph.'
+#| fig-width: 6
+#| fig-height: 4
+#| echo: false
+#| message: false
+#| warning: false
+counts = run_sis(G, beta=beta, mu=mu, steps=steps, initial_infected=initial_infected, seed=SEED)
+plt.plot(np.array(counts) / G.number_of_nodes())
 plt.xlabel('Time step')
-plt.ylabel('Number of infected nodes')
-plt.title('SIS Model Epidemic Curve')
+plt.ylabel('Infected fraction')
+plt.title('SIS: infected fraction over time')
 plt.show()
 ```
 
-## Experiment
+## Compare Network Types
 
-- Try different network types (random, small-world, scale-free).
-- Vary $\beta$ and $\mu$ to see the epidemic threshold.
-- Analyze how network structure (degree, clustering) affects persistence.
+Finally, run multiple simulations for each graph type and plot the average infected fraction over time for each type on the same graph. @sis-compare is an example of what this could look like.
+
+```{python}
+#| label: sis-compare
+#| fig-alt: 'Average infected fraction over time for different network models (random, small-world, scale-free).'
+#| fig-width: 6
+#| fig-height: 4
+#| echo: false
+#| message: false
+#| warning: false
+models = ["random", "small-world", "scale-free"]
+N = 150
+runs = 12
+
+plt.figure(figsize=(6, 4))
+
+for model in models:
+    trajectories = []
+    for r in range(runs):
+        Gm = make_graph(model, n=N, seed=SEED + r)
+        counts = run_sis(Gm, beta=beta, mu=mu, steps=steps, initial_infected=initial_infected, seed=SEED + r)
+        trajectories.append(np.array(counts) / N)
+
+    mean_traj = np.mean(trajectories, axis=0)
+    plt.plot(mean_traj, label=model)
+
+plt.xlabel("Time step")
+plt.ylabel("Mean infected fraction")
+plt.title(f"SIS on different network models (N={N})")
+plt.legend()
+plt.tight_layout()
+plt.show()
+```
+
+::: {.callout-note}
+## Discuss
+
+Use your results to start a discussion:
+
+- Which network type sustains infection longer at the same $(\beta, \mu)$?
+- Do hubs (scale-free) make persistence easier? Why?
+- How does clustering (small-world) change local outbreaks vs global spread?
+- If you increase $N$ but keep average degree similar, what do you expect to happen?
+:::
 
 ## What's Next?
 
-Try the SIR model and compare how permanent immunity changes the outcome!
+Try the SIR model and compare how **permanent immunity** changes the outcome.
 
 [SIR Model](sir.qmd){.btn .btn-primary}
