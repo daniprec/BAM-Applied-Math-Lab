@@ -4,7 +4,7 @@ subtitle: "Paths, Degree, Connected Components"
 format: html
 ---
 
-In this page, we will explore some basic properties of networks, such as degree and density.
+In this page, we will explore some basic properties of networks, such as **degree**, **density**, **clustering**, and **paths / connected components**.
 
 If you are coding alongside me, I recommend you to start a new notebook and follow the code snippets below. You can also check the [Network Fundamentals](fundamentals.qmd) page for more details on how to create graphs with `networkx`.
 
@@ -77,8 +77,8 @@ print("Average degree:", avg_degree)
 In a directed graph, we distinguish between in-degree (number of incoming edges) and out-degree (number of outgoing edges).
 
 ```{python}
-print("In-degree of 'rabbit' (number of predators):", D_food_chain.in_degree("rabbit"))
-print("Out-degree of 'rabbit' (number of prey):", D_food_chain.out_degree("rabbit"))
+print("In-degree of 'antelope' (number of prey):", D_food_chain.in_degree("antelope"))
+print("Out-degree of 'antelope' (number of predators):", D_food_chain.out_degree("antelope"))
 ```
 
 ## Density
@@ -112,6 +112,46 @@ if nx.density(G_foods) < 0.1:
     print("The graph is sparse.")
 else:
     print("The graph is dense.")
+```
+
+## Clustering Coefficient
+
+Many real networks have **triangles**: if A is connected to B and C, there is a higher-than-random chance that B is also connected to C.
+This tendency is captured by the **clustering coefficient**.
+
+For an undirected graph, the *local clustering coefficient* of node $i$ is:
+
+$$
+C_i = \frac{2T_i}{k_i(k_i - 1)}
+$$
+
+where $k_i$ is the degree of node $i$, and $T_i$ is the number of triangles that include node $i$.
+If $k_i < 2$, we define $C_i = 0$.
+
+The **average clustering coefficient** is:
+
+$$
+C = \frac{1}{N}\sum_{i=1}^N C_i.
+$$
+
+In NetworkX:
+
+- `nx.clustering(G)` returns $C_i$ for every node.
+- `nx.average_clustering(G)` returns the average $C$.
+
+We will use $C$ later to compare **random** vs **small-world** vs **scale-free** synthetic networks.
+
+```{python}
+# Local clustering coefficient for each node
+clustering = nx.clustering(G_foods)
+print("Local clustering:")
+for node, c in clustering.items():
+    print(f"  {node}: {c:.3f}")
+
+print("Average clustering:", nx.average_clustering(G_foods))
+
+# Another common global measure is transitivity (ratio of triangles to connected triples)
+print("Transitivity:", nx.transitivity(G_foods))
 ```
 
 ## Connectivity in Undirected Graphs
@@ -259,6 +299,7 @@ print("Average shortest path length of the largest strongly connected component:
 
 ## What's Next?
 
-In the next page, you will explore a real-world network of US air travel routes. You will analyze its connectivity and identify important nodes (airports) in the network. You will also see how the structure of the network affects the flow of information (or in this case, passengers) through it.
+In the next page, we will learn how to generate *synthetic* graphs (random, small-world, scale-free) and compare their properties.
 
-[OpenFlights Network](flights.qmd){.btn .btn-primary}
+[Graph Models](models.qmd){.btn .btn-primary}
+
