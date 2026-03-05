@@ -575,6 +575,13 @@ window.Quarto = {
   <li><a href="#connected-components-in-undirected-graphs" id="toc-connected-components-in-undirected-graphs" class="nav-link" data-scroll-target="#connected-components-in-undirected-graphs">Connected Components in Undirected Graphs</a></li>
   <li><a href="#diameter-and-average-path-length" id="toc-diameter-and-average-path-length" class="nav-link" data-scroll-target="#diameter-and-average-path-length">Diameter and Average Path Length</a></li>
   </ul></li>
+  <li><a href="#centrality-node-importance" id="toc-centrality-node-importance" class="nav-link" data-scroll-target="#centrality-node-importance">Centrality (Node Importance)</a>
+  <ul>
+  <li><a href="#degree-centrality" id="toc-degree-centrality" class="nav-link" data-scroll-target="#degree-centrality">Degree centrality</a></li>
+  <li><a href="#closeness-centrality" id="toc-closeness-centrality" class="nav-link" data-scroll-target="#closeness-centrality">Closeness centrality</a></li>
+  <li><a href="#betweenness-centrality" id="toc-betweenness-centrality" class="nav-link" data-scroll-target="#betweenness-centrality">Betweenness Centrality</a></li>
+  <li><a href="#pagerank-directed-networks" id="toc-pagerank-directed-networks" class="nav-link" data-scroll-target="#pagerank-directed-networks">PageRank (Directed Networks)</a></li>
+  </ul></li>
   <li><a href="#connectivity-in-directed-graphs" id="toc-connectivity-in-directed-graphs" class="nav-link" data-scroll-target="#connectivity-in-directed-graphs">Connectivity in Directed Graphs</a>
   <ul>
   <li><a href="#paths-in-directed-graphs" id="toc-paths-in-directed-graphs" class="nav-link" data-scroll-target="#paths-in-directed-graphs">Paths in Directed Graphs</a></li>
@@ -612,7 +619,7 @@ window.Quarto = {
 <p>In this page, we will explore some basic properties of networks, such as <strong>degree</strong>, <strong>density</strong>, <strong>clustering</strong>, and <strong>paths / connected components</strong>.</p>
 <p>If you are coding alongside me, I recommend you to start a new notebook and follow the code snippets below. You can also check the <a href="../../modules/networks/fundamentals.html">Network Fundamentals</a> page for more details on how to create graphs with <code>networkx</code>.</p>
 <p>As always, we should start by importing the necessary libraries and creating a sample graph.</p>
-<div id="243d558e" class="cell" data-execution_count="1">
+<div id="76ae57de" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -639,7 +646,7 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<div id="e6f10810" class="cell" data-execution_count="2">
+<div id="5737011c" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a directed graph</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>D_food_chain <span class="op">=</span> nx.DiGraph()  <span class="co"># food chain (prey -&gt; predator)</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>D_food_chain.add_edges_from([</span>
@@ -667,7 +674,7 @@ window.Quarto = {
 <section id="degree" class="level2">
 <h2 class="anchored" data-anchor-id="degree">Degree</h2>
 <p>The degree <span class="math inline">\(k\)</span> of a node is the number of edges connected to it. In an undirected graph, the degree of a node is simply the number of neighbors it has.</p>
-<div id="21c7ba68" class="cell" data-execution_count="3">
+<div id="08493881" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Degree of a node</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Degree of 'bread':"</span>, G_foods.degree(<span class="st">"bread"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -677,7 +684,7 @@ window.Quarto = {
 <p>The average degree of an undirected graph is given by:</p>
 <p><span class="math display">\[\langle k \rangle = \frac{2E}{N}\]</span></p>
 <p>where <span class="math inline">\(E\)</span> is the number of edges and <span class="math inline">\(N\)</span> is the number of nodes.</p>
-<div id="3c3d7a16" class="cell" data-execution_count="4">
+<div id="493044c8" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Average degree of the graph</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>ls_degrees <span class="op">=</span> [G_foods.degree(node) <span class="cf">for</span> node <span class="kw">in</span> G_foods.nodes()]</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>avg_degree <span class="op">=</span> <span class="bu">sum</span>(ls_degrees) <span class="op">/</span> <span class="bu">len</span>(ls_degrees)</span>
@@ -689,7 +696,7 @@ window.Quarto = {
 <section id="degrees-in-directed-graphs" class="level3">
 <h3 class="anchored" data-anchor-id="degrees-in-directed-graphs">Degrees in Directed Graphs</h3>
 <p>In a directed graph, we distinguish between in-degree (number of incoming edges) and out-degree (number of outgoing edges).</p>
-<div id="39f82c58" class="cell" data-execution_count="5">
+<div id="2970ce22" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"In-degree of 'antelope' (number of prey):"</span>, D_food_chain.in_degree(<span class="st">"antelope"</span>))</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Out-degree of 'antelope' (number of predators):"</span>, D_food_chain.out_degree(<span class="st">"antelope"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -711,7 +718,7 @@ D = \frac{2|E|}{|V|(|V| - 1)}
 D = \frac{|E|}{|V|(|V| - 1)}
 \]</span></p>
 <p>NetworkX provides a built-in function to calculate the density of a graph:</p>
-<div id="2af2cc5c" class="cell" data-execution_count="6">
+<div id="d9e25fd1" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Density</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Density:"</span>, nx.density(G_foods))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -719,7 +726,7 @@ D = \frac{|E|}{|V|(|V| - 1)}
 </div>
 </div>
 <p>A graph is <strong>sparse</strong> when <span class="math inline">\(D \ll 1\)</span> and <strong>dense</strong> when <span class="math inline">\(D \approx 1\)</span>.</p>
-<div id="d6f01543" class="cell" data-execution_count="7">
+<div id="9b93b328" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check if the graph is sparse or dense</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> nx.density(G_foods) <span class="op">&lt;</span> <span class="fl">0.1</span>:</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"The graph is sparse."</span>)</span>
@@ -748,7 +755,7 @@ C = \frac{1}{N}\sum_{i=1}^N C_i.
 <li><code>nx.average_clustering(G)</code> returns the average <span class="math inline">\(C\)</span>.</li>
 </ul>
 <p>We will use <span class="math inline">\(C\)</span> later to compare <strong>random</strong> vs <strong>small-world</strong> vs <strong>scale-free</strong> synthetic networks.</p>
-<div id="e23f4a86" class="cell" data-execution_count="8">
+<div id="2071dfa4" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Local clustering coefficient for each node</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>clustering <span class="op">=</span> nx.clustering(G_foods)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Local clustering:"</span>)</span>
@@ -778,7 +785,7 @@ Transitivity: 0.3333333333333333</code></pre>
 <h3 class="anchored" data-anchor-id="paths-in-an-undirected-graph">Paths in an Undirected Graph</h3>
 <p>A <strong>path</strong> in a network is a sequence of edges connecting two nodes.</p>
 <p>Take a look at the food graph we created above. Is there a path from “bread” to “watermelon”?</p>
-<div id="89dc4bbd" class="cell" data-execution_count="9">
+<div id="ee9852a4" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(G_foods)</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>nx.draw(G_foods, node_color<span class="op">=</span><span class="st">"lightblue"</span>, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
@@ -792,7 +799,7 @@ Transitivity: 0.3333333333333333</code></pre>
 </div>
 </div>
 <p>NetworkX provides <code>has_path(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;)</code> to check if there is a path between two nodes:</p>
-<div id="45446412" class="cell" data-execution_count="10">
+<div id="f99aee4b" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check if there is a path from 'bread' to 'watermelon'</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Is there a path from 'bread' to 'watermelon'?"</span>,</span>
@@ -803,7 +810,7 @@ Transitivity: 0.3333333333333333</code></pre>
 </div>
 </div>
 <p>There can be more than one path between two nodes. We can use <code>all_simple_paths(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;)</code> to find all the simple paths between two nodes:</p>
-<div id="7edbba1d" class="cell" data-execution_count="11">
+<div id="97a72f28" class="cell" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>ls_paths <span class="op">=</span> <span class="bu">list</span>(nx.all_simple_paths(G_foods, <span class="st">"bread"</span>, <span class="st">"watermelon"</span>))</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"All paths from 'bread' to 'watermelon':"</span>, ls_paths)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -828,10 +835,10 @@ How many connected components does <code>G_foods</code> have?
 <div class="callout-body-container callout-body">
 <p><code>G_foods</code> has one connected component, since all nodes are connected to each other through some path.</p>
 <p>As usual, we can verify this with NetworkX:</p>
-<div id="c382c4cf" class="cell" data-execution_count="12">
+<div id="5a9a830d" class="cell" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Connected components:"</span>, <span class="bu">list</span>(nx.connected_components(G_foods)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Connected components: [{'chocolate', 'cured ham', 'watermelon', 'cheese', 'bread'}]</code></pre>
+<pre><code>Connected components: [{'cheese', 'watermelon', 'bread', 'cured ham', 'chocolate'}]</code></pre>
 </div>
 </div>
 </div>
@@ -841,17 +848,139 @@ How many connected components does <code>G_foods</code> have?
 <section id="diameter-and-average-path-length" class="level3">
 <h3 class="anchored" data-anchor-id="diameter-and-average-path-length">Diameter and Average Path Length</h3>
 <p>The <strong>diameter</strong> of a graph is the length of the longest shortest path between any two nodes in the graph. It gives us an idea of how “far apart” the nodes are in the graph.</p>
-<div id="c61c8c71" class="cell" data-execution_count="13">
+<div id="6768d957" class="cell" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Diameter:"</span>, nx.diameter(G_foods))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Diameter: 2</code></pre>
 </div>
 </div>
 <p>The <strong>average path length (APL)</strong> is the average of the shortest paths between all pairs of nodes.</p>
-<div id="b69a2a61" class="cell" data-execution_count="14">
+<div id="4a24e656" class="cell" data-execution_count="14">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Average shortest path length:"</span>, nx.average_shortest_path_length(G_foods))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Average shortest path length: 1.4</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="centrality-node-importance" class="level2">
+<h2 class="anchored" data-anchor-id="centrality-node-importance">Centrality (Node Importance)</h2>
+<p>In many real networks, not all nodes play the same role:</p>
+<ul>
+<li>in an airport network, some airports are <strong>hubs</strong>;</li>
+<li>in an email network, some people act as <strong>bridges</strong> between groups.</li>
+</ul>
+<p>These ideas are quantified by <strong>centrality measures</strong>.</p>
+<section id="degree-centrality" class="level3">
+<h3 class="anchored" data-anchor-id="degree-centrality">Degree centrality</h3>
+<p>The simplest centrality is based on degree. In an undirected graph with <span class="math inline">\(N\)</span> nodes, the (normalized) degree centrality is</p>
+<p><span class="math display">\[
+\mathrm{deg\_cent}(i) = \frac{k_i}{N-1}.
+\]</span></p>
+<div id="1c6afb42" class="cell" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>deg_cent <span class="op">=</span> nx.degree_centrality(G_foods)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Degree centrality:"</span>)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> node, c <span class="kw">in</span> <span class="bu">sorted</span>(deg_cent.items(), key<span class="op">=</span><span class="kw">lambda</span> kv: kv[<span class="dv">1</span>], reverse<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>node<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>c<span class="sc">:.3f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Degree centrality:
+  bread: 0.750
+  cured ham: 0.750
+  cheese: 0.500
+  chocolate: 0.500
+  watermelon: 0.500</code></pre>
+</div>
+</div>
+</section>
+<section id="closeness-centrality" class="level3">
+<h3 class="anchored" data-anchor-id="closeness-centrality">Closeness centrality</h3>
+<p>Closeness measures how close a node is (on average) to all others via shortest paths. One common definition is</p>
+<p><span class="math display">\[
+\mathrm{close}(i) = \frac{N-1}{\sum_{j \neq i} d(i,j)},
+\]</span></p>
+<p>where <span class="math inline">\(d(i,j)\)</span> is the shortest-path distance.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Disconnected graphs
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If a graph is disconnected, some distances are infinite and closeness becomes tricky. In practice you often compute path-based metrics on the <strong>largest connected component</strong>.</p>
+</div>
+</div>
+<div id="63106acb" class="cell" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>close_cent <span class="op">=</span> nx.closeness_centrality(G_foods)</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Closeness centrality:"</span>)</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> node, c <span class="kw">in</span> <span class="bu">sorted</span>(close_cent.items(), key<span class="op">=</span><span class="kw">lambda</span> kv: kv[<span class="dv">1</span>], reverse<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>node<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>c<span class="sc">:.3f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Closeness centrality:
+  bread: 0.800
+  cured ham: 0.800
+  cheese: 0.667
+  chocolate: 0.667
+  watermelon: 0.667</code></pre>
+</div>
+</div>
+</section>
+<section id="betweenness-centrality" class="level3">
+<h3 class="anchored" data-anchor-id="betweenness-centrality">Betweenness Centrality</h3>
+<p>Betweenness identifies <strong>bridges</strong>: nodes that sit on many shortest paths. Formally,</p>
+<p><span class="math display">\[
+\mathrm{between}(v) = \sum_{s \neq v \neq t} \frac{\sigma_{st}(v)}{\sigma_{st}},
+\]</span></p>
+<p>where <span class="math inline">\(\sigma_{st}\)</span> is the number of shortest paths from <span class="math inline">\(s\)</span> to <span class="math inline">\(t\)</span>, and <span class="math inline">\(\sigma_{st}(v)\)</span> is the number of those paths that pass through <span class="math inline">\(v\)</span>.</p>
+<div id="b17e1b79" class="cell" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>bc <span class="op">=</span> nx.betweenness_centrality(G_foods)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Betweenness centrality:"</span>)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> node, c <span class="kw">in</span> <span class="bu">sorted</span>(bc.items(), key<span class="op">=</span><span class="kw">lambda</span> kv: kv[<span class="dv">1</span>], reverse<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>node<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>c<span class="sc">:.3f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Betweenness centrality:
+  bread: 0.250
+  cured ham: 0.250
+  chocolate: 0.083
+  watermelon: 0.083
+  cheese: 0.000</code></pre>
+</div>
+</div>
+</section>
+<section id="pagerank-directed-networks" class="level3">
+<h3 class="anchored" data-anchor-id="pagerank-directed-networks">PageRank (Directed Networks)</h3>
+<p>For directed networks (like the web), PageRank is the stationary distribution of a random walk (“random surfer”) on the graph.</p>
+<div id="925e480b" class="cell" data-execution_count="18">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>pr <span class="op">=</span> nx.pagerank(D_food_chain, alpha<span class="op">=</span><span class="fl">0.85</span>)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"PageRank (directed food chain):"</span>)</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> node, c <span class="kw">in</span> <span class="bu">sorted</span>(pr.items(), key<span class="op">=</span><span class="kw">lambda</span> kv: kv[<span class="dv">1</span>], reverse<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>node<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>c<span class="sc">:.3f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>PageRank (directed food chain):
+  lion: 0.403
+  hyena: 0.218
+  antelope: 0.140
+  zebra: 0.140
+  grass: 0.099</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Performance note
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>On large graphs, exact betweenness can be expensive. NetworkX supports approximation (sample <span class="math inline">\(k\)</span> sources):</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>nx.betweenness_centrality(G, k<span class="op">=</span><span class="dv">200</span>, seed<span class="op">=</span>SEED)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </div>
 </div>
 </section>
@@ -862,23 +991,23 @@ How many connected components does <code>G_foods</code> have?
 <section id="paths-in-directed-graphs" class="level3">
 <h3 class="anchored" data-anchor-id="paths-in-directed-graphs">Paths in Directed Graphs</h3>
 <p>In a directed graph, a path must follow the direction of the edges. For example, in the directed food chain graph <code>D</code>, is there a path from “grass” to “lion”?</p>
-<div id="71cbfa38" class="cell" data-execution_count="15">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.spring_layout(D_food_chain)</span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>nx.draw(D_food_chain, node_color<span class="op">=</span><span class="st">"lightgreen"</span>, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="d2432d1a" class="cell" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.spring_layout(D_food_chain)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>nx.draw(D_food_chain, node_color<span class="op">=</span><span class="st">"lightgreen"</span>, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="connectivity_files/figure-html/cell-16-output-1.png" class="img-fluid figure-img"></p>
+<p><img src="connectivity_files/figure-html/cell-20-output-1.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>We can check for the existence of a path in a directed graph using the same <code>has_path(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;)</code> function:</p>
-<div id="533eefca" class="cell" data-execution_count="16">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is there a path from 'grass' to 'lion'?"</span>, nx.has_path(D_food_chain, <span class="st">"grass"</span>, <span class="st">"lion"</span>))   </span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is there a path from 'lion' to 'grass'?"</span>, nx.has_path(D_food_chain, <span class="st">"lion"</span>, <span class="st">"grass"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="629083b7" class="cell" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is there a path from 'grass' to 'lion'?"</span>, nx.has_path(D_food_chain, <span class="st">"grass"</span>, <span class="st">"lion"</span>))   </span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is there a path from 'lion' to 'grass'?"</span>, nx.has_path(D_food_chain, <span class="st">"lion"</span>, <span class="st">"grass"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Is there a path from 'grass' to 'lion'? True
 Is there a path from 'lion' to 'grass'? False</code></pre>
@@ -888,9 +1017,9 @@ Is there a path from 'lion' to 'grass'? False</code></pre>
 <section id="strongly-connected-components" class="level3">
 <h3 class="anchored" data-anchor-id="strongly-connected-components">Strongly Connected Components</h3>
 <p>A strongly connected component is a subgraph in which there is a directed path from any node to any other node. A directed graph is strongly connected if it has only one strongly connected component.</p>
-<div id="a27202a4" class="cell" data-execution_count="17">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is strongly connected:"</span>, nx.is_strongly_connected(D_food_chain))</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Strongly connected components:"</span>, <span class="bu">list</span>(nx.strongly_connected_components(D_food_chain)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="b55c5d4b" class="cell" data-execution_count="21">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is strongly connected:"</span>, nx.is_strongly_connected(D_food_chain))</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Strongly connected components:"</span>, <span class="bu">list</span>(nx.strongly_connected_components(D_food_chain)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Is strongly connected: False
 Strongly connected components: [{'lion'}, {'hyena'}, {'antelope'}, {'zebra'}, {'grass'}]</code></pre>
@@ -900,17 +1029,17 @@ Strongly connected components: [{'lion'}, {'hyena'}, {'antelope'}, {'zebra'}, {'
 <section id="weakly-connected-components" class="level3">
 <h3 class="anchored" data-anchor-id="weakly-connected-components">Weakly Connected Components</h3>
 <p>A weakly connected component is a subgraph in which there is an undirected path from any node to any other node. A directed graph is weakly connected if it has only one weakly connected component.</p>
-<div id="36b23598" class="cell" data-execution_count="18">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is weakly connected:"</span>, nx.is_weakly_connected(D_food_chain))</span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Weakly connected components:"</span>, <span class="bu">list</span>(nx.weakly_connected_components(D_food_chain)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="5ba08f03" class="cell" data-execution_count="22">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is weakly connected:"</span>, nx.is_weakly_connected(D_food_chain))</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Weakly connected components:"</span>, <span class="bu">list</span>(nx.weakly_connected_components(D_food_chain)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Is weakly connected: True
-Weakly connected components: [{'zebra', 'antelope', 'lion', 'hyena', 'grass'}]</code></pre>
+Weakly connected components: [{'zebra', 'lion', 'grass', 'hyena', 'antelope'}]</code></pre>
 </div>
 </div>
 <p><strong>Exercise.</strong> How can we turn <code>D_food_chain</code> into a strongly connected graph? Try adding some edges to make it strongly connected.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -919,36 +1048,36 @@ Solution
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>To make <code>D_food_chain</code> strongly connected, we need to ensure that there is a directed path from every node to every other node. One way to achieve this is to add edges that create cycles between the nodes. Our example is a though one, as food chains are typically acyclic. Still, we can take note from “The Lion King”:</p>
 <blockquote class="blockquote">
 <p>“When we die, our bodies become the grass, and the antelope eat the grass. And so, we are all connected in the great Circle of Life.” - Mufasa (lion)</p>
 </blockquote>
-<div id="dac79f8b" class="cell" data-execution_count="19">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># When a predator dies, it returns to the food chain as prey for the grass</span></span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>D_food_chain.add_edges_from([</span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"lion"</span>, <span class="st">"grass"</span>),</span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>])</span>
-<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize the new graph</span></span>
-<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.spring_layout(D_food_chain)</span>
-<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>nx.draw(D_food_chain, node_color<span class="op">=</span><span class="st">"lightgreen"</span>, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
-<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="447e8b3a" class="cell" data-execution_count="23">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># When a predator dies, it returns to the food chain as prey for the grass</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>D_food_chain.add_edges_from([</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"lion"</span>, <span class="st">"grass"</span>),</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize the new graph</span></span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.spring_layout(D_food_chain)</span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>nx.draw(D_food_chain, node_color<span class="op">=</span><span class="st">"lightgreen"</span>, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="connectivity_files/figure-html/cell-20-output-1.png" class="img-fluid figure-img"></p>
+<p><img src="connectivity_files/figure-html/cell-24-output-1.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
 </div>
 </div>
-<div id="3a64c888" class="cell" data-execution_count="20">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is strongly connected:"</span>, nx.is_strongly_connected(D_food_chain))</span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Strongly connected components:"</span>, <span class="bu">list</span>(nx.strongly_connected_components(D_food_chain)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="5011f267" class="cell" data-execution_count="24">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is strongly connected:"</span>, nx.is_strongly_connected(D_food_chain))</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Strongly connected components:"</span>, <span class="bu">list</span>(nx.strongly_connected_components(D_food_chain)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Is strongly connected: True
-Strongly connected components: [{'zebra', 'antelope', 'lion', 'hyena', 'grass'}]</code></pre>
+Strongly connected components: [{'zebra', 'lion', 'grass', 'hyena', 'antelope'}]</code></pre>
 </div>
 </div>
 </div>
@@ -958,12 +1087,12 @@ Strongly connected components: [{'zebra', 'antelope', 'lion', 'hyena', 'grass'}]
 <section id="diameter-and-average-path-length-in-directed-graphs" class="level3">
 <h3 class="anchored" data-anchor-id="diameter-and-average-path-length-in-directed-graphs">Diameter and Average Path Length in Directed Graphs</h3>
 <p>The diameter and average path length in directed graphs are calculated based on the shortest paths that follow the direction of the edges. If the graph is not strongly connected, we can only calculate these metrics for the largest strongly connected component.</p>
-<div id="27141e9c" class="cell" data-execution_count="21">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the largest strongly connected component</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>largest_scc <span class="op">=</span> <span class="bu">max</span>(nx.strongly_connected_components(D_food_chain), key<span class="op">=</span><span class="bu">len</span>)</span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>subgraph <span class="op">=</span> D_food_chain.subgraph(largest_scc)</span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Diameter of the largest strongly connected component:"</span>, nx.diameter(subgraph))</span>
-<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Average shortest path length of the largest strongly connected component:"</span>, nx.average_shortest_path_length(subgraph))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="0f44a6eb" class="cell" data-execution_count="25">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the largest strongly connected component</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>largest_scc <span class="op">=</span> <span class="bu">max</span>(nx.strongly_connected_components(D_food_chain), key<span class="op">=</span><span class="bu">len</span>)</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>subgraph <span class="op">=</span> D_food_chain.subgraph(largest_scc)</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Diameter of the largest strongly connected component:"</span>, nx.diameter(subgraph))</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Average shortest path length of the largest strongly connected component:"</span>, nx.average_shortest_path_length(subgraph))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Diameter of the largest strongly connected component: 3
 Average shortest path length of the largest strongly connected component: 1.85</code></pre>
@@ -1432,310 +1561,397 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>
   </div>
 </nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="sourceCode" id="cb38" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Networks: Connectivity"</span></span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Paths, Degree, Connected Components"</span></span>
-<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
-<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>In this page, we will explore some basic properties of networks, such as **degree**, **density**, **clustering**, and **paths / connected components**.</span>
-<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>If you are coding alongside me, I recommend you to start a new notebook and follow the code snippets below. You can also check the <span class="co">[</span><span class="ot">Network Fundamentals</span><span class="co">](fundamentals.qmd)</span> page for more details on how to create graphs with <span class="in">`networkx`</span>.</span>
-<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>As always, we should start by importing the necessary libraries and creating a sample graph.</span>
-<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-15"><a href="#cb38-15" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-16"><a href="#cb38-16" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
-<span id="cb38-17"><a href="#cb38-17" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb38-18"><a href="#cb38-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-19"><a href="#cb38-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Create an undirected graph</span></span>
-<span id="cb38-20"><a href="#cb38-20" aria-hidden="true" tabindex="-1"></a><span class="co"># (foods I like to eat together)</span></span>
-<span id="cb38-21"><a href="#cb38-21" aria-hidden="true" tabindex="-1"></a>G_foods <span class="op">=</span> nx.from_edgelist([</span>
-<span id="cb38-22"><a href="#cb38-22" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"bread"</span>, <span class="st">"cheese"</span>),</span>
-<span id="cb38-23"><a href="#cb38-23" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"bread"</span>, <span class="st">"chocolate"</span>),</span>
-<span id="cb38-24"><a href="#cb38-24" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"bread"</span>, <span class="st">"cured ham"</span>),</span>
-<span id="cb38-25"><a href="#cb38-25" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"cheese"</span>, <span class="st">"cured ham"</span>),</span>
-<span id="cb38-26"><a href="#cb38-26" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"chocolate"</span>, <span class="st">"watermelon"</span>),</span>
-<span id="cb38-27"><a href="#cb38-27" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"cured ham"</span>, <span class="st">"watermelon"</span>),</span>
-<span id="cb38-28"><a href="#cb38-28" aria-hidden="true" tabindex="-1"></a>])</span>
-<span id="cb38-29"><a href="#cb38-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-30"><a href="#cb38-30" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize the graph</span></span>
-<span id="cb38-31"><a href="#cb38-31" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(G_foods)</span>
-<span id="cb38-32"><a href="#cb38-32" aria-hidden="true" tabindex="-1"></a>nx.draw(G_foods, node_color<span class="op">=</span><span class="st">"lightblue"</span>, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
-<span id="cb38-33"><a href="#cb38-33" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb38-34"><a href="#cb38-34" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-35"><a href="#cb38-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-38"><a href="#cb38-38" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-39"><a href="#cb38-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a directed graph</span></span>
-<span id="cb38-40"><a href="#cb38-40" aria-hidden="true" tabindex="-1"></a>D_food_chain <span class="op">=</span> nx.DiGraph()  <span class="co"># food chain (prey -&gt; predator)</span></span>
-<span id="cb38-41"><a href="#cb38-41" aria-hidden="true" tabindex="-1"></a>D_food_chain.add_edges_from([</span>
-<span id="cb38-42"><a href="#cb38-42" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"grass"</span>, <span class="st">"antelope"</span>),</span>
-<span id="cb38-43"><a href="#cb38-43" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"grass"</span>, <span class="st">"zebra"</span>),</span>
-<span id="cb38-44"><a href="#cb38-44" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"antelope"</span>, <span class="st">"lion"</span>),</span>
-<span id="cb38-45"><a href="#cb38-45" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"antelope"</span>, <span class="st">"hyena"</span>),</span>
-<span id="cb38-46"><a href="#cb38-46" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"zebra"</span>, <span class="st">"lion"</span>),</span>
-<span id="cb38-47"><a href="#cb38-47" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"zebra"</span>, <span class="st">"hyena"</span>),</span>
-<span id="cb38-48"><a href="#cb38-48" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"hyena"</span>, <span class="st">"lion"</span>),</span>
-<span id="cb38-49"><a href="#cb38-49" aria-hidden="true" tabindex="-1"></a>])</span>
-<span id="cb38-50"><a href="#cb38-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-51"><a href="#cb38-51" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize the graph</span></span>
-<span id="cb38-52"><a href="#cb38-52" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.spring_layout(D_food_chain)</span>
-<span id="cb38-53"><a href="#cb38-53" aria-hidden="true" tabindex="-1"></a>nx.draw(D_food_chain, node_color<span class="op">=</span><span class="st">"lightgreen"</span>, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
-<span id="cb38-54"><a href="#cb38-54" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb38-55"><a href="#cb38-55" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-56"><a href="#cb38-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-57"><a href="#cb38-57" aria-hidden="true" tabindex="-1"></a><span class="fu">## Degree</span></span>
-<span id="cb38-58"><a href="#cb38-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-59"><a href="#cb38-59" aria-hidden="true" tabindex="-1"></a>The degree $k$ of a node is the number of edges connected to it. In an undirected graph, the degree of a node is simply the number of neighbors it has.</span>
-<span id="cb38-60"><a href="#cb38-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-63"><a href="#cb38-63" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-64"><a href="#cb38-64" aria-hidden="true" tabindex="-1"></a><span class="co"># Degree of a node</span></span>
-<span id="cb38-65"><a href="#cb38-65" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Degree of 'bread':"</span>, G_foods.degree(<span class="st">"bread"</span>))</span>
-<span id="cb38-66"><a href="#cb38-66" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-67"><a href="#cb38-67" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-68"><a href="#cb38-68" aria-hidden="true" tabindex="-1"></a>The average degree of an undirected graph is given by:</span>
-<span id="cb38-69"><a href="#cb38-69" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-70"><a href="#cb38-70" aria-hidden="true" tabindex="-1"></a>$$\langle k \rangle = \frac{2E}{N}$$</span>
-<span id="cb38-71"><a href="#cb38-71" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-72"><a href="#cb38-72" aria-hidden="true" tabindex="-1"></a>where $E$ is the number of edges and $N$ is the number of nodes.</span>
-<span id="cb38-73"><a href="#cb38-73" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-76"><a href="#cb38-76" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-77"><a href="#cb38-77" aria-hidden="true" tabindex="-1"></a><span class="co"># Average degree of the graph</span></span>
-<span id="cb38-78"><a href="#cb38-78" aria-hidden="true" tabindex="-1"></a>ls_degrees <span class="op">=</span> [G_foods.degree(node) <span class="cf">for</span> node <span class="kw">in</span> G_foods.nodes()]</span>
-<span id="cb38-79"><a href="#cb38-79" aria-hidden="true" tabindex="-1"></a>avg_degree <span class="op">=</span> <span class="bu">sum</span>(ls_degrees) <span class="op">/</span> <span class="bu">len</span>(ls_degrees)</span>
-<span id="cb38-80"><a href="#cb38-80" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Average degree:"</span>, avg_degree)</span>
-<span id="cb38-81"><a href="#cb38-81" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-82"><a href="#cb38-82" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-83"><a href="#cb38-83" aria-hidden="true" tabindex="-1"></a><span class="fu">### Degrees in Directed Graphs</span></span>
-<span id="cb38-84"><a href="#cb38-84" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-85"><a href="#cb38-85" aria-hidden="true" tabindex="-1"></a>In a directed graph, we distinguish between in-degree (number of incoming edges) and out-degree (number of outgoing edges).</span>
-<span id="cb38-86"><a href="#cb38-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-89"><a href="#cb38-89" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-90"><a href="#cb38-90" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"In-degree of 'antelope' (number of prey):"</span>, D_food_chain.in_degree(<span class="st">"antelope"</span>))</span>
-<span id="cb38-91"><a href="#cb38-91" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Out-degree of 'antelope' (number of predators):"</span>, D_food_chain.out_degree(<span class="st">"antelope"</span>))</span>
-<span id="cb38-92"><a href="#cb38-92" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-93"><a href="#cb38-93" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-94"><a href="#cb38-94" aria-hidden="true" tabindex="-1"></a><span class="fu">## Density</span></span>
-<span id="cb38-95"><a href="#cb38-95" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-96"><a href="#cb38-96" aria-hidden="true" tabindex="-1"></a>A graph density is the ratio of the number of edges to the number of possible edges. It is a measure of how many edges are present in the graph compared to the maximum possible number of edges. The density of an undirected graph can be calculated as follows:</span>
-<span id="cb38-97"><a href="#cb38-97" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-98"><a href="#cb38-98" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb38-99"><a href="#cb38-99" aria-hidden="true" tabindex="-1"></a>D = \frac{2|E|}{|V|(|V| - 1)}</span>
-<span id="cb38-100"><a href="#cb38-100" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb38-101"><a href="#cb38-101" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-102"><a href="#cb38-102" aria-hidden="true" tabindex="-1"></a>where $|E|$ is the number of edges and $|V|$ is the number of nodes in the graph.</span>
-<span id="cb38-103"><a href="#cb38-103" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-104"><a href="#cb38-104" aria-hidden="true" tabindex="-1"></a>In a directed graph, we have twice as many possible edges (since each pair of nodes can have two directed edges), so the density is calculated as:</span>
-<span id="cb38-105"><a href="#cb38-105" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-106"><a href="#cb38-106" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb38-107"><a href="#cb38-107" aria-hidden="true" tabindex="-1"></a>D = \frac{|E|}{|V|(|V| - 1)}</span>
-<span id="cb38-108"><a href="#cb38-108" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb38-109"><a href="#cb38-109" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-110"><a href="#cb38-110" aria-hidden="true" tabindex="-1"></a>NetworkX provides a built-in function to calculate the density of a graph:</span>
-<span id="cb38-111"><a href="#cb38-111" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-114"><a href="#cb38-114" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-115"><a href="#cb38-115" aria-hidden="true" tabindex="-1"></a><span class="co"># Density</span></span>
-<span id="cb38-116"><a href="#cb38-116" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Density:"</span>, nx.density(G_foods))</span>
-<span id="cb38-117"><a href="#cb38-117" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-118"><a href="#cb38-118" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-119"><a href="#cb38-119" aria-hidden="true" tabindex="-1"></a>A graph is **sparse** when $D \ll 1$ and **dense** when $D \approx 1$.</span>
-<span id="cb38-120"><a href="#cb38-120" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-123"><a href="#cb38-123" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-124"><a href="#cb38-124" aria-hidden="true" tabindex="-1"></a><span class="co"># Check if the graph is sparse or dense</span></span>
-<span id="cb38-125"><a href="#cb38-125" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> nx.density(G_foods) <span class="op">&lt;</span> <span class="fl">0.1</span>:</span>
-<span id="cb38-126"><a href="#cb38-126" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"The graph is sparse."</span>)</span>
-<span id="cb38-127"><a href="#cb38-127" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
-<span id="cb38-128"><a href="#cb38-128" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"The graph is dense."</span>)</span>
-<span id="cb38-129"><a href="#cb38-129" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-130"><a href="#cb38-130" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-131"><a href="#cb38-131" aria-hidden="true" tabindex="-1"></a><span class="fu">## Clustering Coefficient</span></span>
-<span id="cb38-132"><a href="#cb38-132" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-133"><a href="#cb38-133" aria-hidden="true" tabindex="-1"></a>Many real networks have **triangles**: if A is connected to B and C, there is a higher-than-random chance that B is also connected to C.</span>
-<span id="cb38-134"><a href="#cb38-134" aria-hidden="true" tabindex="-1"></a>This tendency is captured by the **clustering coefficient**.</span>
-<span id="cb38-135"><a href="#cb38-135" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-136"><a href="#cb38-136" aria-hidden="true" tabindex="-1"></a>For an undirected graph, the *local clustering coefficient* of node $i$ is:</span>
-<span id="cb38-137"><a href="#cb38-137" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-138"><a href="#cb38-138" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb38-139"><a href="#cb38-139" aria-hidden="true" tabindex="-1"></a>C_i = \frac{2T_i}{k_i(k_i - 1)}</span>
-<span id="cb38-140"><a href="#cb38-140" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb38-141"><a href="#cb38-141" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-142"><a href="#cb38-142" aria-hidden="true" tabindex="-1"></a>where $k_i$ is the degree of node $i$, and $T_i$ is the number of triangles that include node $i$.</span>
-<span id="cb38-143"><a href="#cb38-143" aria-hidden="true" tabindex="-1"></a>If $k_i &lt; 2$, we define $C_i = 0$.</span>
-<span id="cb38-144"><a href="#cb38-144" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-145"><a href="#cb38-145" aria-hidden="true" tabindex="-1"></a>The **average clustering coefficient** is:</span>
-<span id="cb38-146"><a href="#cb38-146" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-147"><a href="#cb38-147" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb38-148"><a href="#cb38-148" aria-hidden="true" tabindex="-1"></a>C = \frac{1}{N}\sum_{i=1}^N C_i.</span>
-<span id="cb38-149"><a href="#cb38-149" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb38-150"><a href="#cb38-150" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-151"><a href="#cb38-151" aria-hidden="true" tabindex="-1"></a>In NetworkX:</span>
-<span id="cb38-152"><a href="#cb38-152" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-153"><a href="#cb38-153" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`nx.clustering(G)`</span> returns $C_i$ for every node.</span>
-<span id="cb38-154"><a href="#cb38-154" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`nx.average_clustering(G)`</span> returns the average $C$.</span>
-<span id="cb38-155"><a href="#cb38-155" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-156"><a href="#cb38-156" aria-hidden="true" tabindex="-1"></a>We will use $C$ later to compare **random** vs **small-world** vs **scale-free** synthetic networks.</span>
-<span id="cb38-157"><a href="#cb38-157" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-160"><a href="#cb38-160" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-161"><a href="#cb38-161" aria-hidden="true" tabindex="-1"></a><span class="co"># Local clustering coefficient for each node</span></span>
-<span id="cb38-162"><a href="#cb38-162" aria-hidden="true" tabindex="-1"></a>clustering <span class="op">=</span> nx.clustering(G_foods)</span>
-<span id="cb38-163"><a href="#cb38-163" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Local clustering:"</span>)</span>
-<span id="cb38-164"><a href="#cb38-164" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> node, c <span class="kw">in</span> clustering.items():</span>
-<span id="cb38-165"><a href="#cb38-165" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>node<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>c<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
-<span id="cb38-166"><a href="#cb38-166" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-167"><a href="#cb38-167" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Average clustering:"</span>, nx.average_clustering(G_foods))</span>
-<span id="cb38-168"><a href="#cb38-168" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-169"><a href="#cb38-169" aria-hidden="true" tabindex="-1"></a><span class="co"># Another common global measure is transitivity (ratio of triangles to connected triples)</span></span>
-<span id="cb38-170"><a href="#cb38-170" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Transitivity:"</span>, nx.transitivity(G_foods))</span>
-<span id="cb38-171"><a href="#cb38-171" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-172"><a href="#cb38-172" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-173"><a href="#cb38-173" aria-hidden="true" tabindex="-1"></a><span class="fu">## Connectivity in Undirected Graphs</span></span>
-<span id="cb38-174"><a href="#cb38-174" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-175"><a href="#cb38-175" aria-hidden="true" tabindex="-1"></a>Connectivity is a fundamental property of graphs that describes how well the nodes are connected to each other. In an undirected graph, a graph is **connected** if there is a path between any two nodes. If a graph is not connected, it consists of multiple **connected components**, which are subgraphs in which any two nodes are connected by a path.</span>
-<span id="cb38-176"><a href="#cb38-176" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-177"><a href="#cb38-177" aria-hidden="true" tabindex="-1"></a><span class="fu">### Paths in an Undirected Graph</span></span>
-<span id="cb38-178"><a href="#cb38-178" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-179"><a href="#cb38-179" aria-hidden="true" tabindex="-1"></a>A **path** in a network is a sequence of edges connecting two nodes.</span>
-<span id="cb38-180"><a href="#cb38-180" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-181"><a href="#cb38-181" aria-hidden="true" tabindex="-1"></a>Take a look at the food graph we created above. Is there a path from "bread" to "watermelon"?</span>
-<span id="cb38-182"><a href="#cb38-182" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-185"><a href="#cb38-185" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-186"><a href="#cb38-186" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
-<span id="cb38-187"><a href="#cb38-187" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(G_foods)</span>
-<span id="cb38-188"><a href="#cb38-188" aria-hidden="true" tabindex="-1"></a>nx.draw(G_foods, node_color<span class="op">=</span><span class="st">"lightblue"</span>, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
-<span id="cb38-189"><a href="#cb38-189" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb38-190"><a href="#cb38-190" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-191"><a href="#cb38-191" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-192"><a href="#cb38-192" aria-hidden="true" tabindex="-1"></a>NetworkX provides <span class="in">`has_path(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;)`</span> to check if there is a path between two nodes:</span>
-<span id="cb38-193"><a href="#cb38-193" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-196"><a href="#cb38-196" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-197"><a href="#cb38-197" aria-hidden="true" tabindex="-1"></a><span class="co"># Check if there is a path from 'bread' to 'watermelon'</span></span>
-<span id="cb38-198"><a href="#cb38-198" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
-<span id="cb38-199"><a href="#cb38-199" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Is there a path from 'bread' to 'watermelon'?"</span>,</span>
-<span id="cb38-200"><a href="#cb38-200" aria-hidden="true" tabindex="-1"></a>    nx.has_path(G_foods, <span class="st">"bread"</span>, <span class="st">"watermelon"</span>)</span>
-<span id="cb38-201"><a href="#cb38-201" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb38-202"><a href="#cb38-202" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-203"><a href="#cb38-203" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-204"><a href="#cb38-204" aria-hidden="true" tabindex="-1"></a>There can be more than one path between two nodes. We can use <span class="in">`all_simple_paths(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;)`</span> to find all the simple paths between two nodes:</span>
-<span id="cb38-205"><a href="#cb38-205" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-208"><a href="#cb38-208" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-209"><a href="#cb38-209" aria-hidden="true" tabindex="-1"></a>ls_paths <span class="op">=</span> <span class="bu">list</span>(nx.all_simple_paths(G_foods, <span class="st">"bread"</span>, <span class="st">"watermelon"</span>))</span>
-<span id="cb38-210"><a href="#cb38-210" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"All paths from 'bread' to 'watermelon':"</span>, ls_paths)</span>
-<span id="cb38-211"><a href="#cb38-211" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-212"><a href="#cb38-212" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-213"><a href="#cb38-213" aria-hidden="true" tabindex="-1"></a><span class="fu">### Connected Components in Undirected Graphs</span></span>
-<span id="cb38-214"><a href="#cb38-214" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-215"><a href="#cb38-215" aria-hidden="true" tabindex="-1"></a>A **connected component** is a subgraph in which any two nodes are connected by a path. A graph is **connected** if it has only one connected component.</span>
-<span id="cb38-216"><a href="#cb38-216" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-217"><a href="#cb38-217" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
-<span id="cb38-218"><a href="#cb38-218" aria-hidden="true" tabindex="-1"></a><span class="fu">## How many connected components does `G_foods` have?</span></span>
-<span id="cb38-219"><a href="#cb38-219" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-220"><a href="#cb38-220" aria-hidden="true" tabindex="-1"></a><span class="in">`G_foods`</span> has one connected component, since all nodes are connected to each other through some path.</span>
-<span id="cb38-221"><a href="#cb38-221" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-222"><a href="#cb38-222" aria-hidden="true" tabindex="-1"></a>As usual, we can verify this with NetworkX:</span>
-<span id="cb38-225"><a href="#cb38-225" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-226"><a href="#cb38-226" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Connected components:"</span>, <span class="bu">list</span>(nx.connected_components(G_foods)))</span>
-<span id="cb38-227"><a href="#cb38-227" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-228"><a href="#cb38-228" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb38-229"><a href="#cb38-229" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-230"><a href="#cb38-230" aria-hidden="true" tabindex="-1"></a><span class="fu">### Diameter and Average Path Length</span></span>
-<span id="cb38-231"><a href="#cb38-231" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-232"><a href="#cb38-232" aria-hidden="true" tabindex="-1"></a>The **diameter** of a graph is the length of the longest shortest path between any two nodes in the graph. It gives us an idea of how "far apart" the nodes are in the graph.</span>
-<span id="cb38-233"><a href="#cb38-233" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-236"><a href="#cb38-236" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-237"><a href="#cb38-237" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Diameter:"</span>, nx.diameter(G_foods))</span>
-<span id="cb38-238"><a href="#cb38-238" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-239"><a href="#cb38-239" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-240"><a href="#cb38-240" aria-hidden="true" tabindex="-1"></a>The **average path length (APL)** is the average of the shortest paths between all pairs of nodes.</span>
-<span id="cb38-241"><a href="#cb38-241" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-244"><a href="#cb38-244" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-245"><a href="#cb38-245" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Average shortest path length:"</span>, nx.average_shortest_path_length(G_foods))</span>
-<span id="cb38-246"><a href="#cb38-246" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-247"><a href="#cb38-247" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-248"><a href="#cb38-248" aria-hidden="true" tabindex="-1"></a><span class="fu">## Connectivity in Directed Graphs</span></span>
-<span id="cb38-249"><a href="#cb38-249" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-250"><a href="#cb38-250" aria-hidden="true" tabindex="-1"></a>Connectivity in directed graphs is more complex than in undirected graphs, because we have to consider the direction of the edges. In a directed graph, we can have **strongly connected components** and **weakly connected components**.</span>
-<span id="cb38-251"><a href="#cb38-251" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-252"><a href="#cb38-252" aria-hidden="true" tabindex="-1"></a><span class="fu">### Paths in Directed Graphs</span></span>
-<span id="cb38-253"><a href="#cb38-253" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-254"><a href="#cb38-254" aria-hidden="true" tabindex="-1"></a>In a directed graph, a path must follow the direction of the edges. For example, in the directed food chain graph <span class="in">`D`</span>, is there a path from "grass" to "lion"?</span>
-<span id="cb38-255"><a href="#cb38-255" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-258"><a href="#cb38-258" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-259"><a href="#cb38-259" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
-<span id="cb38-260"><a href="#cb38-260" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.spring_layout(D_food_chain)</span>
-<span id="cb38-261"><a href="#cb38-261" aria-hidden="true" tabindex="-1"></a>nx.draw(D_food_chain, node_color<span class="op">=</span><span class="st">"lightgreen"</span>, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
-<span id="cb38-262"><a href="#cb38-262" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb38-263"><a href="#cb38-263" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-264"><a href="#cb38-264" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-265"><a href="#cb38-265" aria-hidden="true" tabindex="-1"></a>We can check for the existence of a path in a directed graph using the same <span class="in">`has_path(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;)`</span> function:</span>
-<span id="cb38-266"><a href="#cb38-266" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-269"><a href="#cb38-269" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-270"><a href="#cb38-270" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is there a path from 'grass' to 'lion'?"</span>, nx.has_path(D_food_chain, <span class="st">"grass"</span>, <span class="st">"lion"</span>))   </span>
-<span id="cb38-271"><a href="#cb38-271" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is there a path from 'lion' to 'grass'?"</span>, nx.has_path(D_food_chain, <span class="st">"lion"</span>, <span class="st">"grass"</span>))</span>
-<span id="cb38-272"><a href="#cb38-272" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-273"><a href="#cb38-273" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-274"><a href="#cb38-274" aria-hidden="true" tabindex="-1"></a><span class="fu">### Strongly Connected Components</span></span>
-<span id="cb38-275"><a href="#cb38-275" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-276"><a href="#cb38-276" aria-hidden="true" tabindex="-1"></a>A strongly connected component is a subgraph in which there is a directed path from any node to any other node. A directed graph is strongly connected if it has only one strongly connected component.</span>
-<span id="cb38-277"><a href="#cb38-277" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-280"><a href="#cb38-280" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-281"><a href="#cb38-281" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is strongly connected:"</span>, nx.is_strongly_connected(D_food_chain))</span>
-<span id="cb38-282"><a href="#cb38-282" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Strongly connected components:"</span>, <span class="bu">list</span>(nx.strongly_connected_components(D_food_chain)))</span>
-<span id="cb38-283"><a href="#cb38-283" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-284"><a href="#cb38-284" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-285"><a href="#cb38-285" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-286"><a href="#cb38-286" aria-hidden="true" tabindex="-1"></a><span class="fu">### Weakly Connected Components</span></span>
-<span id="cb38-287"><a href="#cb38-287" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-288"><a href="#cb38-288" aria-hidden="true" tabindex="-1"></a>A weakly connected component is a subgraph in which there is an undirected path from any node to any other node. A directed graph is weakly connected if it has only one weakly connected component.</span>
-<span id="cb38-289"><a href="#cb38-289" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-292"><a href="#cb38-292" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-293"><a href="#cb38-293" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is weakly connected:"</span>, nx.is_weakly_connected(D_food_chain))</span>
-<span id="cb38-294"><a href="#cb38-294" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Weakly connected components:"</span>, <span class="bu">list</span>(nx.weakly_connected_components(D_food_chain)))</span>
-<span id="cb38-295"><a href="#cb38-295" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-296"><a href="#cb38-296" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-297"><a href="#cb38-297" aria-hidden="true" tabindex="-1"></a>**Exercise.** How can we turn <span class="in">`D_food_chain`</span> into a strongly connected graph? Try adding some edges to make it strongly connected.</span>
-<span id="cb38-298"><a href="#cb38-298" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-299"><a href="#cb38-299" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
-<span id="cb38-300"><a href="#cb38-300" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solution</span></span>
-<span id="cb38-301"><a href="#cb38-301" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-302"><a href="#cb38-302" aria-hidden="true" tabindex="-1"></a>To make <span class="in">`D_food_chain`</span> strongly connected, we need to ensure that there is a directed path from every node to every other node. One way to achieve this is to add edges that create cycles between the nodes. Our example is a though one, as food chains are typically acyclic. Still, we can take note from "The Lion King":</span>
-<span id="cb38-303"><a href="#cb38-303" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-304"><a href="#cb38-304" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; "When we die, our bodies become the grass, and the antelope eat the grass. And so, we are all connected in the great Circle of Life." - Mufasa (lion)</span></span>
-<span id="cb38-305"><a href="#cb38-305" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-308"><a href="#cb38-308" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-309"><a href="#cb38-309" aria-hidden="true" tabindex="-1"></a><span class="co"># When a predator dies, it returns to the food chain as prey for the grass</span></span>
-<span id="cb38-310"><a href="#cb38-310" aria-hidden="true" tabindex="-1"></a>D_food_chain.add_edges_from([</span>
-<span id="cb38-311"><a href="#cb38-311" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"lion"</span>, <span class="st">"grass"</span>),</span>
-<span id="cb38-312"><a href="#cb38-312" aria-hidden="true" tabindex="-1"></a>])</span>
-<span id="cb38-313"><a href="#cb38-313" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-314"><a href="#cb38-314" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize the new graph</span></span>
-<span id="cb38-315"><a href="#cb38-315" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.spring_layout(D_food_chain)</span>
-<span id="cb38-316"><a href="#cb38-316" aria-hidden="true" tabindex="-1"></a>nx.draw(D_food_chain, node_color<span class="op">=</span><span class="st">"lightgreen"</span>, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
-<span id="cb38-317"><a href="#cb38-317" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb38-318"><a href="#cb38-318" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-319"><a href="#cb38-319" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-322"><a href="#cb38-322" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-323"><a href="#cb38-323" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is strongly connected:"</span>, nx.is_strongly_connected(D_food_chain))</span>
-<span id="cb38-324"><a href="#cb38-324" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Strongly connected components:"</span>, <span class="bu">list</span>(nx.strongly_connected_components(D_food_chain)))</span>
-<span id="cb38-325"><a href="#cb38-325" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-326"><a href="#cb38-326" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb38-327"><a href="#cb38-327" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-328"><a href="#cb38-328" aria-hidden="true" tabindex="-1"></a><span class="fu">### Diameter and Average Path Length in Directed Graphs</span></span>
-<span id="cb38-329"><a href="#cb38-329" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-330"><a href="#cb38-330" aria-hidden="true" tabindex="-1"></a>The diameter and average path length in directed graphs are calculated based on the shortest paths that follow the direction of the edges. If the graph is not strongly connected, we can only calculate these metrics for the largest strongly connected component.</span>
-<span id="cb38-331"><a href="#cb38-331" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-334"><a href="#cb38-334" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb38-335"><a href="#cb38-335" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the largest strongly connected component</span></span>
-<span id="cb38-336"><a href="#cb38-336" aria-hidden="true" tabindex="-1"></a>largest_scc <span class="op">=</span> <span class="bu">max</span>(nx.strongly_connected_components(D_food_chain), key<span class="op">=</span><span class="bu">len</span>)</span>
-<span id="cb38-337"><a href="#cb38-337" aria-hidden="true" tabindex="-1"></a>subgraph <span class="op">=</span> D_food_chain.subgraph(largest_scc)</span>
-<span id="cb38-338"><a href="#cb38-338" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Diameter of the largest strongly connected component:"</span>, nx.diameter(subgraph))</span>
-<span id="cb38-339"><a href="#cb38-339" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Average shortest path length of the largest strongly connected component:"</span>, nx.average_shortest_path_length(subgraph))</span>
-<span id="cb38-340"><a href="#cb38-340" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb38-341"><a href="#cb38-341" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-342"><a href="#cb38-342" aria-hidden="true" tabindex="-1"></a><span class="fu">## What's Next?</span></span>
-<span id="cb38-343"><a href="#cb38-343" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-344"><a href="#cb38-344" aria-hidden="true" tabindex="-1"></a>In the next page, we will learn how to generate *synthetic* graphs (random, small-world, scale-free) and compare their properties.</span>
-<span id="cb38-345"><a href="#cb38-345" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-346"><a href="#cb38-346" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Graph Models</span><span class="co">](models.qmd)</span>{.btn .btn-primary}</span>
+<div class="sourceCode" id="cb47" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Networks: Connectivity"</span></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Paths, Degree, Connected Components"</span></span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>In this page, we will explore some basic properties of networks, such as **degree**, **density**, **clustering**, and **paths / connected components**.</span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>If you are coding alongside me, I recommend you to start a new notebook and follow the code snippets below. You can also check the <span class="co">[</span><span class="ot">Network Fundamentals</span><span class="co">](fundamentals.qmd)</span> page for more details on how to create graphs with <span class="in">`networkx`</span>.</span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>As always, we should start by importing the necessary libraries and creating a sample graph.</span>
+<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-16"><a href="#cb47-16" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
+<span id="cb47-17"><a href="#cb47-17" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb47-18"><a href="#cb47-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-19"><a href="#cb47-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Create an undirected graph</span></span>
+<span id="cb47-20"><a href="#cb47-20" aria-hidden="true" tabindex="-1"></a><span class="co"># (foods I like to eat together)</span></span>
+<span id="cb47-21"><a href="#cb47-21" aria-hidden="true" tabindex="-1"></a>G_foods <span class="op">=</span> nx.from_edgelist([</span>
+<span id="cb47-22"><a href="#cb47-22" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"bread"</span>, <span class="st">"cheese"</span>),</span>
+<span id="cb47-23"><a href="#cb47-23" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"bread"</span>, <span class="st">"chocolate"</span>),</span>
+<span id="cb47-24"><a href="#cb47-24" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"bread"</span>, <span class="st">"cured ham"</span>),</span>
+<span id="cb47-25"><a href="#cb47-25" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"cheese"</span>, <span class="st">"cured ham"</span>),</span>
+<span id="cb47-26"><a href="#cb47-26" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"chocolate"</span>, <span class="st">"watermelon"</span>),</span>
+<span id="cb47-27"><a href="#cb47-27" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"cured ham"</span>, <span class="st">"watermelon"</span>),</span>
+<span id="cb47-28"><a href="#cb47-28" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb47-29"><a href="#cb47-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-30"><a href="#cb47-30" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize the graph</span></span>
+<span id="cb47-31"><a href="#cb47-31" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(G_foods)</span>
+<span id="cb47-32"><a href="#cb47-32" aria-hidden="true" tabindex="-1"></a>nx.draw(G_foods, node_color<span class="op">=</span><span class="st">"lightblue"</span>, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb47-33"><a href="#cb47-33" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb47-34"><a href="#cb47-34" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-35"><a href="#cb47-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-38"><a href="#cb47-38" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-39"><a href="#cb47-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a directed graph</span></span>
+<span id="cb47-40"><a href="#cb47-40" aria-hidden="true" tabindex="-1"></a>D_food_chain <span class="op">=</span> nx.DiGraph()  <span class="co"># food chain (prey -&gt; predator)</span></span>
+<span id="cb47-41"><a href="#cb47-41" aria-hidden="true" tabindex="-1"></a>D_food_chain.add_edges_from([</span>
+<span id="cb47-42"><a href="#cb47-42" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"grass"</span>, <span class="st">"antelope"</span>),</span>
+<span id="cb47-43"><a href="#cb47-43" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"grass"</span>, <span class="st">"zebra"</span>),</span>
+<span id="cb47-44"><a href="#cb47-44" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"antelope"</span>, <span class="st">"lion"</span>),</span>
+<span id="cb47-45"><a href="#cb47-45" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"antelope"</span>, <span class="st">"hyena"</span>),</span>
+<span id="cb47-46"><a href="#cb47-46" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"zebra"</span>, <span class="st">"lion"</span>),</span>
+<span id="cb47-47"><a href="#cb47-47" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"zebra"</span>, <span class="st">"hyena"</span>),</span>
+<span id="cb47-48"><a href="#cb47-48" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"hyena"</span>, <span class="st">"lion"</span>),</span>
+<span id="cb47-49"><a href="#cb47-49" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb47-50"><a href="#cb47-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-51"><a href="#cb47-51" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize the graph</span></span>
+<span id="cb47-52"><a href="#cb47-52" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.spring_layout(D_food_chain)</span>
+<span id="cb47-53"><a href="#cb47-53" aria-hidden="true" tabindex="-1"></a>nx.draw(D_food_chain, node_color<span class="op">=</span><span class="st">"lightgreen"</span>, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb47-54"><a href="#cb47-54" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb47-55"><a href="#cb47-55" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-56"><a href="#cb47-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-57"><a href="#cb47-57" aria-hidden="true" tabindex="-1"></a><span class="fu">## Degree</span></span>
+<span id="cb47-58"><a href="#cb47-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-59"><a href="#cb47-59" aria-hidden="true" tabindex="-1"></a>The degree $k$ of a node is the number of edges connected to it. In an undirected graph, the degree of a node is simply the number of neighbors it has.</span>
+<span id="cb47-60"><a href="#cb47-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-63"><a href="#cb47-63" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-64"><a href="#cb47-64" aria-hidden="true" tabindex="-1"></a><span class="co"># Degree of a node</span></span>
+<span id="cb47-65"><a href="#cb47-65" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Degree of 'bread':"</span>, G_foods.degree(<span class="st">"bread"</span>))</span>
+<span id="cb47-66"><a href="#cb47-66" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-67"><a href="#cb47-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-68"><a href="#cb47-68" aria-hidden="true" tabindex="-1"></a>The average degree of an undirected graph is given by:</span>
+<span id="cb47-69"><a href="#cb47-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-70"><a href="#cb47-70" aria-hidden="true" tabindex="-1"></a>$$\langle k \rangle = \frac{2E}{N}$$</span>
+<span id="cb47-71"><a href="#cb47-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-72"><a href="#cb47-72" aria-hidden="true" tabindex="-1"></a>where $E$ is the number of edges and $N$ is the number of nodes.</span>
+<span id="cb47-73"><a href="#cb47-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-76"><a href="#cb47-76" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-77"><a href="#cb47-77" aria-hidden="true" tabindex="-1"></a><span class="co"># Average degree of the graph</span></span>
+<span id="cb47-78"><a href="#cb47-78" aria-hidden="true" tabindex="-1"></a>ls_degrees <span class="op">=</span> [G_foods.degree(node) <span class="cf">for</span> node <span class="kw">in</span> G_foods.nodes()]</span>
+<span id="cb47-79"><a href="#cb47-79" aria-hidden="true" tabindex="-1"></a>avg_degree <span class="op">=</span> <span class="bu">sum</span>(ls_degrees) <span class="op">/</span> <span class="bu">len</span>(ls_degrees)</span>
+<span id="cb47-80"><a href="#cb47-80" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Average degree:"</span>, avg_degree)</span>
+<span id="cb47-81"><a href="#cb47-81" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-82"><a href="#cb47-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-83"><a href="#cb47-83" aria-hidden="true" tabindex="-1"></a><span class="fu">### Degrees in Directed Graphs</span></span>
+<span id="cb47-84"><a href="#cb47-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-85"><a href="#cb47-85" aria-hidden="true" tabindex="-1"></a>In a directed graph, we distinguish between in-degree (number of incoming edges) and out-degree (number of outgoing edges).</span>
+<span id="cb47-86"><a href="#cb47-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-89"><a href="#cb47-89" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-90"><a href="#cb47-90" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"In-degree of 'antelope' (number of prey):"</span>, D_food_chain.in_degree(<span class="st">"antelope"</span>))</span>
+<span id="cb47-91"><a href="#cb47-91" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Out-degree of 'antelope' (number of predators):"</span>, D_food_chain.out_degree(<span class="st">"antelope"</span>))</span>
+<span id="cb47-92"><a href="#cb47-92" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-93"><a href="#cb47-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-94"><a href="#cb47-94" aria-hidden="true" tabindex="-1"></a><span class="fu">## Density</span></span>
+<span id="cb47-95"><a href="#cb47-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-96"><a href="#cb47-96" aria-hidden="true" tabindex="-1"></a>A graph density is the ratio of the number of edges to the number of possible edges. It is a measure of how many edges are present in the graph compared to the maximum possible number of edges. The density of an undirected graph can be calculated as follows:</span>
+<span id="cb47-97"><a href="#cb47-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-98"><a href="#cb47-98" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb47-99"><a href="#cb47-99" aria-hidden="true" tabindex="-1"></a>D = \frac{2|E|}{|V|(|V| - 1)}</span>
+<span id="cb47-100"><a href="#cb47-100" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb47-101"><a href="#cb47-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-102"><a href="#cb47-102" aria-hidden="true" tabindex="-1"></a>where $|E|$ is the number of edges and $|V|$ is the number of nodes in the graph.</span>
+<span id="cb47-103"><a href="#cb47-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-104"><a href="#cb47-104" aria-hidden="true" tabindex="-1"></a>In a directed graph, we have twice as many possible edges (since each pair of nodes can have two directed edges), so the density is calculated as:</span>
+<span id="cb47-105"><a href="#cb47-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-106"><a href="#cb47-106" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb47-107"><a href="#cb47-107" aria-hidden="true" tabindex="-1"></a>D = \frac{|E|}{|V|(|V| - 1)}</span>
+<span id="cb47-108"><a href="#cb47-108" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb47-109"><a href="#cb47-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-110"><a href="#cb47-110" aria-hidden="true" tabindex="-1"></a>NetworkX provides a built-in function to calculate the density of a graph:</span>
+<span id="cb47-111"><a href="#cb47-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-114"><a href="#cb47-114" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-115"><a href="#cb47-115" aria-hidden="true" tabindex="-1"></a><span class="co"># Density</span></span>
+<span id="cb47-116"><a href="#cb47-116" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Density:"</span>, nx.density(G_foods))</span>
+<span id="cb47-117"><a href="#cb47-117" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-118"><a href="#cb47-118" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-119"><a href="#cb47-119" aria-hidden="true" tabindex="-1"></a>A graph is **sparse** when $D \ll 1$ and **dense** when $D \approx 1$.</span>
+<span id="cb47-120"><a href="#cb47-120" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-123"><a href="#cb47-123" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-124"><a href="#cb47-124" aria-hidden="true" tabindex="-1"></a><span class="co"># Check if the graph is sparse or dense</span></span>
+<span id="cb47-125"><a href="#cb47-125" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> nx.density(G_foods) <span class="op">&lt;</span> <span class="fl">0.1</span>:</span>
+<span id="cb47-126"><a href="#cb47-126" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"The graph is sparse."</span>)</span>
+<span id="cb47-127"><a href="#cb47-127" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb47-128"><a href="#cb47-128" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"The graph is dense."</span>)</span>
+<span id="cb47-129"><a href="#cb47-129" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-130"><a href="#cb47-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-131"><a href="#cb47-131" aria-hidden="true" tabindex="-1"></a><span class="fu">## Clustering Coefficient</span></span>
+<span id="cb47-132"><a href="#cb47-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-133"><a href="#cb47-133" aria-hidden="true" tabindex="-1"></a>Many real networks have **triangles**: if A is connected to B and C, there is a higher-than-random chance that B is also connected to C.</span>
+<span id="cb47-134"><a href="#cb47-134" aria-hidden="true" tabindex="-1"></a>This tendency is captured by the **clustering coefficient**.</span>
+<span id="cb47-135"><a href="#cb47-135" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-136"><a href="#cb47-136" aria-hidden="true" tabindex="-1"></a>For an undirected graph, the *local clustering coefficient* of node $i$ is:</span>
+<span id="cb47-137"><a href="#cb47-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-138"><a href="#cb47-138" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb47-139"><a href="#cb47-139" aria-hidden="true" tabindex="-1"></a>C_i = \frac{2T_i}{k_i(k_i - 1)}</span>
+<span id="cb47-140"><a href="#cb47-140" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb47-141"><a href="#cb47-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-142"><a href="#cb47-142" aria-hidden="true" tabindex="-1"></a>where $k_i$ is the degree of node $i$, and $T_i$ is the number of triangles that include node $i$.</span>
+<span id="cb47-143"><a href="#cb47-143" aria-hidden="true" tabindex="-1"></a>If $k_i &lt; 2$, we define $C_i = 0$.</span>
+<span id="cb47-144"><a href="#cb47-144" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-145"><a href="#cb47-145" aria-hidden="true" tabindex="-1"></a>The **average clustering coefficient** is:</span>
+<span id="cb47-146"><a href="#cb47-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-147"><a href="#cb47-147" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb47-148"><a href="#cb47-148" aria-hidden="true" tabindex="-1"></a>C = \frac{1}{N}\sum_{i=1}^N C_i.</span>
+<span id="cb47-149"><a href="#cb47-149" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb47-150"><a href="#cb47-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-151"><a href="#cb47-151" aria-hidden="true" tabindex="-1"></a>In NetworkX:</span>
+<span id="cb47-152"><a href="#cb47-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-153"><a href="#cb47-153" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`nx.clustering(G)`</span> returns $C_i$ for every node.</span>
+<span id="cb47-154"><a href="#cb47-154" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`nx.average_clustering(G)`</span> returns the average $C$.</span>
+<span id="cb47-155"><a href="#cb47-155" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-156"><a href="#cb47-156" aria-hidden="true" tabindex="-1"></a>We will use $C$ later to compare **random** vs **small-world** vs **scale-free** synthetic networks.</span>
+<span id="cb47-157"><a href="#cb47-157" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-160"><a href="#cb47-160" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-161"><a href="#cb47-161" aria-hidden="true" tabindex="-1"></a><span class="co"># Local clustering coefficient for each node</span></span>
+<span id="cb47-162"><a href="#cb47-162" aria-hidden="true" tabindex="-1"></a>clustering <span class="op">=</span> nx.clustering(G_foods)</span>
+<span id="cb47-163"><a href="#cb47-163" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Local clustering:"</span>)</span>
+<span id="cb47-164"><a href="#cb47-164" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> node, c <span class="kw">in</span> clustering.items():</span>
+<span id="cb47-165"><a href="#cb47-165" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>node<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>c<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb47-166"><a href="#cb47-166" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-167"><a href="#cb47-167" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Average clustering:"</span>, nx.average_clustering(G_foods))</span>
+<span id="cb47-168"><a href="#cb47-168" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-169"><a href="#cb47-169" aria-hidden="true" tabindex="-1"></a><span class="co"># Another common global measure is transitivity (ratio of triangles to connected triples)</span></span>
+<span id="cb47-170"><a href="#cb47-170" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Transitivity:"</span>, nx.transitivity(G_foods))</span>
+<span id="cb47-171"><a href="#cb47-171" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-172"><a href="#cb47-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-173"><a href="#cb47-173" aria-hidden="true" tabindex="-1"></a><span class="fu">## Connectivity in Undirected Graphs</span></span>
+<span id="cb47-174"><a href="#cb47-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-175"><a href="#cb47-175" aria-hidden="true" tabindex="-1"></a>Connectivity is a fundamental property of graphs that describes how well the nodes are connected to each other. In an undirected graph, a graph is **connected** if there is a path between any two nodes. If a graph is not connected, it consists of multiple **connected components**, which are subgraphs in which any two nodes are connected by a path.</span>
+<span id="cb47-176"><a href="#cb47-176" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-177"><a href="#cb47-177" aria-hidden="true" tabindex="-1"></a><span class="fu">### Paths in an Undirected Graph</span></span>
+<span id="cb47-178"><a href="#cb47-178" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-179"><a href="#cb47-179" aria-hidden="true" tabindex="-1"></a>A **path** in a network is a sequence of edges connecting two nodes.</span>
+<span id="cb47-180"><a href="#cb47-180" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-181"><a href="#cb47-181" aria-hidden="true" tabindex="-1"></a>Take a look at the food graph we created above. Is there a path from "bread" to "watermelon"?</span>
+<span id="cb47-182"><a href="#cb47-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-185"><a href="#cb47-185" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-186"><a href="#cb47-186" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb47-187"><a href="#cb47-187" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.circular_layout(G_foods)</span>
+<span id="cb47-188"><a href="#cb47-188" aria-hidden="true" tabindex="-1"></a>nx.draw(G_foods, node_color<span class="op">=</span><span class="st">"lightblue"</span>, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb47-189"><a href="#cb47-189" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb47-190"><a href="#cb47-190" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-191"><a href="#cb47-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-192"><a href="#cb47-192" aria-hidden="true" tabindex="-1"></a>NetworkX provides <span class="in">`has_path(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;)`</span> to check if there is a path between two nodes:</span>
+<span id="cb47-193"><a href="#cb47-193" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-196"><a href="#cb47-196" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-197"><a href="#cb47-197" aria-hidden="true" tabindex="-1"></a><span class="co"># Check if there is a path from 'bread' to 'watermelon'</span></span>
+<span id="cb47-198"><a href="#cb47-198" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb47-199"><a href="#cb47-199" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Is there a path from 'bread' to 'watermelon'?"</span>,</span>
+<span id="cb47-200"><a href="#cb47-200" aria-hidden="true" tabindex="-1"></a>    nx.has_path(G_foods, <span class="st">"bread"</span>, <span class="st">"watermelon"</span>)</span>
+<span id="cb47-201"><a href="#cb47-201" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb47-202"><a href="#cb47-202" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-203"><a href="#cb47-203" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-204"><a href="#cb47-204" aria-hidden="true" tabindex="-1"></a>There can be more than one path between two nodes. We can use <span class="in">`all_simple_paths(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;)`</span> to find all the simple paths between two nodes:</span>
+<span id="cb47-205"><a href="#cb47-205" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-208"><a href="#cb47-208" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-209"><a href="#cb47-209" aria-hidden="true" tabindex="-1"></a>ls_paths <span class="op">=</span> <span class="bu">list</span>(nx.all_simple_paths(G_foods, <span class="st">"bread"</span>, <span class="st">"watermelon"</span>))</span>
+<span id="cb47-210"><a href="#cb47-210" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"All paths from 'bread' to 'watermelon':"</span>, ls_paths)</span>
+<span id="cb47-211"><a href="#cb47-211" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-212"><a href="#cb47-212" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-213"><a href="#cb47-213" aria-hidden="true" tabindex="-1"></a><span class="fu">### Connected Components in Undirected Graphs</span></span>
+<span id="cb47-214"><a href="#cb47-214" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-215"><a href="#cb47-215" aria-hidden="true" tabindex="-1"></a>A **connected component** is a subgraph in which any two nodes are connected by a path. A graph is **connected** if it has only one connected component.</span>
+<span id="cb47-216"><a href="#cb47-216" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-217"><a href="#cb47-217" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb47-218"><a href="#cb47-218" aria-hidden="true" tabindex="-1"></a><span class="fu">## How many connected components does `G_foods` have?</span></span>
+<span id="cb47-219"><a href="#cb47-219" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-220"><a href="#cb47-220" aria-hidden="true" tabindex="-1"></a><span class="in">`G_foods`</span> has one connected component, since all nodes are connected to each other through some path.</span>
+<span id="cb47-221"><a href="#cb47-221" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-222"><a href="#cb47-222" aria-hidden="true" tabindex="-1"></a>As usual, we can verify this with NetworkX:</span>
+<span id="cb47-225"><a href="#cb47-225" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-226"><a href="#cb47-226" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Connected components:"</span>, <span class="bu">list</span>(nx.connected_components(G_foods)))</span>
+<span id="cb47-227"><a href="#cb47-227" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-228"><a href="#cb47-228" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb47-229"><a href="#cb47-229" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-230"><a href="#cb47-230" aria-hidden="true" tabindex="-1"></a><span class="fu">### Diameter and Average Path Length</span></span>
+<span id="cb47-231"><a href="#cb47-231" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-232"><a href="#cb47-232" aria-hidden="true" tabindex="-1"></a>The **diameter** of a graph is the length of the longest shortest path between any two nodes in the graph. It gives us an idea of how "far apart" the nodes are in the graph.</span>
+<span id="cb47-233"><a href="#cb47-233" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-236"><a href="#cb47-236" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-237"><a href="#cb47-237" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Diameter:"</span>, nx.diameter(G_foods))</span>
+<span id="cb47-238"><a href="#cb47-238" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-239"><a href="#cb47-239" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-240"><a href="#cb47-240" aria-hidden="true" tabindex="-1"></a>The **average path length (APL)** is the average of the shortest paths between all pairs of nodes.</span>
+<span id="cb47-241"><a href="#cb47-241" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-244"><a href="#cb47-244" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-245"><a href="#cb47-245" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Average shortest path length:"</span>, nx.average_shortest_path_length(G_foods))</span>
+<span id="cb47-246"><a href="#cb47-246" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-247"><a href="#cb47-247" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-248"><a href="#cb47-248" aria-hidden="true" tabindex="-1"></a><span class="fu">## Centrality (Node Importance)</span></span>
+<span id="cb47-249"><a href="#cb47-249" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-250"><a href="#cb47-250" aria-hidden="true" tabindex="-1"></a>In many real networks, not all nodes play the same role:</span>
+<span id="cb47-251"><a href="#cb47-251" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-252"><a href="#cb47-252" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>in an airport network, some airports are **hubs**;</span>
+<span id="cb47-253"><a href="#cb47-253" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>in an email network, some people act as **bridges** between groups.</span>
+<span id="cb47-254"><a href="#cb47-254" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-255"><a href="#cb47-255" aria-hidden="true" tabindex="-1"></a>These ideas are quantified by **centrality measures**.</span>
+<span id="cb47-256"><a href="#cb47-256" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-257"><a href="#cb47-257" aria-hidden="true" tabindex="-1"></a><span class="fu">### Degree centrality</span></span>
+<span id="cb47-258"><a href="#cb47-258" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-259"><a href="#cb47-259" aria-hidden="true" tabindex="-1"></a>The simplest centrality is based on degree. In an undirected graph with $N$ nodes, the (normalized) degree centrality is</span>
+<span id="cb47-260"><a href="#cb47-260" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-261"><a href="#cb47-261" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb47-262"><a href="#cb47-262" aria-hidden="true" tabindex="-1"></a>\mathrm{deg<span class="sc">\_</span>cent}(i) = \frac{k_i}{N-1}.</span>
+<span id="cb47-263"><a href="#cb47-263" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb47-264"><a href="#cb47-264" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-267"><a href="#cb47-267" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-268"><a href="#cb47-268" aria-hidden="true" tabindex="-1"></a>deg_cent <span class="op">=</span> nx.degree_centrality(G_foods)</span>
+<span id="cb47-269"><a href="#cb47-269" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Degree centrality:"</span>)</span>
+<span id="cb47-270"><a href="#cb47-270" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> node, c <span class="kw">in</span> <span class="bu">sorted</span>(deg_cent.items(), key<span class="op">=</span><span class="kw">lambda</span> kv: kv[<span class="dv">1</span>], reverse<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb47-271"><a href="#cb47-271" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>node<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>c<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb47-272"><a href="#cb47-272" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-273"><a href="#cb47-273" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-274"><a href="#cb47-274" aria-hidden="true" tabindex="-1"></a><span class="fu">### Closeness centrality</span></span>
+<span id="cb47-275"><a href="#cb47-275" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-276"><a href="#cb47-276" aria-hidden="true" tabindex="-1"></a>Closeness measures how close a node is (on average) to all others via shortest paths.</span>
+<span id="cb47-277"><a href="#cb47-277" aria-hidden="true" tabindex="-1"></a>One common definition is</span>
+<span id="cb47-278"><a href="#cb47-278" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-279"><a href="#cb47-279" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb47-280"><a href="#cb47-280" aria-hidden="true" tabindex="-1"></a>\mathrm{close}(i) = \frac{N-1}{\sum_{j \neq i} d(i,j)},</span>
+<span id="cb47-281"><a href="#cb47-281" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb47-282"><a href="#cb47-282" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-283"><a href="#cb47-283" aria-hidden="true" tabindex="-1"></a>where $d(i,j)$ is the shortest-path distance.</span>
+<span id="cb47-284"><a href="#cb47-284" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-285"><a href="#cb47-285" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb47-286"><a href="#cb47-286" aria-hidden="true" tabindex="-1"></a><span class="fu">## Disconnected graphs</span></span>
+<span id="cb47-287"><a href="#cb47-287" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-288"><a href="#cb47-288" aria-hidden="true" tabindex="-1"></a>If a graph is disconnected, some distances are infinite and closeness becomes tricky. In practice you often compute path-based metrics on the **largest connected component**.</span>
+<span id="cb47-289"><a href="#cb47-289" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb47-290"><a href="#cb47-290" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-293"><a href="#cb47-293" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-294"><a href="#cb47-294" aria-hidden="true" tabindex="-1"></a>close_cent <span class="op">=</span> nx.closeness_centrality(G_foods)</span>
+<span id="cb47-295"><a href="#cb47-295" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Closeness centrality:"</span>)</span>
+<span id="cb47-296"><a href="#cb47-296" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> node, c <span class="kw">in</span> <span class="bu">sorted</span>(close_cent.items(), key<span class="op">=</span><span class="kw">lambda</span> kv: kv[<span class="dv">1</span>], reverse<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb47-297"><a href="#cb47-297" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>node<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>c<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb47-298"><a href="#cb47-298" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-299"><a href="#cb47-299" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-300"><a href="#cb47-300" aria-hidden="true" tabindex="-1"></a><span class="fu">### Betweenness Centrality</span></span>
+<span id="cb47-301"><a href="#cb47-301" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-302"><a href="#cb47-302" aria-hidden="true" tabindex="-1"></a>Betweenness identifies **bridges**: nodes that sit on many shortest paths.</span>
+<span id="cb47-303"><a href="#cb47-303" aria-hidden="true" tabindex="-1"></a>Formally,</span>
+<span id="cb47-304"><a href="#cb47-304" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-305"><a href="#cb47-305" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb47-306"><a href="#cb47-306" aria-hidden="true" tabindex="-1"></a>\mathrm{between}(v) = \sum_{s \neq v \neq t} \frac{\sigma_{st}(v)}{\sigma_{st}},</span>
+<span id="cb47-307"><a href="#cb47-307" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb47-308"><a href="#cb47-308" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-309"><a href="#cb47-309" aria-hidden="true" tabindex="-1"></a>where $\sigma_{st}$ is the number of shortest paths from $s$ to $t$, and $\sigma_{st}(v)$ is the number of those paths that pass through $v$.</span>
+<span id="cb47-310"><a href="#cb47-310" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-313"><a href="#cb47-313" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-314"><a href="#cb47-314" aria-hidden="true" tabindex="-1"></a>bc <span class="op">=</span> nx.betweenness_centrality(G_foods)</span>
+<span id="cb47-315"><a href="#cb47-315" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Betweenness centrality:"</span>)</span>
+<span id="cb47-316"><a href="#cb47-316" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> node, c <span class="kw">in</span> <span class="bu">sorted</span>(bc.items(), key<span class="op">=</span><span class="kw">lambda</span> kv: kv[<span class="dv">1</span>], reverse<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb47-317"><a href="#cb47-317" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>node<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>c<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb47-318"><a href="#cb47-318" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-319"><a href="#cb47-319" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-320"><a href="#cb47-320" aria-hidden="true" tabindex="-1"></a><span class="fu">### PageRank (Directed Networks)</span></span>
+<span id="cb47-321"><a href="#cb47-321" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-322"><a href="#cb47-322" aria-hidden="true" tabindex="-1"></a>For directed networks (like the web), PageRank is the stationary distribution of a random walk ("random surfer") on the graph.</span>
+<span id="cb47-323"><a href="#cb47-323" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-326"><a href="#cb47-326" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-327"><a href="#cb47-327" aria-hidden="true" tabindex="-1"></a>pr <span class="op">=</span> nx.pagerank(D_food_chain, alpha<span class="op">=</span><span class="fl">0.85</span>)</span>
+<span id="cb47-328"><a href="#cb47-328" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"PageRank (directed food chain):"</span>)</span>
+<span id="cb47-329"><a href="#cb47-329" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> node, c <span class="kw">in</span> <span class="bu">sorted</span>(pr.items(), key<span class="op">=</span><span class="kw">lambda</span> kv: kv[<span class="dv">1</span>], reverse<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb47-330"><a href="#cb47-330" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>node<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>c<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb47-331"><a href="#cb47-331" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-332"><a href="#cb47-332" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-333"><a href="#cb47-333" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb47-334"><a href="#cb47-334" aria-hidden="true" tabindex="-1"></a><span class="fu">## Performance note</span></span>
+<span id="cb47-335"><a href="#cb47-335" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-336"><a href="#cb47-336" aria-hidden="true" tabindex="-1"></a>On large graphs, exact betweenness can be expensive. NetworkX supports approximation (sample $k$ sources):</span>
+<span id="cb47-337"><a href="#cb47-337" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-338"><a href="#cb47-338" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb47-339"><a href="#cb47-339" aria-hidden="true" tabindex="-1"></a>nx.betweenness_centrality(G, k<span class="op">=</span><span class="dv">200</span>, seed<span class="op">=</span>SEED)</span>
+<span id="cb47-340"><a href="#cb47-340" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-341"><a href="#cb47-341" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb47-342"><a href="#cb47-342" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-343"><a href="#cb47-343" aria-hidden="true" tabindex="-1"></a><span class="fu">## Connectivity in Directed Graphs</span></span>
+<span id="cb47-344"><a href="#cb47-344" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-345"><a href="#cb47-345" aria-hidden="true" tabindex="-1"></a>Connectivity in directed graphs is more complex than in undirected graphs, because we have to consider the direction of the edges. In a directed graph, we can have **strongly connected components** and **weakly connected components**.</span>
+<span id="cb47-346"><a href="#cb47-346" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-347"><a href="#cb47-347" aria-hidden="true" tabindex="-1"></a><span class="fu">### Paths in Directed Graphs</span></span>
+<span id="cb47-348"><a href="#cb47-348" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-349"><a href="#cb47-349" aria-hidden="true" tabindex="-1"></a>In a directed graph, a path must follow the direction of the edges. For example, in the directed food chain graph <span class="in">`D`</span>, is there a path from "grass" to "lion"?</span>
+<span id="cb47-350"><a href="#cb47-350" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-353"><a href="#cb47-353" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-354"><a href="#cb47-354" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the graph</span></span>
+<span id="cb47-355"><a href="#cb47-355" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.spring_layout(D_food_chain)</span>
+<span id="cb47-356"><a href="#cb47-356" aria-hidden="true" tabindex="-1"></a>nx.draw(D_food_chain, node_color<span class="op">=</span><span class="st">"lightgreen"</span>, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb47-357"><a href="#cb47-357" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb47-358"><a href="#cb47-358" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-359"><a href="#cb47-359" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-360"><a href="#cb47-360" aria-hidden="true" tabindex="-1"></a>We can check for the existence of a path in a directed graph using the same <span class="in">`has_path(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;)`</span> function:</span>
+<span id="cb47-361"><a href="#cb47-361" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-364"><a href="#cb47-364" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-365"><a href="#cb47-365" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is there a path from 'grass' to 'lion'?"</span>, nx.has_path(D_food_chain, <span class="st">"grass"</span>, <span class="st">"lion"</span>))   </span>
+<span id="cb47-366"><a href="#cb47-366" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is there a path from 'lion' to 'grass'?"</span>, nx.has_path(D_food_chain, <span class="st">"lion"</span>, <span class="st">"grass"</span>))</span>
+<span id="cb47-367"><a href="#cb47-367" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-368"><a href="#cb47-368" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-369"><a href="#cb47-369" aria-hidden="true" tabindex="-1"></a><span class="fu">### Strongly Connected Components</span></span>
+<span id="cb47-370"><a href="#cb47-370" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-371"><a href="#cb47-371" aria-hidden="true" tabindex="-1"></a>A strongly connected component is a subgraph in which there is a directed path from any node to any other node. A directed graph is strongly connected if it has only one strongly connected component.</span>
+<span id="cb47-372"><a href="#cb47-372" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-375"><a href="#cb47-375" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-376"><a href="#cb47-376" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is strongly connected:"</span>, nx.is_strongly_connected(D_food_chain))</span>
+<span id="cb47-377"><a href="#cb47-377" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Strongly connected components:"</span>, <span class="bu">list</span>(nx.strongly_connected_components(D_food_chain)))</span>
+<span id="cb47-378"><a href="#cb47-378" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-379"><a href="#cb47-379" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-380"><a href="#cb47-380" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-381"><a href="#cb47-381" aria-hidden="true" tabindex="-1"></a><span class="fu">### Weakly Connected Components</span></span>
+<span id="cb47-382"><a href="#cb47-382" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-383"><a href="#cb47-383" aria-hidden="true" tabindex="-1"></a>A weakly connected component is a subgraph in which there is an undirected path from any node to any other node. A directed graph is weakly connected if it has only one weakly connected component.</span>
+<span id="cb47-384"><a href="#cb47-384" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-387"><a href="#cb47-387" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-388"><a href="#cb47-388" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is weakly connected:"</span>, nx.is_weakly_connected(D_food_chain))</span>
+<span id="cb47-389"><a href="#cb47-389" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Weakly connected components:"</span>, <span class="bu">list</span>(nx.weakly_connected_components(D_food_chain)))</span>
+<span id="cb47-390"><a href="#cb47-390" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-391"><a href="#cb47-391" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-392"><a href="#cb47-392" aria-hidden="true" tabindex="-1"></a>**Exercise.** How can we turn <span class="in">`D_food_chain`</span> into a strongly connected graph? Try adding some edges to make it strongly connected.</span>
+<span id="cb47-393"><a href="#cb47-393" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-394"><a href="#cb47-394" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb47-395"><a href="#cb47-395" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solution</span></span>
+<span id="cb47-396"><a href="#cb47-396" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-397"><a href="#cb47-397" aria-hidden="true" tabindex="-1"></a>To make <span class="in">`D_food_chain`</span> strongly connected, we need to ensure that there is a directed path from every node to every other node. One way to achieve this is to add edges that create cycles between the nodes. Our example is a though one, as food chains are typically acyclic. Still, we can take note from "The Lion King":</span>
+<span id="cb47-398"><a href="#cb47-398" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-399"><a href="#cb47-399" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; "When we die, our bodies become the grass, and the antelope eat the grass. And so, we are all connected in the great Circle of Life." - Mufasa (lion)</span></span>
+<span id="cb47-400"><a href="#cb47-400" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-403"><a href="#cb47-403" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-404"><a href="#cb47-404" aria-hidden="true" tabindex="-1"></a><span class="co"># When a predator dies, it returns to the food chain as prey for the grass</span></span>
+<span id="cb47-405"><a href="#cb47-405" aria-hidden="true" tabindex="-1"></a>D_food_chain.add_edges_from([</span>
+<span id="cb47-406"><a href="#cb47-406" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"lion"</span>, <span class="st">"grass"</span>),</span>
+<span id="cb47-407"><a href="#cb47-407" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb47-408"><a href="#cb47-408" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-409"><a href="#cb47-409" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize the new graph</span></span>
+<span id="cb47-410"><a href="#cb47-410" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.spring_layout(D_food_chain)</span>
+<span id="cb47-411"><a href="#cb47-411" aria-hidden="true" tabindex="-1"></a>nx.draw(D_food_chain, node_color<span class="op">=</span><span class="st">"lightgreen"</span>, with_labels<span class="op">=</span><span class="va">True</span>, pos<span class="op">=</span>pos)</span>
+<span id="cb47-412"><a href="#cb47-412" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb47-413"><a href="#cb47-413" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-414"><a href="#cb47-414" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-417"><a href="#cb47-417" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-418"><a href="#cb47-418" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is strongly connected:"</span>, nx.is_strongly_connected(D_food_chain))</span>
+<span id="cb47-419"><a href="#cb47-419" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Strongly connected components:"</span>, <span class="bu">list</span>(nx.strongly_connected_components(D_food_chain)))</span>
+<span id="cb47-420"><a href="#cb47-420" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-421"><a href="#cb47-421" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb47-422"><a href="#cb47-422" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-423"><a href="#cb47-423" aria-hidden="true" tabindex="-1"></a><span class="fu">### Diameter and Average Path Length in Directed Graphs</span></span>
+<span id="cb47-424"><a href="#cb47-424" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-425"><a href="#cb47-425" aria-hidden="true" tabindex="-1"></a>The diameter and average path length in directed graphs are calculated based on the shortest paths that follow the direction of the edges. If the graph is not strongly connected, we can only calculate these metrics for the largest strongly connected component.</span>
+<span id="cb47-426"><a href="#cb47-426" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-429"><a href="#cb47-429" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb47-430"><a href="#cb47-430" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the largest strongly connected component</span></span>
+<span id="cb47-431"><a href="#cb47-431" aria-hidden="true" tabindex="-1"></a>largest_scc <span class="op">=</span> <span class="bu">max</span>(nx.strongly_connected_components(D_food_chain), key<span class="op">=</span><span class="bu">len</span>)</span>
+<span id="cb47-432"><a href="#cb47-432" aria-hidden="true" tabindex="-1"></a>subgraph <span class="op">=</span> D_food_chain.subgraph(largest_scc)</span>
+<span id="cb47-433"><a href="#cb47-433" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Diameter of the largest strongly connected component:"</span>, nx.diameter(subgraph))</span>
+<span id="cb47-434"><a href="#cb47-434" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Average shortest path length of the largest strongly connected component:"</span>, nx.average_shortest_path_length(subgraph))</span>
+<span id="cb47-435"><a href="#cb47-435" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb47-436"><a href="#cb47-436" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-437"><a href="#cb47-437" aria-hidden="true" tabindex="-1"></a><span class="fu">## What's Next?</span></span>
+<span id="cb47-438"><a href="#cb47-438" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-439"><a href="#cb47-439" aria-hidden="true" tabindex="-1"></a>In the next page, we will learn how to generate *synthetic* graphs (random, small-world, scale-free) and compare their properties.</span>
+<span id="cb47-440"><a href="#cb47-440" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-441"><a href="#cb47-441" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Graph Models</span><span class="co">](models.qmd)</span>{.btn .btn-primary}</span>
 </code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
