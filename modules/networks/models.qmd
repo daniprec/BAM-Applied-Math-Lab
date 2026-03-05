@@ -1,113 +1,133 @@
 ---
-title: "NetworkX - Graph Models"
+title: "Networks: Graph Models"
+subtitle: "Random, Small-World, Scale-Free"
 format: html
 ---
 
-For each of the models presented in this tutorial, we present the algorithm, and the corresponding NetworkX code function to generate the model.
+Real networks (social, transportation, communication) are not arbitrary: they tend to have **short paths**, **clustering**, and sometimes **hubs**.
 
-**Note:** This notebook assumes you know the basics of Network X, that were shown in the "fundamentals" notebook. It will also use concepts from the "structural properties" notebook.
+In this page, we introduce three classic **synthetic graph models** that help us reproduce (some of) these properties:
+
+- **Random graphs** (Erdős–Rényi / Gilbert)
+- **Small-world graphs** (Watts–Strogatz)
+- **Scale-free graphs** (Barabási–Albert preferential attachment)
+
+We will also compute a few summary metrics for each model:
+
+- Average degree $\langle k \rangle$
+- Density $D$
+- Average clustering coefficient $C$
+- Average shortest path length $L$ (on the largest connected component if needed)
 
 ```{python}
 import matplotlib.pyplot as plt
 import networkx as nx
+
+SEED = 7
+
+
+def summarize_graph(G, name="G"):
+    """Print a small summary table of common network statistics."""
+    n = G.number_of_nodes()
+    m = G.number_of_edges()
+    avg_k = 2 * m / n if n > 0 else 0
+    density = nx.density(G)
+
+    # Connectivity (undirected)
+    is_connected = nx.is_connected(G) if n > 0 else False
+    n_components = nx.number_connected_components(G) if n > 0 else 0
+
+    # Work on largest connected component when disconnected
+    if n == 0:
+        L = float("nan")
+        C = float("nan")
+    else:
+        C = nx.average_clustering(G)
+        if is_connected:
+            L = nx.average_shortest_path_length(G)
+        else:
+            largest_cc = max(nx.connected_components(G), key=len)
+            H = G.subgraph(largest_cc).copy()
+            L = nx.average_shortest_path_length(H)
+
+    print(f"--- {name} ---")
+    print(f"N = {n}, E = {m}, <k> = {avg_k:.2f}, density = {density:.4f}")
+    print(f"connected = {is_connected}, components = {n_components}")
+    print(f"clustering C = {C:.3f}")
+    print(f"avg shortest path L = {L:.3f} (largest CC if disconnected)")
+
+
+def plot_degree_histogram(G, title="Degree distribution"):
+    degrees = [deg for _, deg in G.degree()]
+    plt.figure(figsize=(5, 3))
+    plt.hist(degrees, bins=range(min(degrees), max(degrees) + 2), align="left", rwidth=0.9)
+    plt.xlabel("Degree k")
+    plt.ylabel("Count")
+    plt.title(title)
+    plt.tight_layout()
+    plt.show()
 ```
 
-## Random Network Model
+## Random graphs (Erdős–Rényi / Gilbert)
 
-The random network model, as formulated by Gilbert, has two parameters: the number of nodes $N$, and the link probability $p$. As in the book text, the algorithm for creating this network is as follows:
+In the **Gilbert** model $G(N, p)$, we consider every possible pair of nodes and include the edge independently with probability $p$.
+
+Key properties (typical, for large $N$):
+
+- Degree distribution is approximately **binomial**, and approaches **Poisson** in the sparse limit.
+- Average clustering is approximately $C \approx p$.
+- Typical path lengths scale like $L \sim \log N$ when the graph is above the connectivity threshold.
+
+In NetworkX, you can create this model with `nx.erdos_renyi_graph(n, p)` (alias: `nx.gnp_random_graph`).
 
 1. Select a pair of nodes, say i and j.
 2. Generate a random number r between 0 and 1. If r < p, then add a link between i and j.
 3. Repeat (1) and (2) for all pairs of nodes.
 
 ```{python}
-# Gilbert random graph with n nodes and probability p of edge creation
-G_random = nx.gnp_random_graph(n=16, p=0.3)
+# Random graph G(N, p)
+G_random = nx.erdos_renyi_graph(n=80, p=0.06, seed=SEED)
 
-nx.draw(G_random, with_labels=True)
+pos = nx.spring_layout(G_random, seed=SEED)
+nx.draw(G_random, pos=pos, node_size=120, node_color="lightgray", edge_color="gray")
+plt.title("Erdős–Rényi random graph")
 plt.show()
+
+summarize_graph(G_random, name="Random (G(N,p))")
+plot_degree_histogram(G_random, title="Random graph: degree distribution")
 ```
 
-```{python}
-print("Is connected?", nx.is_connected(G_random))
-print("Number of connected components:", nx.number_connected_components(G_random))
-if nx.is_connected(G_random):
-    print("Average shortest path length:", nx.average_shortest_path_length(G_random))
-else:
-    print("Graph is not connected")
-print("Average clustering coefficient:", nx.average_clustering(G_random))
-```
+::: {.callout-tip collapse="true"}
+## $G(N, p)$ vs $G(N, m)$
 
-The betweeness centrality of random networks is uniformly distributed, and the degree distribution follows a Poisson distribution. The average degree of a random network is given by $\langle k \rangle = p(N-1)$.
+Another popular variant is $G(N, m)$, where we fix the number of edges $m$ instead of an edge probability. In NetworkX:
+
+- `nx.gnm_random_graph(n, m)` implements $G(N,m)$
+- `nx.erdos_renyi_graph(n, p)` implements $G(N,p)$
+:::
 
 ```{python}
-# Plot the centrality distribution
-d_centrality = nx.degree_centrality(G_random)
-ls_centralities = list(d_centrality.values())
-plt.hist(ls_centralities, bins=10, range=(0, 1))
-plt.xlabel("Degree centrality")
-plt.ylabel("Number of nodes")
-plt.show()
-```
-
-```{python}
-# Plot the degree distribution
-d_degree = dict(G_random.degree())
-ls_degrees = list(d_degree.values())
-plt.hist(ls_degrees, bins=10)
-plt.xlabel("Degree")
-plt.ylabel("Number of nodes")
-plt.show()
-```
-
-### Erdos-Renyi random graph model
-
-Instead of specifying the link probability $p$, we can also generate a graph of $N$ nodes with exactly $M$ edges by using `random.sample()` to choose M of the possible edges generated with `itertools.combinations()`:
-
-```{python}
-# Erdos-Renyi graph with n nodes and m edges
-G_ER = nx.gnm_random_graph(n=16, m=20)
-
-nx.draw(G_ER, with_labels=True)
-plt.show()
-```
-
-```{python}
-print("Is connected?", nx.is_connected(G_ER))
-print("Number of connected components:", nx.number_connected_components(G_ER))
-if nx.is_connected(G_ER):
-    print("Average shortest path length:", nx.average_shortest_path_length(G_ER))
-else:
-    print("Graph is not connected")
-print("Average clustering coefficient:", nx.average_clustering(G_ER))
-```
-
-The betweeness centrality of random networks is uniformly distributed, and the degree distribution follows a Poisson distribution. The average degree of a random network is given by $\langle k \rangle = p(N-1)$.
-
-```{python}
-d_centrality = nx.degree_centrality(G_ER)
-ls_centralities = list(d_centrality.values())
-plt.hist(ls_centralities, bins=10, range=(0, 1))
-plt.xlabel("Degree centrality")
-plt.ylabel("Number of nodes")
-plt.show()
-```
-
-```{python}
-# Plot the degree distribution
-d_degree = dict(G_ER.degree())
-ls_degrees = list(d_degree.values())
-plt.hist(ls_degrees, bins=10)
-plt.xlabel("Degree")
-plt.ylabel("Number of nodes")
-plt.show()
+# Random graph G(N, m)
+G_gnm = nx.gnm_random_graph(n=80, m=180, seed=SEED)
+summarize_graph(G_gnm, name="Random (G(N,m))")
+plot_degree_histogram(G_gnm, title="G(N,m): degree distribution")
 ```
 
 ---
 
-## Small-World Model
+## Small-world graphs (Watts–Strogatz)
 
-The algorithm for generating a small-world network is as such:
+Watts–Strogatz networks start from a **ring lattice** (high clustering, long paths) and then **rewire edges** with probability $p$.
+
+Key properties:
+
+- For small $p$ (e.g. $p \in [0.01, 0.2]$), you often get **high clustering** *and* **short path lengths** (“small-world”).
+- Degree distribution stays relatively **narrow** (most nodes have degree near $k$).
+
+In NetworkX:
+
+- `nx.watts_strogatz_graph(n, k, p)` generates the classic model.
+- `k` is the number of neighbors of each node in the initial ring (typically even).
 
 1. Begin with a ring of $N$ nodes
 2. Connect each node to its $k$ nearest neighbors (or $k-1$ if k is odd).
@@ -115,45 +135,36 @@ The algorithm for generating a small-world network is as such:
 
 ```{python}
 # Watts-Strogatz small-world graph with n nodes, k neighbors, and probability p of rewiring
-G_SW = nx.watts_strogatz_graph(n=16, k=4, p=0.2)
+G_sw = nx.watts_strogatz_graph(n=80, k=6, p=0.08, seed=SEED)
 
-nx.draw(G_SW, with_labels=True)
+pos = nx.spring_layout(G_sw, seed=SEED)
+nx.draw(G_sw, pos=pos, node_size=120, node_color="lightblue", edge_color="gray")
+plt.title("Watts–Strogatz small-world graph")
 plt.show()
-```
 
-```{python}
-print("Is connected?", nx.is_connected(G_SW))
-print("Number of connected components:", nx.number_connected_components(G_SW))
-print("Average shortest path length:", nx.average_shortest_path_length(G_SW))
-print("Average clustering coefficient:", nx.average_clustering(G_SW))
-```
-
-The betweeness centrality of small-world networks is also uniformly distributed, and the degree distribution follows a Poisson distribution. The average degree of a small-world network is given by $\langle k \rangle = 2k$.
-
-```{python}
-d_centrality = nx.degree_centrality(G_SW)
-ls_centralities = list(d_centrality.values())
-plt.hist(ls_centralities, bins=10, range=(0, 1))
-plt.xlabel("Degree centrality")
-plt.ylabel("Number of nodes")
-plt.show()
-```
-
-```{python}
-# Plot the degree distribution
-d_degree = dict(G_SW.degree())
-ls_degrees = list(d_degree.values())
-plt.hist(ls_degrees, bins=10)
-plt.xlabel("Degree")
-plt.ylabel("Number of nodes")
-plt.show()
+summarize_graph(G_sw, name="Small-world (Watts–Strogatz)")
+plot_degree_histogram(G_sw, title="Small-world: degree distribution")
 ```
 
 ---
 
-## Preferential Attachment Model
+## Scale-free graphs (preferential attachment)
 
-The Barabási-Albert preferential attachment model has two parameters: the number of nodes $N$, and the number of links added at each step $m$. Given these parameters, the algorithm is as follows:
+Many real networks exhibit a **heavy-tailed** (sometimes approximately **power-law**) degree distribution: most nodes have small degree, but a few nodes become **hubs**.
+
+The **Barabási–Albert (BA)** model generates this effect via **preferential attachment**:
+
+- Nodes that already have many edges are more likely to receive new edges.
+
+Key properties (typical):
+
+- Degree distribution is heavy-tailed (often summarized as “scale-free”).
+- Small average path length (hubs create shortcuts).
+- Clustering is usually lower than small-world models (but there are variants that increase clustering).
+
+In NetworkX:
+
+- `nx.barabasi_albert_graph(n, m)` where each new node attaches to `m` existing nodes.
 
 1. Start with a clique of $m + 1$ nodes.
 2. Select $m$ different nodes at random, weighted by their degree.
@@ -162,27 +173,28 @@ The Barabási-Albert preferential attachment model has two parameters: the numbe
 
 ```{python}
 # Barabasi-Albert preferential attachment graph with n nodes and m edges
-G_BA = nx.barabasi_albert_graph(n=16, m=2)
+G_sf = nx.barabasi_albert_graph(n=200, m=2, seed=SEED)
 
-nx.draw(G_BA, with_labels=True)
+pos = nx.spring_layout(G_sf, seed=SEED)
+nx.draw(G_sf, pos=pos, node_size=35, node_color="lightgreen", edge_color="gray", alpha=0.8)
+plt.title("Barabási–Albert (scale-free-ish) graph")
 plt.show()
+
+summarize_graph(G_sf, name="Scale-free (Barabási–Albert)")
+plot_degree_histogram(G_sf, title="Scale-free: degree distribution")
 ```
 
-```{python}
-print("Is connected?", nx.is_connected(G_BA))
-print("Number of connected components:", nx.number_connected_components(G_BA))
-print("Average shortest path length:", nx.average_shortest_path_length(G_BA))
-print("Average clustering coefficient:", nx.average_clustering(G_BA))
-```
+::: {.callout-tip collapse="true"}
+## “Scale-free” in NetworkX
 
-```{python}
-d_centrality = nx.degree_centrality(G_BA)
-ls_centralities = list(d_centrality.values())
-plt.hist(ls_centralities, bins=10, range=(0, 1))
-plt.xlabel("Degree centrality")
-plt.ylabel("Number of nodes")
-plt.show()
-```
+The BA model is the most common introduction to “scale-free” networks.
+NetworkX also provides other generators (some return directed multigraphs), for example:
+
+- `nx.scale_free_graph(n, seed=...)`
+- `nx.powerlaw_cluster_graph(n, m, p, seed=...)` (adds triangle-closing for higher clustering)
+
+For this course, `nx.barabasi_albert_graph` is usually the best starting point.
+:::
 
 ---
 
