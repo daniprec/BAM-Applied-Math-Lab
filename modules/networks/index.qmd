@@ -4,9 +4,59 @@ subtitle: "Structure, Centrality and Spreading on Graphs"
 format: html
 ---
 
-In this session, we will simulate **dynamical processes on graphs**, in particular SIS and SIR epidemic models.
+This session connects **graph structure** (who is connected to whom) with **dynamics on graphs** (how processes spread along edges).
+Our main application is epidemic spreading with the **SIS** and **SIR** models.
 
-We will work with real datasets such as the USA flight network and the Enron email network.
+You will work with both:
+
+- **Synthetic graph models** (random, small-world, scale-free) to build intuition.
+- **Real networks** (Enron email, USA flights) to test your ideas.
+
+::: {.callout-tip}
+## Use notebooks for this session
+
+I recommend following this session using **Jupyter notebooks** rather than standalone scripts.
+
+- You can iterate faster (run one cell at a time).
+- You can keep figures, outputs, and notes next to the code.
+- It's easier to debug simulations and compare parameter sweeps.
+:::
+
+## From Collective Motion to Networks
+
+In the previous session on **collective motion**, you simulated agent-based models in continuous space (e.g., Vicsek/Couzin): who interacts with whom was determined by **geometry** (metric distance, vision cones, neighborhoods).
+
+In this session we switch the lens: we keep the same simulation mindset, but we represent interactions with a **graph**. Edges encode the possible transmission/interaction channels.
+
+- Geometry-based interactions → **network topology**.
+- Local rules in space → local rules **along edges**.
+- Same themes: heterogeneity, hubs, robustness, emergent outcomes.
+
+[Back to Collective Motion](../collective-motion/index.qmd){.btn .btn-secondary}
+
+### Why simulate on networks instead of using ODEs?
+
+In classical epidemic models, we use mean-field ODEs:
+
+ dS/dt, dI/dt, dR/dt.
+
+Those assume homogeneous mixing: every individual interacts with every other with equal probability.
+
+Real systems are not homogeneous:
+
+* Some nodes have 2 connections.
+* Others have 200.
+* Paths are constrained by topology.
+* Clusters slow or accelerate spreading.
+
+On networks, infection propagates only along edges. Structure matters.
+
+This lets you connect:
+
+* Degree heterogeneity.
+* Centrality.
+* Robustness.
+* Epidemic thresholds.
 
 ## Case Studies
 
@@ -20,51 +70,50 @@ We will work with real datasets such as the USA flight network and the Enron ema
 
 [Assignment: Real-World Networks](assignment.qmd){.btn .btn-secondary}
 
-## What do we implement?
+## Learning Goals
 
-### Network representation with `networkx`
+By the end of this session, you should be able to:
+
+- Represent real systems as graphs and load datasets with `networkx`.
+- Measure core properties (degree, density, components, paths, clustering).
+- Quantify **node importance** with centrality (degree, closeness, betweenness, PageRank).
+- Generate and compare standard graph models (Erdős–Rényi, Watts–Strogatz, Barabási–Albert).
+- Implement **SIS** and **SIR** simulations using **node attributes** for state.
+- Run reproducible experiments (fixed `SEED`, multiple trials, summary curves) and interpret results.
+
+## Flow of this Session
+
+### 1) Fundamentals: graphs in `networkx`
 
 NetworkX is a Python package for the creation, manipulation, and study of the structure, dynamics, and functions of complex networks.
 
-This notebook serves as a brief introduction to the NetworkX package. It covers the following topics:
+We start with the basic data structure:
 
-- Creating a graph.
-- Graph elements: nodes and edges.
-- Graph visualization.
-- Basic graph properties: number of nodes and edges, degree, path length.
+- nodes, edges, and attributes,
+- visualization,
+- reading graphs from files.
 
 This tutorial is based on "A First Course in Network Science" by Filippo Menczer. [You can see their official Github repository here.](https://github.com/CambridgeUniversityPress/FirstCourseNetworkScience/tree/master). Please take a look at the folder [references/networkx_indiana](../../references/networkx_indiana/) for more information.
 
-You will:
+You will practice:
 
-* Create undirected and directed graphs.
-* Work with weighted edges.
-* Compute degree, in-degree, out-degree.
-* Extract adjacency matrices and edge lists.
-* Identify connected components and the giant component.
+* undirected vs directed graphs,
+* weighted edges,
+* adjacency/edge lists,
+* connected components.
 
 These concepts follow the formal definitions of nodes, links, directed and weighted graphs introduced in the lecture notes.
 
----
+### 2) Connectivity + centrality
 
-### Centrality and node importance
+Next we measure structure:
 
-We implement:
+* degree and density,
+* paths, diameter, components,
+* clustering coefficient,
+* centrality measures (degree/closeness/betweenness/PageRank) and what they mean.
 
-* Degree centrality.
-* Closeness centrality.
-* Betweenness centrality.
-* PageRank for directed networks.
-
-The idea that real networks are heterogeneous and contain hubs is central to this topic.
-
-For directed networks such as the web, we connect this with the random surfer model and the stationary distribution interpretation of PageRank.
-
-You will see how importance affects spreading processes.
-
----
-
-### Network models
+### 3) Graph models (synthetic networks)
 
 We generate synthetic networks to compare structure:
 
@@ -81,9 +130,7 @@ You will measure:
 * Clustering coefficient.
 * Degree distribution.
 
----
-
-### Spreading processes on networks: SIS and SIR
+### 4) Spreading: SIS and SIR
 
 This is the core computational part of the lab.
 
@@ -111,42 +158,18 @@ You will compare spreading on:
 * Scale-free networks.
 * Real datasets such as air transportation or email communication .
 
----
+## Assignment
 
-## Why simulate on networks instead of using ODEs?
+The final project is [Assignment: Real-World Networks](assignment.qmd).
 
-In classical epidemic models, we use mean-field ODEs:
+You will choose **one** real network (Enron or USA Flights), then:
 
-dS/dt, dI/dt, dR/dt.
+1. **Characterize the network** (structure + centrality).
+2. Run **both** **SIS** and **SIR** simulations on that same network.
 
-Those assume homogeneous mixing. Every individual interacts with every other with equal probability.
+Your submission includes:
 
-Real systems are not homogeneous:
+- **Code** that reproduces results end-to-end.
+- A short **report** (figures + interpretation).
 
-* Some nodes have 2 connections.
-* Others have 200.
-* Paths are constrained by topology.
-* Clusters slow or accelerate spreading.
-
-On networks, infection propagates only along edges. Structure matters.
-
-This lets you connect:
-
-* Degree heterogeneity.
-* Centrality.
-* Robustness.
-* Epidemic thresholds.
-
----
-
-## Learning goals
-
-By the end of this session, you should be able to:
-
-* Load and analyze real network datasets.
-* Compute structural metrics.
-* Generate synthetic network models.
-* Implement SIS and SIR simulations from scratch.
-* Quantify how topology shapes dynamical behavior.
-
-This session connects graph theory, probability, linear algebra, and simulation in a single computational framework.
+The emphasis is on **reproducible experiments** and clear interpretation of how structure changes outcomes.
