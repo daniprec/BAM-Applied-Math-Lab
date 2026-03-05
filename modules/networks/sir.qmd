@@ -1,92 +1,271 @@
 ---
 title: "Networks: SIR Model"
+subtitle: "Guided Exercise"
 format: html
 ---
 
-This module demonstrates how to simulate the SIR (Susceptible-Infected-Recovered) epidemic model on networks using NetworkX. You will see how network structure and model parameters affect the spread and final size of an epidemic.
+The SIR (Susceptible–Infected–Recovered) model is the “next step” after SIS: once a node recovers, it becomes **permanently immune**.
+
+In this module, we reuse the same ideas from the SIS page (graph models + node attributes) and focus on what is new:
+
+- the new **Recovered (R)** state,
+- the fact that infection cannot return once it disappears,
+- the notion of **final epidemic size**.
 
 ## What is the SIR Model?
 
 - **States:** Each node can be Susceptible (S), Infected (I), or Recovered (R).
 - **Transitions:**
-  - S → I: A susceptible node becomes infected if it has an infected neighbor (with probability $\beta$).
-  - I → R: An infected node recovers and becomes permanently immune (with probability $\mu$).
-- **Permanent immunity:** Recovered nodes cannot be infected again.
+  - $S \to I$: a susceptible node becomes infected through infected neighbors.
+  - $I \to R$: an infected node recovers and becomes permanently immune.
+- **Permanent immunity:** $R$ is an absorbing state (once recovered, always recovered).
 
-## Create a Network
+### Discrete-time update rule
 
-You can use any NetworkX graph (random, small-world, scale-free, or real data).
+We simulate in discrete time steps $t = 0, 1, 2, \dots$.
+
+If a susceptible node has $m$ infected neighbors, we use the same “independent trials” rule as SIS:
+
+$$
+\mathbb{P}(S \to I) = 1 - (1 - \beta)^m.
+$$
+
+If a node is infected, it recovers with probability:
+
+$$
+\mathbb{P}(I \to R) = \mu.
+$$
+
+Recovered nodes stay recovered:
+
+$$
+\mathbb{P}(R \to R) = 1.
+$$
+
+::: {.callout-tip collapse="true"}
+## What changes compared to SIS?
+
+In SIS, $I \to S$ (you become susceptible again). In SIR, $I \to R$ (you become immune). That single change completely changes the *long-term* behavior.
+:::
+
+## A key rigorous fact (absorbing states)
+
+On a finite graph with $\mu > 0$, the process reaches a time $T$ such that there are **no infected nodes** ($I(T)=0$), and after that nothing can ever change.
+
+Intuition (but still rigorous): each node can become infected **at most once** (because $R$ is permanent), so there can be at most $N$ infection events. Since recovery happens with positive probability, infections cannot persist forever.
+
+This means SIR always ends in a “frozen” configuration containing only $S$ and $R$ nodes.
+
+## Imports and parameters
 
 ```{python}
+#| message: false
+#| warning: false
 import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Example: random graph
-g = nx.gnp_random_graph(n=50, p=0.1)
+SEED = 7
+
+# Model parameters
+beta = 0.20
+mu = 0.10
+
+# Simulation parameters
+steps = 120
+initial_infected = 5
+N = 100
 ```
 
-## Initialize States
+## Choose a network
+
+We will reuse the same helper pattern as in the SIS page (see [SIS Model](sis.qmd)).
 
 ```{python}
-# All nodes start susceptible except a few infected
-state = {node: 'S' for node in g.nodes()}
-initial_infected = np.random.choice(g.nodes(), size=5, replace=False)
-for node in initial_infected:
-    state[node] = 'I'
+#| echo: false
+def make_graph(model: str, n: int, seed: int = SEED):
+    if model == "random":
+        return nx.erdos_renyi_graph(n=n, p=0.08, seed=seed)
+    if model == "small-world":
+        return nx.watts_strogatz_graph(n=n, k=6, p=0.08, seed=seed)
+    if model == "scale-free":
+        return nx.barabasi_albert_graph(n=n, m=2, seed=seed)
+    raise ValueError("model must be one of: 'random', 'small-world', 'scale-free'")
 ```
 
-## SIR Simulation Function
-
 ```{python}
-def run_sir(g, beta=0.2, mu=0.1, steps=50):
-    state = {node: 'S' for node in g.nodes()}
-    infected_counts = []
-    recovered_counts = []
-    initial_infected = np.random.choice(g.nodes(), size=5, replace=False)
-    for node in initial_infected:
-        state[node] = 'I'
-    for t in range(steps):
-        new_state = state.copy()
-        for node in g.nodes():
-            if state[node] == 'S':
-                infected_neighbors = [nbr for nbr in g.neighbors(node) if state[nbr] == 'I']
-                if infected_neighbors and np.random.rand() < 1 - (1 - beta)**len(infected_neighbors):
-                    new_state[node] = 'I'
-            elif state[node] == 'I':
-                if np.random.rand() < mu:
-                    new_state[node] = 'R'
-        state = new_state
-        infected_counts.append(sum(1 for s in state.values() if s == 'I'))
-        recovered_counts.append(sum(1 for s in state.values() if s == 'R'))
-    return infected_counts, recovered_counts
+G = make_graph("random", n=N, seed=SEED)
+print("N, E =", G.number_of_nodes(), G.number_of_edges())
 ```
 
-## Run and Visualize
+## Initialize states (node attributes)
+
+As in SIS, we store states on the graph using a node attribute called `state`.
 
 ```{python}
-infected, recovered = run_sir(g, beta=0.2, mu=0.1, steps=100)
-plt.plot(infected, label='Infected')
-plt.plot(recovered, label='Recovered')
-plt.xlabel('Time step')
-plt.ylabel('Number of nodes')
-plt.title('SIR Model Epidemic Curve')
+#| echo: false
+def initialize_state(G, initial_infected=5, seed: int = SEED):
+    rng = np.random.default_rng(seed)
+    infected = rng.choice(list(G.nodes()), size=initial_infected, replace=False)
+    state = {node: ("I" if node in infected else "S") for node in G.nodes()}
+    nx.set_node_attributes(G, state, "state")
+    return G
+```
+
+```{python}
+initialize_state(G, initial_infected=initial_infected, seed=SEED)
+print(
+    "Initial counts (S, I, R) =",
+    sum(G.nodes[u]["state"] == "S" for u in G.nodes()),
+    sum(G.nodes[u]["state"] == "I" for u in G.nodes()),
+    sum(G.nodes[u]["state"] == "R" for u in G.nodes()),
+)
+```
+
+## Implement the SIR dynamics
+
+The update is synchronous: compute all changes from the old state, then apply them.
+
+```python
+def step_sir(G, beta, mu):
+    # TODO: read current states from G.nodes[u]["state"]
+    # TODO: build new_state dict with values in {"S","I","R"}
+    # TODO: write new_state back via nx.set_node_attributes
+    return G
+```
+
+::: {.callout-tip collapse="true"}
+## Solved: `step_sir()`
+
+```{python}
+#| echo: true
+#| message: false
+#| warning: false
+def step_sir(G, beta, mu):
+    current = {u: G.nodes[u]["state"] for u in G.nodes()}
+    new_state = current.copy()
+
+    for u in G.nodes():
+        if current[u] == "S":
+            m = sum(1 for v in G.neighbors(u) if current[v] == "I")
+            if m > 0:
+                p_infect = 1 - (1 - beta) ** m
+                if np.random.random() < p_infect:
+                    new_state[u] = "I"
+
+        elif current[u] == "I":
+            if np.random.random() < mu:
+                new_state[u] = "R"
+
+        else:
+            # "R" stays "R"
+            pass
+
+    nx.set_node_attributes(G, new_state, "state")
+    return G
+```
+:::
+
+Now wrap it into a simulator. Compared to SIS, we typically track **all three** counts: $S(t), I(t), R(t)$.
+
+```python
+def run_sir(G, beta, mu, steps=100, initial_infected=5, seed=SEED):
+    # TODO
+    return S_counts, I_counts, R_counts
+```
+
+::: {.callout-tip collapse="true"}
+## Solved: `run_sir()`
+
+```{python}
+#| echo: true
+#| message: false
+#| warning: false
+def run_sir(G, beta, mu, steps=100, initial_infected=5, seed=SEED):
+    H = G.copy()
+
+    # Make the whole run reproducible (step_sir uses np.random.random)
+    np.random.seed(seed)
+
+    initialize_state(H, initial_infected=initial_infected, seed=seed)
+
+    def counts(H):
+        S = sum(H.nodes[u]["state"] == "S" for u in H.nodes())
+        I = sum(H.nodes[u]["state"] == "I" for u in H.nodes())
+        R = sum(H.nodes[u]["state"] == "R" for u in H.nodes())
+        return S, I, R
+
+    S0, I0, R0 = counts(H)
+    S_counts = [S0]
+    I_counts = [I0]
+    R_counts = [R0]
+
+    for _ in range(steps):
+        if I_counts[-1] == 0:
+            break
+        step_sir(H, beta=beta, mu=mu)
+        S, I, R = counts(H)
+        S_counts.append(S)
+        I_counts.append(I)
+        R_counts.append(R)
+
+    return S_counts, I_counts, R_counts
+```
+:::
+
+## Run and visualize
+
+The “epidemic curve” in SIR typically shows a single peak in $I(t)$ and then decay to zero.
+
+```{python}
+#| label: fig-sir-curve
+#| fig-cap: "SIR epidemic curve (fractions of S, I, R over time) on one network realization."
+#| fig-alt: 'Fractions of susceptible, infected, and recovered nodes over time for a single run of the SIR model.'
+#| fig-width: 6
+#| fig-height: 4
+#| echo: false
+#| message: false
+#| warning: false
+S, I, R = run_sir(G, beta=beta, mu=mu, steps=steps, initial_infected=initial_infected, seed=SEED)
+
+t = np.arange(len(I))
+N0 = G.number_of_nodes()
+
+plt.plot(t, np.array(S) / N0, label="S")
+plt.plot(t, np.array(I) / N0, label="I")
+plt.plot(t, np.array(R) / N0, label="R")
+plt.xlabel("Time step")
+plt.ylabel("Fraction of nodes")
+plt.title("SIR: fractions over time")
 plt.legend()
+plt.tight_layout()
 plt.show()
 ```
 
-## Experiment
+## New questions to ask in SIR
 
-- Try different network types (random, small-world, scale-free).
-- Vary $\beta$ and $\mu$ to see the epidemic threshold and final epidemic size.
-- Analyze how network structure (degree, clustering) affects the spread and peak.
+Here are two precise, testable questions that are *specific* to SIR:
+
+1. **Can the network become fully infected?** i.e., does there exist a time $t$ such that $I(t)=N$?
+2. **Can the network become fully “healed”?** i.e., does there exist a time $t$ such that $I(t)=0$?
+
+In SIR, the second question has a clean answer:
+
+- **Yes.** In fact, for a finite graph with $\mu>0$, you eventually reach $I(t)=0$ and then you are stuck forever (absorbing state).
+
+The first question depends on $(\beta,\mu)$ and the network. It can happen transiently, but it is not an absorbing state.
+
+::: {.callout-note}
+## Discuss
+
+- In SIR, is “fully healed” the same as “everyone is susceptible again”? Why not?
+- What does “final epidemic size” mean here? (Hint: look at $R(\infty)$.)
+- Can you have an epidemic with a large peak but small final size? Or vice versa?
+- Compare two graphs with the same $N$ and similar average degree: which features (hubs, clustering, path length) do you expect to increase $R(\infty)$?
+:::
 
 ## What's Next?
 
-You've completed the epidemic modeling pipeline! Try experimenting with different networks, parameters, or move on to advanced topics in network science.
-
-**Next:**
-- Compare SIS and SIR results. How does permanent immunity change the outcome?
-- Ready to apply your knowledge to real-world data? Try the assignment:
+Compare SIS vs SIR: how does permanent immunity change what happens “in the long run”? Then apply your knowledge to real-world data:
 
 [Assignment: Networks & Real-World Data](assignment.qmd){.btn .btn-secondary}
