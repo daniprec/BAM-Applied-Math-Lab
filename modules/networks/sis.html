@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Applied Math Lab - SIS Model on Networks</title>
+<title>Applied Math Lab - Networks: SIS Model</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -563,12 +563,17 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#what-is-the-sis-model" id="toc-what-is-the-sis-model" class="nav-link active" data-scroll-target="#what-is-the-sis-model">What is the SIS Model?</a></li>
-  <li><a href="#create-a-network" id="toc-create-a-network" class="nav-link" data-scroll-target="#create-a-network">Create a Network</a></li>
+  <li><a href="#what-is-the-sis-model" id="toc-what-is-the-sis-model" class="nav-link active" data-scroll-target="#what-is-the-sis-model">What is the SIS Model?</a>
+  <ul>
+  <li><a href="#discrete-time-update-rule" id="toc-discrete-time-update-rule" class="nav-link" data-scroll-target="#discrete-time-update-rule">Discrete-Time Update Rule</a></li>
+  </ul></li>
+  <li><a href="#goal" id="toc-goal" class="nav-link" data-scroll-target="#goal">Goal</a></li>
+  <li><a href="#imports-and-parameters" id="toc-imports-and-parameters" class="nav-link" data-scroll-target="#imports-and-parameters">Imports and Parameters</a></li>
+  <li><a href="#choose-a-network" id="toc-choose-a-network" class="nav-link" data-scroll-target="#choose-a-network">Choose a Network</a></li>
   <li><a href="#initialize-states" id="toc-initialize-states" class="nav-link" data-scroll-target="#initialize-states">Initialize States</a></li>
-  <li><a href="#sis-simulation-function" id="toc-sis-simulation-function" class="nav-link" data-scroll-target="#sis-simulation-function">SIS Simulation Function</a></li>
+  <li><a href="#implement-the-sis-dynamics" id="toc-implement-the-sis-dynamics" class="nav-link" data-scroll-target="#implement-the-sis-dynamics">Implement the SIS dynamics</a></li>
   <li><a href="#run-and-visualize" id="toc-run-and-visualize" class="nav-link" data-scroll-target="#run-and-visualize">Run and Visualize</a></li>
-  <li><a href="#experiment" id="toc-experiment" class="nav-link" data-scroll-target="#experiment">Experiment</a></li>
+  <li><a href="#compare-network-types" id="toc-compare-network-types" class="nav-link" data-scroll-target="#compare-network-types">Compare Network Types</a></li>
   <li><a href="#whats-next" id="toc-whats-next" class="nav-link" data-scroll-target="#whats-next">What’s Next?</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/networks/sis.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -578,7 +583,8 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../modules/networks/index.html">Session 5: Networks</a></li><li class="breadcrumb-item"><a href="../../modules/networks/sis.html">SIS Model</a></li></ol></nav>
 <div class="quarto-title">
-<div class="quarto-title-block"><div><h1 class="title">SIS Model on Networks</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+<div class="quarto-title-block"><div><h1 class="title">Networks: SIS Model</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+<p class="subtitle lead">Guided Exercise</p>
 </div>
 
 
@@ -595,95 +601,408 @@ window.Quarto = {
 </header>
 
 
-<p>This module demonstrates how to simulate the SIS (Susceptible-Infected-Susceptible) epidemic model on networks using NetworkX. You will learn how network structure affects the spread and persistence of epidemics.</p>
+<p>The SIS (Susceptible–Infected–Susceptible) model is a simple epidemic model where individuals can be infected multiple times. In this module, we implement SIS on networks using NetworkX and explore how <strong>network structure</strong> (random vs small-world vs scale-free) changes spreading.</p>
 <section id="what-is-the-sis-model" class="level2">
 <h2 class="anchored" data-anchor-id="what-is-the-sis-model">What is the SIS Model?</h2>
 <ul>
-<li><strong>States:</strong> Each node can be Susceptible (S) or Infected (I).</li>
+<li><strong>States:</strong> each node is Susceptible (S) or Infected (I).</li>
 <li><strong>Transitions:</strong>
 <ul>
-<li>S &gt; I: A susceptible node becomes infected if it has an infected neighbor (with probability <span class="math inline">\(\beta\)</span>).</li>
-<li>I &gt; S: An infected node recovers and becomes susceptible again (with probability <span class="math inline">\(\mu\)</span>).</li>
+<li><span class="math inline">\(S \to I\)</span>: infection through contacts (controlled by <span class="math inline">\(\beta\)</span>).</li>
+<li><span class="math inline">\(I \to S\)</span>: recovery (controlled by <span class="math inline">\(\mu\)</span>).</li>
 </ul></li>
-<li><strong>No permanent immunity:</strong> Nodes can be reinfected after recovery.</li>
+<li><strong>No permanent immunity:</strong> recovered nodes can be reinfected.</li>
 </ul>
+<section id="discrete-time-update-rule" class="level3">
+<h3 class="anchored" data-anchor-id="discrete-time-update-rule">Discrete-Time Update Rule</h3>
+<p>We simulate in discrete time steps <span class="math inline">\(t = 0, 1, 2, \dots\)</span>.</p>
+<p>A susceptible node with <span class="math inline">\(m\)</span> infected neighbors becomes infected with probability:</p>
+<p><span class="math display">\[
+\mathbb{P}(S \to I) = 1 - (1 - \beta)^m.
+\]</span></p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Why <span class="math inline">\(1 - (1-\beta)^m\)</span>?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>If each infected neighbor independently infects you with probability <span class="math inline">\(\beta\)</span>, then the probability you avoid infection from all <span class="math inline">\(m\)</span> neighbors is <span class="math inline">\((1-\beta)^m\)</span>. So the probability of at least one successful infection is <span class="math inline">\(1-(1-\beta)^m\)</span>.</p>
+</div>
+</div>
+</div>
+<p>On the other hand, if a node is infected, it recovers with probability:</p>
+<p><span class="math display">\[
+\mathbb{P}(I \to S) = \mu.
+\]</span></p>
 </section>
-<section id="create-a-network" class="level2">
-<h2 class="anchored" data-anchor-id="create-a-network">Create a Network</h2>
-<p>You can use any NetworkX graph (random, small-world, scale-free, or real data).</p>
-<div id="9606a3cb" class="cell" data-execution_count="1">
+</section>
+<section id="goal" class="level2">
+<h2 class="anchored" data-anchor-id="goal">Goal</h2>
+<p>Study SIS propagation under different graph models and sizes.</p>
+<ol type="1">
+<li>Compare <strong>random</strong> (Erdos–Rényi), <strong>small-world</strong> (Watts–Strogatz), and <strong>scale-free-ish</strong> (Barabási–Albert) graphs.</li>
+<li>Try sizes like <span class="math inline">\(N \in \{50, 100, 300\}\)</span>.</li>
+<li>For each case, run 10–30 repetitions and plot the <strong>average infected fraction</strong> over time.</li>
+</ol>
+<p>The steps are described in more detail below, but feel free to experiment with different parameters and graph types!</p>
+</section>
+<section id="imports-and-parameters" class="level2">
+<h2 class="anchored" data-anchor-id="imports-and-parameters">Imports and Parameters</h2>
+<div id="23bb28c8" class="cell" data-message="false" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Example: random graph</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> nx.gnp_random_graph(n<span class="op">=</span><span class="dv">50</span>, p<span class="op">=</span><span class="fl">0.1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>These are the parameters you can tune:</p>
+<div id="96007f4f" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>SEED <span class="op">=</span> <span class="dv">7</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Model parameters</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>beta <span class="op">=</span> <span class="fl">0.20</span>  <span class="co"># infection probability per infected neighbor (per step)</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> <span class="fl">0.10</span>    <span class="co"># recovery probability (per step)</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulation parameters</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>steps <span class="op">=</span> <span class="dv">120</span>  <span class="co"># number of time steps to simulate</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>initial_infected <span class="op">=</span> <span class="dv">5</span>  <span class="co"># should always be &lt; N</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> <span class="dv">100</span>  <span class="co"># number of nodes in the graph</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+About <code>SEED</code> (why we fix it)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>There are <strong>two</strong> sources of randomness in this activity:</p>
+<ol type="1">
+<li>the <strong>graph</strong> you generate (e.g., which edges appear in Erdős–Rényi), and</li>
+<li>the <strong>stochastic SIS dynamics</strong> (who gets infected / recovers at each step).</li>
+</ol>
+<p>We fix <code>SEED</code> so results are <strong>reproducible</strong>: rerunning the page gives the same plots, which makes debugging and reporting possible.</p>
+<p>When we do many repetitions, we use <code>SEED + r</code> so repetition <code>r</code> is a <strong>different random trial</strong> (new graph + new random infection events) but still reproducible. If you reused the same <code>SEED</code> in every repetition, you would repeat the <em>same</em> realization and your “average over runs” would be meaningless.</p>
+</div>
 </div>
 </section>
-<section id="initialize-states" class="level2">
-<h2 class="anchored" data-anchor-id="initialize-states">Initialize States</h2>
-<div id="cd9cb728" class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># All nodes start susceptible except a few infected</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>state <span class="op">=</span> {node: <span class="st">'S'</span> <span class="cf">for</span> node <span class="kw">in</span> g.nodes()}</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>initial_infected <span class="op">=</span> np.random.choice(g.nodes(), size<span class="op">=</span><span class="dv">5</span>, replace<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> node <span class="kw">in</span> initial_infected:</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    state[node] <span class="op">=</span> <span class="st">'I'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="choose-a-network" class="level2">
+<h2 class="anchored" data-anchor-id="choose-a-network">Choose a Network</h2>
+<p>For your project you will compare several models. Start by picking one. You can see a sample of the three models in the page: <a href="../../modules/networks/models.html">Network Models</a>.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
 </div>
-</section>
-<section id="sis-simulation-function" class="level2">
-<h2 class="anchored" data-anchor-id="sis-simulation-function">SIS Simulation Function</h2>
-<div id="c261845f" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_sis(g, beta<span class="op">=</span><span class="fl">0.2</span>, mu<span class="op">=</span><span class="fl">0.1</span>, steps<span class="op">=</span><span class="dv">50</span>):</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    state <span class="op">=</span> {node: <span class="st">'S'</span> <span class="cf">for</span> node <span class="kw">in</span> g.nodes()}</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    infected_counts <span class="op">=</span> []</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    initial_infected <span class="op">=</span> np.random.choice(g.nodes(), size<span class="op">=</span><span class="dv">5</span>, replace<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> node <span class="kw">in</span> initial_infected:</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        state[node] <span class="op">=</span> <span class="st">'I'</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> t <span class="kw">in</span> <span class="bu">range</span>(steps):</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        new_state <span class="op">=</span> state.copy()</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> node <span class="kw">in</span> g.nodes():</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> state[node] <span class="op">==</span> <span class="st">'S'</span>:</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>                <span class="co"># Check infected neighbors</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>                infected_neighbors <span class="op">=</span> [nbr <span class="cf">for</span> nbr <span class="kw">in</span> g.neighbors(node) <span class="cf">if</span> state[nbr] <span class="op">==</span> <span class="st">'I'</span>]</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> infected_neighbors <span class="kw">and</span> np.random.rand() <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">-</span> (<span class="dv">1</span> <span class="op">-</span> beta)<span class="op">**</span><span class="bu">len</span>(infected_neighbors):</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>                    new_state[node] <span class="op">=</span> <span class="st">'I'</span></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>            <span class="cf">elif</span> state[node] <span class="op">==</span> <span class="st">'I'</span>:</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> np.random.rand() <span class="op">&lt;</span> mu:</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>                    new_state[node] <span class="op">=</span> <span class="st">'S'</span></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>        state <span class="op">=</span> new_state</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>        infected_counts.append(<span class="bu">sum</span>(<span class="dv">1</span> <span class="cf">for</span> s <span class="kw">in</span> state.values() <span class="cf">if</span> s <span class="op">==</span> <span class="st">'I'</span>))</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> infected_counts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout-title-container flex-fill">
+Example of Baseline Graph
 </div>
-</section>
-<section id="run-and-visualize" class="level2">
-<h2 class="anchored" data-anchor-id="run-and-visualize">Run and Visualize</h2>
-<div id="ba059007" class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>counts <span class="op">=</span> run_sis(g, beta<span class="op">=</span><span class="fl">0.2</span>, mu<span class="op">=</span><span class="fl">0.1</span>, steps<span class="op">=</span><span class="dv">100</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>plt.plot(counts)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Time step'</span>)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Number of infected nodes'</span>)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'SIS Model Epidemic Curve'</span>)</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.erdos_renyi_graph(n<span class="op">=</span>N, p<span class="op">=</span><span class="fl">0.08</span>, seed<span class="op">=</span>SEED)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># where p is the probability of edge creation</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+<p>To make the “compare models” part easier, we will implement a small helper function <code>make_graph(&lt;model&gt;, &lt;n&gt;)</code>, where <code>&lt;model&gt;</code> is a string specifying the type of graph (“random”, “small-world”, or “scale-free”) and <code>&lt;n&gt;</code> is the number of nodes.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_graph(model: <span class="bu">str</span>, n: <span class="bu">int</span>, seed: <span class="bu">int</span> <span class="op">=</span> SEED):</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Create a graph model: 'random', 'small-world', or 'scale-free'."""</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> G</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Solved: <code>make_graph()</code>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div id="7eef92e5" class="cell" data-message="false" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_graph(model: <span class="bu">str</span>, n: <span class="bu">int</span>, seed: <span class="bu">int</span> <span class="op">=</span> SEED):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> model <span class="op">==</span> <span class="st">"random"</span>:</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> nx.erdos_renyi_graph(n<span class="op">=</span>n, p<span class="op">=</span><span class="fl">0.08</span>, seed<span class="op">=</span>seed)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> model <span class="op">==</span> <span class="st">"small-world"</span>:</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> nx.watts_strogatz_graph(n<span class="op">=</span>n, k<span class="op">=</span><span class="dv">6</span>, p<span class="op">=</span><span class="fl">0.08</span>, seed<span class="op">=</span>seed)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> model <span class="op">==</span> <span class="st">"scale-free"</span>:</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> nx.barabasi_albert_graph(n<span class="op">=</span>n, m<span class="op">=</span><span class="dv">2</span>, seed<span class="op">=</span>seed)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"model must be one of: 'random', 'small-world', 'scale-free'"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+<p>Now you can easily create different graph types:</p>
+<div id="28da2073" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> make_graph(<span class="st">"random"</span>, n<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"N, E ="</span>, G.number_of_nodes(), G.number_of_edges())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>N, E = 100 399</code></pre>
+</div>
+</div>
+<p>Optional quick visualization:</p>
+<div id="fcbf45a1" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.spring_layout(G)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>nx.draw(G, pos<span class="op">=</span>pos, node_size<span class="op">=</span><span class="dv">50</span>, edge_color<span class="op">=</span><span class="st">"gray"</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Baseline network"</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="sis_files/figure-html/cell-5-output-1.png" class="img-fluid figure-img"></p>
+<p><img src="sis_files/figure-html/cell-6-output-1.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
 </div>
 </div>
 </section>
-<section id="experiment" class="level2">
-<h2 class="anchored" data-anchor-id="experiment">Experiment</h2>
+<section id="initialize-states" class="level2">
+<h2 class="anchored" data-anchor-id="initialize-states">Initialize States</h2>
+<p>We will store the state of each individual directly on the graph as a <strong>node attribute</strong> called <code>state</code>.</p>
+<p>For example, we can start with everyone susceptible. We will create the attribute “state” and set it to “S” for all nodes:</p>
+<div id="e1a94d1f" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>nx.set_node_attributes(G, <span class="st">"S"</span>, <span class="st">"state"</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Node 0:"</span>, G.nodes[<span class="dv">0</span>])  <span class="co"># node attributes are stored in a dictionary</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Node 0: {'state': 'S'}</code></pre>
+</div>
+</div>
+<p>If we wanted to infect node 20, we could do:</p>
+<div id="8e2c9c75" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>node_20 <span class="op">=</span> G.nodes[<span class="dv">20</span>]</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>node_20[<span class="st">"state"</span>] <span class="op">=</span> <span class="st">"I"</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Node 20:"</span>, G.nodes[<span class="dv">20</span>])  <span class="co"># now node 20 has state "I"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Node 20: {'state': 'I'}</code></pre>
+</div>
+</div>
+<p>Alternatively, we could use a dictionary to set the states of multiple nodes at once:</p>
+<div id="1d67bbd7" class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Infect nodes 20, 35, and 50</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co"># The rest will be susceptible by default</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>state_dict <span class="op">=</span> {node: <span class="st">"I"</span> <span class="cf">if</span> node <span class="kw">in</span> [<span class="dv">20</span>, <span class="dv">35</span>, <span class="dv">50</span>] <span class="cf">else</span> <span class="st">"S"</span> <span class="cf">for</span> node <span class="kw">in</span> G.nodes()}</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>nx.set_node_attributes(G, state_dict, <span class="st">"state"</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Node 20:"</span>, G.nodes[<span class="dv">20</span>])  <span class="co"># node 20 is infected</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Node 21:"</span>, G.nodes[<span class="dv">21</span>])  <span class="co"># node 21 is susceptible</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Node 20: {'state': 'I'}
+Node 21: {'state': 'S'}</code></pre>
+</div>
+</div>
+<p>With that information in mind, you can create a function <code>initialize_state(&lt;graph&gt;)</code> that sets all nodes to “S” and then randomly picks a few nodes to set to “I” (the initial infected).</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> initialize_state(G, initial_infected<span class="op">=</span><span class="dv">5</span>, seed<span class="op">=</span>SEED):</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: start everyone as 'S' using node attributes</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: randomly pick initial_infected nodes and set their node attribute to 'I'</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Optional: return G (mutated) for convenience</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> G</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Remember that you can use a seeded random number generator (via <code>np.random.default_rng(seed)</code>) to pick random nodes from the graph.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Solved: <code>initialize_state()</code>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div id="e2d32abd" class="cell" data-message="false" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> initialize_state(G, initial_infected<span class="op">=</span><span class="dv">5</span>, seed<span class="op">=</span>SEED, rng<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> rng <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>        rng <span class="op">=</span> np.random.default_rng(seed)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Start everyone susceptible</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    nx.set_node_attributes(G, <span class="st">"S"</span>, <span class="st">"state"</span>)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Infect a random subset</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    infected <span class="op">=</span> rng.choice(<span class="bu">list</span>(G.nodes()), size<span class="op">=</span>initial_infected, replace<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> node <span class="kw">in</span> infected:</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>        G.nodes[node][<span class="st">"state"</span>] <span class="op">=</span> <span class="st">"I"</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> G</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+<p>Always validate your functions! In this case, we can check that the number of infected nodes is correct:</p>
+<div id="44f68b8e" class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>initialize_state(G, initial_infected<span class="op">=</span>initial_infected, seed<span class="op">=</span>SEED)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Initially infected:"</span>,</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">sum</span>(G.nodes[node][<span class="st">"state"</span>] <span class="op">==</span> <span class="st">"I"</span> <span class="cf">for</span> node <span class="kw">in</span> G.nodes()),</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Initially infected: 5</code></pre>
+</div>
+</div>
+</section>
+<section id="implement-the-sis-dynamics" class="level2">
+<h2 class="anchored" data-anchor-id="implement-the-sis-dynamics">Implement the SIS dynamics</h2>
+<p>We update <strong>synchronously</strong>: compute all changes from the old state, then apply them.</p>
+<p>Create a function <code>step_sis(&lt;graph&gt;, beta, mu)</code> that performs one step of the SIS update. Remember that <code>beta</code> is the infection probability and <code>mu</code> is the recovery probability.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> step_sis(G, beta, mu):</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: read current states from G.nodes[u]["state"]</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: compute a new_state mapping (synchronous update)</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: write new_state back to node attributes</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> G</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Remember that you can loop through all nodes and their neighbors using <code>G.nodes()</code> and <code>G.neighbors(node)</code>. Use <code>np.random.random()</code> for the probabilistic transitions.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Solved: <code>step_sis()</code>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div id="915fee6d" class="cell" data-message="false" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> step_sis(G, beta, mu, rng<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> rng <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>        rng <span class="op">=</span> np.random.default_rng()</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Retrieve current states of all nodes</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    current <span class="op">=</span> {node: G.nodes[node][<span class="st">"state"</span>] <span class="cf">for</span> node <span class="kw">in</span> G.nodes()}</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    new_state <span class="op">=</span> current.copy()  <span class="co"># start with the same state for synchronous update</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Loop through all nodes to compute new states</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> node <span class="kw">in</span> G.nodes():</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> current[node] <span class="op">==</span> <span class="st">"S"</span>:</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Count infected neighbors</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>            m <span class="op">=</span> <span class="bu">sum</span>(<span class="dv">1</span> <span class="cf">for</span> nbr <span class="kw">in</span> G.neighbors(node) <span class="cf">if</span> current[nbr] <span class="op">==</span> <span class="st">"I"</span>)</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> m <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>                <span class="co"># Compute infection probability</span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>                p_infect <span class="op">=</span> <span class="dv">1</span> <span class="op">-</span> (<span class="dv">1</span> <span class="op">-</span> beta) <span class="op">**</span> m</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> rng.random() <span class="op">&lt;</span> p_infect:</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>                    new_state[node] <span class="op">=</span> <span class="st">"I"</span></span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:  <span class="co"># current[node] == "I"</span></span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> rng.random() <span class="op">&lt;</span> mu:</span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>                new_state[node] <span class="op">=</span> <span class="st">"S"</span></span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>    nx.set_node_attributes(G, new_state, <span class="st">"state"</span>)</span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> G</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+<p>Now wrap it into a simulator that records the number of infected nodes over time. The function <code>run_sis()</code> should take a graph and the parameters, run the simulation for a given number of steps, and return a list of the number of infected nodes at each time step.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_sis(G, beta, mu, steps<span class="op">=</span><span class="dv">100</span>, initial_infected<span class="op">=</span><span class="dv">5</span>, seed<span class="op">=</span>SEED):</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> infected_counts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Solved: <code>run_sis()</code>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div id="f5823832" class="cell" data-message="false" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_sis(G, beta, mu, steps<span class="op">=</span><span class="dv">100</span>, initial_infected<span class="op">=</span><span class="dv">5</span>, seed<span class="op">=</span>SEED):</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Copy the graph to avoid mutating the original</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    H <span class="op">=</span> G.copy()</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># One seeded RNG controls all randomness for this run</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.default_rng(seed)</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Initialize states</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>    initialize_state(H, initial_infected<span class="op">=</span>initial_infected, seed<span class="op">=</span>seed, rng<span class="op">=</span>rng)</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Count initial number of infected nodes and initialize the list</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    infected_counts <span class="op">=</span> [<span class="bu">sum</span>(H.nodes[node][<span class="st">"state"</span>] <span class="op">==</span> <span class="st">"I"</span> <span class="cf">for</span> node <span class="kw">in</span> H.nodes())]</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Apply SIS steps and record infected counts</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(steps):</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>        step_sis(H, beta<span class="op">=</span>beta, mu<span class="op">=</span>mu, rng<span class="op">=</span>rng)</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>        infected_counts.append(<span class="bu">sum</span>(H.nodes[node][<span class="st">"state"</span>] <span class="op">==</span> <span class="st">"I"</span> <span class="cf">for</span> node <span class="kw">in</span> H.nodes()))</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> infected_counts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+<p>Execute the function to make sure it runs without errors and returns a reasonable output:</p>
+<div id="a1a87d10" class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>counts <span class="op">=</span> run_sis(G, beta<span class="op">=</span>beta, mu<span class="op">=</span>mu, steps<span class="op">=</span>steps, initial_infected<span class="op">=</span>initial_infected)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Infected counts over time:"</span>, counts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Infected counts over time: [5, 12, 27, 51, 75, 82, 90, 90, 88, 92, 86, 82, 87, 87, 91, 89, 92, 86, 91, 87, 89, 87, 87, 88, 80, 84, 93, 91, 89, 88, 85, 84, 87, 86, 86, 85, 89, 88, 93, 86, 86, 86, 87, 87, 86, 85, 81, 85, 87, 90, 90, 86, 92, 82, 78, 86, 85, 87, 91, 87, 93, 88, 96, 88, 93, 90, 88, 92, 89, 92, 89, 87, 87, 88, 92, 82, 88, 91, 88, 82, 82, 87, 85, 88, 84, 82, 86, 90, 86, 89, 85, 84, 87, 86, 90, 90, 89, 84, 89, 88, 86, 88, 91, 90, 84, 86, 91, 93, 91, 91, 93, 89, 88, 93, 92, 91, 84, 86, 85, 82, 90]</code></pre>
+</div>
+</div>
+</section>
+<section id="run-and-visualize" class="level2">
+<h2 class="anchored" data-anchor-id="run-and-visualize">Run and Visualize</h2>
+<p>Use <code>matplotlib</code> to plot the fraction of infected nodes over time. Try to get a graph similar to <a href="#fig-sis-plot" class="quarto-xref">Figure&nbsp;1</a> below.</p>
+<div id="cell-fig-sis-plot" class="cell" data-fig-height="4" data-fig-width="6" data-message="false" data-execution_count="14">
+<div class="cell-output cell-output-display">
+<div id="fig-sis-plot" class="quarto-figure quarto-figure-center quarto-float anchored" alt="Fraction of infected nodes over time for a single run of the SIS model on a random graph.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-sis-plot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="sis_files/figure-html/fig-sis-plot-output-1.png" class="img-fluid figure-img" alt="Fraction of infected nodes over time for a single run of the SIS model on a random graph.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-sis-plot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Fraction of infected nodes over time for a single SIS run on a random graph.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="compare-network-types" class="level2">
+<h2 class="anchored" data-anchor-id="compare-network-types">Compare Network Types</h2>
+<p>Finally, run multiple simulations for each graph type and plot the average infected fraction over time for each type on the same graph. <a href="#fig-sis-compare" class="quarto-xref">Figure&nbsp;2</a> is an example of what this could look like.</p>
+<div id="cell-fig-sis-compare" class="cell" data-fig-height="4" data-fig-width="6" data-message="false" data-execution_count="15">
+<div class="cell-output cell-output-display">
+<div id="fig-sis-compare" class="quarto-figure quarto-figure-center quarto-float anchored" alt="Average infected fraction over time for different network models (random, small-world, scale-free).">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-sis-compare-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="sis_files/figure-html/fig-sis-compare-output-1.png" class="img-fluid figure-img" alt="Average infected fraction over time for different network models (random, small-world, scale-free).">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-sis-compare-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Mean infected fraction over time for different network models (random, small-world, scale-free).
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Discuss
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use your results to start a discussion:</p>
 <ul>
-<li>Try different network types (random, small-world, scale-free).</li>
-<li>Vary <span class="math inline">\(\beta\)</span> and <span class="math inline">\(\mu\)</span> to see the epidemic threshold.</li>
-<li>Analyze how network structure (degree, clustering) affects persistence.</li>
+<li>Which network type sustains infection longer at the same <span class="math inline">\((\beta, \mu)\)</span>?</li>
+<li>Do hubs (scale-free) make persistence easier? Why?</li>
+<li>How does clustering (small-world) change local outbreaks vs global spread?</li>
+<li>If you increase <span class="math inline">\(N\)</span> but keep average degree similar, what do you expect to happen?</li>
 </ul>
+</div>
+</div>
 </section>
 <section id="whats-next" class="level2">
 <h2 class="anchored" data-anchor-id="whats-next">What’s Next?</h2>
-<p>Try the SIR model and compare how permanent immunity changes the outcome!</p>
+<p>Try the SIR model and compare how <strong>permanent immunity</strong> changes the outcome.</p>
 <p><a href="../../modules/networks/sir.html" class="btn btn-primary">SIR Model</a></p>
 
 
@@ -1142,91 +1461,400 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>
   </div>
 </nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="sourceCode" id="cb5" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "SIS Model on Networks"</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>This module demonstrates how to simulate the SIS (Susceptible-Infected-Susceptible) epidemic model on networks using NetworkX. You will learn how network structure affects the spread and persistence of epidemics.</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="fu">## What is the SIS Model?</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**States:** Each node can be Susceptible (S) or Infected (I).</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Transitions:**</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>S &gt; I: A susceptible node becomes infected if it has an infected neighbor (with probability $\beta$).</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>I &gt; S: An infected node recovers and becomes susceptible again (with probability $\mu$).</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**No permanent immunity:** Nodes can be reinfected after recovery.</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="fu">## Create a Network</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>You can use any NetworkX graph (random, small-world, scale-free, or real data).</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Example: random graph</span></span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> nx.gnp_random_graph(n<span class="op">=</span><span class="dv">50</span>, p<span class="op">=</span><span class="fl">0.1</span>)</span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="fu">## Initialize States</span></span>
-<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a><span class="co"># All nodes start susceptible except a few infected</span></span>
-<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>state <span class="op">=</span> {node: <span class="st">'S'</span> <span class="cf">for</span> node <span class="kw">in</span> g.nodes()}</span>
-<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>initial_infected <span class="op">=</span> np.random.choice(g.nodes(), size<span class="op">=</span><span class="dv">5</span>, replace<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> node <span class="kw">in</span> initial_infected:</span>
-<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>    state[node] <span class="op">=</span> <span class="st">'I'</span></span>
-<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a><span class="fu">## SIS Simulation Function</span></span>
-<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_sis(g, beta<span class="op">=</span><span class="fl">0.2</span>, mu<span class="op">=</span><span class="fl">0.1</span>, steps<span class="op">=</span><span class="dv">50</span>):</span>
-<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>    state <span class="op">=</span> {node: <span class="st">'S'</span> <span class="cf">for</span> node <span class="kw">in</span> g.nodes()}</span>
-<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>    infected_counts <span class="op">=</span> []</span>
-<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>    initial_infected <span class="op">=</span> np.random.choice(g.nodes(), size<span class="op">=</span><span class="dv">5</span>, replace<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> node <span class="kw">in</span> initial_infected:</span>
-<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>        state[node] <span class="op">=</span> <span class="st">'I'</span></span>
-<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> t <span class="kw">in</span> <span class="bu">range</span>(steps):</span>
-<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>        new_state <span class="op">=</span> state.copy()</span>
-<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> node <span class="kw">in</span> g.nodes():</span>
-<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> state[node] <span class="op">==</span> <span class="st">'S'</span>:</span>
-<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>                <span class="co"># Check infected neighbors</span></span>
-<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>                infected_neighbors <span class="op">=</span> [nbr <span class="cf">for</span> nbr <span class="kw">in</span> g.neighbors(node) <span class="cf">if</span> state[nbr] <span class="op">==</span> <span class="st">'I'</span>]</span>
-<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> infected_neighbors <span class="kw">and</span> np.random.rand() <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">-</span> (<span class="dv">1</span> <span class="op">-</span> beta)<span class="op">**</span><span class="bu">len</span>(infected_neighbors):</span>
-<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>                    new_state[node] <span class="op">=</span> <span class="st">'I'</span></span>
-<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>            <span class="cf">elif</span> state[node] <span class="op">==</span> <span class="st">'I'</span>:</span>
-<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> np.random.rand() <span class="op">&lt;</span> mu:</span>
-<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>                    new_state[node] <span class="op">=</span> <span class="st">'S'</span></span>
-<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a>        state <span class="op">=</span> new_state</span>
-<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a>        infected_counts.append(<span class="bu">sum</span>(<span class="dv">1</span> <span class="cf">for</span> s <span class="kw">in</span> state.values() <span class="cf">if</span> s <span class="op">==</span> <span class="st">'I'</span>))</span>
-<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> infected_counts</span>
-<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a><span class="fu">## Run and Visualize</span></span>
-<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a>counts <span class="op">=</span> run_sis(g, beta<span class="op">=</span><span class="fl">0.2</span>, mu<span class="op">=</span><span class="fl">0.1</span>, steps<span class="op">=</span><span class="dv">100</span>)</span>
-<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a>plt.plot(counts)</span>
-<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Time step'</span>)</span>
-<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Number of infected nodes'</span>)</span>
-<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'SIS Model Epidemic Curve'</span>)</span>
-<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a><span class="fu">## Experiment</span></span>
-<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Try different network types (random, small-world, scale-free).</span>
-<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Vary $\beta$ and $\mu$ to see the epidemic threshold.</span>
-<span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Analyze how network structure (degree, clustering) affects persistence.</span>
-<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a><span class="fu">## What's Next?</span></span>
-<span id="cb5-90"><a href="#cb5-90" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-91"><a href="#cb5-91" aria-hidden="true" tabindex="-1"></a>Try the SIR model and compare how permanent immunity changes the outcome!</span>
-<span id="cb5-92"><a href="#cb5-92" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-93"><a href="#cb5-93" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">SIR Model</span><span class="co">](sir.qmd)</span>{.btn .btn-primary}</span>
+<div class="sourceCode" id="cb25" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Networks: SIS Model"</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Guided Exercise"</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>The SIS (Susceptible–Infected–Susceptible) model is a simple epidemic model where individuals can be infected multiple times. In this module, we implement SIS on networks using NetworkX and explore how **network structure** (random vs small-world vs scale-free) changes spreading.</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## What is the SIS Model?</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**States:** each node is Susceptible (S) or Infected (I).</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Transitions:**</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>$S \to I$: infection through contacts (controlled by $\beta$).</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>$I \to S$: recovery (controlled by $\mu$).</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**No permanent immunity:** recovered nodes can be reinfected.</span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a><span class="fu">### Discrete-Time Update Rule</span></span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>We simulate in discrete time steps $t = 0, 1, 2, \dots$.</span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>A susceptible node with $m$ infected neighbors becomes infected with probability:</span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a>\mathbb{P}(S \to I) = 1 - (1 - \beta)^m.</span>
+<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a><span class="fu">## Why $1 - (1-\beta)^m$?</span></span>
+<span id="cb25-29"><a href="#cb25-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-30"><a href="#cb25-30" aria-hidden="true" tabindex="-1"></a>If each infected neighbor independently infects you with probability $\beta$, then the probability you avoid infection from all $m$ neighbors is $(1-\beta)^m$.</span>
+<span id="cb25-31"><a href="#cb25-31" aria-hidden="true" tabindex="-1"></a>So the probability of at least one successful infection is $1-(1-\beta)^m$.</span>
+<span id="cb25-32"><a href="#cb25-32" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb25-33"><a href="#cb25-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-34"><a href="#cb25-34" aria-hidden="true" tabindex="-1"></a>On the other hand, if a node is infected, it recovers with probability:</span>
+<span id="cb25-35"><a href="#cb25-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-36"><a href="#cb25-36" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb25-37"><a href="#cb25-37" aria-hidden="true" tabindex="-1"></a>\mathbb{P}(I \to S) = \mu.</span>
+<span id="cb25-38"><a href="#cb25-38" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb25-39"><a href="#cb25-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-40"><a href="#cb25-40" aria-hidden="true" tabindex="-1"></a><span class="fu">## Goal</span></span>
+<span id="cb25-41"><a href="#cb25-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-42"><a href="#cb25-42" aria-hidden="true" tabindex="-1"></a>Study SIS propagation under different graph models and sizes.</span>
+<span id="cb25-43"><a href="#cb25-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-44"><a href="#cb25-44" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Compare **random** (Erdos–Rényi), **small-world** (Watts–Strogatz), and **scale-free-ish** (Barabási–Albert) graphs.</span>
+<span id="cb25-45"><a href="#cb25-45" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Try sizes like $N \in <span class="sc">\{</span>50, 100, 300<span class="sc">\}</span>$.</span>
+<span id="cb25-46"><a href="#cb25-46" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>For each case, run 10–30 repetitions and plot the **average infected fraction** over time.</span>
+<span id="cb25-47"><a href="#cb25-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-48"><a href="#cb25-48" aria-hidden="true" tabindex="-1"></a>The steps are described in more detail below, but feel free to experiment with different parameters and graph types!</span>
+<span id="cb25-49"><a href="#cb25-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-50"><a href="#cb25-50" aria-hidden="true" tabindex="-1"></a><span class="fu">## Imports and Parameters</span></span>
+<span id="cb25-51"><a href="#cb25-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-54"><a href="#cb25-54" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb25-55"><a href="#cb25-55" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb25-56"><a href="#cb25-56" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb25-57"><a href="#cb25-57" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
+<span id="cb25-58"><a href="#cb25-58" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb25-59"><a href="#cb25-59" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb25-60"><a href="#cb25-60" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-61"><a href="#cb25-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-62"><a href="#cb25-62" aria-hidden="true" tabindex="-1"></a>These are the parameters you can tune:</span>
+<span id="cb25-63"><a href="#cb25-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-66"><a href="#cb25-66" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb25-67"><a href="#cb25-67" aria-hidden="true" tabindex="-1"></a>SEED <span class="op">=</span> <span class="dv">7</span></span>
+<span id="cb25-68"><a href="#cb25-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-69"><a href="#cb25-69" aria-hidden="true" tabindex="-1"></a><span class="co"># Model parameters</span></span>
+<span id="cb25-70"><a href="#cb25-70" aria-hidden="true" tabindex="-1"></a>beta <span class="op">=</span> <span class="fl">0.20</span>  <span class="co"># infection probability per infected neighbor (per step)</span></span>
+<span id="cb25-71"><a href="#cb25-71" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> <span class="fl">0.10</span>    <span class="co"># recovery probability (per step)</span></span>
+<span id="cb25-72"><a href="#cb25-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-73"><a href="#cb25-73" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulation parameters</span></span>
+<span id="cb25-74"><a href="#cb25-74" aria-hidden="true" tabindex="-1"></a>steps <span class="op">=</span> <span class="dv">120</span>  <span class="co"># number of time steps to simulate</span></span>
+<span id="cb25-75"><a href="#cb25-75" aria-hidden="true" tabindex="-1"></a>initial_infected <span class="op">=</span> <span class="dv">5</span>  <span class="co"># should always be &lt; N</span></span>
+<span id="cb25-76"><a href="#cb25-76" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> <span class="dv">100</span>  <span class="co"># number of nodes in the graph</span></span>
+<span id="cb25-77"><a href="#cb25-77" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-78"><a href="#cb25-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-79"><a href="#cb25-79" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb25-80"><a href="#cb25-80" aria-hidden="true" tabindex="-1"></a><span class="fu">## About `SEED` (why we fix it)</span></span>
+<span id="cb25-81"><a href="#cb25-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-82"><a href="#cb25-82" aria-hidden="true" tabindex="-1"></a>There are **two** sources of randomness in this activity:</span>
+<span id="cb25-83"><a href="#cb25-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-84"><a href="#cb25-84" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>the **graph** you generate (e.g., which edges appear in Erdős–Rényi), and</span>
+<span id="cb25-85"><a href="#cb25-85" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>the **stochastic SIS dynamics** (who gets infected / recovers at each step).</span>
+<span id="cb25-86"><a href="#cb25-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-87"><a href="#cb25-87" aria-hidden="true" tabindex="-1"></a>We fix <span class="in">`SEED`</span> so results are **reproducible**: rerunning the page gives the same plots, which makes debugging and reporting possible.</span>
+<span id="cb25-88"><a href="#cb25-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-89"><a href="#cb25-89" aria-hidden="true" tabindex="-1"></a>When we do many repetitions, we use <span class="in">`SEED + r`</span> so repetition <span class="in">`r`</span> is a **different random trial** (new graph + new random infection events) but still reproducible. If you reused the same <span class="in">`SEED`</span> in every repetition, you would repeat the *same* realization and your “average over runs” would be meaningless.</span>
+<span id="cb25-90"><a href="#cb25-90" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb25-91"><a href="#cb25-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-92"><a href="#cb25-92" aria-hidden="true" tabindex="-1"></a><span class="fu">## Choose a Network</span></span>
+<span id="cb25-93"><a href="#cb25-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-94"><a href="#cb25-94" aria-hidden="true" tabindex="-1"></a>For your project you will compare several models. Start by picking one. You can see a sample of the three models in the page: <span class="co">[</span><span class="ot">Network Models</span><span class="co">](models.qmd)</span>.</span>
+<span id="cb25-95"><a href="#cb25-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-96"><a href="#cb25-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-97"><a href="#cb25-97" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb25-98"><a href="#cb25-98" aria-hidden="true" tabindex="-1"></a><span class="fu">## Example of Baseline Graph</span></span>
+<span id="cb25-99"><a href="#cb25-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-100"><a href="#cb25-100" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb25-101"><a href="#cb25-101" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.erdos_renyi_graph(n<span class="op">=</span>N, p<span class="op">=</span><span class="fl">0.08</span>, seed<span class="op">=</span>SEED)</span>
+<span id="cb25-102"><a href="#cb25-102" aria-hidden="true" tabindex="-1"></a><span class="co"># where p is the probability of edge creation</span></span>
+<span id="cb25-103"><a href="#cb25-103" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-104"><a href="#cb25-104" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb25-105"><a href="#cb25-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-106"><a href="#cb25-106" aria-hidden="true" tabindex="-1"></a>To make the "compare models" part easier, we will implement a small helper function <span class="in">`make_graph(&lt;model&gt;, &lt;n&gt;)`</span>, where <span class="in">`&lt;model&gt;`</span> is a string specifying the type of graph ("random", "small-world", or "scale-free") and <span class="in">`&lt;n&gt;`</span> is the number of nodes.</span>
+<span id="cb25-107"><a href="#cb25-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-108"><a href="#cb25-108" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb25-109"><a href="#cb25-109" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_graph(model: <span class="bu">str</span>, n: <span class="bu">int</span>, seed: <span class="bu">int</span> <span class="op">=</span> SEED):</span>
+<span id="cb25-110"><a href="#cb25-110" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Create a graph model: 'random', 'small-world', or 'scale-free'."""</span></span>
+<span id="cb25-111"><a href="#cb25-111" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span></span>
+<span id="cb25-112"><a href="#cb25-112" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> G</span>
+<span id="cb25-113"><a href="#cb25-113" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-114"><a href="#cb25-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-115"><a href="#cb25-115" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb25-116"><a href="#cb25-116" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solved: `make_graph()`</span></span>
+<span id="cb25-117"><a href="#cb25-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-120"><a href="#cb25-120" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb25-121"><a href="#cb25-121" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: true</span></span>
+<span id="cb25-122"><a href="#cb25-122" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb25-123"><a href="#cb25-123" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb25-124"><a href="#cb25-124" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_graph(model: <span class="bu">str</span>, n: <span class="bu">int</span>, seed: <span class="bu">int</span> <span class="op">=</span> SEED):</span>
+<span id="cb25-125"><a href="#cb25-125" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> model <span class="op">==</span> <span class="st">"random"</span>:</span>
+<span id="cb25-126"><a href="#cb25-126" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> nx.erdos_renyi_graph(n<span class="op">=</span>n, p<span class="op">=</span><span class="fl">0.08</span>, seed<span class="op">=</span>seed)</span>
+<span id="cb25-127"><a href="#cb25-127" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> model <span class="op">==</span> <span class="st">"small-world"</span>:</span>
+<span id="cb25-128"><a href="#cb25-128" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> nx.watts_strogatz_graph(n<span class="op">=</span>n, k<span class="op">=</span><span class="dv">6</span>, p<span class="op">=</span><span class="fl">0.08</span>, seed<span class="op">=</span>seed)</span>
+<span id="cb25-129"><a href="#cb25-129" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> model <span class="op">==</span> <span class="st">"scale-free"</span>:</span>
+<span id="cb25-130"><a href="#cb25-130" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> nx.barabasi_albert_graph(n<span class="op">=</span>n, m<span class="op">=</span><span class="dv">2</span>, seed<span class="op">=</span>seed)</span>
+<span id="cb25-131"><a href="#cb25-131" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"model must be one of: 'random', 'small-world', 'scale-free'"</span>)</span>
+<span id="cb25-132"><a href="#cb25-132" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-133"><a href="#cb25-133" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb25-134"><a href="#cb25-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-135"><a href="#cb25-135" aria-hidden="true" tabindex="-1"></a>Now you can easily create different graph types:</span>
+<span id="cb25-136"><a href="#cb25-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-139"><a href="#cb25-139" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb25-140"><a href="#cb25-140" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> make_graph(<span class="st">"random"</span>, n<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb25-141"><a href="#cb25-141" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"N, E ="</span>, G.number_of_nodes(), G.number_of_edges())</span>
+<span id="cb25-142"><a href="#cb25-142" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-143"><a href="#cb25-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-144"><a href="#cb25-144" aria-hidden="true" tabindex="-1"></a>Optional quick visualization:</span>
+<span id="cb25-145"><a href="#cb25-145" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-148"><a href="#cb25-148" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb25-149"><a href="#cb25-149" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.spring_layout(G)</span>
+<span id="cb25-150"><a href="#cb25-150" aria-hidden="true" tabindex="-1"></a>nx.draw(G, pos<span class="op">=</span>pos, node_size<span class="op">=</span><span class="dv">50</span>, edge_color<span class="op">=</span><span class="st">"gray"</span>)</span>
+<span id="cb25-151"><a href="#cb25-151" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Baseline network"</span>)</span>
+<span id="cb25-152"><a href="#cb25-152" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb25-153"><a href="#cb25-153" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-154"><a href="#cb25-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-155"><a href="#cb25-155" aria-hidden="true" tabindex="-1"></a><span class="fu">## Initialize States</span></span>
+<span id="cb25-156"><a href="#cb25-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-157"><a href="#cb25-157" aria-hidden="true" tabindex="-1"></a>We will store the state of each individual directly on the graph as a **node attribute** called <span class="in">`state`</span>.</span>
+<span id="cb25-158"><a href="#cb25-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-159"><a href="#cb25-159" aria-hidden="true" tabindex="-1"></a>For example, we can start with everyone susceptible. We will create the attribute "state" and set it to "S" for all nodes:</span>
+<span id="cb25-160"><a href="#cb25-160" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-163"><a href="#cb25-163" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb25-164"><a href="#cb25-164" aria-hidden="true" tabindex="-1"></a>nx.set_node_attributes(G, <span class="st">"S"</span>, <span class="st">"state"</span>)</span>
+<span id="cb25-165"><a href="#cb25-165" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-166"><a href="#cb25-166" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Node 0:"</span>, G.nodes[<span class="dv">0</span>])  <span class="co"># node attributes are stored in a dictionary</span></span>
+<span id="cb25-167"><a href="#cb25-167" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-168"><a href="#cb25-168" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-169"><a href="#cb25-169" aria-hidden="true" tabindex="-1"></a>If we wanted to infect node 20, we could do:</span>
+<span id="cb25-170"><a href="#cb25-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-173"><a href="#cb25-173" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb25-174"><a href="#cb25-174" aria-hidden="true" tabindex="-1"></a>node_20 <span class="op">=</span> G.nodes[<span class="dv">20</span>]</span>
+<span id="cb25-175"><a href="#cb25-175" aria-hidden="true" tabindex="-1"></a>node_20[<span class="st">"state"</span>] <span class="op">=</span> <span class="st">"I"</span></span>
+<span id="cb25-176"><a href="#cb25-176" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-177"><a href="#cb25-177" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Node 20:"</span>, G.nodes[<span class="dv">20</span>])  <span class="co"># now node 20 has state "I"</span></span>
+<span id="cb25-178"><a href="#cb25-178" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-179"><a href="#cb25-179" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-180"><a href="#cb25-180" aria-hidden="true" tabindex="-1"></a>Alternatively, we could use a dictionary to set the states of multiple nodes at once:</span>
+<span id="cb25-181"><a href="#cb25-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-184"><a href="#cb25-184" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb25-185"><a href="#cb25-185" aria-hidden="true" tabindex="-1"></a><span class="co"># Infect nodes 20, 35, and 50</span></span>
+<span id="cb25-186"><a href="#cb25-186" aria-hidden="true" tabindex="-1"></a><span class="co"># The rest will be susceptible by default</span></span>
+<span id="cb25-187"><a href="#cb25-187" aria-hidden="true" tabindex="-1"></a>state_dict <span class="op">=</span> {node: <span class="st">"I"</span> <span class="cf">if</span> node <span class="kw">in</span> [<span class="dv">20</span>, <span class="dv">35</span>, <span class="dv">50</span>] <span class="cf">else</span> <span class="st">"S"</span> <span class="cf">for</span> node <span class="kw">in</span> G.nodes()}</span>
+<span id="cb25-188"><a href="#cb25-188" aria-hidden="true" tabindex="-1"></a>nx.set_node_attributes(G, state_dict, <span class="st">"state"</span>)</span>
+<span id="cb25-189"><a href="#cb25-189" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-190"><a href="#cb25-190" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Node 20:"</span>, G.nodes[<span class="dv">20</span>])  <span class="co"># node 20 is infected</span></span>
+<span id="cb25-191"><a href="#cb25-191" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Node 21:"</span>, G.nodes[<span class="dv">21</span>])  <span class="co"># node 21 is susceptible</span></span>
+<span id="cb25-192"><a href="#cb25-192" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-193"><a href="#cb25-193" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-194"><a href="#cb25-194" aria-hidden="true" tabindex="-1"></a>With that information in mind, you can create a function <span class="in">`initialize_state(&lt;graph&gt;)`</span> that sets all nodes to "S" and then randomly picks a few nodes to set to "I" (the initial infected).</span>
+<span id="cb25-195"><a href="#cb25-195" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-196"><a href="#cb25-196" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb25-197"><a href="#cb25-197" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> initialize_state(G, initial_infected<span class="op">=</span><span class="dv">5</span>, seed<span class="op">=</span>SEED):</span>
+<span id="cb25-198"><a href="#cb25-198" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: start everyone as 'S' using node attributes</span></span>
+<span id="cb25-199"><a href="#cb25-199" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: randomly pick initial_infected nodes and set their node attribute to 'I'</span></span>
+<span id="cb25-200"><a href="#cb25-200" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Optional: return G (mutated) for convenience</span></span>
+<span id="cb25-201"><a href="#cb25-201" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> G</span>
+<span id="cb25-202"><a href="#cb25-202" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-203"><a href="#cb25-203" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-204"><a href="#cb25-204" aria-hidden="true" tabindex="-1"></a>Remember that you can use a seeded random number generator (via <span class="in">`np.random.default_rng(seed)`</span>) to pick random nodes from the graph.</span>
+<span id="cb25-205"><a href="#cb25-205" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-206"><a href="#cb25-206" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb25-207"><a href="#cb25-207" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solved: `initialize_state()`</span></span>
+<span id="cb25-208"><a href="#cb25-208" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-211"><a href="#cb25-211" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb25-212"><a href="#cb25-212" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: true</span></span>
+<span id="cb25-213"><a href="#cb25-213" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb25-214"><a href="#cb25-214" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb25-215"><a href="#cb25-215" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> initialize_state(G, initial_infected<span class="op">=</span><span class="dv">5</span>, seed<span class="op">=</span>SEED, rng<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb25-216"><a href="#cb25-216" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> rng <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb25-217"><a href="#cb25-217" aria-hidden="true" tabindex="-1"></a>        rng <span class="op">=</span> np.random.default_rng(seed)</span>
+<span id="cb25-218"><a href="#cb25-218" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-219"><a href="#cb25-219" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Start everyone susceptible</span></span>
+<span id="cb25-220"><a href="#cb25-220" aria-hidden="true" tabindex="-1"></a>    nx.set_node_attributes(G, <span class="st">"S"</span>, <span class="st">"state"</span>)</span>
+<span id="cb25-221"><a href="#cb25-221" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-222"><a href="#cb25-222" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Infect a random subset</span></span>
+<span id="cb25-223"><a href="#cb25-223" aria-hidden="true" tabindex="-1"></a>    infected <span class="op">=</span> rng.choice(<span class="bu">list</span>(G.nodes()), size<span class="op">=</span>initial_infected, replace<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb25-224"><a href="#cb25-224" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> node <span class="kw">in</span> infected:</span>
+<span id="cb25-225"><a href="#cb25-225" aria-hidden="true" tabindex="-1"></a>        G.nodes[node][<span class="st">"state"</span>] <span class="op">=</span> <span class="st">"I"</span></span>
+<span id="cb25-226"><a href="#cb25-226" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-227"><a href="#cb25-227" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> G</span>
+<span id="cb25-228"><a href="#cb25-228" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-229"><a href="#cb25-229" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb25-230"><a href="#cb25-230" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-231"><a href="#cb25-231" aria-hidden="true" tabindex="-1"></a>Always validate your functions! In this case, we can check that the number of infected nodes is correct:</span>
+<span id="cb25-232"><a href="#cb25-232" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-235"><a href="#cb25-235" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb25-236"><a href="#cb25-236" aria-hidden="true" tabindex="-1"></a>initialize_state(G, initial_infected<span class="op">=</span>initial_infected, seed<span class="op">=</span>SEED)</span>
+<span id="cb25-237"><a href="#cb25-237" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb25-238"><a href="#cb25-238" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Initially infected:"</span>,</span>
+<span id="cb25-239"><a href="#cb25-239" aria-hidden="true" tabindex="-1"></a>    <span class="bu">sum</span>(G.nodes[node][<span class="st">"state"</span>] <span class="op">==</span> <span class="st">"I"</span> <span class="cf">for</span> node <span class="kw">in</span> G.nodes()),</span>
+<span id="cb25-240"><a href="#cb25-240" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb25-241"><a href="#cb25-241" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-242"><a href="#cb25-242" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-243"><a href="#cb25-243" aria-hidden="true" tabindex="-1"></a><span class="fu">## Implement the SIS dynamics</span></span>
+<span id="cb25-244"><a href="#cb25-244" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-245"><a href="#cb25-245" aria-hidden="true" tabindex="-1"></a>We update **synchronously**: compute all changes from the old state, then apply them.</span>
+<span id="cb25-246"><a href="#cb25-246" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-247"><a href="#cb25-247" aria-hidden="true" tabindex="-1"></a>Create a function <span class="in">`step_sis(&lt;graph&gt;, beta, mu)`</span> that performs one step of the SIS update. Remember that <span class="in">`beta`</span> is the infection probability and <span class="in">`mu`</span> is the recovery probability.</span>
+<span id="cb25-248"><a href="#cb25-248" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-249"><a href="#cb25-249" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb25-250"><a href="#cb25-250" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> step_sis(G, beta, mu):</span>
+<span id="cb25-251"><a href="#cb25-251" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: read current states from G.nodes[u]["state"]</span></span>
+<span id="cb25-252"><a href="#cb25-252" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: compute a new_state mapping (synchronous update)</span></span>
+<span id="cb25-253"><a href="#cb25-253" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: write new_state back to node attributes</span></span>
+<span id="cb25-254"><a href="#cb25-254" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> G</span>
+<span id="cb25-255"><a href="#cb25-255" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-256"><a href="#cb25-256" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-257"><a href="#cb25-257" aria-hidden="true" tabindex="-1"></a>Remember that you can loop through all nodes and their neighbors using <span class="in">`G.nodes()`</span> and <span class="in">`G.neighbors(node)`</span>. Use <span class="in">`np.random.random()`</span> for the probabilistic transitions.</span>
+<span id="cb25-258"><a href="#cb25-258" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-259"><a href="#cb25-259" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb25-260"><a href="#cb25-260" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solved: `step_sis()`</span></span>
+<span id="cb25-261"><a href="#cb25-261" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-264"><a href="#cb25-264" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb25-265"><a href="#cb25-265" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: true</span></span>
+<span id="cb25-266"><a href="#cb25-266" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb25-267"><a href="#cb25-267" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb25-268"><a href="#cb25-268" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> step_sis(G, beta, mu, rng<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb25-269"><a href="#cb25-269" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> rng <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb25-270"><a href="#cb25-270" aria-hidden="true" tabindex="-1"></a>        rng <span class="op">=</span> np.random.default_rng()</span>
+<span id="cb25-271"><a href="#cb25-271" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-272"><a href="#cb25-272" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Retrieve current states of all nodes</span></span>
+<span id="cb25-273"><a href="#cb25-273" aria-hidden="true" tabindex="-1"></a>    current <span class="op">=</span> {node: G.nodes[node][<span class="st">"state"</span>] <span class="cf">for</span> node <span class="kw">in</span> G.nodes()}</span>
+<span id="cb25-274"><a href="#cb25-274" aria-hidden="true" tabindex="-1"></a>    new_state <span class="op">=</span> current.copy()  <span class="co"># start with the same state for synchronous update</span></span>
+<span id="cb25-275"><a href="#cb25-275" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Loop through all nodes to compute new states</span></span>
+<span id="cb25-276"><a href="#cb25-276" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> node <span class="kw">in</span> G.nodes():</span>
+<span id="cb25-277"><a href="#cb25-277" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> current[node] <span class="op">==</span> <span class="st">"S"</span>:</span>
+<span id="cb25-278"><a href="#cb25-278" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Count infected neighbors</span></span>
+<span id="cb25-279"><a href="#cb25-279" aria-hidden="true" tabindex="-1"></a>            m <span class="op">=</span> <span class="bu">sum</span>(<span class="dv">1</span> <span class="cf">for</span> nbr <span class="kw">in</span> G.neighbors(node) <span class="cf">if</span> current[nbr] <span class="op">==</span> <span class="st">"I"</span>)</span>
+<span id="cb25-280"><a href="#cb25-280" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> m <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb25-281"><a href="#cb25-281" aria-hidden="true" tabindex="-1"></a>                <span class="co"># Compute infection probability</span></span>
+<span id="cb25-282"><a href="#cb25-282" aria-hidden="true" tabindex="-1"></a>                p_infect <span class="op">=</span> <span class="dv">1</span> <span class="op">-</span> (<span class="dv">1</span> <span class="op">-</span> beta) <span class="op">**</span> m</span>
+<span id="cb25-283"><a href="#cb25-283" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> rng.random() <span class="op">&lt;</span> p_infect:</span>
+<span id="cb25-284"><a href="#cb25-284" aria-hidden="true" tabindex="-1"></a>                    new_state[node] <span class="op">=</span> <span class="st">"I"</span></span>
+<span id="cb25-285"><a href="#cb25-285" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:  <span class="co"># current[node] == "I"</span></span>
+<span id="cb25-286"><a href="#cb25-286" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> rng.random() <span class="op">&lt;</span> mu:</span>
+<span id="cb25-287"><a href="#cb25-287" aria-hidden="true" tabindex="-1"></a>                new_state[node] <span class="op">=</span> <span class="st">"S"</span></span>
+<span id="cb25-288"><a href="#cb25-288" aria-hidden="true" tabindex="-1"></a>    nx.set_node_attributes(G, new_state, <span class="st">"state"</span>)</span>
+<span id="cb25-289"><a href="#cb25-289" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> G</span>
+<span id="cb25-290"><a href="#cb25-290" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-291"><a href="#cb25-291" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-292"><a href="#cb25-292" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb25-293"><a href="#cb25-293" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-294"><a href="#cb25-294" aria-hidden="true" tabindex="-1"></a>Now wrap it into a simulator that records the number of infected nodes over time. The function <span class="in">`run_sis()`</span> should take a graph and the parameters, run the simulation for a given number of steps, and return a list of the number of infected nodes at each time step.</span>
+<span id="cb25-295"><a href="#cb25-295" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-296"><a href="#cb25-296" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb25-297"><a href="#cb25-297" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_sis(G, beta, mu, steps<span class="op">=</span><span class="dv">100</span>, initial_infected<span class="op">=</span><span class="dv">5</span>, seed<span class="op">=</span>SEED):</span>
+<span id="cb25-298"><a href="#cb25-298" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span></span>
+<span id="cb25-299"><a href="#cb25-299" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> infected_counts</span>
+<span id="cb25-300"><a href="#cb25-300" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-301"><a href="#cb25-301" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-302"><a href="#cb25-302" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb25-303"><a href="#cb25-303" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solved: `run_sis()`</span></span>
+<span id="cb25-304"><a href="#cb25-304" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-307"><a href="#cb25-307" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb25-308"><a href="#cb25-308" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: true</span></span>
+<span id="cb25-309"><a href="#cb25-309" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb25-310"><a href="#cb25-310" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb25-311"><a href="#cb25-311" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_sis(G, beta, mu, steps<span class="op">=</span><span class="dv">100</span>, initial_infected<span class="op">=</span><span class="dv">5</span>, seed<span class="op">=</span>SEED):</span>
+<span id="cb25-312"><a href="#cb25-312" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Copy the graph to avoid mutating the original</span></span>
+<span id="cb25-313"><a href="#cb25-313" aria-hidden="true" tabindex="-1"></a>    H <span class="op">=</span> G.copy()</span>
+<span id="cb25-314"><a href="#cb25-314" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-315"><a href="#cb25-315" aria-hidden="true" tabindex="-1"></a>    <span class="co"># One seeded RNG controls all randomness for this run</span></span>
+<span id="cb25-316"><a href="#cb25-316" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.default_rng(seed)</span>
+<span id="cb25-317"><a href="#cb25-317" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-318"><a href="#cb25-318" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Initialize states</span></span>
+<span id="cb25-319"><a href="#cb25-319" aria-hidden="true" tabindex="-1"></a>    initialize_state(H, initial_infected<span class="op">=</span>initial_infected, seed<span class="op">=</span>seed, rng<span class="op">=</span>rng)</span>
+<span id="cb25-320"><a href="#cb25-320" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Count initial number of infected nodes and initialize the list</span></span>
+<span id="cb25-321"><a href="#cb25-321" aria-hidden="true" tabindex="-1"></a>    infected_counts <span class="op">=</span> [<span class="bu">sum</span>(H.nodes[node][<span class="st">"state"</span>] <span class="op">==</span> <span class="st">"I"</span> <span class="cf">for</span> node <span class="kw">in</span> H.nodes())]</span>
+<span id="cb25-322"><a href="#cb25-322" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Apply SIS steps and record infected counts</span></span>
+<span id="cb25-323"><a href="#cb25-323" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(steps):</span>
+<span id="cb25-324"><a href="#cb25-324" aria-hidden="true" tabindex="-1"></a>        step_sis(H, beta<span class="op">=</span>beta, mu<span class="op">=</span>mu, rng<span class="op">=</span>rng)</span>
+<span id="cb25-325"><a href="#cb25-325" aria-hidden="true" tabindex="-1"></a>        infected_counts.append(<span class="bu">sum</span>(H.nodes[node][<span class="st">"state"</span>] <span class="op">==</span> <span class="st">"I"</span> <span class="cf">for</span> node <span class="kw">in</span> H.nodes()))</span>
+<span id="cb25-326"><a href="#cb25-326" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> infected_counts</span>
+<span id="cb25-327"><a href="#cb25-327" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-328"><a href="#cb25-328" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb25-329"><a href="#cb25-329" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-330"><a href="#cb25-330" aria-hidden="true" tabindex="-1"></a>Execute the function to make sure it runs without errors and returns a reasonable output:</span>
+<span id="cb25-331"><a href="#cb25-331" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-334"><a href="#cb25-334" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb25-335"><a href="#cb25-335" aria-hidden="true" tabindex="-1"></a>counts <span class="op">=</span> run_sis(G, beta<span class="op">=</span>beta, mu<span class="op">=</span>mu, steps<span class="op">=</span>steps, initial_infected<span class="op">=</span>initial_infected)</span>
+<span id="cb25-336"><a href="#cb25-336" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Infected counts over time:"</span>, counts)</span>
+<span id="cb25-337"><a href="#cb25-337" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-338"><a href="#cb25-338" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-339"><a href="#cb25-339" aria-hidden="true" tabindex="-1"></a><span class="fu">## Run and Visualize</span></span>
+<span id="cb25-340"><a href="#cb25-340" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-341"><a href="#cb25-341" aria-hidden="true" tabindex="-1"></a>Use <span class="in">`matplotlib`</span> to plot the fraction of infected nodes over time. Try to get a graph similar to @fig-sis-plot below.</span>
+<span id="cb25-342"><a href="#cb25-342" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-345"><a href="#cb25-345" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb25-346"><a href="#cb25-346" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-sis-plot</span></span>
+<span id="cb25-347"><a href="#cb25-347" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Fraction of infected nodes over time for a single SIS run on a random graph."</span></span>
+<span id="cb25-348"><a href="#cb25-348" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-alt: 'Fraction of infected nodes over time for a single run of the SIS model on a random graph.'</span></span>
+<span id="cb25-349"><a href="#cb25-349" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 6</span></span>
+<span id="cb25-350"><a href="#cb25-350" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 4</span></span>
+<span id="cb25-351"><a href="#cb25-351" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb25-352"><a href="#cb25-352" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb25-353"><a href="#cb25-353" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb25-354"><a href="#cb25-354" aria-hidden="true" tabindex="-1"></a>counts <span class="op">=</span> run_sis(G, beta<span class="op">=</span>beta, mu<span class="op">=</span>mu, steps<span class="op">=</span>steps, initial_infected<span class="op">=</span>initial_infected, seed<span class="op">=</span>SEED)</span>
+<span id="cb25-355"><a href="#cb25-355" aria-hidden="true" tabindex="-1"></a>plt.plot(np.array(counts) <span class="op">/</span> G.number_of_nodes())</span>
+<span id="cb25-356"><a href="#cb25-356" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Time step'</span>)</span>
+<span id="cb25-357"><a href="#cb25-357" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Infected fraction'</span>)</span>
+<span id="cb25-358"><a href="#cb25-358" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'SIS: infected fraction over time'</span>)</span>
+<span id="cb25-359"><a href="#cb25-359" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb25-360"><a href="#cb25-360" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-361"><a href="#cb25-361" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-362"><a href="#cb25-362" aria-hidden="true" tabindex="-1"></a><span class="fu">## Compare Network Types</span></span>
+<span id="cb25-363"><a href="#cb25-363" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-364"><a href="#cb25-364" aria-hidden="true" tabindex="-1"></a>Finally, run multiple simulations for each graph type and plot the average infected fraction over time for each type on the same graph. @fig-sis-compare is an example of what this could look like.</span>
+<span id="cb25-365"><a href="#cb25-365" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-368"><a href="#cb25-368" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb25-369"><a href="#cb25-369" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-sis-compare</span></span>
+<span id="cb25-370"><a href="#cb25-370" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Mean infected fraction over time for different network models (random, small-world, scale-free)."</span></span>
+<span id="cb25-371"><a href="#cb25-371" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-alt: 'Average infected fraction over time for different network models (random, small-world, scale-free).'</span></span>
+<span id="cb25-372"><a href="#cb25-372" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 6</span></span>
+<span id="cb25-373"><a href="#cb25-373" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 4</span></span>
+<span id="cb25-374"><a href="#cb25-374" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb25-375"><a href="#cb25-375" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb25-376"><a href="#cb25-376" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb25-377"><a href="#cb25-377" aria-hidden="true" tabindex="-1"></a>models <span class="op">=</span> [<span class="st">"random"</span>, <span class="st">"small-world"</span>, <span class="st">"scale-free"</span>]</span>
+<span id="cb25-378"><a href="#cb25-378" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> <span class="dv">150</span></span>
+<span id="cb25-379"><a href="#cb25-379" aria-hidden="true" tabindex="-1"></a>runs <span class="op">=</span> <span class="dv">12</span></span>
+<span id="cb25-380"><a href="#cb25-380" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-381"><a href="#cb25-381" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">4</span>))</span>
+<span id="cb25-382"><a href="#cb25-382" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-383"><a href="#cb25-383" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model <span class="kw">in</span> models:</span>
+<span id="cb25-384"><a href="#cb25-384" aria-hidden="true" tabindex="-1"></a>    trajectories <span class="op">=</span> []</span>
+<span id="cb25-385"><a href="#cb25-385" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> r <span class="kw">in</span> <span class="bu">range</span>(runs):</span>
+<span id="cb25-386"><a href="#cb25-386" aria-hidden="true" tabindex="-1"></a>        seed_run <span class="op">=</span> SEED <span class="op">+</span> r</span>
+<span id="cb25-387"><a href="#cb25-387" aria-hidden="true" tabindex="-1"></a>        Gm <span class="op">=</span> make_graph(model, n<span class="op">=</span>N, seed<span class="op">=</span>seed_run)</span>
+<span id="cb25-388"><a href="#cb25-388" aria-hidden="true" tabindex="-1"></a>        counts <span class="op">=</span> run_sis(</span>
+<span id="cb25-389"><a href="#cb25-389" aria-hidden="true" tabindex="-1"></a>            Gm,</span>
+<span id="cb25-390"><a href="#cb25-390" aria-hidden="true" tabindex="-1"></a>            beta<span class="op">=</span>beta,</span>
+<span id="cb25-391"><a href="#cb25-391" aria-hidden="true" tabindex="-1"></a>            mu<span class="op">=</span>mu,</span>
+<span id="cb25-392"><a href="#cb25-392" aria-hidden="true" tabindex="-1"></a>            steps<span class="op">=</span>steps,</span>
+<span id="cb25-393"><a href="#cb25-393" aria-hidden="true" tabindex="-1"></a>            initial_infected<span class="op">=</span>initial_infected,</span>
+<span id="cb25-394"><a href="#cb25-394" aria-hidden="true" tabindex="-1"></a>            seed<span class="op">=</span>seed_run,</span>
+<span id="cb25-395"><a href="#cb25-395" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb25-396"><a href="#cb25-396" aria-hidden="true" tabindex="-1"></a>        trajectories.append(np.array(counts) <span class="op">/</span> N)</span>
+<span id="cb25-397"><a href="#cb25-397" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-398"><a href="#cb25-398" aria-hidden="true" tabindex="-1"></a>    mean_traj <span class="op">=</span> np.mean(trajectories, axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb25-399"><a href="#cb25-399" aria-hidden="true" tabindex="-1"></a>    plt.plot(mean_traj, label<span class="op">=</span>model)</span>
+<span id="cb25-400"><a href="#cb25-400" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-401"><a href="#cb25-401" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Time step"</span>)</span>
+<span id="cb25-402"><a href="#cb25-402" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Mean infected fraction"</span>)</span>
+<span id="cb25-403"><a href="#cb25-403" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="ss">f"SIS on different network models (N=</span><span class="sc">{</span>N<span class="sc">}</span><span class="ss">)"</span>)</span>
+<span id="cb25-404"><a href="#cb25-404" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb25-405"><a href="#cb25-405" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb25-406"><a href="#cb25-406" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb25-407"><a href="#cb25-407" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-408"><a href="#cb25-408" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-409"><a href="#cb25-409" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb25-410"><a href="#cb25-410" aria-hidden="true" tabindex="-1"></a><span class="fu">## Discuss</span></span>
+<span id="cb25-411"><a href="#cb25-411" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-412"><a href="#cb25-412" aria-hidden="true" tabindex="-1"></a>Use your results to start a discussion:</span>
+<span id="cb25-413"><a href="#cb25-413" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-414"><a href="#cb25-414" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Which network type sustains infection longer at the same $(\beta, \mu)$?</span>
+<span id="cb25-415"><a href="#cb25-415" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Do hubs (scale-free) make persistence easier? Why?</span>
+<span id="cb25-416"><a href="#cb25-416" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>How does clustering (small-world) change local outbreaks vs global spread?</span>
+<span id="cb25-417"><a href="#cb25-417" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>If you increase $N$ but keep average degree similar, what do you expect to happen?</span>
+<span id="cb25-418"><a href="#cb25-418" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb25-419"><a href="#cb25-419" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-420"><a href="#cb25-420" aria-hidden="true" tabindex="-1"></a><span class="fu">## What's Next?</span></span>
+<span id="cb25-421"><a href="#cb25-421" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-422"><a href="#cb25-422" aria-hidden="true" tabindex="-1"></a>Try the SIR model and compare how **permanent immunity** changes the outcome.</span>
+<span id="cb25-423"><a href="#cb25-423" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-424"><a href="#cb25-424" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">SIR Model</span><span class="co">](sir.qmd)</span>{.btn .btn-primary}</span>
 </code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

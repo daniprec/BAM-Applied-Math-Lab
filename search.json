@@ -640,9 +640,9 @@
   {
     "objectID": "modules/networks/sir.html",
     "href": "modules/networks/sir.html",
-    "title": "SIR Model on Networks",
+    "title": "Networks: SIR Model",
     "section": "",
-    "text": "This module demonstrates how to simulate the SIR (Susceptible-Infected-Recovered) epidemic model on networks using NetworkX. You will see how network structure and model parameters affect the spread and final size of an epidemic.",
+    "text": "The SIR (Susceptible–Infected–Recovered) model is the “next step” after SIS: once a node recovers, it becomes permanently immune.\nIn this module, we reuse the same ideas from the SIS page (graph models + node attributes) and focus on what is new:",
     "crumbs": [
       "Session 5: Networks",
       "SIR Model"
@@ -651,20 +651,42 @@
   {
     "objectID": "modules/networks/sir.html#what-is-the-sir-model",
     "href": "modules/networks/sir.html#what-is-the-sir-model",
-    "title": "SIR Model on Networks",
+    "title": "Networks: SIR Model",
     "section": "What is the SIR Model?",
-    "text": "What is the SIR Model?\n\nStates: Each node can be Susceptible (S), Infected (I), or Recovered (R).\nTransitions:\n\nS → I: A susceptible node becomes infected if it has an infected neighbor (with probability \\(\\beta\\)).\nI → R: An infected node recovers and becomes permanently immune (with probability \\(\\mu\\)).\n\nPermanent immunity: Recovered nodes cannot be infected again.",
+    "text": "What is the SIR Model?\n\nStates: Each node can be Susceptible (S), Infected (I), or Recovered (R).\nTransitions:\n\n\\(S \\to I\\): a susceptible node becomes infected through infected neighbors.\n\\(I \\to R\\): an infected node recovers and becomes permanently immune.\n\nPermanent immunity: \\(R\\) is an absorbing state (once recovered, always recovered).\n\n\nDiscrete-Time Update Rule\nWe simulate in discrete time steps \\(t = 0, 1, 2, \\dots\\).\nIf a susceptible node has \\(m\\) infected neighbors, we use the same “independent trials” rule as SIS:\n\\[\n\\mathbb{P}(S \\to I) = 1 - (1 - \\beta)^m.\n\\]\nIf a node is infected, it recovers with probability:\n\\[\n\\mathbb{P}(I \\to R) = \\mu.\n\\]\nRecovered nodes stay recovered:\n\\[\n\\mathbb{P}(R \\to R) = 1.\n\\]\n\n\n\n\n\n\nWhat changes compared to SIS?\n\n\n\n\n\nIn SIS, \\(I \\to S\\) (you become susceptible again). In SIR, \\(I \\to R\\) (you become immune). That single change completely changes the long-term behavior.",
     "crumbs": [
       "Session 5: Networks",
       "SIR Model"
     ]
   },
   {
-    "objectID": "modules/networks/sir.html#create-a-network",
-    "href": "modules/networks/sir.html#create-a-network",
-    "title": "SIR Model on Networks",
-    "section": "Create a Network",
-    "text": "Create a Network\nYou can use any NetworkX graph (random, small-world, scale-free, or real data).\n\nimport networkx as nx\nimport numpy as np\nimport matplotlib.pyplot as plt\n\n# Example: random graph\ng = nx.gnp_random_graph(n=50, p=0.1)",
+    "objectID": "modules/networks/sir.html#a-key-rigorous-fact-absorbing-states",
+    "href": "modules/networks/sir.html#a-key-rigorous-fact-absorbing-states",
+    "title": "Networks: SIR Model",
+    "section": "A key rigorous fact (absorbing states)",
+    "text": "A key rigorous fact (absorbing states)\nOn a finite graph with \\(\\mu &gt; 0\\), the process reaches a time \\(T\\) such that there are no infected nodes (\\(I(T)=0\\)), and after that nothing can ever change.\nIntuition (but still rigorous): each node can become infected at most once (because \\(R\\) is permanent), so there can be at most \\(N\\) infection events. Since recovery happens with positive probability, infections cannot persist forever.\nThis means SIR always ends in a “frozen” configuration containing only \\(S\\) and \\(R\\) nodes.",
+    "crumbs": [
+      "Session 5: Networks",
+      "SIR Model"
+    ]
+  },
+  {
+    "objectID": "modules/networks/sir.html#imports-and-parameters",
+    "href": "modules/networks/sir.html#imports-and-parameters",
+    "title": "Networks: SIR Model",
+    "section": "Imports and Parameters",
+    "text": "Imports and Parameters\n\nimport networkx as nx\nimport numpy as np\nimport matplotlib.pyplot as plt\n\nSEED = 7\n\n# Model parameters\nbeta = 0.20\nmu = 0.10\n\n# Simulation parameters\nsteps = 120\ninitial_infected = 5\nN = 100",
+    "crumbs": [
+      "Session 5: Networks",
+      "SIR Model"
+    ]
+  },
+  {
+    "objectID": "modules/networks/sir.html#choose-a-network",
+    "href": "modules/networks/sir.html#choose-a-network",
+    "title": "Networks: SIR Model",
+    "section": "Choose a Network",
+    "text": "Choose a Network\nWe will reuse the same helper pattern as in the SIS page (see SIS Model).\n\nG = make_graph(\"random\", n=N, seed=SEED)\nprint(\"N, E =\", G.number_of_nodes(), G.number_of_edges())\n\nN, E = 100 399",
     "crumbs": [
       "Session 5: Networks",
       "SIR Model"
@@ -673,20 +695,20 @@
   {
     "objectID": "modules/networks/sir.html#initialize-states",
     "href": "modules/networks/sir.html#initialize-states",
-    "title": "SIR Model on Networks",
+    "title": "Networks: SIR Model",
     "section": "Initialize States",
-    "text": "Initialize States\n\n# All nodes start susceptible except a few infected\nstate = {node: 'S' for node in g.nodes()}\ninitial_infected = np.random.choice(g.nodes(), size=5, replace=False)\nfor node in initial_infected:\n    state[node] = 'I'",
+    "text": "Initialize States\nAs in SIS, we store states on the graph using a node attribute called state.\n\ninitialize_state(G, initial_infected=initial_infected, seed=SEED)\nprint(\n    \"Initial counts (S, I, R) =\",\n    sum(G.nodes[u][\"state\"] == \"S\" for u in G.nodes()),\n    sum(G.nodes[u][\"state\"] == \"I\" for u in G.nodes()),\n    sum(G.nodes[u][\"state\"] == \"R\" for u in G.nodes()),\n)\n\nInitial counts (S, I, R) = 95 5 0",
     "crumbs": [
       "Session 5: Networks",
       "SIR Model"
     ]
   },
   {
-    "objectID": "modules/networks/sir.html#sir-simulation-function",
-    "href": "modules/networks/sir.html#sir-simulation-function",
-    "title": "SIR Model on Networks",
-    "section": "SIR Simulation Function",
-    "text": "SIR Simulation Function\n\ndef run_sir(g, beta=0.2, mu=0.1, steps=50):\n    state = {node: 'S' for node in g.nodes()}\n    infected_counts = []\n    recovered_counts = []\n    initial_infected = np.random.choice(g.nodes(), size=5, replace=False)\n    for node in initial_infected:\n        state[node] = 'I'\n    for t in range(steps):\n        new_state = state.copy()\n        for node in g.nodes():\n            if state[node] == 'S':\n                infected_neighbors = [nbr for nbr in g.neighbors(node) if state[nbr] == 'I']\n                if infected_neighbors and np.random.rand() &lt; 1 - (1 - beta)**len(infected_neighbors):\n                    new_state[node] = 'I'\n            elif state[node] == 'I':\n                if np.random.rand() &lt; mu:\n                    new_state[node] = 'R'\n        state = new_state\n        infected_counts.append(sum(1 for s in state.values() if s == 'I'))\n        recovered_counts.append(sum(1 for s in state.values() if s == 'R'))\n    return infected_counts, recovered_counts",
+    "objectID": "modules/networks/sir.html#implement-the-sir-dynamics",
+    "href": "modules/networks/sir.html#implement-the-sir-dynamics",
+    "title": "Networks: SIR Model",
+    "section": "Implement the SIR Dynamics",
+    "text": "Implement the SIR Dynamics\nThe update is synchronous: compute all changes from the old state, then apply them.\ndef step_sir(G, beta, mu):\n    # TODO: read current states from G.nodes[u][\"state\"]\n    # TODO: build new_state dict with values in {\"S\",\"I\",\"R\"}\n    # TODO: write new_state back via nx.set_node_attributes\n    return G\n\n\n\n\n\n\nSolved: step_sir()\n\n\n\n\n\n\ndef step_sir(G, beta, mu):\n    current = {u: G.nodes[u][\"state\"] for u in G.nodes()}\n    new_state = current.copy()\n\n    for u in G.nodes():\n        if current[u] == \"S\":\n            m = sum(1 for v in G.neighbors(u) if current[v] == \"I\")\n            if m &gt; 0:\n                p_infect = 1 - (1 - beta) ** m\n                if np.random.random() &lt; p_infect:\n                    new_state[u] = \"I\"\n\n        elif current[u] == \"I\":\n            if np.random.random() &lt; mu:\n                new_state[u] = \"R\"\n\n        else:\n            # \"R\" stays \"R\"\n            pass\n\n    nx.set_node_attributes(G, new_state, \"state\")\n    return G\n\n\n\n\nNow wrap it into a simulator. Compared to SIS, we typically track all three counts: \\(S(t), I(t), R(t)\\).\ndef run_sir(G, beta, mu, steps=100, initial_infected=5, seed=SEED):\n    # TODO\n    return S_counts, I_counts, R_counts\n\n\n\n\n\n\nSolved: run_sir()\n\n\n\n\n\n\ndef run_sir(G, beta, mu, steps=100, initial_infected=5, seed=SEED):\n    H = G.copy()\n\n    # Make the whole run reproducible (step_sir uses np.random.random)\n    np.random.seed(seed)\n\n    initialize_state(H, initial_infected=initial_infected, seed=seed)\n\n    def counts(H):\n        S = sum(H.nodes[u][\"state\"] == \"S\" for u in H.nodes())\n        I = sum(H.nodes[u][\"state\"] == \"I\" for u in H.nodes())\n        R = sum(H.nodes[u][\"state\"] == \"R\" for u in H.nodes())\n        return S, I, R\n\n    S0, I0, R0 = counts(H)\n    S_counts = [S0]\n    I_counts = [I0]\n    R_counts = [R0]\n\n    for _ in range(steps):\n        if I_counts[-1] == 0:\n            break\n        step_sir(H, beta=beta, mu=mu)\n        S, I, R = counts(H)\n        S_counts.append(S)\n        I_counts.append(I)\n        R_counts.append(R)\n\n    return S_counts, I_counts, R_counts",
     "crumbs": [
       "Session 5: Networks",
       "SIR Model"
@@ -695,20 +717,20 @@
   {
     "objectID": "modules/networks/sir.html#run-and-visualize",
     "href": "modules/networks/sir.html#run-and-visualize",
-    "title": "SIR Model on Networks",
+    "title": "Networks: SIR Model",
     "section": "Run and Visualize",
-    "text": "Run and Visualize\n\ninfected, recovered = run_sir(g, beta=0.2, mu=0.1, steps=100)\nplt.plot(infected, label='Infected')\nplt.plot(recovered, label='Recovered')\nplt.xlabel('Time step')\nplt.ylabel('Number of nodes')\nplt.title('SIR Model Epidemic Curve')\nplt.legend()\nplt.show()",
+    "text": "Run and Visualize\nThe “epidemic curve” in SIR typically shows a single peak in \\(I(t)\\) and then decay to zero.\n\n\n\n\n\n\n\n\nFigure 1: SIR epidemic curve (fractions of S, I, R over time) on one network realization.",
     "crumbs": [
       "Session 5: Networks",
       "SIR Model"
     ]
   },
   {
-    "objectID": "modules/networks/sir.html#experiment",
-    "href": "modules/networks/sir.html#experiment",
-    "title": "SIR Model on Networks",
-    "section": "Experiment",
-    "text": "Experiment\n\nTry different network types (random, small-world, scale-free).\nVary \\(\\beta\\) and \\(\\mu\\) to see the epidemic threshold and final epidemic size.\nAnalyze how network structure (degree, clustering) affects the spread and peak.",
+    "objectID": "modules/networks/sir.html#key-questions-to-answer",
+    "href": "modules/networks/sir.html#key-questions-to-answer",
+    "title": "Networks: SIR Model",
+    "section": "Key Questions to Answer",
+    "text": "Key Questions to Answer\nHere are two precise, testable questions that are specific to SIR:\n\nCan the network become fully infected? i.e., does there exist a time \\(t\\) such that \\(I(t)=N\\)?\nCan the network become fully “healed”? i.e., does there exist a time \\(t\\) such that \\(I(t)=0\\)?\n\nIn SIR, the second question has a clean answer:\n\nYes. In fact, for a finite graph with \\(\\mu&gt;0\\), you eventually reach \\(I(t)=0\\) and then you are stuck forever (absorbing state).\n\nThe first question depends on \\((\\beta,\\mu)\\) and the network. It can happen transiently, but it is not an absorbing state.\n\n\n\n\n\n\nDiscuss\n\n\n\n\nIn SIR, is “fully healed” the same as “everyone is susceptible again”? Why not?\nWhat does “final epidemic size” mean here? (Hint: look at \\(R(\\infty)\\).)\nCan you have an epidemic with a large peak but small final size? Or vice versa?\nCompare two graphs with the same \\(N\\) and similar average degree: which features (hubs, clustering, path length) do you expect to increase \\(R(\\infty)\\)?",
     "crumbs": [
       "Session 5: Networks",
       "SIR Model"
@@ -717,9 +739,9 @@
   {
     "objectID": "modules/networks/sir.html#whats-next",
     "href": "modules/networks/sir.html#whats-next",
-    "title": "SIR Model on Networks",
+    "title": "Networks: SIR Model",
     "section": "What’s Next?",
-    "text": "What’s Next?\nYou’ve completed the epidemic modeling pipeline! Try experimenting with different networks, parameters, or move on to advanced topics in network science.\nNext: - Compare SIS and SIR results. How does permanent immunity change the outcome? - Ready to apply your knowledge to real-world data? Try the assignment:\nAssignment: Networks & Real-World Data",
+    "text": "What’s Next?\nCompare SIS vs SIR: how does permanent immunity change what happens “in the long run”? Then apply your knowledge to real-world data:\nAssignment: Networks & Real-World Data",
     "crumbs": [
       "Session 5: Networks",
       "SIR Model"
@@ -728,7 +750,7 @@
   {
     "objectID": "modules/networks/assignment.html",
     "href": "modules/networks/assignment.html",
-    "title": "Assignment",
+    "title": "Networks: Assignment",
     "section": "",
     "text": "For this assignment, you may use either the Enron email network or the USA Flights network dataset. Below you’ll find practical code snippets and tips to help you get started with analysis and simulation.",
     "crumbs": [
@@ -739,7 +761,7 @@
   {
     "objectID": "modules/networks/assignment.html#working-with-the-enron-email-network",
     "href": "modules/networks/assignment.html#working-with-the-enron-email-network",
-    "title": "Assignment",
+    "title": "Networks: Assignment",
     "section": "Working with the Enron Email Network",
     "text": "Working with the Enron Email Network\nThe Enron email dataset can be represented as a graph where nodes are email addresses and edges represent communication. It is widely used to study centrality, communities, and robustness.\n\n\n\n\n\n\n\n\nFigure 1: Enron network: degree histogram (log scale).\n\n\n\n\n\n\nLoad the graph\nimport networkx as nx\n\nG = nx.read_edgelist(\"data/ia-enron-only/ia-enron-only.edges\")\n\n\nCentrality metrics\nCompute the top nodes by betweenness centrality.\nimport networkx as nx\n\nbc = nx.betweenness_centrality(G)\n# TODO: sort and print top 10 nodes\n\n\n\n\n\n\nHint: Top 10 by betweenness (click to expand)\n\n\n\n\n\nbc = nx.betweenness_centrality(G)\ntop10 = sorted(bc.items(), key=lambda x: x[1], reverse=True)[:10]\nprint(top10)\n\n\n\n\n\nQuestions to explore\n\nWhich nodes act as brokers in the network?\nHow does the graph change if you remove high-betweenness nodes?\nCan you detect communities with a simple algorithm?",
     "crumbs": [
@@ -750,7 +772,7 @@
   {
     "objectID": "modules/networks/assignment.html#working-with-the-usa-flights-network",
     "href": "modules/networks/assignment.html#working-with-the-usa-flights-network",
-    "title": "Assignment",
+    "title": "Networks: Assignment",
     "section": "Working with the USA Flights Network",
     "text": "Working with the USA Flights Network\nThe OpenFlights USA dataset represents airports as nodes and flight routes as edges. It is commonly used to study connectivity, robustness, and hub structure.\n\n\n\n\n\n\n\n\nFigure 2: USA flights: subgraph snapshot (random sample of airports).\n\n\n\n\n\n\nLoad the graph\nThe dataset is provided as GraphML and edge lists under data/openflights.\nimport networkx as nx\n\nG = nx.read_graphml(\"data/openflights/openflights_usa.graphml.gz\")\n\n\nBasic checks\nTry these metrics:\nnum_nodes = G.number_of_nodes()\nnum_edges = G.number_of_edges()\navg_degree = sum(dict(G.degree()).values()) / num_nodes\n\nprint(num_nodes, num_edges, avg_degree)\n\n\nExplore hubs\nCompute the top airports by degree centrality.\nimport networkx as nx\n\ncentrality = nx.degree_centrality(G)\n# TODO: sort and print top 10 airports\n\n\n\n\n\n\nHint: Top 10 by degree (click to expand)\n\n\n\n\n\ncentrality = nx.degree_centrality(G)\ntop10 = sorted(centrality.items(), key=lambda x: x[1], reverse=True)[:10]\nprint(top10)\n\n\n\n\n\nQuestions to explore\n\nWhich airports act as hubs?\nHow does the network change if you remove the top hub?\nIs the graph connected, or are there isolated components?",
     "crumbs": [
@@ -761,7 +783,7 @@
   {
     "objectID": "modules/networks/assignment.html#required",
     "href": "modules/networks/assignment.html#required",
-    "title": "Assignment",
+    "title": "Networks: Assignment",
     "section": "Required",
     "text": "Required\n\nLoad your chosen network (Enron email or USA Flights) with NetworkX and report the number of nodes and edges.\nCompute and list the top 10 nodes by degree centrality.\nCompute one additional metric (betweenness, clustering, or PageRank) and interpret the result.\nVisualize the graph (full or sampled) and include a short interpretation.\nSimulate the SIR or SIS model on your chosen network. Plot the epidemic curve and discuss how network structure affects the spread.",
     "crumbs": [
@@ -772,7 +794,7 @@
   {
     "objectID": "modules/networks/assignment.html#extra-mile-optional",
     "href": "modules/networks/assignment.html#extra-mile-optional",
-    "title": "Assignment",
+    "title": "Networks: Assignment",
     "section": "Extra Mile (Optional)",
     "text": "Extra Mile (Optional)\n\nRemove a high-centrality node and analyze changes in connectivity and epidemic outcome.\nCompare two different centrality metrics and discuss differences.\nTry a community detection method and summarize results.\n\nGood luck and enjoy your coding!",
     "crumbs": [
@@ -783,9 +805,9 @@
   {
     "objectID": "modules/networks/sis.html",
     "href": "modules/networks/sis.html",
-    "title": "SIS Model on Networks",
+    "title": "Networks: SIS Model",
     "section": "",
-    "text": "This module demonstrates how to simulate the SIS (Susceptible-Infected-Susceptible) epidemic model on networks using NetworkX. You will learn how network structure affects the spread and persistence of epidemics.",
+    "text": "The SIS (Susceptible–Infected–Susceptible) model is a simple epidemic model where individuals can be infected multiple times. In this module, we implement SIS on networks using NetworkX and explore how network structure (random vs small-world vs scale-free) changes spreading.",
     "crumbs": [
       "Session 5: Networks",
       "SIS Model"
@@ -794,20 +816,42 @@
   {
     "objectID": "modules/networks/sis.html#what-is-the-sis-model",
     "href": "modules/networks/sis.html#what-is-the-sis-model",
-    "title": "SIS Model on Networks",
+    "title": "Networks: SIS Model",
     "section": "What is the SIS Model?",
-    "text": "What is the SIS Model?\n\nStates: Each node can be Susceptible (S) or Infected (I).\nTransitions:\n\nS &gt; I: A susceptible node becomes infected if it has an infected neighbor (with probability \\(\\beta\\)).\nI &gt; S: An infected node recovers and becomes susceptible again (with probability \\(\\mu\\)).\n\nNo permanent immunity: Nodes can be reinfected after recovery.",
+    "text": "What is the SIS Model?\n\nStates: each node is Susceptible (S) or Infected (I).\nTransitions:\n\n\\(S \\to I\\): infection through contacts (controlled by \\(\\beta\\)).\n\\(I \\to S\\): recovery (controlled by \\(\\mu\\)).\n\nNo permanent immunity: recovered nodes can be reinfected.\n\n\nDiscrete-Time Update Rule\nWe simulate in discrete time steps \\(t = 0, 1, 2, \\dots\\).\nA susceptible node with \\(m\\) infected neighbors becomes infected with probability:\n\\[\n\\mathbb{P}(S \\to I) = 1 - (1 - \\beta)^m.\n\\]\n\n\n\n\n\n\nWhy \\(1 - (1-\\beta)^m\\)?\n\n\n\n\n\nIf each infected neighbor independently infects you with probability \\(\\beta\\), then the probability you avoid infection from all \\(m\\) neighbors is \\((1-\\beta)^m\\). So the probability of at least one successful infection is \\(1-(1-\\beta)^m\\).\n\n\n\nOn the other hand, if a node is infected, it recovers with probability:\n\\[\n\\mathbb{P}(I \\to S) = \\mu.\n\\]",
     "crumbs": [
       "Session 5: Networks",
       "SIS Model"
     ]
   },
   {
-    "objectID": "modules/networks/sis.html#create-a-network",
-    "href": "modules/networks/sis.html#create-a-network",
-    "title": "SIS Model on Networks",
-    "section": "Create a Network",
-    "text": "Create a Network\nYou can use any NetworkX graph (random, small-world, scale-free, or real data).\n\nimport networkx as nx\nimport numpy as np\nimport matplotlib.pyplot as plt\n\n# Example: random graph\ng = nx.gnp_random_graph(n=50, p=0.1)",
+    "objectID": "modules/networks/sis.html#goal",
+    "href": "modules/networks/sis.html#goal",
+    "title": "Networks: SIS Model",
+    "section": "Goal",
+    "text": "Goal\nStudy SIS propagation under different graph models and sizes.\n\nCompare random (Erdos–Rényi), small-world (Watts–Strogatz), and scale-free-ish (Barabási–Albert) graphs.\nTry sizes like \\(N \\in \\{50, 100, 300\\}\\).\nFor each case, run 10–30 repetitions and plot the average infected fraction over time.\n\nThe steps are described in more detail below, but feel free to experiment with different parameters and graph types!",
+    "crumbs": [
+      "Session 5: Networks",
+      "SIS Model"
+    ]
+  },
+  {
+    "objectID": "modules/networks/sis.html#imports-and-parameters",
+    "href": "modules/networks/sis.html#imports-and-parameters",
+    "title": "Networks: SIS Model",
+    "section": "Imports and Parameters",
+    "text": "Imports and Parameters\n\nimport networkx as nx\nimport numpy as np\nimport matplotlib.pyplot as plt\n\nThese are the parameters you can tune:\n\nSEED = 7\n\n# Model parameters\nbeta = 0.20  # infection probability per infected neighbor (per step)\nmu = 0.10    # recovery probability (per step)\n\n# Simulation parameters\nsteps = 120  # number of time steps to simulate\ninitial_infected = 5  # should always be &lt; N\nN = 100  # number of nodes in the graph\n\n\n\n\n\n\n\nAbout SEED (why we fix it)\n\n\n\nThere are two sources of randomness in this activity:\n\nthe graph you generate (e.g., which edges appear in Erdős–Rényi), and\nthe stochastic SIS dynamics (who gets infected / recovers at each step).\n\nWe fix SEED so results are reproducible: rerunning the page gives the same plots, which makes debugging and reporting possible.\nWhen we do many repetitions, we use SEED + r so repetition r is a different random trial (new graph + new random infection events) but still reproducible. If you reused the same SEED in every repetition, you would repeat the same realization and your “average over runs” would be meaningless.",
+    "crumbs": [
+      "Session 5: Networks",
+      "SIS Model"
+    ]
+  },
+  {
+    "objectID": "modules/networks/sis.html#choose-a-network",
+    "href": "modules/networks/sis.html#choose-a-network",
+    "title": "Networks: SIS Model",
+    "section": "Choose a Network",
+    "text": "Choose a Network\nFor your project you will compare several models. Start by picking one. You can see a sample of the three models in the page: Network Models.\n\n\n\n\n\n\nExample of Baseline Graph\n\n\n\n\n\nG = nx.erdos_renyi_graph(n=N, p=0.08, seed=SEED)\n# where p is the probability of edge creation\n\n\n\nTo make the “compare models” part easier, we will implement a small helper function make_graph(&lt;model&gt;, &lt;n&gt;), where &lt;model&gt; is a string specifying the type of graph (“random”, “small-world”, or “scale-free”) and &lt;n&gt; is the number of nodes.\ndef make_graph(model: str, n: int, seed: int = SEED):\n    \"\"\"Create a graph model: 'random', 'small-world', or 'scale-free'.\"\"\"\n    # TODO\n    return G\n\n\n\n\n\n\nSolved: make_graph()\n\n\n\n\n\n\ndef make_graph(model: str, n: int, seed: int = SEED):\n    if model == \"random\":\n        return nx.erdos_renyi_graph(n=n, p=0.08, seed=seed)\n    if model == \"small-world\":\n        return nx.watts_strogatz_graph(n=n, k=6, p=0.08, seed=seed)\n    if model == \"scale-free\":\n        return nx.barabasi_albert_graph(n=n, m=2, seed=seed)\n    raise ValueError(\"model must be one of: 'random', 'small-world', 'scale-free'\")\n\n\n\n\nNow you can easily create different graph types:\n\nG = make_graph(\"random\", n=100)\nprint(\"N, E =\", G.number_of_nodes(), G.number_of_edges())\n\nN, E = 100 399\n\n\nOptional quick visualization:\n\npos = nx.spring_layout(G)\nnx.draw(G, pos=pos, node_size=50, edge_color=\"gray\")\nplt.title(\"Baseline network\")\nplt.show()",
     "crumbs": [
       "Session 5: Networks",
       "SIS Model"
@@ -816,20 +860,20 @@
   {
     "objectID": "modules/networks/sis.html#initialize-states",
     "href": "modules/networks/sis.html#initialize-states",
-    "title": "SIS Model on Networks",
+    "title": "Networks: SIS Model",
     "section": "Initialize States",
-    "text": "Initialize States\n\n# All nodes start susceptible except a few infected\nstate = {node: 'S' for node in g.nodes()}\ninitial_infected = np.random.choice(g.nodes(), size=5, replace=False)\nfor node in initial_infected:\n    state[node] = 'I'",
+    "text": "Initialize States\nWe will store the state of each individual directly on the graph as a node attribute called state.\nFor example, we can start with everyone susceptible. We will create the attribute “state” and set it to “S” for all nodes:\n\nnx.set_node_attributes(G, \"S\", \"state\")\n\nprint(\"Node 0:\", G.nodes[0])  # node attributes are stored in a dictionary\n\nNode 0: {'state': 'S'}\n\n\nIf we wanted to infect node 20, we could do:\n\nnode_20 = G.nodes[20]\nnode_20[\"state\"] = \"I\"\n\nprint(\"Node 20:\", G.nodes[20])  # now node 20 has state \"I\"\n\nNode 20: {'state': 'I'}\n\n\nAlternatively, we could use a dictionary to set the states of multiple nodes at once:\n\n# Infect nodes 20, 35, and 50\n# The rest will be susceptible by default\nstate_dict = {node: \"I\" if node in [20, 35, 50] else \"S\" for node in G.nodes()}\nnx.set_node_attributes(G, state_dict, \"state\")\n\nprint(\"Node 20:\", G.nodes[20])  # node 20 is infected\nprint(\"Node 21:\", G.nodes[21])  # node 21 is susceptible\n\nNode 20: {'state': 'I'}\nNode 21: {'state': 'S'}\n\n\nWith that information in mind, you can create a function initialize_state(&lt;graph&gt;) that sets all nodes to “S” and then randomly picks a few nodes to set to “I” (the initial infected).\ndef initialize_state(G, initial_infected=5, seed=SEED):\n    # TODO: start everyone as 'S' using node attributes\n    # TODO: randomly pick initial_infected nodes and set their node attribute to 'I'\n    # Optional: return G (mutated) for convenience\n    return G\nRemember that you can use a seeded random number generator (via np.random.default_rng(seed)) to pick random nodes from the graph.\n\n\n\n\n\n\nSolved: initialize_state()\n\n\n\n\n\n\ndef initialize_state(G, initial_infected=5, seed=SEED, rng=None):\n    if rng is None:\n        rng = np.random.default_rng(seed)\n\n    # Start everyone susceptible\n    nx.set_node_attributes(G, \"S\", \"state\")\n\n    # Infect a random subset\n    infected = rng.choice(list(G.nodes()), size=initial_infected, replace=False)\n    for node in infected:\n        G.nodes[node][\"state\"] = \"I\"\n\n    return G\n\n\n\n\nAlways validate your functions! In this case, we can check that the number of infected nodes is correct:\n\ninitialize_state(G, initial_infected=initial_infected, seed=SEED)\nprint(\n    \"Initially infected:\",\n    sum(G.nodes[node][\"state\"] == \"I\" for node in G.nodes()),\n)\n\nInitially infected: 5",
     "crumbs": [
       "Session 5: Networks",
       "SIS Model"
     ]
   },
   {
-    "objectID": "modules/networks/sis.html#sis-simulation-function",
-    "href": "modules/networks/sis.html#sis-simulation-function",
-    "title": "SIS Model on Networks",
-    "section": "SIS Simulation Function",
-    "text": "SIS Simulation Function\n\ndef run_sis(g, beta=0.2, mu=0.1, steps=50):\n    state = {node: 'S' for node in g.nodes()}\n    infected_counts = []\n    initial_infected = np.random.choice(g.nodes(), size=5, replace=False)\n    for node in initial_infected:\n        state[node] = 'I'\n    for t in range(steps):\n        new_state = state.copy()\n        for node in g.nodes():\n            if state[node] == 'S':\n                # Check infected neighbors\n                infected_neighbors = [nbr for nbr in g.neighbors(node) if state[nbr] == 'I']\n                if infected_neighbors and np.random.rand() &lt; 1 - (1 - beta)**len(infected_neighbors):\n                    new_state[node] = 'I'\n            elif state[node] == 'I':\n                if np.random.rand() &lt; mu:\n                    new_state[node] = 'S'\n        state = new_state\n        infected_counts.append(sum(1 for s in state.values() if s == 'I'))\n    return infected_counts",
+    "objectID": "modules/networks/sis.html#implement-the-sis-dynamics",
+    "href": "modules/networks/sis.html#implement-the-sis-dynamics",
+    "title": "Networks: SIS Model",
+    "section": "Implement the SIS dynamics",
+    "text": "Implement the SIS dynamics\nWe update synchronously: compute all changes from the old state, then apply them.\nCreate a function step_sis(&lt;graph&gt;, beta, mu) that performs one step of the SIS update. Remember that beta is the infection probability and mu is the recovery probability.\ndef step_sis(G, beta, mu):\n    # TODO: read current states from G.nodes[u][\"state\"]\n    # TODO: compute a new_state mapping (synchronous update)\n    # TODO: write new_state back to node attributes\n    return G\nRemember that you can loop through all nodes and their neighbors using G.nodes() and G.neighbors(node). Use np.random.random() for the probabilistic transitions.\n\n\n\n\n\n\nSolved: step_sis()\n\n\n\n\n\n\ndef step_sis(G, beta, mu, rng=None):\n    if rng is None:\n        rng = np.random.default_rng()\n\n    # Retrieve current states of all nodes\n    current = {node: G.nodes[node][\"state\"] for node in G.nodes()}\n    new_state = current.copy()  # start with the same state for synchronous update\n    # Loop through all nodes to compute new states\n    for node in G.nodes():\n        if current[node] == \"S\":\n            # Count infected neighbors\n            m = sum(1 for nbr in G.neighbors(node) if current[nbr] == \"I\")\n            if m &gt; 0:\n                # Compute infection probability\n                p_infect = 1 - (1 - beta) ** m\n                if rng.random() &lt; p_infect:\n                    new_state[node] = \"I\"\n        else:  # current[node] == \"I\"\n            if rng.random() &lt; mu:\n                new_state[node] = \"S\"\n    nx.set_node_attributes(G, new_state, \"state\")\n    return G\n\n\n\n\nNow wrap it into a simulator that records the number of infected nodes over time. The function run_sis() should take a graph and the parameters, run the simulation for a given number of steps, and return a list of the number of infected nodes at each time step.\ndef run_sis(G, beta, mu, steps=100, initial_infected=5, seed=SEED):\n    # TODO\n    return infected_counts\n\n\n\n\n\n\nSolved: run_sis()\n\n\n\n\n\n\ndef run_sis(G, beta, mu, steps=100, initial_infected=5, seed=SEED):\n    # Copy the graph to avoid mutating the original\n    H = G.copy()\n\n    # One seeded RNG controls all randomness for this run\n    rng = np.random.default_rng(seed)\n\n    # Initialize states\n    initialize_state(H, initial_infected=initial_infected, seed=seed, rng=rng)\n    # Count initial number of infected nodes and initialize the list\n    infected_counts = [sum(H.nodes[node][\"state\"] == \"I\" for node in H.nodes())]\n    # Apply SIS steps and record infected counts\n    for _ in range(steps):\n        step_sis(H, beta=beta, mu=mu, rng=rng)\n        infected_counts.append(sum(H.nodes[node][\"state\"] == \"I\" for node in H.nodes()))\n    return infected_counts\n\n\n\n\nExecute the function to make sure it runs without errors and returns a reasonable output:\n\ncounts = run_sis(G, beta=beta, mu=mu, steps=steps, initial_infected=initial_infected)\nprint(\"Infected counts over time:\", counts)\n\nInfected counts over time: [5, 12, 27, 51, 75, 82, 90, 90, 88, 92, 86, 82, 87, 87, 91, 89, 92, 86, 91, 87, 89, 87, 87, 88, 80, 84, 93, 91, 89, 88, 85, 84, 87, 86, 86, 85, 89, 88, 93, 86, 86, 86, 87, 87, 86, 85, 81, 85, 87, 90, 90, 86, 92, 82, 78, 86, 85, 87, 91, 87, 93, 88, 96, 88, 93, 90, 88, 92, 89, 92, 89, 87, 87, 88, 92, 82, 88, 91, 88, 82, 82, 87, 85, 88, 84, 82, 86, 90, 86, 89, 85, 84, 87, 86, 90, 90, 89, 84, 89, 88, 86, 88, 91, 90, 84, 86, 91, 93, 91, 91, 93, 89, 88, 93, 92, 91, 84, 86, 85, 82, 90]",
     "crumbs": [
       "Session 5: Networks",
       "SIS Model"
@@ -838,20 +882,20 @@
   {
     "objectID": "modules/networks/sis.html#run-and-visualize",
     "href": "modules/networks/sis.html#run-and-visualize",
-    "title": "SIS Model on Networks",
+    "title": "Networks: SIS Model",
     "section": "Run and Visualize",
-    "text": "Run and Visualize\n\ncounts = run_sis(g, beta=0.2, mu=0.1, steps=100)\nplt.plot(counts)\nplt.xlabel('Time step')\nplt.ylabel('Number of infected nodes')\nplt.title('SIS Model Epidemic Curve')\nplt.show()",
+    "text": "Run and Visualize\nUse matplotlib to plot the fraction of infected nodes over time. Try to get a graph similar to Figure 1 below.\n\n\n\n\n\n\n\n\nFigure 1: Fraction of infected nodes over time for a single SIS run on a random graph.",
     "crumbs": [
       "Session 5: Networks",
       "SIS Model"
     ]
   },
   {
-    "objectID": "modules/networks/sis.html#experiment",
-    "href": "modules/networks/sis.html#experiment",
-    "title": "SIS Model on Networks",
-    "section": "Experiment",
-    "text": "Experiment\n\nTry different network types (random, small-world, scale-free).\nVary \\(\\beta\\) and \\(\\mu\\) to see the epidemic threshold.\nAnalyze how network structure (degree, clustering) affects persistence.",
+    "objectID": "modules/networks/sis.html#compare-network-types",
+    "href": "modules/networks/sis.html#compare-network-types",
+    "title": "Networks: SIS Model",
+    "section": "Compare Network Types",
+    "text": "Compare Network Types\nFinally, run multiple simulations for each graph type and plot the average infected fraction over time for each type on the same graph. Figure 2 is an example of what this could look like.\n\n\n\n\n\n\n\n\nFigure 2: Mean infected fraction over time for different network models (random, small-world, scale-free).\n\n\n\n\n\n\n\n\n\n\n\nDiscuss\n\n\n\nUse your results to start a discussion:\n\nWhich network type sustains infection longer at the same \\((\\beta, \\mu)\\)?\nDo hubs (scale-free) make persistence easier? Why?\nHow does clustering (small-world) change local outbreaks vs global spread?\nIf you increase \\(N\\) but keep average degree similar, what do you expect to happen?",
     "crumbs": [
       "Session 5: Networks",
       "SIS Model"
@@ -860,9 +904,9 @@
   {
     "objectID": "modules/networks/sis.html#whats-next",
     "href": "modules/networks/sis.html#whats-next",
-    "title": "SIS Model on Networks",
+    "title": "Networks: SIS Model",
     "section": "What’s Next?",
-    "text": "What’s Next?\nTry the SIR model and compare how permanent immunity changes the outcome!\nSIR Model",
+    "text": "What’s Next?\nTry the SIR model and compare how permanent immunity changes the outcome.\nSIR Model",
     "crumbs": [
       "Session 5: Networks",
       "SIS Model"
@@ -2018,7 +2062,7 @@
     "href": "modules/ode-2d/van-der-pol.html#the-stable-limit-cycle",
     "title": "Van der Pol Oscillator",
     "section": "The Stable Limit Cycle",
-    "text": "The Stable Limit Cycle\nThe Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions. Plot this limit cycle as a \\(x(t)-t\\) plot, and verify that it matches the phase plane trajectories.\n\n\n/tmp/ipykernel_3425/2854713749.py:14: UserWarning:\n\nNo artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.\n\n\n\n\n\n\n\n\n\nFigure 2: Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nThe amplitude and period of the limit cycle depend on \\(\\mu\\). There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with \\(\\mu\\), while the fast phase becomes more abrupt. This leads to a characteristic “relaxation oscillation” shape for large \\(\\mu\\).\nPlay with the parameter \\(\\mu\\) to see how it changes the shape of the limit cycle and the transient dynamics.",
+    "text": "The Stable Limit Cycle\nThe Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions. Plot this limit cycle as a \\(x(t)-t\\) plot, and verify that it matches the phase plane trajectories.\n\n\n/tmp/ipykernel_3404/2854713749.py:14: UserWarning:\n\nNo artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.\n\n\n\n\n\n\n\n\n\nFigure 2: Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nThe amplitude and period of the limit cycle depend on \\(\\mu\\). There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with \\(\\mu\\), while the fast phase becomes more abrupt. This leads to a characteristic “relaxation oscillation” shape for large \\(\\mu\\).\nPlay with the parameter \\(\\mu\\) to see how it changes the shape of the limit cycle and the transient dynamics.",
     "crumbs": [
       "Session 2: ODEs in 2D",
       "Van der Pol Oscillator"
@@ -2283,7 +2327,7 @@
   {
     "objectID": "modules/networks/flights.html",
     "href": "modules/networks/flights.html",
-    "title": "OpenFlights Network",
+    "title": "Networks: OpenFlights Network",
     "section": "",
     "text": "This repository contains several example network datasets. Among these is a network of US air travel routes:\n\nimport networkx as nx\nimport matplotlib.pyplot as plt\n\nG = nx.read_graphml(\"./data/openflights/openflights_usa.graphml.gz\")\n\nprint(G)\nprint(\"Nodes:\", G.nodes())\n\npos = nx.circular_layout(G)\nnx.draw(G, pos=pos, node_size=10)\nplt.show()\n\nGraph with 546 nodes and 2781 edges\nNodes: ['RDD', 'EUG', 'IDA', 'MFR', 'RDM', 'OOK', 'ABL', 'BKC', 'ITO', 'OBU', 'ORV', 'WLK', 'KTS', 'CAK', 'HSV', 'PKB', 'MGM', 'TRI', 'PAH', 'KKA', 'SMK', 'SKK', 'TNC', 'AKB', 'PGA', 'FCA', 'MBS', 'BGM', 'KFP', 'NLG', 'KLW', 'KWN', 'HNM', 'KYU', 'SCM', 'BTI', 'NME', 'KKH', 'NIB', 'PSG', 'AIN', 'CIC', 'KUK', 'WNA', 'IRC', 'SFB', 'SLQ', 'JST', 'HKB', 'MLY', 'CLM', 'KWT', 'ELI', 'GLV', 'PSM', 'TLA', 'WAA', 'MSO', 'HVR', 'HHH', 'GRK', 'TVF', 'SGY', 'MLL', 'RBY', 'EGE', 'CSG', 'LAW', 'FLG', 'ANV', 'TWF', 'MVY', 'KVC', 'STC', 'GTR', 'ERI', 'HYA', 'PTH', 'AUK', 'MGW', 'CRW', 'AVP', 'BJI', 'FAR', 'KPN', 'GCC', 'SVA', 'SCE', 'HGR', 'KOT', 'MEI', 'SPI', 'CEZ', 'HDN', 'LBL', 'COD', 'SGF', 'JLN', 'ABE', 'XNA', 'SBN', 'CKB', 'LRD', 'ORH', 'ACV', 'OAJ', 'DBQ', 'GGG', 'PVC', 'KTN', 'GGW', 'OGD', 'PIH', 'PDT', 'LUR', 'PIZ', 'RAP', 'BTT', 'FYU', 'ATK', 'TLJ', 'SNP', 'IGG', 'STG', 'ILI', 'PTU', 'AZA', 'FSM', 'KAL', 'GFK', 'KSM', 'PRC', 'TTN', 'BOS', 'KVL', 'OAK', 'OMA', 'HOT', 'OGG', 'ICT', 'MCI', 'MSN', 'DLG', 'HRO', 'PHX', 'BGR', 'BUF', 'GEG', 'SFO', 'GNV', 'MEM', 'ELD', 'PVU', 'LAX', 'CLE', 'WTK', 'CVG', 'AIA', 'JNU', 'LFT', 'EWR', 'BOI', 'GCK', 'MOT', 'DAL', 'HLN', 'LCH', 'KOA', 'MYR', 'ACK', 'DCA', 'LAM', 'ACY', 'PUB', 'PQI', 'ADQ', 'FLL', 'INL', 'SLC', 'HON', 'MDT', 'LNK', 'LAN', 'MUE', 'MSS', 'IAH', 'SOW', 'BFL', 'ELP', 'HRL', 'MMU', 'PNS', 'HOU', 'PIT', 'BRW', 'ECP', 'MMH', 'MIA', 'SEA', 'CHA', 'JAN', 'GAM', 'LGB', 'IPT', 'IND', 'KQA', 'HPN', 'JBR', 'ALW', 'YUM', 'CNM', 'DLH', 'BET', 'PKA', 'LIH', 'YAK', 'ATY', 'RIC', 'SHV', 'CDV', 'ORF', 'BPT', 'SAV', 'OME', 'PIE', 'MQT', 'SCC', 'SAT', 'ROC', 'TEB', 'BKW', 'RDU', 'DAY', 'ENA', 'LAS', 'IAG', 'IAN', 'PHF', 'TUS', 'BRL', 'AKP', 'PVD', 'SBY', 'CEC', 'BUR', 'DTW', 'TPA', 'EEK', 'MYU', 'SPS', 'HIB', 'SHH', 'MAF', 'GRB', 'LUK', 'ARC', 'AGS', 'ISN', 'LIT', 'SWF', 'HOM', 'TBN', 'ABR', 'ABY', 'AHN', 'DFW', 'MLB', 'APN', 'AUS', 'BFD', 'BFF', 'TYS', 'BQK', 'STL', 'GRR', 'CGI', 'CIU', 'ATL', 'DRG', 'CMX', 'DDC', 'DUJ', 'EAU', 'EKO', 'EWB', 'BNA', 'FAT', 'GRI', 'OTZ', 'HTS', 'TOG', 'IRK', 'LGA', 'TLH', 'LBE', 'LBF', 'AUG', 'LMT', 'IPL', 'MKL', 'LYH', 'MKG', 'MSL', 'FAY', 'OWB', 'BTV', 'JAX', 'DRO', 'IAD', 'CLL', 'MKE', 'ABI', 'COU', 'PDX', 'SHR', 'PBI', 'SLN', 'SMX', 'TUP', 'UIN', 'VCT', 'HNL', 'DSM', 'EWN', 'SAN', 'MLU', 'AOO', 'ONT', 'ROW', 'BRO', 'DHN', 'FMN', 'CRP', 'SYR', 'MDW', 'SJC', 'HOB', 'DEN', 'PHL', 'SUX', 'MCN', 'NUL', 'LAR', 'CMH', 'GAL', 'IMT', 'AET', 'ACT', 'TXK', 'PBG', 'VEE', 'ANC', 'LEB', 'BLI', 'WBQ', 'MOB', 'SAF', 'CEM', 'LNS', 'ALO', 'BLV', 'SHG', 'RSW', 'AKN', 'JHM', 'JFK', 'MKK', 'CYS', 'SCK', 'CHS', 'RNO', 'MTJ', 'RIW', 'BHM', 'VIS', 'MOD', 'SMF', 'COS', 'SDP', 'MCE', 'OTH', 'CDC', 'BDL', 'MFE', 'GCN', 'LBB', 'ORD', 'FAI', 'PIB', 'ART', 'PSP', 'AMA', 'SJT', 'FOE', 'EAT', 'ILM', 'BTR', 'PIR', 'TYR', 'BWI', 'LNY', 'AEX', 'PLN', 'CDB', 'TUL', 'SIT', 'ISP', 'MSP', 'ILG', 'DUT', 'MSY', 'PWM', 'OKC', 'ALB', 'VDZ', 'SNA', 'RHI', 'CPR', 'VPS', 'EYW', 'CLT', 'RKS', 'MCO', 'FLO', 'GTF', 'YNG', 'ESD', 'RUT', 'BRD', 'LWB', 'PGV', 'CYF', 'SBP', 'WSN', 'AGN', 'SLK', 'WMO', 'ELV', 'ADK', 'GST', 'OGS', 'HCR', 'HNS', 'KLG', 'MCG', 'ESC', 'ANI', 'STS', 'WRG', 'BFI', 'ASE', 'VLD', 'HPB', 'EMK', 'WRL', 'PUW', 'LWS', 'ELM', 'ITH', 'MRY', 'SBA', 'DAB', 'RSH', 'YKM', 'CAE', 'LCK', 'UNK', 'UST', 'GUC', 'MBL', 'PGD', 'JHW', 'CLD', 'SHD', 'DIK', 'SDY', 'CDR', 'KPV', 'MCK', 'GDV', 'OLF', 'ALS', 'CNY', 'VEL', 'HVN', 'AVL', 'GSO', 'FSD', 'FRD', 'MHT', 'APF', 'EGX', 'SDF', 'CHO', 'ROA', 'LEX', 'EVV', 'ABQ', 'BZN', 'BIL', 'BTM', 'TVC', 'KWK', 'BHB', 'RKD', 'JAC', 'RFD', 'SHX', 'CIK', 'GSP', 'HUS', 'HSL', 'BMI', 'GPT', 'AZO', 'TOL', 'FWA', 'DEC', 'CID', 'LSE', 'CWA', 'PIA', 'ATW', 'RST', 'CMI', 'MHK', 'MOU', 'FNT', 'FKL', 'GJT', 'SGU', 'VAK', 'SRQ', 'HNH', 'MLI', 'MTM', 'HYG', 'GLH', 'BIS', 'PSC', 'PIP', 'MWA', 'AKK', 'KYK', 'KLN', 'NUI']\n\n\n\n\n\n\n\n\n\nThe nodes in this graph are airports, represented by their IATA codes; two nodes are connected with an edge if there is a scheduled flight directly connecting these two airports. We’ll assume this graph to be undirected since a flight in one direction usually means there is a return flight.\nThus this graph has edges\n[('HOM', 'ANC'), ('BGM', 'PHL'), ('BGM', 'IAD'), ...]\nwhere ANC is Anchorage, IAD is Washington Dulles, etc.\nThese nodes also have attributes associated with them, containing additional information about the airports, in the form of a dictionary:\n\nG.nodes[\"IND\"]\n\n{'name': 'Indianapolis International Airport',\n 'latitude': 39.7173,\n 'longitude': -86.294403,\n 'IATA': 'IND'}\n\n\nExercise. Is there a direct flight between Indianapolis and Fairbanks, Alaska (FAI)? A direct flight is one with no intermediate stops.\n\n# Your code here\n\nExercise. If I wanted to fly from Indianapolis (IND) to Fairbanks, Alaska (FAI) what would be an itinerary with the fewest number of flights?\n\n# Your code here\n\nExercise. Is it possible to travel from any airport in the US to any other airport in the US, possibly using connecting flights? In other words, does there exist a path in the network between every possible pair of airports (is the graph connected)?\n\n# Your code here\n\nExercise. Which airports are the most important for connectivity?\n\n# Your code here\n\nExercise. What happens if a major hub is removed?\n\n# Your code here"
   },
@@ -2391,7 +2435,7 @@
     "href": "modules/networks/connectivity.html#connectivity-in-undirected-graphs",
     "title": "Networks: Connectivity",
     "section": "Connectivity in Undirected Graphs",
-    "text": "Connectivity in Undirected Graphs\nConnectivity is a fundamental property of graphs that describes how well the nodes are connected to each other. In an undirected graph, a graph is connected if there is a path between any two nodes. If a graph is not connected, it consists of multiple connected components, which are subgraphs in which any two nodes are connected by a path.\n\nPaths in an Undirected Graph\nA path in a network is a sequence of edges connecting two nodes.\nTake a look at the food graph we created above. Is there a path from “bread” to “watermelon”?\n\n# Draw the graph\npos = nx.circular_layout(G_foods)\nnx.draw(G_foods, node_color=\"lightblue\", with_labels=True, pos=pos)\nplt.show()\n\n\n\n\n\n\n\n\nNetworkX provides has_path(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;) to check if there is a path between two nodes:\n\n# Check if there is a path from 'bread' to 'watermelon'\nprint(\n    \"Is there a path from 'bread' to 'watermelon'?\",\n    nx.has_path(G_foods, \"bread\", \"watermelon\")\n)\n\nIs there a path from 'bread' to 'watermelon'? True\n\n\nThere can be more than one path between two nodes. We can use all_simple_paths(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;) to find all the simple paths between two nodes:\n\nls_paths = list(nx.all_simple_paths(G_foods, \"bread\", \"watermelon\"))\nprint(\"All paths from 'bread' to 'watermelon':\", ls_paths)\n\nAll paths from 'bread' to 'watermelon': [['bread', 'cheese', 'cured ham', 'watermelon'], ['bread', 'chocolate', 'watermelon'], ['bread', 'cured ham', 'watermelon']]\n\n\n\n\nConnected Components in Undirected Graphs\nA connected component is a subgraph in which any two nodes are connected by a path. A graph is connected if it has only one connected component.\n\n\n\n\n\n\nHow many connected components does G_foods have?\n\n\n\n\n\nG_foods has one connected component, since all nodes are connected to each other through some path.\nAs usual, we can verify this with NetworkX:\n\nprint(\"Connected components:\", list(nx.connected_components(G_foods)))\n\nConnected components: [{'cured ham', 'cheese', 'chocolate', 'bread', 'watermelon'}]\n\n\n\n\n\n\n\nDiameter and Average Path Length\nThe diameter of a graph is the length of the longest shortest path between any two nodes in the graph. It gives us an idea of how “far apart” the nodes are in the graph.\n\nprint(\"Diameter:\", nx.diameter(G_foods))\n\nDiameter: 2\n\n\nThe average path length (APL) is the average of the shortest paths between all pairs of nodes.\n\nprint(\"Average shortest path length:\", nx.average_shortest_path_length(G_foods))\n\nAverage shortest path length: 1.4",
+    "text": "Connectivity in Undirected Graphs\nConnectivity is a fundamental property of graphs that describes how well the nodes are connected to each other. In an undirected graph, a graph is connected if there is a path between any two nodes. If a graph is not connected, it consists of multiple connected components, which are subgraphs in which any two nodes are connected by a path.\n\nPaths in an Undirected Graph\nA path in a network is a sequence of edges connecting two nodes.\nTake a look at the food graph we created above. Is there a path from “bread” to “watermelon”?\n\n# Draw the graph\npos = nx.circular_layout(G_foods)\nnx.draw(G_foods, node_color=\"lightblue\", with_labels=True, pos=pos)\nplt.show()\n\n\n\n\n\n\n\n\nNetworkX provides has_path(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;) to check if there is a path between two nodes:\n\n# Check if there is a path from 'bread' to 'watermelon'\nprint(\n    \"Is there a path from 'bread' to 'watermelon'?\",\n    nx.has_path(G_foods, \"bread\", \"watermelon\")\n)\n\nIs there a path from 'bread' to 'watermelon'? True\n\n\nThere can be more than one path between two nodes. We can use all_simple_paths(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;) to find all the simple paths between two nodes:\n\nls_paths = list(nx.all_simple_paths(G_foods, \"bread\", \"watermelon\"))\nprint(\"All paths from 'bread' to 'watermelon':\", ls_paths)\n\nAll paths from 'bread' to 'watermelon': [['bread', 'cheese', 'cured ham', 'watermelon'], ['bread', 'chocolate', 'watermelon'], ['bread', 'cured ham', 'watermelon']]\n\n\n\n\nConnected Components in Undirected Graphs\nA connected component is a subgraph in which any two nodes are connected by a path. A graph is connected if it has only one connected component.\n\n\n\n\n\n\nHow many connected components does G_foods have?\n\n\n\n\n\nG_foods has one connected component, since all nodes are connected to each other through some path.\nAs usual, we can verify this with NetworkX:\n\nprint(\"Connected components:\", list(nx.connected_components(G_foods)))\n\nConnected components: [{'chocolate', 'cured ham', 'watermelon', 'cheese', 'bread'}]\n\n\n\n\n\n\n\nDiameter and Average Path Length\nThe diameter of a graph is the length of the longest shortest path between any two nodes in the graph. It gives us an idea of how “far apart” the nodes are in the graph.\n\nprint(\"Diameter:\", nx.diameter(G_foods))\n\nDiameter: 2\n\n\nThe average path length (APL) is the average of the shortest paths between all pairs of nodes.\n\nprint(\"Average shortest path length:\", nx.average_shortest_path_length(G_foods))\n\nAverage shortest path length: 1.4",
     "crumbs": [
       "Session 5: Networks",
       "Network Connectivity"
@@ -2402,7 +2446,7 @@
     "href": "modules/networks/connectivity.html#connectivity-in-directed-graphs",
     "title": "Networks: Connectivity",
     "section": "Connectivity in Directed Graphs",
-    "text": "Connectivity in Directed Graphs\nConnectivity in directed graphs is more complex than in undirected graphs, because we have to consider the direction of the edges. In a directed graph, we can have strongly connected components and weakly connected components.\n\nPaths in Directed Graphs\nIn a directed graph, a path must follow the direction of the edges. For example, in the directed food chain graph D, is there a path from “grass” to “lion”?\n\n# Draw the graph\npos = nx.spring_layout(D_food_chain)\nnx.draw(D_food_chain, node_color=\"lightgreen\", with_labels=True, pos=pos)\nplt.show()\n\n\n\n\n\n\n\n\nWe can check for the existence of a path in a directed graph using the same has_path(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;) function:\n\nprint(\"Is there a path from 'grass' to 'lion'?\", nx.has_path(D_food_chain, \"grass\", \"lion\"))   \nprint(\"Is there a path from 'lion' to 'grass'?\", nx.has_path(D_food_chain, \"lion\", \"grass\"))\n\nIs there a path from 'grass' to 'lion'? True\nIs there a path from 'lion' to 'grass'? False\n\n\n\n\nStrongly Connected Components\nA strongly connected component is a subgraph in which there is a directed path from any node to any other node. A directed graph is strongly connected if it has only one strongly connected component.\n\nprint(\"Is strongly connected:\", nx.is_strongly_connected(D_food_chain))\nprint(\"Strongly connected components:\", list(nx.strongly_connected_components(D_food_chain)))\n\nIs strongly connected: False\nStrongly connected components: [{'lion'}, {'hyena'}, {'antelope'}, {'zebra'}, {'grass'}]\n\n\n\n\nWeakly Connected Components\nA weakly connected component is a subgraph in which there is an undirected path from any node to any other node. A directed graph is weakly connected if it has only one weakly connected component.\n\nprint(\"Is weakly connected:\", nx.is_weakly_connected(D_food_chain))\nprint(\"Weakly connected components:\", list(nx.weakly_connected_components(D_food_chain)))\n\nIs weakly connected: True\nWeakly connected components: [{'lion', 'hyena', 'zebra', 'antelope', 'grass'}]\n\n\nExercise. How can we turn D_food_chain into a strongly connected graph? Try adding some edges to make it strongly connected.\n\n\n\n\n\n\nSolution\n\n\n\n\n\nTo make D_food_chain strongly connected, we need to ensure that there is a directed path from every node to every other node. One way to achieve this is to add edges that create cycles between the nodes. Our example is a though one, as food chains are typically acyclic. Still, we can take note from “The Lion King”:\n\n“When we die, our bodies become the grass, and the antelope eat the grass. And so, we are all connected in the great Circle of Life.” - Mufasa (lion)\n\n\n# When a predator dies, it returns to the food chain as prey for the grass\nD_food_chain.add_edges_from([\n    (\"lion\", \"grass\"),\n])\n\n# Visualize the new graph\npos = nx.spring_layout(D_food_chain)\nnx.draw(D_food_chain, node_color=\"lightgreen\", with_labels=True, pos=pos)\nplt.show()\n\n\n\n\n\n\n\n\n\nprint(\"Is strongly connected:\", nx.is_strongly_connected(D_food_chain))\nprint(\"Strongly connected components:\", list(nx.strongly_connected_components(D_food_chain)))\n\nIs strongly connected: True\nStrongly connected components: [{'lion', 'hyena', 'zebra', 'antelope', 'grass'}]\n\n\n\n\n\n\n\nDiameter and Average Path Length in Directed Graphs\nThe diameter and average path length in directed graphs are calculated based on the shortest paths that follow the direction of the edges. If the graph is not strongly connected, we can only calculate these metrics for the largest strongly connected component.\n\n# Get the largest strongly connected component\nlargest_scc = max(nx.strongly_connected_components(D_food_chain), key=len)\nsubgraph = D_food_chain.subgraph(largest_scc)\nprint(\"Diameter of the largest strongly connected component:\", nx.diameter(subgraph))\nprint(\"Average shortest path length of the largest strongly connected component:\", nx.average_shortest_path_length(subgraph))\n\nDiameter of the largest strongly connected component: 3\nAverage shortest path length of the largest strongly connected component: 1.85",
+    "text": "Connectivity in Directed Graphs\nConnectivity in directed graphs is more complex than in undirected graphs, because we have to consider the direction of the edges. In a directed graph, we can have strongly connected components and weakly connected components.\n\nPaths in Directed Graphs\nIn a directed graph, a path must follow the direction of the edges. For example, in the directed food chain graph D, is there a path from “grass” to “lion”?\n\n# Draw the graph\npos = nx.spring_layout(D_food_chain)\nnx.draw(D_food_chain, node_color=\"lightgreen\", with_labels=True, pos=pos)\nplt.show()\n\n\n\n\n\n\n\n\nWe can check for the existence of a path in a directed graph using the same has_path(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;) function:\n\nprint(\"Is there a path from 'grass' to 'lion'?\", nx.has_path(D_food_chain, \"grass\", \"lion\"))   \nprint(\"Is there a path from 'lion' to 'grass'?\", nx.has_path(D_food_chain, \"lion\", \"grass\"))\n\nIs there a path from 'grass' to 'lion'? True\nIs there a path from 'lion' to 'grass'? False\n\n\n\n\nStrongly Connected Components\nA strongly connected component is a subgraph in which there is a directed path from any node to any other node. A directed graph is strongly connected if it has only one strongly connected component.\n\nprint(\"Is strongly connected:\", nx.is_strongly_connected(D_food_chain))\nprint(\"Strongly connected components:\", list(nx.strongly_connected_components(D_food_chain)))\n\nIs strongly connected: False\nStrongly connected components: [{'lion'}, {'hyena'}, {'antelope'}, {'zebra'}, {'grass'}]\n\n\n\n\nWeakly Connected Components\nA weakly connected component is a subgraph in which there is an undirected path from any node to any other node. A directed graph is weakly connected if it has only one weakly connected component.\n\nprint(\"Is weakly connected:\", nx.is_weakly_connected(D_food_chain))\nprint(\"Weakly connected components:\", list(nx.weakly_connected_components(D_food_chain)))\n\nIs weakly connected: True\nWeakly connected components: [{'zebra', 'antelope', 'lion', 'hyena', 'grass'}]\n\n\nExercise. How can we turn D_food_chain into a strongly connected graph? Try adding some edges to make it strongly connected.\n\n\n\n\n\n\nSolution\n\n\n\n\n\nTo make D_food_chain strongly connected, we need to ensure that there is a directed path from every node to every other node. One way to achieve this is to add edges that create cycles between the nodes. Our example is a though one, as food chains are typically acyclic. Still, we can take note from “The Lion King”:\n\n“When we die, our bodies become the grass, and the antelope eat the grass. And so, we are all connected in the great Circle of Life.” - Mufasa (lion)\n\n\n# When a predator dies, it returns to the food chain as prey for the grass\nD_food_chain.add_edges_from([\n    (\"lion\", \"grass\"),\n])\n\n# Visualize the new graph\npos = nx.spring_layout(D_food_chain)\nnx.draw(D_food_chain, node_color=\"lightgreen\", with_labels=True, pos=pos)\nplt.show()\n\n\n\n\n\n\n\n\n\nprint(\"Is strongly connected:\", nx.is_strongly_connected(D_food_chain))\nprint(\"Strongly connected components:\", list(nx.strongly_connected_components(D_food_chain)))\n\nIs strongly connected: True\nStrongly connected components: [{'zebra', 'antelope', 'lion', 'hyena', 'grass'}]\n\n\n\n\n\n\n\nDiameter and Average Path Length in Directed Graphs\nThe diameter and average path length in directed graphs are calculated based on the shortest paths that follow the direction of the edges. If the graph is not strongly connected, we can only calculate these metrics for the largest strongly connected component.\n\n# Get the largest strongly connected component\nlargest_scc = max(nx.strongly_connected_components(D_food_chain), key=len)\nsubgraph = D_food_chain.subgraph(largest_scc)\nprint(\"Diameter of the largest strongly connected component:\", nx.diameter(subgraph))\nprint(\"Average shortest path length of the largest strongly connected component:\", nx.average_shortest_path_length(subgraph))\n\nDiameter of the largest strongly connected component: 3\nAverage shortest path length of the largest strongly connected component: 1.85",
     "crumbs": [
       "Session 5: Networks",
       "Network Connectivity"

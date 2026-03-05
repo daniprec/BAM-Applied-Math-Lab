@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Applied Math Lab - SIR Model on Networks</title>
+<title>Applied Math Lab - Networks: SIR Model</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -563,12 +563,17 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#what-is-the-sir-model" id="toc-what-is-the-sir-model" class="nav-link active" data-scroll-target="#what-is-the-sir-model">What is the SIR Model?</a></li>
-  <li><a href="#create-a-network" id="toc-create-a-network" class="nav-link" data-scroll-target="#create-a-network">Create a Network</a></li>
+  <li><a href="#what-is-the-sir-model" id="toc-what-is-the-sir-model" class="nav-link active" data-scroll-target="#what-is-the-sir-model">What is the SIR Model?</a>
+  <ul>
+  <li><a href="#discrete-time-update-rule" id="toc-discrete-time-update-rule" class="nav-link" data-scroll-target="#discrete-time-update-rule">Discrete-Time Update Rule</a></li>
+  </ul></li>
+  <li><a href="#a-key-rigorous-fact-absorbing-states" id="toc-a-key-rigorous-fact-absorbing-states" class="nav-link" data-scroll-target="#a-key-rigorous-fact-absorbing-states">A key rigorous fact (absorbing states)</a></li>
+  <li><a href="#imports-and-parameters" id="toc-imports-and-parameters" class="nav-link" data-scroll-target="#imports-and-parameters">Imports and Parameters</a></li>
+  <li><a href="#choose-a-network" id="toc-choose-a-network" class="nav-link" data-scroll-target="#choose-a-network">Choose a Network</a></li>
   <li><a href="#initialize-states" id="toc-initialize-states" class="nav-link" data-scroll-target="#initialize-states">Initialize States</a></li>
-  <li><a href="#sir-simulation-function" id="toc-sir-simulation-function" class="nav-link" data-scroll-target="#sir-simulation-function">SIR Simulation Function</a></li>
+  <li><a href="#implement-the-sir-dynamics" id="toc-implement-the-sir-dynamics" class="nav-link" data-scroll-target="#implement-the-sir-dynamics">Implement the SIR Dynamics</a></li>
   <li><a href="#run-and-visualize" id="toc-run-and-visualize" class="nav-link" data-scroll-target="#run-and-visualize">Run and Visualize</a></li>
-  <li><a href="#experiment" id="toc-experiment" class="nav-link" data-scroll-target="#experiment">Experiment</a></li>
+  <li><a href="#key-questions-to-answer" id="toc-key-questions-to-answer" class="nav-link" data-scroll-target="#key-questions-to-answer">Key Questions to Answer</a></li>
   <li><a href="#whats-next" id="toc-whats-next" class="nav-link" data-scroll-target="#whats-next">What’s Next?</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/networks/sir.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -578,7 +583,8 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../modules/networks/index.html">Session 5: Networks</a></li><li class="breadcrumb-item"><a href="../../modules/networks/sir.html">SIR Model</a></li></ol></nav>
 <div class="quarto-title">
-<div class="quarto-title-block"><div><h1 class="title">SIR Model on Networks</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+<div class="quarto-title-block"><div><h1 class="title">Networks: SIR Model</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+<p class="subtitle lead">Guided Exercise</p>
 </div>
 
 
@@ -595,99 +601,259 @@ window.Quarto = {
 </header>
 
 
-<p>This module demonstrates how to simulate the SIR (Susceptible-Infected-Recovered) epidemic model on networks using NetworkX. You will see how network structure and model parameters affect the spread and final size of an epidemic.</p>
+<p>The SIR (Susceptible–Infected–Recovered) model is the “next step” after SIS: once a node recovers, it becomes <strong>permanently immune</strong>.</p>
+<p>In this module, we reuse the same ideas from the SIS page (graph models + node attributes) and focus on what is new:</p>
+<ul>
+<li>the new <strong>Recovered (R)</strong> state,</li>
+<li>the fact that infection cannot return once it disappears,</li>
+<li>the notion of <strong>final epidemic size</strong>.</li>
+</ul>
 <section id="what-is-the-sir-model" class="level2">
 <h2 class="anchored" data-anchor-id="what-is-the-sir-model">What is the SIR Model?</h2>
 <ul>
 <li><strong>States:</strong> Each node can be Susceptible (S), Infected (I), or Recovered (R).</li>
 <li><strong>Transitions:</strong>
 <ul>
-<li>S → I: A susceptible node becomes infected if it has an infected neighbor (with probability <span class="math inline">\(\beta\)</span>).</li>
-<li>I → R: An infected node recovers and becomes permanently immune (with probability <span class="math inline">\(\mu\)</span>).</li>
+<li><span class="math inline">\(S \to I\)</span>: a susceptible node becomes infected through infected neighbors.</li>
+<li><span class="math inline">\(I \to R\)</span>: an infected node recovers and becomes permanently immune.</li>
 </ul></li>
-<li><strong>Permanent immunity:</strong> Recovered nodes cannot be infected again.</li>
+<li><strong>Permanent immunity:</strong> <span class="math inline">\(R\)</span> is an absorbing state (once recovered, always recovered).</li>
 </ul>
+<section id="discrete-time-update-rule" class="level3">
+<h3 class="anchored" data-anchor-id="discrete-time-update-rule">Discrete-Time Update Rule</h3>
+<p>We simulate in discrete time steps <span class="math inline">\(t = 0, 1, 2, \dots\)</span>.</p>
+<p>If a susceptible node has <span class="math inline">\(m\)</span> infected neighbors, we use the same “independent trials” rule as SIS:</p>
+<p><span class="math display">\[
+\mathbb{P}(S \to I) = 1 - (1 - \beta)^m.
+\]</span></p>
+<p>If a node is infected, it recovers with probability:</p>
+<p><span class="math display">\[
+\mathbb{P}(I \to R) = \mu.
+\]</span></p>
+<p>Recovered nodes stay recovered:</p>
+<p><span class="math display">\[
+\mathbb{P}(R \to R) = 1.
+\]</span></p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+What changes compared to SIS?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>In SIS, <span class="math inline">\(I \to S\)</span> (you become susceptible again). In SIR, <span class="math inline">\(I \to R\)</span> (you become immune). That single change completely changes the <em>long-term</em> behavior.</p>
+</div>
+</div>
+</div>
 </section>
-<section id="create-a-network" class="level2">
-<h2 class="anchored" data-anchor-id="create-a-network">Create a Network</h2>
-<p>You can use any NetworkX graph (random, small-world, scale-free, or real data).</p>
-<div id="46b04159" class="cell" data-execution_count="1">
+</section>
+<section id="a-key-rigorous-fact-absorbing-states" class="level2">
+<h2 class="anchored" data-anchor-id="a-key-rigorous-fact-absorbing-states">A key rigorous fact (absorbing states)</h2>
+<p>On a finite graph with <span class="math inline">\(\mu &gt; 0\)</span>, the process reaches a time <span class="math inline">\(T\)</span> such that there are <strong>no infected nodes</strong> (<span class="math inline">\(I(T)=0\)</span>), and after that nothing can ever change.</p>
+<p>Intuition (but still rigorous): each node can become infected <strong>at most once</strong> (because <span class="math inline">\(R\)</span> is permanent), so there can be at most <span class="math inline">\(N\)</span> infection events. Since recovery happens with positive probability, infections cannot persist forever.</p>
+<p>This means SIR always ends in a “frozen” configuration containing only <span class="math inline">\(S\)</span> and <span class="math inline">\(R\)</span> nodes.</p>
+</section>
+<section id="imports-and-parameters" class="level2">
+<h2 class="anchored" data-anchor-id="imports-and-parameters">Imports and Parameters</h2>
+<div id="c86b0902" class="cell" data-message="false" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Example: random graph</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> nx.gnp_random_graph(n<span class="op">=</span><span class="dv">50</span>, p<span class="op">=</span><span class="fl">0.1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>SEED <span class="op">=</span> <span class="dv">7</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Model parameters</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>beta <span class="op">=</span> <span class="fl">0.20</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> <span class="fl">0.10</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulation parameters</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>steps <span class="op">=</span> <span class="dv">120</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>initial_infected <span class="op">=</span> <span class="dv">5</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> <span class="dv">100</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="choose-a-network" class="level2">
+<h2 class="anchored" data-anchor-id="choose-a-network">Choose a Network</h2>
+<p>We will reuse the same helper pattern as in the SIS page (see <a href="../../modules/networks/sis.html">SIS Model</a>).</p>
+<div id="b71292fc" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> make_graph(<span class="st">"random"</span>, n<span class="op">=</span>N, seed<span class="op">=</span>SEED)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"N, E ="</span>, G.number_of_nodes(), G.number_of_edges())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>N, E = 100 399</code></pre>
+</div>
 </div>
 </section>
 <section id="initialize-states" class="level2">
 <h2 class="anchored" data-anchor-id="initialize-states">Initialize States</h2>
-<div id="6adf4100" class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># All nodes start susceptible except a few infected</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>state <span class="op">=</span> {node: <span class="st">'S'</span> <span class="cf">for</span> node <span class="kw">in</span> g.nodes()}</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>initial_infected <span class="op">=</span> np.random.choice(g.nodes(), size<span class="op">=</span><span class="dv">5</span>, replace<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> node <span class="kw">in</span> initial_infected:</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    state[node] <span class="op">=</span> <span class="st">'I'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>As in SIS, we store states on the graph using a node attribute called <code>state</code>.</p>
+<div id="35a4b2c9" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>initialize_state(G, initial_infected<span class="op">=</span>initial_infected, seed<span class="op">=</span>SEED)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Initial counts (S, I, R) ="</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">sum</span>(G.nodes[u][<span class="st">"state"</span>] <span class="op">==</span> <span class="st">"S"</span> <span class="cf">for</span> u <span class="kw">in</span> G.nodes()),</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">sum</span>(G.nodes[u][<span class="st">"state"</span>] <span class="op">==</span> <span class="st">"I"</span> <span class="cf">for</span> u <span class="kw">in</span> G.nodes()),</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">sum</span>(G.nodes[u][<span class="st">"state"</span>] <span class="op">==</span> <span class="st">"R"</span> <span class="cf">for</span> u <span class="kw">in</span> G.nodes()),</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Initial counts (S, I, R) = 95 5 0</code></pre>
+</div>
 </div>
 </section>
-<section id="sir-simulation-function" class="level2">
-<h2 class="anchored" data-anchor-id="sir-simulation-function">SIR Simulation Function</h2>
-<div id="b7cc0f04" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_sir(g, beta<span class="op">=</span><span class="fl">0.2</span>, mu<span class="op">=</span><span class="fl">0.1</span>, steps<span class="op">=</span><span class="dv">50</span>):</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    state <span class="op">=</span> {node: <span class="st">'S'</span> <span class="cf">for</span> node <span class="kw">in</span> g.nodes()}</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    infected_counts <span class="op">=</span> []</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    recovered_counts <span class="op">=</span> []</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    initial_infected <span class="op">=</span> np.random.choice(g.nodes(), size<span class="op">=</span><span class="dv">5</span>, replace<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> node <span class="kw">in</span> initial_infected:</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        state[node] <span class="op">=</span> <span class="st">'I'</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> t <span class="kw">in</span> <span class="bu">range</span>(steps):</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        new_state <span class="op">=</span> state.copy()</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> node <span class="kw">in</span> g.nodes():</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> state[node] <span class="op">==</span> <span class="st">'S'</span>:</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>                infected_neighbors <span class="op">=</span> [nbr <span class="cf">for</span> nbr <span class="kw">in</span> g.neighbors(node) <span class="cf">if</span> state[nbr] <span class="op">==</span> <span class="st">'I'</span>]</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> infected_neighbors <span class="kw">and</span> np.random.rand() <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">-</span> (<span class="dv">1</span> <span class="op">-</span> beta)<span class="op">**</span><span class="bu">len</span>(infected_neighbors):</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>                    new_state[node] <span class="op">=</span> <span class="st">'I'</span></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>            <span class="cf">elif</span> state[node] <span class="op">==</span> <span class="st">'I'</span>:</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> np.random.rand() <span class="op">&lt;</span> mu:</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>                    new_state[node] <span class="op">=</span> <span class="st">'R'</span></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>        state <span class="op">=</span> new_state</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>        infected_counts.append(<span class="bu">sum</span>(<span class="dv">1</span> <span class="cf">for</span> s <span class="kw">in</span> state.values() <span class="cf">if</span> s <span class="op">==</span> <span class="st">'I'</span>))</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>        recovered_counts.append(<span class="bu">sum</span>(<span class="dv">1</span> <span class="cf">for</span> s <span class="kw">in</span> state.values() <span class="cf">if</span> s <span class="op">==</span> <span class="st">'R'</span>))</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> infected_counts, recovered_counts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="implement-the-sir-dynamics" class="level2">
+<h2 class="anchored" data-anchor-id="implement-the-sir-dynamics">Implement the SIR Dynamics</h2>
+<p>The update is synchronous: compute all changes from the old state, then apply them.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> step_sir(G, beta, mu):</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: read current states from G.nodes[u]["state"]</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: build new_state dict with values in {"S","I","R"}</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: write new_state back via nx.set_node_attributes</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> G</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Solved: <code>step_sir()</code>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div id="52f09fdd" class="cell" data-message="false" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> step_sir(G, beta, mu):</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    current <span class="op">=</span> {u: G.nodes[u][<span class="st">"state"</span>] <span class="cf">for</span> u <span class="kw">in</span> G.nodes()}</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    new_state <span class="op">=</span> current.copy()</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> u <span class="kw">in</span> G.nodes():</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> current[u] <span class="op">==</span> <span class="st">"S"</span>:</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>            m <span class="op">=</span> <span class="bu">sum</span>(<span class="dv">1</span> <span class="cf">for</span> v <span class="kw">in</span> G.neighbors(u) <span class="cf">if</span> current[v] <span class="op">==</span> <span class="st">"I"</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> m <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>                p_infect <span class="op">=</span> <span class="dv">1</span> <span class="op">-</span> (<span class="dv">1</span> <span class="op">-</span> beta) <span class="op">**</span> m</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> np.random.random() <span class="op">&lt;</span> p_infect:</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>                    new_state[u] <span class="op">=</span> <span class="st">"I"</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> current[u] <span class="op">==</span> <span class="st">"I"</span>:</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> np.random.random() <span class="op">&lt;</span> mu:</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>                new_state[u] <span class="op">=</span> <span class="st">"R"</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>            <span class="co"># "R" stays "R"</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>            <span class="cf">pass</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    nx.set_node_attributes(G, new_state, <span class="st">"state"</span>)</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> G</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+<p>Now wrap it into a simulator. Compared to SIS, we typically track <strong>all three</strong> counts: <span class="math inline">\(S(t), I(t), R(t)\)</span>.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_sir(G, beta, mu, steps<span class="op">=</span><span class="dv">100</span>, initial_infected<span class="op">=</span><span class="dv">5</span>, seed<span class="op">=</span>SEED):</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> S_counts, I_counts, R_counts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Solved: <code>run_sir()</code>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div id="da122f97" class="cell" data-message="false" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_sir(G, beta, mu, steps<span class="op">=</span><span class="dv">100</span>, initial_infected<span class="op">=</span><span class="dv">5</span>, seed<span class="op">=</span>SEED):</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    H <span class="op">=</span> G.copy()</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Make the whole run reproducible (step_sir uses np.random.random)</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    np.random.seed(seed)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    initialize_state(H, initial_infected<span class="op">=</span>initial_infected, seed<span class="op">=</span>seed)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> counts(H):</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>        S <span class="op">=</span> <span class="bu">sum</span>(H.nodes[u][<span class="st">"state"</span>] <span class="op">==</span> <span class="st">"S"</span> <span class="cf">for</span> u <span class="kw">in</span> H.nodes())</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>        I <span class="op">=</span> <span class="bu">sum</span>(H.nodes[u][<span class="st">"state"</span>] <span class="op">==</span> <span class="st">"I"</span> <span class="cf">for</span> u <span class="kw">in</span> H.nodes())</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>        R <span class="op">=</span> <span class="bu">sum</span>(H.nodes[u][<span class="st">"state"</span>] <span class="op">==</span> <span class="st">"R"</span> <span class="cf">for</span> u <span class="kw">in</span> H.nodes())</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> S, I, R</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    S0, I0, R0 <span class="op">=</span> counts(H)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    S_counts <span class="op">=</span> [S0]</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    I_counts <span class="op">=</span> [I0]</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    R_counts <span class="op">=</span> [R0]</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(steps):</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> I_counts[<span class="op">-</span><span class="dv">1</span>] <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>        step_sir(H, beta<span class="op">=</span>beta, mu<span class="op">=</span>mu)</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>        S, I, R <span class="op">=</span> counts(H)</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>        S_counts.append(S)</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>        I_counts.append(I)</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>        R_counts.append(R)</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> S_counts, I_counts, R_counts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
 </div>
 </section>
 <section id="run-and-visualize" class="level2">
 <h2 class="anchored" data-anchor-id="run-and-visualize">Run and Visualize</h2>
-<div id="ccd58068" class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>infected, recovered <span class="op">=</span> run_sir(g, beta<span class="op">=</span><span class="fl">0.2</span>, mu<span class="op">=</span><span class="fl">0.1</span>, steps<span class="op">=</span><span class="dv">100</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>plt.plot(infected, label<span class="op">=</span><span class="st">'Infected'</span>)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>plt.plot(recovered, label<span class="op">=</span><span class="st">'Recovered'</span>)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Time step'</span>)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Number of nodes'</span>)</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'SIR Model Epidemic Curve'</span>)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The “epidemic curve” in SIR typically shows a single peak in <span class="math inline">\(I(t)\)</span> and then decay to zero.</p>
+<div id="cell-fig-sir-curve" class="cell" data-fig-height="4" data-fig-width="6" data-message="false" data-execution_count="8">
 <div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="sir_files/figure-html/cell-5-output-1.png" class="img-fluid figure-img"></p>
+<div id="fig-sir-curve" class="quarto-figure quarto-figure-center quarto-float anchored" alt="Fractions of susceptible, infected, and recovered nodes over time for a single run of the SIR model.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-sir-curve-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="sir_files/figure-html/fig-sir-curve-output-1.png" class="img-fluid figure-img" alt="Fractions of susceptible, infected, and recovered nodes over time for a single run of the SIR model.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-sir-curve-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: SIR epidemic curve (fractions of S, I, R over time) on one network realization.
+</figcaption>
 </figure>
 </div>
 </div>
 </div>
 </section>
-<section id="experiment" class="level2">
-<h2 class="anchored" data-anchor-id="experiment">Experiment</h2>
+<section id="key-questions-to-answer" class="level2">
+<h2 class="anchored" data-anchor-id="key-questions-to-answer">Key Questions to Answer</h2>
+<p>Here are two precise, testable questions that are <em>specific</em> to SIR:</p>
+<ol type="1">
+<li><strong>Can the network become fully infected?</strong> i.e., does there exist a time <span class="math inline">\(t\)</span> such that <span class="math inline">\(I(t)=N\)</span>?</li>
+<li><strong>Can the network become fully “healed”?</strong> i.e., does there exist a time <span class="math inline">\(t\)</span> such that <span class="math inline">\(I(t)=0\)</span>?</li>
+</ol>
+<p>In SIR, the second question has a clean answer:</p>
 <ul>
-<li>Try different network types (random, small-world, scale-free).</li>
-<li>Vary <span class="math inline">\(\beta\)</span> and <span class="math inline">\(\mu\)</span> to see the epidemic threshold and final epidemic size.</li>
-<li>Analyze how network structure (degree, clustering) affects the spread and peak.</li>
+<li><strong>Yes.</strong> In fact, for a finite graph with <span class="math inline">\(\mu&gt;0\)</span>, you eventually reach <span class="math inline">\(I(t)=0\)</span> and then you are stuck forever (absorbing state).</li>
 </ul>
+<p>The first question depends on <span class="math inline">\((\beta,\mu)\)</span> and the network. It can happen transiently, but it is not an absorbing state.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Discuss
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>In SIR, is “fully healed” the same as “everyone is susceptible again”? Why not?</li>
+<li>What does “final epidemic size” mean here? (Hint: look at <span class="math inline">\(R(\infty)\)</span>.)</li>
+<li>Can you have an epidemic with a large peak but small final size? Or vice versa?</li>
+<li>Compare two graphs with the same <span class="math inline">\(N\)</span> and similar average degree: which features (hubs, clustering, path length) do you expect to increase <span class="math inline">\(R(\infty)\)</span>?</li>
+</ul>
+</div>
+</div>
 </section>
 <section id="whats-next" class="level2">
 <h2 class="anchored" data-anchor-id="whats-next">What’s Next?</h2>
-<p>You’ve completed the epidemic modeling pipeline! Try experimenting with different networks, parameters, or move on to advanced topics in network science.</p>
-<p><strong>Next:</strong> - Compare SIS and SIR results. How does permanent immunity change the outcome? - Ready to apply your knowledge to real-world data? Try the assignment:</p>
+<p>Compare SIS vs SIR: how does permanent immunity change what happens “in the long run”? Then apply your knowledge to real-world data:</p>
 <p><a href="../../modules/networks/assignment.html" class="btn btn-secondary">Assignment: Networks &amp; Real-World Data</a></p>
 
 
@@ -1146,98 +1312,277 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>
   </div>
 </nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="sourceCode" id="cb5" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "SIR Model on Networks"</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>This module demonstrates how to simulate the SIR (Susceptible-Infected-Recovered) epidemic model on networks using NetworkX. You will see how network structure and model parameters affect the spread and final size of an epidemic.</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="fu">## What is the SIR Model?</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**States:** Each node can be Susceptible (S), Infected (I), or Recovered (R).</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Transitions:**</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>S → I: A susceptible node becomes infected if it has an infected neighbor (with probability $\beta$).</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>I → R: An infected node recovers and becomes permanently immune (with probability $\mu$).</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Permanent immunity:** Recovered nodes cannot be infected again.</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="fu">## Create a Network</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>You can use any NetworkX graph (random, small-world, scale-free, or real data).</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Example: random graph</span></span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> nx.gnp_random_graph(n<span class="op">=</span><span class="dv">50</span>, p<span class="op">=</span><span class="fl">0.1</span>)</span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="fu">## Initialize States</span></span>
-<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a><span class="co"># All nodes start susceptible except a few infected</span></span>
-<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>state <span class="op">=</span> {node: <span class="st">'S'</span> <span class="cf">for</span> node <span class="kw">in</span> g.nodes()}</span>
-<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>initial_infected <span class="op">=</span> np.random.choice(g.nodes(), size<span class="op">=</span><span class="dv">5</span>, replace<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> node <span class="kw">in</span> initial_infected:</span>
-<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>    state[node] <span class="op">=</span> <span class="st">'I'</span></span>
-<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a><span class="fu">## SIR Simulation Function</span></span>
-<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_sir(g, beta<span class="op">=</span><span class="fl">0.2</span>, mu<span class="op">=</span><span class="fl">0.1</span>, steps<span class="op">=</span><span class="dv">50</span>):</span>
-<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>    state <span class="op">=</span> {node: <span class="st">'S'</span> <span class="cf">for</span> node <span class="kw">in</span> g.nodes()}</span>
-<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>    infected_counts <span class="op">=</span> []</span>
-<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>    recovered_counts <span class="op">=</span> []</span>
-<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>    initial_infected <span class="op">=</span> np.random.choice(g.nodes(), size<span class="op">=</span><span class="dv">5</span>, replace<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> node <span class="kw">in</span> initial_infected:</span>
-<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>        state[node] <span class="op">=</span> <span class="st">'I'</span></span>
-<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> t <span class="kw">in</span> <span class="bu">range</span>(steps):</span>
-<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>        new_state <span class="op">=</span> state.copy()</span>
-<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> node <span class="kw">in</span> g.nodes():</span>
-<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> state[node] <span class="op">==</span> <span class="st">'S'</span>:</span>
-<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>                infected_neighbors <span class="op">=</span> [nbr <span class="cf">for</span> nbr <span class="kw">in</span> g.neighbors(node) <span class="cf">if</span> state[nbr] <span class="op">==</span> <span class="st">'I'</span>]</span>
-<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> infected_neighbors <span class="kw">and</span> np.random.rand() <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">-</span> (<span class="dv">1</span> <span class="op">-</span> beta)<span class="op">**</span><span class="bu">len</span>(infected_neighbors):</span>
-<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>                    new_state[node] <span class="op">=</span> <span class="st">'I'</span></span>
-<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>            <span class="cf">elif</span> state[node] <span class="op">==</span> <span class="st">'I'</span>:</span>
-<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> np.random.rand() <span class="op">&lt;</span> mu:</span>
-<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>                    new_state[node] <span class="op">=</span> <span class="st">'R'</span></span>
-<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a>        state <span class="op">=</span> new_state</span>
-<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a>        infected_counts.append(<span class="bu">sum</span>(<span class="dv">1</span> <span class="cf">for</span> s <span class="kw">in</span> state.values() <span class="cf">if</span> s <span class="op">==</span> <span class="st">'I'</span>))</span>
-<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a>        recovered_counts.append(<span class="bu">sum</span>(<span class="dv">1</span> <span class="cf">for</span> s <span class="kw">in</span> state.values() <span class="cf">if</span> s <span class="op">==</span> <span class="st">'R'</span>))</span>
-<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> infected_counts, recovered_counts</span>
-<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a><span class="fu">## Run and Visualize</span></span>
-<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a>infected, recovered <span class="op">=</span> run_sir(g, beta<span class="op">=</span><span class="fl">0.2</span>, mu<span class="op">=</span><span class="fl">0.1</span>, steps<span class="op">=</span><span class="dv">100</span>)</span>
-<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a>plt.plot(infected, label<span class="op">=</span><span class="st">'Infected'</span>)</span>
-<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a>plt.plot(recovered, label<span class="op">=</span><span class="st">'Recovered'</span>)</span>
-<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Time step'</span>)</span>
-<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Number of nodes'</span>)</span>
-<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'SIR Model Epidemic Curve'</span>)</span>
-<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
-<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a><span class="fu">## Experiment</span></span>
-<span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Try different network types (random, small-world, scale-free).</span>
-<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Vary $\beta$ and $\mu$ to see the epidemic threshold and final epidemic size.</span>
-<span id="cb5-90"><a href="#cb5-90" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Analyze how network structure (degree, clustering) affects the spread and peak.</span>
-<span id="cb5-91"><a href="#cb5-91" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-92"><a href="#cb5-92" aria-hidden="true" tabindex="-1"></a><span class="fu">## What's Next?</span></span>
-<span id="cb5-93"><a href="#cb5-93" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-94"><a href="#cb5-94" aria-hidden="true" tabindex="-1"></a>You've completed the epidemic modeling pipeline! Try experimenting with different networks, parameters, or move on to advanced topics in network science.</span>
-<span id="cb5-95"><a href="#cb5-95" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-96"><a href="#cb5-96" aria-hidden="true" tabindex="-1"></a>**Next:**</span>
-<span id="cb5-97"><a href="#cb5-97" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Compare SIS and SIR results. How does permanent immunity change the outcome?</span>
-<span id="cb5-98"><a href="#cb5-98" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Ready to apply your knowledge to real-world data? Try the assignment:</span>
-<span id="cb5-99"><a href="#cb5-99" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-100"><a href="#cb5-100" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Assignment: Networks &amp; Real-World Data</span><span class="co">](assignment.qmd)</span>{.btn .btn-secondary}</span>
+<div class="sourceCode" id="cb10" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Networks: SIR Model"</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Guided Exercise"</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>The SIR (Susceptible–Infected–Recovered) model is the "next step" after SIS: once a node recovers, it becomes **permanently immune**.</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>In this module, we reuse the same ideas from the SIS page (graph models + node attributes) and focus on what is new:</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the new **Recovered (R)** state,</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the fact that infection cannot return once it disappears,</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the notion of **final epidemic size**.</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="fu">## What is the SIR Model?</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**States:** Each node can be Susceptible (S), Infected (I), or Recovered (R).</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Transitions:**</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>$S \to I$: a susceptible node becomes infected through infected neighbors.</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>$I \to R$: an infected node recovers and becomes permanently immune.</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Permanent immunity:** $R$ is an absorbing state (once recovered, always recovered).</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a><span class="fu">### Discrete-Time Update Rule</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>We simulate in discrete time steps $t = 0, 1, 2, \dots$.</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>If a susceptible node has $m$ infected neighbors, we use the same "independent trials" rule as SIS:</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>\mathbb{P}(S \to I) = 1 - (1 - \beta)^m.</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>If a node is infected, it recovers with probability:</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>\mathbb{P}(I \to R) = \mu.</span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>Recovered nodes stay recovered:</span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>\mathbb{P}(R \to R) = 1.</span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a><span class="fu">## What changes compared to SIS?</span></span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>In SIS, $I \to S$ (you become susceptible again). In SIR, $I \to R$ (you become immune). That single change completely changes the *long-term* behavior.</span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a><span class="fu">## A key rigorous fact (absorbing states)</span></span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a>On a finite graph with $\mu &gt; 0$, the process reaches a time $T$ such that there are **no infected nodes** ($I(T)=0$), and after that nothing can ever change.</span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a>Intuition (but still rigorous): each node can become infected **at most once** (because $R$ is permanent), so there can be at most $N$ infection events. Since recovery happens with positive probability, infections cannot persist forever.</span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a>This means SIR always ends in a "frozen" configuration containing only $S$ and $R$ nodes.</span>
+<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a><span class="fu">## Imports and Parameters</span></span>
+<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
+<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a>SEED <span class="op">=</span> <span class="dv">7</span></span>
+<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a><span class="co"># Model parameters</span></span>
+<span id="cb10-73"><a href="#cb10-73" aria-hidden="true" tabindex="-1"></a>beta <span class="op">=</span> <span class="fl">0.20</span></span>
+<span id="cb10-74"><a href="#cb10-74" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> <span class="fl">0.10</span></span>
+<span id="cb10-75"><a href="#cb10-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-76"><a href="#cb10-76" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulation parameters</span></span>
+<span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a>steps <span class="op">=</span> <span class="dv">120</span></span>
+<span id="cb10-78"><a href="#cb10-78" aria-hidden="true" tabindex="-1"></a>initial_infected <span class="op">=</span> <span class="dv">5</span></span>
+<span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb10-80"><a href="#cb10-80" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-81"><a href="#cb10-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-82"><a href="#cb10-82" aria-hidden="true" tabindex="-1"></a><span class="fu">## Choose a Network</span></span>
+<span id="cb10-83"><a href="#cb10-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-84"><a href="#cb10-84" aria-hidden="true" tabindex="-1"></a>We will reuse the same helper pattern as in the SIS page (see <span class="co">[</span><span class="ot">SIS Model</span><span class="co">](sis.qmd)</span>).</span>
+<span id="cb10-85"><a href="#cb10-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-88"><a href="#cb10-88" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb10-89"><a href="#cb10-89" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb10-90"><a href="#cb10-90" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_graph(model: <span class="bu">str</span>, n: <span class="bu">int</span>, seed: <span class="bu">int</span> <span class="op">=</span> SEED):</span>
+<span id="cb10-91"><a href="#cb10-91" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> model <span class="op">==</span> <span class="st">"random"</span>:</span>
+<span id="cb10-92"><a href="#cb10-92" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> nx.erdos_renyi_graph(n<span class="op">=</span>n, p<span class="op">=</span><span class="fl">0.08</span>, seed<span class="op">=</span>seed)</span>
+<span id="cb10-93"><a href="#cb10-93" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> model <span class="op">==</span> <span class="st">"small-world"</span>:</span>
+<span id="cb10-94"><a href="#cb10-94" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> nx.watts_strogatz_graph(n<span class="op">=</span>n, k<span class="op">=</span><span class="dv">6</span>, p<span class="op">=</span><span class="fl">0.08</span>, seed<span class="op">=</span>seed)</span>
+<span id="cb10-95"><a href="#cb10-95" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> model <span class="op">==</span> <span class="st">"scale-free"</span>:</span>
+<span id="cb10-96"><a href="#cb10-96" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> nx.barabasi_albert_graph(n<span class="op">=</span>n, m<span class="op">=</span><span class="dv">2</span>, seed<span class="op">=</span>seed)</span>
+<span id="cb10-97"><a href="#cb10-97" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"model must be one of: 'random', 'small-world', 'scale-free'"</span>)</span>
+<span id="cb10-98"><a href="#cb10-98" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-99"><a href="#cb10-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-102"><a href="#cb10-102" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb10-103"><a href="#cb10-103" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> make_graph(<span class="st">"random"</span>, n<span class="op">=</span>N, seed<span class="op">=</span>SEED)</span>
+<span id="cb10-104"><a href="#cb10-104" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"N, E ="</span>, G.number_of_nodes(), G.number_of_edges())</span>
+<span id="cb10-105"><a href="#cb10-105" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-106"><a href="#cb10-106" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-107"><a href="#cb10-107" aria-hidden="true" tabindex="-1"></a><span class="fu">## Initialize States</span></span>
+<span id="cb10-108"><a href="#cb10-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-109"><a href="#cb10-109" aria-hidden="true" tabindex="-1"></a>As in SIS, we store states on the graph using a node attribute called <span class="in">`state`</span>.</span>
+<span id="cb10-110"><a href="#cb10-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-113"><a href="#cb10-113" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb10-114"><a href="#cb10-114" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb10-115"><a href="#cb10-115" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> initialize_state(G, initial_infected<span class="op">=</span><span class="dv">5</span>, seed: <span class="bu">int</span> <span class="op">=</span> SEED):</span>
+<span id="cb10-116"><a href="#cb10-116" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.default_rng(seed)</span>
+<span id="cb10-117"><a href="#cb10-117" aria-hidden="true" tabindex="-1"></a>    infected <span class="op">=</span> rng.choice(<span class="bu">list</span>(G.nodes()), size<span class="op">=</span>initial_infected, replace<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb10-118"><a href="#cb10-118" aria-hidden="true" tabindex="-1"></a>    state <span class="op">=</span> {node: (<span class="st">"I"</span> <span class="cf">if</span> node <span class="kw">in</span> infected <span class="cf">else</span> <span class="st">"S"</span>) <span class="cf">for</span> node <span class="kw">in</span> G.nodes()}</span>
+<span id="cb10-119"><a href="#cb10-119" aria-hidden="true" tabindex="-1"></a>    nx.set_node_attributes(G, state, <span class="st">"state"</span>)</span>
+<span id="cb10-120"><a href="#cb10-120" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> G</span>
+<span id="cb10-121"><a href="#cb10-121" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-122"><a href="#cb10-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-125"><a href="#cb10-125" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb10-126"><a href="#cb10-126" aria-hidden="true" tabindex="-1"></a>initialize_state(G, initial_infected<span class="op">=</span>initial_infected, seed<span class="op">=</span>SEED)</span>
+<span id="cb10-127"><a href="#cb10-127" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb10-128"><a href="#cb10-128" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Initial counts (S, I, R) ="</span>,</span>
+<span id="cb10-129"><a href="#cb10-129" aria-hidden="true" tabindex="-1"></a>    <span class="bu">sum</span>(G.nodes[u][<span class="st">"state"</span>] <span class="op">==</span> <span class="st">"S"</span> <span class="cf">for</span> u <span class="kw">in</span> G.nodes()),</span>
+<span id="cb10-130"><a href="#cb10-130" aria-hidden="true" tabindex="-1"></a>    <span class="bu">sum</span>(G.nodes[u][<span class="st">"state"</span>] <span class="op">==</span> <span class="st">"I"</span> <span class="cf">for</span> u <span class="kw">in</span> G.nodes()),</span>
+<span id="cb10-131"><a href="#cb10-131" aria-hidden="true" tabindex="-1"></a>    <span class="bu">sum</span>(G.nodes[u][<span class="st">"state"</span>] <span class="op">==</span> <span class="st">"R"</span> <span class="cf">for</span> u <span class="kw">in</span> G.nodes()),</span>
+<span id="cb10-132"><a href="#cb10-132" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb10-133"><a href="#cb10-133" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-134"><a href="#cb10-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-135"><a href="#cb10-135" aria-hidden="true" tabindex="-1"></a><span class="fu">## Implement the SIR Dynamics</span></span>
+<span id="cb10-136"><a href="#cb10-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-137"><a href="#cb10-137" aria-hidden="true" tabindex="-1"></a>The update is synchronous: compute all changes from the old state, then apply them.</span>
+<span id="cb10-138"><a href="#cb10-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-139"><a href="#cb10-139" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb10-140"><a href="#cb10-140" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> step_sir(G, beta, mu):</span>
+<span id="cb10-141"><a href="#cb10-141" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: read current states from G.nodes[u]["state"]</span></span>
+<span id="cb10-142"><a href="#cb10-142" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: build new_state dict with values in {"S","I","R"}</span></span>
+<span id="cb10-143"><a href="#cb10-143" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: write new_state back via nx.set_node_attributes</span></span>
+<span id="cb10-144"><a href="#cb10-144" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> G</span>
+<span id="cb10-145"><a href="#cb10-145" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-146"><a href="#cb10-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-147"><a href="#cb10-147" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb10-148"><a href="#cb10-148" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solved: `step_sir()`</span></span>
+<span id="cb10-149"><a href="#cb10-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-152"><a href="#cb10-152" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb10-153"><a href="#cb10-153" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: true</span></span>
+<span id="cb10-154"><a href="#cb10-154" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb10-155"><a href="#cb10-155" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb10-156"><a href="#cb10-156" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> step_sir(G, beta, mu):</span>
+<span id="cb10-157"><a href="#cb10-157" aria-hidden="true" tabindex="-1"></a>    current <span class="op">=</span> {u: G.nodes[u][<span class="st">"state"</span>] <span class="cf">for</span> u <span class="kw">in</span> G.nodes()}</span>
+<span id="cb10-158"><a href="#cb10-158" aria-hidden="true" tabindex="-1"></a>    new_state <span class="op">=</span> current.copy()</span>
+<span id="cb10-159"><a href="#cb10-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-160"><a href="#cb10-160" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> u <span class="kw">in</span> G.nodes():</span>
+<span id="cb10-161"><a href="#cb10-161" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> current[u] <span class="op">==</span> <span class="st">"S"</span>:</span>
+<span id="cb10-162"><a href="#cb10-162" aria-hidden="true" tabindex="-1"></a>            m <span class="op">=</span> <span class="bu">sum</span>(<span class="dv">1</span> <span class="cf">for</span> v <span class="kw">in</span> G.neighbors(u) <span class="cf">if</span> current[v] <span class="op">==</span> <span class="st">"I"</span>)</span>
+<span id="cb10-163"><a href="#cb10-163" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> m <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb10-164"><a href="#cb10-164" aria-hidden="true" tabindex="-1"></a>                p_infect <span class="op">=</span> <span class="dv">1</span> <span class="op">-</span> (<span class="dv">1</span> <span class="op">-</span> beta) <span class="op">**</span> m</span>
+<span id="cb10-165"><a href="#cb10-165" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> np.random.random() <span class="op">&lt;</span> p_infect:</span>
+<span id="cb10-166"><a href="#cb10-166" aria-hidden="true" tabindex="-1"></a>                    new_state[u] <span class="op">=</span> <span class="st">"I"</span></span>
+<span id="cb10-167"><a href="#cb10-167" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-168"><a href="#cb10-168" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> current[u] <span class="op">==</span> <span class="st">"I"</span>:</span>
+<span id="cb10-169"><a href="#cb10-169" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> np.random.random() <span class="op">&lt;</span> mu:</span>
+<span id="cb10-170"><a href="#cb10-170" aria-hidden="true" tabindex="-1"></a>                new_state[u] <span class="op">=</span> <span class="st">"R"</span></span>
+<span id="cb10-171"><a href="#cb10-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-172"><a href="#cb10-172" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb10-173"><a href="#cb10-173" aria-hidden="true" tabindex="-1"></a>            <span class="co"># "R" stays "R"</span></span>
+<span id="cb10-174"><a href="#cb10-174" aria-hidden="true" tabindex="-1"></a>            <span class="cf">pass</span></span>
+<span id="cb10-175"><a href="#cb10-175" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-176"><a href="#cb10-176" aria-hidden="true" tabindex="-1"></a>    nx.set_node_attributes(G, new_state, <span class="st">"state"</span>)</span>
+<span id="cb10-177"><a href="#cb10-177" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> G</span>
+<span id="cb10-178"><a href="#cb10-178" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-179"><a href="#cb10-179" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb10-180"><a href="#cb10-180" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-181"><a href="#cb10-181" aria-hidden="true" tabindex="-1"></a>Now wrap it into a simulator. Compared to SIS, we typically track **all three** counts: $S(t), I(t), R(t)$.</span>
+<span id="cb10-182"><a href="#cb10-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-183"><a href="#cb10-183" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb10-184"><a href="#cb10-184" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_sir(G, beta, mu, steps<span class="op">=</span><span class="dv">100</span>, initial_infected<span class="op">=</span><span class="dv">5</span>, seed<span class="op">=</span>SEED):</span>
+<span id="cb10-185"><a href="#cb10-185" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span></span>
+<span id="cb10-186"><a href="#cb10-186" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> S_counts, I_counts, R_counts</span>
+<span id="cb10-187"><a href="#cb10-187" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-188"><a href="#cb10-188" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-189"><a href="#cb10-189" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb10-190"><a href="#cb10-190" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solved: `run_sir()`</span></span>
+<span id="cb10-191"><a href="#cb10-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-194"><a href="#cb10-194" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb10-195"><a href="#cb10-195" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: true</span></span>
+<span id="cb10-196"><a href="#cb10-196" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb10-197"><a href="#cb10-197" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb10-198"><a href="#cb10-198" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_sir(G, beta, mu, steps<span class="op">=</span><span class="dv">100</span>, initial_infected<span class="op">=</span><span class="dv">5</span>, seed<span class="op">=</span>SEED):</span>
+<span id="cb10-199"><a href="#cb10-199" aria-hidden="true" tabindex="-1"></a>    H <span class="op">=</span> G.copy()</span>
+<span id="cb10-200"><a href="#cb10-200" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-201"><a href="#cb10-201" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Make the whole run reproducible (step_sir uses np.random.random)</span></span>
+<span id="cb10-202"><a href="#cb10-202" aria-hidden="true" tabindex="-1"></a>    np.random.seed(seed)</span>
+<span id="cb10-203"><a href="#cb10-203" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-204"><a href="#cb10-204" aria-hidden="true" tabindex="-1"></a>    initialize_state(H, initial_infected<span class="op">=</span>initial_infected, seed<span class="op">=</span>seed)</span>
+<span id="cb10-205"><a href="#cb10-205" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-206"><a href="#cb10-206" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> counts(H):</span>
+<span id="cb10-207"><a href="#cb10-207" aria-hidden="true" tabindex="-1"></a>        S <span class="op">=</span> <span class="bu">sum</span>(H.nodes[u][<span class="st">"state"</span>] <span class="op">==</span> <span class="st">"S"</span> <span class="cf">for</span> u <span class="kw">in</span> H.nodes())</span>
+<span id="cb10-208"><a href="#cb10-208" aria-hidden="true" tabindex="-1"></a>        I <span class="op">=</span> <span class="bu">sum</span>(H.nodes[u][<span class="st">"state"</span>] <span class="op">==</span> <span class="st">"I"</span> <span class="cf">for</span> u <span class="kw">in</span> H.nodes())</span>
+<span id="cb10-209"><a href="#cb10-209" aria-hidden="true" tabindex="-1"></a>        R <span class="op">=</span> <span class="bu">sum</span>(H.nodes[u][<span class="st">"state"</span>] <span class="op">==</span> <span class="st">"R"</span> <span class="cf">for</span> u <span class="kw">in</span> H.nodes())</span>
+<span id="cb10-210"><a href="#cb10-210" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> S, I, R</span>
+<span id="cb10-211"><a href="#cb10-211" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-212"><a href="#cb10-212" aria-hidden="true" tabindex="-1"></a>    S0, I0, R0 <span class="op">=</span> counts(H)</span>
+<span id="cb10-213"><a href="#cb10-213" aria-hidden="true" tabindex="-1"></a>    S_counts <span class="op">=</span> [S0]</span>
+<span id="cb10-214"><a href="#cb10-214" aria-hidden="true" tabindex="-1"></a>    I_counts <span class="op">=</span> [I0]</span>
+<span id="cb10-215"><a href="#cb10-215" aria-hidden="true" tabindex="-1"></a>    R_counts <span class="op">=</span> [R0]</span>
+<span id="cb10-216"><a href="#cb10-216" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-217"><a href="#cb10-217" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(steps):</span>
+<span id="cb10-218"><a href="#cb10-218" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> I_counts[<span class="op">-</span><span class="dv">1</span>] <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb10-219"><a href="#cb10-219" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
+<span id="cb10-220"><a href="#cb10-220" aria-hidden="true" tabindex="-1"></a>        step_sir(H, beta<span class="op">=</span>beta, mu<span class="op">=</span>mu)</span>
+<span id="cb10-221"><a href="#cb10-221" aria-hidden="true" tabindex="-1"></a>        S, I, R <span class="op">=</span> counts(H)</span>
+<span id="cb10-222"><a href="#cb10-222" aria-hidden="true" tabindex="-1"></a>        S_counts.append(S)</span>
+<span id="cb10-223"><a href="#cb10-223" aria-hidden="true" tabindex="-1"></a>        I_counts.append(I)</span>
+<span id="cb10-224"><a href="#cb10-224" aria-hidden="true" tabindex="-1"></a>        R_counts.append(R)</span>
+<span id="cb10-225"><a href="#cb10-225" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-226"><a href="#cb10-226" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> S_counts, I_counts, R_counts</span>
+<span id="cb10-227"><a href="#cb10-227" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-228"><a href="#cb10-228" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb10-229"><a href="#cb10-229" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-230"><a href="#cb10-230" aria-hidden="true" tabindex="-1"></a><span class="fu">## Run and Visualize</span></span>
+<span id="cb10-231"><a href="#cb10-231" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-232"><a href="#cb10-232" aria-hidden="true" tabindex="-1"></a>The "epidemic curve" in SIR typically shows a single peak in $I(t)$ and then decay to zero.</span>
+<span id="cb10-233"><a href="#cb10-233" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-236"><a href="#cb10-236" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb10-237"><a href="#cb10-237" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-sir-curve</span></span>
+<span id="cb10-238"><a href="#cb10-238" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "SIR epidemic curve (fractions of S, I, R over time) on one network realization."</span></span>
+<span id="cb10-239"><a href="#cb10-239" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-alt: 'Fractions of susceptible, infected, and recovered nodes over time for a single run of the SIR model.'</span></span>
+<span id="cb10-240"><a href="#cb10-240" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 6</span></span>
+<span id="cb10-241"><a href="#cb10-241" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 4</span></span>
+<span id="cb10-242"><a href="#cb10-242" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb10-243"><a href="#cb10-243" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb10-244"><a href="#cb10-244" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb10-245"><a href="#cb10-245" aria-hidden="true" tabindex="-1"></a>S, I, R <span class="op">=</span> run_sir(G, beta<span class="op">=</span>beta, mu<span class="op">=</span>mu, steps<span class="op">=</span>steps, initial_infected<span class="op">=</span>initial_infected, seed<span class="op">=</span>SEED)</span>
+<span id="cb10-246"><a href="#cb10-246" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-247"><a href="#cb10-247" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> np.arange(<span class="bu">len</span>(I))</span>
+<span id="cb10-248"><a href="#cb10-248" aria-hidden="true" tabindex="-1"></a>N0 <span class="op">=</span> G.number_of_nodes()</span>
+<span id="cb10-249"><a href="#cb10-249" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-250"><a href="#cb10-250" aria-hidden="true" tabindex="-1"></a>plt.plot(t, np.array(S) <span class="op">/</span> N0, label<span class="op">=</span><span class="st">"S"</span>)</span>
+<span id="cb10-251"><a href="#cb10-251" aria-hidden="true" tabindex="-1"></a>plt.plot(t, np.array(I) <span class="op">/</span> N0, label<span class="op">=</span><span class="st">"I"</span>)</span>
+<span id="cb10-252"><a href="#cb10-252" aria-hidden="true" tabindex="-1"></a>plt.plot(t, np.array(R) <span class="op">/</span> N0, label<span class="op">=</span><span class="st">"R"</span>)</span>
+<span id="cb10-253"><a href="#cb10-253" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Time step"</span>)</span>
+<span id="cb10-254"><a href="#cb10-254" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Fraction of nodes"</span>)</span>
+<span id="cb10-255"><a href="#cb10-255" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"SIR: fractions over time"</span>)</span>
+<span id="cb10-256"><a href="#cb10-256" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb10-257"><a href="#cb10-257" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb10-258"><a href="#cb10-258" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb10-259"><a href="#cb10-259" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-260"><a href="#cb10-260" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-261"><a href="#cb10-261" aria-hidden="true" tabindex="-1"></a><span class="fu">## Key Questions to Answer</span></span>
+<span id="cb10-262"><a href="#cb10-262" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-263"><a href="#cb10-263" aria-hidden="true" tabindex="-1"></a>Here are two precise, testable questions that are *specific* to SIR:</span>
+<span id="cb10-264"><a href="#cb10-264" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-265"><a href="#cb10-265" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Can the network become fully infected?** i.e., does there exist a time $t$ such that $I(t)=N$?</span>
+<span id="cb10-266"><a href="#cb10-266" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Can the network become fully "healed"?** i.e., does there exist a time $t$ such that $I(t)=0$?</span>
+<span id="cb10-267"><a href="#cb10-267" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-268"><a href="#cb10-268" aria-hidden="true" tabindex="-1"></a>In SIR, the second question has a clean answer:</span>
+<span id="cb10-269"><a href="#cb10-269" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-270"><a href="#cb10-270" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Yes.** In fact, for a finite graph with $\mu&gt;0$, you eventually reach $I(t)=0$ and then you are stuck forever (absorbing state).</span>
+<span id="cb10-271"><a href="#cb10-271" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-272"><a href="#cb10-272" aria-hidden="true" tabindex="-1"></a>The first question depends on $(\beta,\mu)$ and the network. It can happen transiently, but it is not an absorbing state.</span>
+<span id="cb10-273"><a href="#cb10-273" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-274"><a href="#cb10-274" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb10-275"><a href="#cb10-275" aria-hidden="true" tabindex="-1"></a><span class="fu">## Discuss</span></span>
+<span id="cb10-276"><a href="#cb10-276" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-277"><a href="#cb10-277" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>In SIR, is "fully healed" the same as "everyone is susceptible again"? Why not?</span>
+<span id="cb10-278"><a href="#cb10-278" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>What does "final epidemic size" mean here? (Hint: look at $R(\infty)$.)</span>
+<span id="cb10-279"><a href="#cb10-279" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Can you have an epidemic with a large peak but small final size? Or vice versa?</span>
+<span id="cb10-280"><a href="#cb10-280" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Compare two graphs with the same $N$ and similar average degree: which features (hubs, clustering, path length) do you expect to increase $R(\infty)$?</span>
+<span id="cb10-281"><a href="#cb10-281" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb10-282"><a href="#cb10-282" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-283"><a href="#cb10-283" aria-hidden="true" tabindex="-1"></a><span class="fu">## What's Next?</span></span>
+<span id="cb10-284"><a href="#cb10-284" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-285"><a href="#cb10-285" aria-hidden="true" tabindex="-1"></a>Compare SIS vs SIR: how does permanent immunity change what happens "in the long run"? Then apply your knowledge to real-world data:</span>
+<span id="cb10-286"><a href="#cb10-286" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-287"><a href="#cb10-287" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Assignment: Networks &amp; Real-World Data</span><span class="co">](assignment.qmd)</span>{.btn .btn-secondary}</span>
 </code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
