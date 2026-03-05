@@ -4,16 +4,48 @@ subtitle: "Structure, Centrality and Spreading on Graphs"
 format: html
 ---
 
+In this page, we will explore some basic properties of networks, such as degree and density.
+
+If you are coding alongside me, I recommend you to start a new notebook and follow the code snippets below. You can also check the [Network Fundamentals](fundamentals.qmd) page for more details on how to create graphs with `networkx`.
+
+As always, we should start by importing the necessary libraries and creating a sample graph.
+
+```{python}
+import networkx as nx
+import matplotlib.pyplot as plt
+
+# Create an undirected graph
+G_foods = nx.Graph()  # foods that I think go well together
+G_foods.from_edgelist([
+    ("bread", "cheese"),
+    ("bread", "chocolate"),
+    ("bread", "cured ham"),
+    ("cheese", "cured ham"),
+    ("chocolate", "watermelon"),
+    ("cured ham", "watermelon"),
+])
+
+# Create a directed graph
+D = nx.DiGraph()  # food chain (prey -> predator)
+D.from_edgelist([
+    ("grass", "rabbit"),
+    ("grass", "deer"),
+    ("rabbit", "fox"),
+    ("rabbit", "eagle"),
+    ("deer", "wolf"),
+])
+```
+
 ## Degree
 
-The degree of a node $k$ is the number of edges connected to it.
+The degree $k$ of a node is the number of edges connected to it. In an undirected graph, the degree of a node is simply the number of neighbors it has.
 
 ```{python}
 # Degree of a node
-print("Degree of 'a':", G.degree("a"))
+print("Degree of 'bread':", G_foods.degree("bread"))
 ```
 
-The average degree of a graph is given by:
+The average degree of an undirected graph is given by:
 
 $$\langle k \rangle = \frac{2E}{N}$$
 
@@ -21,23 +53,23 @@ where $E$ is the number of edges and $N$ is the number of nodes.
 
 ```{python}
 # Average degree of the graph
-ls_degrees = [G.degree(node) for node in G.nodes()]
+ls_degrees = [G_foods.degree(node) for node in G_foods.nodes()]
 avg_degree = sum(ls_degrees) / len(ls_degrees)
 print("Average degree:", avg_degree)
 ```
 
 ### Degrees in Directed Graphs
 
-Same with a node. It has an in-degree and an out-degree.
+In a directed graph, we distinguish between in-degree (number of incoming edges) and out-degree (number of outgoing edges).
 
 ```{python}
-print("In-degree of 'a':", D.in_degree("a"))
-print("Out-degree of 'a':", D.out_degree("a"))
+print("In-degree of 'rabbit' (number of predators):", D.in_degree("rabbit"))
+print("Out-degree of 'rabbit' (number of prey):", D.out_degree("rabbit"))
 ```
 
 ## Density
 
-A graph **density** is the ratio of the number of edges to the number of possible edges. It is a measure of how many edges are present in the graph compared to the maximum possible number of edges. The density of a graph can be calculated as follows:
+A graph density is the ratio of the number of edges to the number of possible edges. It is a measure of how many edges are present in the graph compared to the maximum possible number of edges. The density of an undirected graph can be calculated as follows:
 
 $$
 D = \frac{2|E|}{|V|(|V| - 1)}
@@ -45,9 +77,22 @@ $$
 
 where $|E|$ is the number of edges and $|V|$ is the number of nodes in the graph.
 
+In a directed graph, we have twice as many possible edges (since each pair of nodes can have two directed edges), so the density is calculated as:
+
+$$
+D = \frac{|E|}{|V|(|V| - 1)}
+$$
+
+NetworkX provides a built-in function to calculate the density of a graph:
+
 ```{python}
 # Density
-print("Density:", nx.density(G))
+print("Density:", nx.density(G_foods))
 ```
 
-A graph is **sparse** when $D \ll 1$ and **dense** when $D \approx 1$.
+A graph is **sparse** when $D \ll 1$ and **dense** when $D \approx 1$. Again, NetworkX can help us determine if a graph is sparse or dense:
+
+```{python}
+print("Is the graph sparse?", nx.is_sparse(G_foods))
+print("Is the graph dense?", nx.is_dense(G_foods))
+```
