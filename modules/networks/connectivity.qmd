@@ -217,6 +217,93 @@ The **average path length (APL)** is the average of the shortest paths between a
 print("Average shortest path length:", nx.average_shortest_path_length(G_foods))
 ```
 
+## Centrality (Node Importance)
+
+In many real networks, not all nodes play the same role:
+
+- in an airport network, some airports are **hubs**;
+- in an email network, some people act as **bridges** between groups.
+
+These ideas are quantified by **centrality measures**.
+
+### Degree centrality
+
+The simplest centrality is based on degree. In an undirected graph with $N$ nodes, the (normalized) degree centrality is
+
+$$
+\mathrm{deg\_cent}(i) = \frac{k_i}{N-1}.
+$$
+
+```{python}
+deg_cent = nx.degree_centrality(G_foods)
+print("Degree centrality:")
+for node, c in sorted(deg_cent.items(), key=lambda kv: kv[1], reverse=True):
+    print(f"  {node}: {c:.3f}")
+```
+
+### Closeness centrality
+
+Closeness measures how close a node is (on average) to all others via shortest paths.
+One common definition is
+
+$$
+\mathrm{close}(i) = \frac{N-1}{\sum_{j \neq i} d(i,j)},
+$$
+
+where $d(i,j)$ is the shortest-path distance.
+
+::: {.callout-note}
+## Disconnected graphs
+
+If a graph is disconnected, some distances are infinite and closeness becomes tricky. In practice you often compute path-based metrics on the **largest connected component**.
+:::
+
+```{python}
+close_cent = nx.closeness_centrality(G_foods)
+print("Closeness centrality:")
+for node, c in sorted(close_cent.items(), key=lambda kv: kv[1], reverse=True):
+    print(f"  {node}: {c:.3f}")
+```
+
+### Betweenness Centrality
+
+Betweenness identifies **bridges**: nodes that sit on many shortest paths.
+Formally,
+
+$$
+\mathrm{between}(v) = \sum_{s \neq v \neq t} \frac{\sigma_{st}(v)}{\sigma_{st}},
+$$
+
+where $\sigma_{st}$ is the number of shortest paths from $s$ to $t$, and $\sigma_{st}(v)$ is the number of those paths that pass through $v$.
+
+```{python}
+bc = nx.betweenness_centrality(G_foods)
+print("Betweenness centrality:")
+for node, c in sorted(bc.items(), key=lambda kv: kv[1], reverse=True):
+    print(f"  {node}: {c:.3f}")
+```
+
+### PageRank (Directed Networks)
+
+For directed networks (like the web), PageRank is the stationary distribution of a random walk ("random surfer") on the graph.
+
+```{python}
+pr = nx.pagerank(D_food_chain, alpha=0.85)
+print("PageRank (directed food chain):")
+for node, c in sorted(pr.items(), key=lambda kv: kv[1], reverse=True):
+    print(f"  {node}: {c:.3f}")
+```
+
+::: {.callout-tip collapse="true"}
+## Performance note
+
+On large graphs, exact betweenness can be expensive. NetworkX supports approximation (sample $k$ sources):
+
+```python
+nx.betweenness_centrality(G, k=200, seed=SEED)
+```
+:::
+
 ## Connectivity in Directed Graphs
 
 Connectivity in directed graphs is more complex than in undirected graphs, because we have to consider the direction of the edges. In a directed graph, we can have **strongly connected components** and **weakly connected components**.
