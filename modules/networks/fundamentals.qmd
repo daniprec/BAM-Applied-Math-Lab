@@ -236,13 +236,15 @@ plt.show()
 
 ### Layouts
 
-The `draw()` function has a `pos` parameter that allows us to specify the layout of the graph. A layout is a way to position the nodes in the graph for visualization. `networkx` provides several built-in layouts, such as `spring_layout`, `circular_layout`, and `shell_layout`. For example, we can use the spring layout, which simulates a force-directed algorithm to position the nodes:
+The `draw()` function has a `pos` parameter that allows us to specify the layout of the graph. A layout is a way to position the nodes in the graph for visualization. `networkx` provides several built-in layouts, such as `spring_layout`, `circular_layout`, and `shell_layout`.
+
+**Circular layout** arranges the nodes in a circle. You can control the distance between the nodes using the `scale` parameter, higher values will make the nodes farther apart.
 
 ```{python}
 #| echo: true
 #| message: true
 # Use the circular layout for visualization
-pos = nx.circular_layout(G)
+pos = nx.circular_layout(G, scale=2)  # scale controls the distance between the nodes
 nx.draw(
     G,
     pos=pos,  # specify the layout
@@ -255,7 +257,43 @@ nx.draw(
 plt.show()
 ```
 
-Playing with different layouts can help us better understand the structure of the graph and the relationships between nodes. Try it yourself!
+**Spring layout** uses a force-directed algorithm to position the nodes in a way that minimizes edge crossings and evenly distributes the nodes. You can control the distance between the nodes using the `k` parameter, which is a scaling factor for the optimal distance between nodes. Higher values will make the nodes farther apart. You can also control the number of iterations of the algorithm using the `iterations` parameter.
+
+```{python}
+#| echo: true
+#| message: true
+# Use the spring layout for visualization
+pos = nx.spring_layout(G, k=0.5, iterations=20)
+nx.draw(
+    G,
+    pos=pos,  # specify the layout
+    with_labels=True,
+    node_color='lightblue',
+    edge_color='gray',
+    node_size=2000,
+    font_size=12
+    )
+plt.show()
+```
+
+**Shell layout** arranges the nodes in concentric circles. You can specify which nodes belong to which circle using the `nlist` parameter, which is a list of lists of nodes.
+
+```{python}
+#| echo: true
+#| message: true
+nlist = [["Spain", "Portugal", "France", "Italy"], ["Netherlands", "Germany", "USA", "Canada"]]
+pos = nx.shell_layout(G, nlist=nlist)
+nx.draw(
+    G,
+    pos=pos,  # specify the layout
+    with_labels=True,
+    node_color='lightblue',
+    edge_color='gray',
+    node_size=2000,
+    font_size=12
+    )
+plt.show()
+```
 
 ### Visualizing Node Attributes
 
