@@ -109,6 +109,8 @@ for node, pop in population.items():
     print(f"{node}: {pop} inhabitants")
 ```
 
+---
+
 ## Edges (Links)
 
 Edges represent the connections between nodes in a graph. To add edges to our graph, we can use the `add_edge(<node1>, <node2>)` method. This will create an undirected edge between `node1` and `node2` (we use their IDs here). We can see the list of edges in the graph using the `edges()` method.
@@ -179,6 +181,37 @@ print("Nodes:", G.nodes())
 print("Edges:", G.edges())
 ```
 
+### Weighted Edges
+
+The most common edge attribute is weight, which represents the strength of the connection between two nodes. For example, in a social network, the weight of an edge could represent how close two people are. In a transportation network, the weight could represent the distance or travel time between two locations.
+
+Weight is so common that `networkx` has a special method to add weighted edges: `add_weighted_edges_from()`. This method takes a list of tuples, where each tuple contains the source node, target node, and weight of the edge. For example:
+
+```{python}
+#| echo: true
+#| message: true
+
+# Initialize a directed graph
+D_contracts = nx.DiGraph()
+
+# Add weighted edges (contracts between companies with the amount of money as weight)
+# Disclaimer: weights are made up
+weighted_edges = [
+    ("OpenAI", "Microsoft", 100_000_000),
+    ("OpenAI", "Oracle", 50_000_000),
+    ("Microsoft", "Nvidia", 20_000_000),
+    ("Oracle", "Nvidia", 10_000_000),
+    ("Nvidia", "OpenAI", 5_000_000),
+]
+D_contracts.add_weighted_edges_from(weighted_edges)
+
+# Show the edges with their weights
+weights = nx.get_edge_attributes(D_contracts, 'weight')
+for edge, weight in weights.items():
+    print(f"{edge}: ${weight}")
+```
+
+---
 
 ## Visualization
 
@@ -379,30 +412,6 @@ plt.show()
 ```
 
 **Exercise:** In the code above, I included the movies in the comments next to the edges. Can you create a graph where the edges are labeled with the movie titles?
-
----
-
-## Weighted Edges
-
-```{python}
-# Initialize a directed graph
-D = nx.DiGraph()
-
-# Add weighted edges
-D.add_weighted_edges_from([
-    ("a", "b", 1), ("b", "c", 2), ("c", "d", 3), ("d", "a", 4), ("a", "e", 5), ("c", "a", 6)
-])
-
-# Choose a layout (required to add the weights)
-pos = nx.circular_layout(D)
-# Draw the graph
-nx.draw(D, with_labels=True, pos=pos)
-# Draw the edge labels
-edge_labels = nx.get_edge_attributes(D, "weight")
-nx.draw_networkx_edge_labels(D, pos=pos, edge_labels=edge_labels)
-plt.show()
-plt.close()
-```
 
 ---
 
