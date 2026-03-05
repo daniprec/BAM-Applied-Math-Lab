@@ -4,15 +4,15 @@ subtitle: "Guided Exercise"
 format: html
 ---
 
-The SIS (Susceptible–Infected–Susceptible) is a simple epidemic model of disease spread where individuals can be infected multiple times. In this module, we will implement the SIS model on networks using the NetworkX library in Python. Our goal is to explore how **network structure** (random vs small-world vs scale-free) changes spreading.
+The SIS (Susceptible–Infected–Susceptible) model is a simple epidemic model where individuals can be infected multiple times. In this module, we implement SIS on networks using NetworkX and explore how **network structure** (random vs small-world vs scale-free) changes spreading.
 
 ## What is the SIS Model?
 
-- **States:** Each node can be Susceptible (S) or Infected (I).
+- **States:** each node is Susceptible (S) or Infected (I).
 - **Transitions:**
-    - $S \to I$: a susceptible node becomes infected through contacts (infection probability $\beta$).
-    - $I \to S$: an infected node recovers and becomes susceptible again (recovery probability $\mu$).
-- **No permanent immunity:** Nodes can be reinfected after recovery.
+  - $S \to I$: infection through contacts (controlled by $\beta$).
+  - $I \to S$: recovery (controlled by $\mu$).
+- **No permanent immunity:** recovered nodes can be reinfected.
 
 ### Discrete-Time Update Rule
 
@@ -71,6 +71,19 @@ steps = 120  # number of time steps to simulate
 initial_infected = 5  # should always be < N
 N = 100  # number of nodes in the graph
 ```
+
+::: {.callout-note}
+## About `SEED` (why we fix it)
+
+There are **two** sources of randomness in this activity:
+
+1. the **graph** you generate (e.g., which edges appear in Erdős–Rényi), and
+2. the **stochastic SIS dynamics** (who gets infected / recovers at each step).
+
+We fix `SEED` so results are **reproducible**: rerunning the page gives the same plots, which makes debugging and reporting possible.
+
+When we do many repetitions, we use `SEED + r` so repetition `r` is a **different random trial** (new graph + new random infection events) but still reproducible. If you reused the same `SEED` in every repetition, you would repeat the *same* realization and your “average over runs” would be meaningless.
+:::
 
 ## Choose a Network
 
@@ -172,7 +185,7 @@ def initialize_state(G, initial_infected=5, seed=SEED):
     return G
 ```
 
-Remember that you can use `np.random.choice` to pick random nodes from the graph. Make sure to set the seed for reproducibility!
+Remember that you can use a seeded random number generator (via `np.random.default_rng(seed)`) to pick random nodes from the graph.
 
 ::: {.callout-tip collapse="true"}
 ## Solved: `initialize_state()`
@@ -181,16 +194,18 @@ Remember that you can use `np.random.choice` to pick random nodes from the graph
 #| echo: true
 #| message: false
 #| warning: false
-def initialize_state(G, initial_infected=5, seed=SEED):
-    # Choose random nodes to be initially infected
-    ls_infected = np.random.choice(
-        G.nodes(),  # list of all nodes
-        size=initial_infected,  # amount to choose
-        replace=False,  # avoid duplicates
-        random_state=seed)  # for reproducibility
-    # Set all nodes to 'S' and then set the chosen ones to 'I'
-    state = {node: "I" if node in ls_infected else "S" for node in G.nodes()}
-    nx.set_node_attributes(G, state, "state")
+def initialize_state(G, initial_infected=5, seed=SEED, rng=None):
+    if rng is None:
+        rng = np.random.default_rng(seed)
+
+    # Start everyone susceptible
+    nx.set_node_attributes(G, "S", "state")
+
+    # Infect a random subset
+    infected = rng.choice(list(G.nodes()), size=initial_infected, replace=False)
+    for node in infected:
+        G.nodes[node]["state"] = "I"
+
     return G
 ```
 :::
@@ -219,7 +234,7 @@ def step_sis(G, beta, mu):
     return G
 ```
 
-Remember that you can loop through all nodes and their neighbors using `G.nodes()` and `G.neighbors(node)`. You can also use `np.random.random()` to generate random numbers for the probabilistic transitions.
+Remember that you can loop through all nodes and their neighbors using `G.nodes()` and `G.neighbors(node)`. Use `np.random.random()` for the probabilistic transitions.
 
 ::: {.callout-tip collapse="true"}
 ## Solved: `step_sis()`
@@ -228,7 +243,10 @@ Remember that you can loop through all nodes and their neighbors using `G.nodes(
 #| echo: true
 #| message: false
 #| warning: false
-def step_sis(G, beta, mu):
+def step_sis(G, beta, mu, rng=None):
+    if rng is None:
+        rng = np.random.default_rng()
+
     # Retrieve current states of all nodes
     current = {node: G.nodes[node]["state"] for node in G.nodes()}
     new_state = current.copy()  # start with the same state for synchronous update
@@ -240,14 +258,16 @@ def step_sis(G, beta, mu):
             if m > 0:
                 # Compute infection probability
                 p_infect = 1 - (1 - beta) ** m
-                if np.random.random() < p_infect:
+                if rng.random() < p_infect:
                     new_state[node] = "I"
         else:  # current[node] == "I"
-            if np.random.random() < mu:
+            if rng.random() < mu:
                 new_state[node] = "S"
     nx.set_node_attributes(G, new_state, "state")
     return G
 ```
+
+:::
 
 Now wrap it into a simulator that records the number of infected nodes over time. The function `run_sis()` should take a graph and the parameters, run the simulation for a given number of steps, and return a list of the number of infected nodes at each time step.
 
@@ -267,13 +287,17 @@ def run_sis(G, beta, mu, steps=100, initial_infected=5, seed=SEED):
 def run_sis(G, beta, mu, steps=100, initial_infected=5, seed=SEED):
     # Copy the graph to avoid mutating the original
     H = G.copy()
+
+    # One seeded RNG controls all randomness for this run
+    rng = np.random.default_rng(seed)
+
     # Initialize states
-    initialize_state(H, initial_infected=initial_infected, seed=seed)
+    initialize_state(H, initial_infected=initial_infected, seed=seed, rng=rng)
     # Count initial number of infected nodes and initialize the list
     infected_counts = [sum(H.nodes[node]["state"] == "I" for node in H.nodes())]
     # Apply SIS steps and record infected counts
     for _ in range(steps):
-        step_sis(H, beta=beta, mu=mu)
+        step_sis(H, beta=beta, mu=mu, rng=rng)
         infected_counts.append(sum(H.nodes[node]["state"] == "I" for node in H.nodes()))
     return infected_counts
 ```
@@ -288,10 +312,11 @@ print("Infected counts over time:", counts)
 
 ## Run and Visualize
 
-Use `matplotlib` to plot the fraction of infected nodes over time. Try to get a graph similar to @sis-plot below.
+Use `matplotlib` to plot the fraction of infected nodes over time. Try to get a graph similar to @fig-sis-plot below.
 
 ```{python}
-#| label: sis-plot
+#| label: fig-sis-plot
+#| fig-cap: "Fraction of infected nodes over time for a single SIS run on a random graph."
 #| fig-alt: 'Fraction of infected nodes over time for a single run of the SIS model on a random graph.'
 #| fig-width: 6
 #| fig-height: 4
@@ -308,10 +333,11 @@ plt.show()
 
 ## Compare Network Types
 
-Finally, run multiple simulations for each graph type and plot the average infected fraction over time for each type on the same graph. @sis-compare is an example of what this could look like.
+Finally, run multiple simulations for each graph type and plot the average infected fraction over time for each type on the same graph. @fig-sis-compare is an example of what this could look like.
 
 ```{python}
-#| label: sis-compare
+#| label: fig-sis-compare
+#| fig-cap: "Mean infected fraction over time for different network models (random, small-world, scale-free)."
 #| fig-alt: 'Average infected fraction over time for different network models (random, small-world, scale-free).'
 #| fig-width: 6
 #| fig-height: 4
@@ -327,8 +353,16 @@ plt.figure(figsize=(6, 4))
 for model in models:
     trajectories = []
     for r in range(runs):
-        Gm = make_graph(model, n=N, seed=SEED + r)
-        counts = run_sis(Gm, beta=beta, mu=mu, steps=steps, initial_infected=initial_infected, seed=SEED + r)
+        seed_run = SEED + r
+        Gm = make_graph(model, n=N, seed=seed_run)
+        counts = run_sis(
+            Gm,
+            beta=beta,
+            mu=mu,
+            steps=steps,
+            initial_infected=initial_infected,
+            seed=seed_run,
+        )
         trajectories.append(np.array(counts) / N)
 
     mean_traj = np.mean(trajectories, axis=0)
