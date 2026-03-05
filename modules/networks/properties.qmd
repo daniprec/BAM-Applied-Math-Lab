@@ -26,13 +26,15 @@ G_foods.from_edgelist([
 ])
 
 # Create a directed graph
-D = nx.DiGraph()  # food chain (prey -> predator)
-D.from_edgelist([
-    ("grass", "rabbit"),
-    ("grass", "deer"),
-    ("rabbit", "fox"),
-    ("rabbit", "eagle"),
-    ("deer", "wolf"),
+D_food_chain = nx.DiGraph()  # food chain (prey -> predator)
+D_food_chain.from_edgelist([
+    ("grass", "antelope"),
+    ("grass", "zebra"),
+    ("antelope", "lion"),
+    ("antelope", "hyena"),
+    ("zebra", "lion"),
+    ("zebra", "hyena"),
+    ("hyena", "lion"),
 ])
 ```
 
@@ -63,8 +65,8 @@ print("Average degree:", avg_degree)
 In a directed graph, we distinguish between in-degree (number of incoming edges) and out-degree (number of outgoing edges).
 
 ```{python}
-print("In-degree of 'rabbit' (number of predators):", D.in_degree("rabbit"))
-print("Out-degree of 'rabbit' (number of prey):", D.out_degree("rabbit"))
+print("In-degree of 'rabbit' (number of predators):", D_food_chain.in_degree("rabbit"))
+print("Out-degree of 'rabbit' (number of prey):", D_food_chain.out_degree("rabbit"))
 ```
 
 ## Density
@@ -96,3 +98,134 @@ A graph is **sparse** when $D \ll 1$ and **dense** when $D \approx 1$. Again, Ne
 print("Is the graph sparse?", nx.is_sparse(G_foods))
 print("Is the graph dense?", nx.is_dense(G_foods))
 ```
+
+## Connectivity in Undirected Graphs
+
+Connectivity is a fundamental property of graphs that describes how well the nodes are connected to each other. In an undirected graph, a graph is **connected** if there is a path between any two nodes. If a graph is not connected, it consists of multiple **connected components**, which are subgraphs in which any two nodes are connected by a path.
+
+### Paths in an Undirected Graph
+
+A **path** in a network is a sequence of edges connecting two nodes.
+
+Take a look at the food graph we created above. Is there a path from "bread" to "watermelon"?
+
+```{python}
+# Draw the graph
+pos = nx.circular_layout(G_foods)
+nx.draw(G_foods, with_labels=True, pos=pos)
+plt.show()
+```
+
+NetworkX provides `has_path(<graph>, <node1>, <node2>)` to check if there is a path between two nodes:
+
+```{python}
+# Check if there is a path from 'bread' to 'watermelon'
+print(
+    "Is there a path from 'bread' to 'watermelon'?",
+    nx.has_path(G_foods, "bread", "watermelon")
+)
+```
+
+There can be more than one path between two nodes. We can use `all_simple_paths(<graph>, <node1>, <node2>)` to find all the simple paths between two nodes:
+
+```{python}
+ls_paths = list(nx.all_simple_paths(G_foods, "bread", "watermelon"))
+print("All paths from 'bread' to 'watermelon':", ls_paths)
+```
+
+### Connected Components in Undirected Graphs
+
+A **connected component** is a subgraph in which any two nodes are connected by a path. A graph is **connected** if it has only one connected component.
+
+::: {.callout-tip collapse="true"}
+## How many connected components does `G_foods` have?
+
+`G_foods` has one connected component, since all nodes are connected to each other through some path.
+
+As usual, we can verify this with NetworkX:
+```{python}
+print("Connected components:", list(nx.connected_components(G_foods)))
+```
+:::
+
+### Diameter and Average Path Length
+
+The **diameter** of a graph is the length of the longest shortest path between any two nodes in the graph. It gives us an idea of how "far apart" the nodes are in the graph.
+
+```{python}
+print("Diameter:", nx.diameter(G_foods))
+```
+
+The **average path length (APL)** is the average of the shortest paths between all pairs of nodes.
+
+```{python}
+print("Average shortest path length:", nx.average_shortest_path_length(G_foods))
+```
+
+## Connectivity in Directed Graphs
+
+Connectivity in directed graphs is more complex than in undirected graphs, because we have to consider the direction of the edges. In a directed graph, we can have **strongly connected components** and **weakly connected components**.
+
+### Paths in Directed Graphs
+
+In a directed graph, a path must follow the direction of the edges. For example, in the directed food chain graph `D`, is there a path from "grass" to "lion"?
+
+```{python}
+# Draw the graph
+pos = nx.circular_layout(D_food_chain)
+nx.draw(D_food_chain, with_labels=True, pos=pos)
+plt.show()
+```
+
+We can check for the existence of a path in a directed graph using the same `has_path(<graph>, <node1>, <node2>)` function:
+
+```{python}
+print("Is there a path from 'grass' to 'lion'?", nx.has_path(D_food_chain, "grass", "lion"))   
+print("Is there a path from 'lion' to 'grass'?", nx.has_path(D_food_chain, "lion", "grass"))
+```
+
+### Strongly Connected Components
+
+A strongly connected component is a subgraph in which there is a directed path from any node to any other node. A directed graph is strongly connected if it has only one strongly connected component.
+
+```{python}
+print("Is strongly connected:", nx.is_strongly_connected(D_food_chain))
+print("Strongly connected components:", list(nx.strongly_connected_components(D_food_chain)))
+```
+
+
+### Weakly Connected Components
+
+A weakly connected component is a subgraph in which there is an undirected path from any node to any other node. A directed graph is weakly connected if it has only one weakly connected component.
+
+```{python}
+print("Is weakly connected:", nx.is_weakly_connected(D_food_chain))
+print("Weakly connected components:", list(nx.weakly_connected_components(D_food_chain)))
+```
+
+**Exercise.** How can we turn `D_food_chain` into a strongly connected graph? Try adding some edges to make it strongly connected.
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+To make `D_food_chain` strongly connected, we need to ensure that there is a directed path from every node to every other node. One way to achieve this is to add edges that create cycles between the nodes. Our example is a though one, as food chains are typically acyclic. Still, we can take note from "The Lion King":
+
+> "When we die, our bodies become the grass, and the antelope eat the grass. And so, we are all connected in the great Circle of Life." - Mufasa (lion)
+
+```{python}
+# When a predator dies, it returns to the food chain as prey for the grass
+D_food_chain.add_edges_from([
+    ("lion", "grass"),
+])
+
+# Visualize the new graph
+pos = nx.circular_layout(D_food_chain)
+nx.draw(D_food_chain, with_labels=True, pos=pos)
+plt.show()
+```
+
+```{python}
+print("Is strongly connected:", nx.is_strongly_connected(D_food_chain))
+print("Strongly connected components:", list(nx.strongly_connected_components(D_food_chain)))
+```
+:::
