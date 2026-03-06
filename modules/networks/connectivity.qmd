@@ -21,7 +21,10 @@ G_foods = nx.from_edgelist([
     ("bread", "chocolate"),
     ("bread", "cured ham"),
     ("cheese", "cured ham"),
+    ("chocolate", "cookies"),
+    ("chocolate", "milk"),
     ("chocolate", "watermelon"),
+    ("cookies", "milk"),
     ("cured ham", "watermelon"),
 ])
 
@@ -105,13 +108,17 @@ print("Density:", nx.density(G_foods))
 ```
 
 A graph is **sparse** when $D \ll 1$ and **dense** when $D \approx 1$.
+In practice, many real graphs fall in an intermediate range, so density is often better viewed as a spectrum rather than a strict binary label.
 
 ```{python}
-# Check if the graph is sparse or dense
-if nx.density(G_foods) < 0.1:
+# Check if the graph is sparse, intermediate, or dense
+D = nx.density(G_foods)
+if D < 0.1:
     print("The graph is sparse.")
-else:
+elif D > 0.6:
     print("The graph is dense.")
+else:
+    print("The graph has intermediate density.")
 ```
 
 ## Clustering Coefficient
@@ -127,6 +134,8 @@ $$
 
 where $k_i$ is the degree of node $i$, and $T_i$ is the number of triangles that include node $i$.
 If $k_i < 2$, we define $C_i = 0$.
+
+In our food graph, $C_{\text{bread}} = 1/3$: "bread" has three neighbors, and only one neighbor-pair is connected.
 
 The **average clustering coefficient** is:
 
@@ -242,7 +251,7 @@ for node, c in sorted(deg_cent.items(), key=lambda kv: kv[1], reverse=True):
     print(f"  {node}: {c:.3f}")
 ```
 
-A higher degree centrality means the node is more "important" in terms of connectivity. In our food graph, "bread" and "cured ham" have the highest degree centrality because they are connected to the most other nodes.
+A higher degree centrality means the node is more "important" in terms of connectivity. In our food graph, "chocolate" has the highest degree centrality, while "bread" and "cured ham" are the next most connected nodes.
 
 ### Closeness Centrality
 
@@ -255,7 +264,7 @@ $$
 
 where $d(i,j)$ is the shortest-path distance.
 
-A higher closeness centrality means the node can reach other nodes more quickly. In our food graph, "bread" and "cured ham" have the highest closeness centrality because they are connected to all other nodes through short paths.
+A higher closeness centrality means the node can reach other nodes more quickly. In our food graph, "chocolate" has the highest closeness centrality, followed by "bread".
 
 ::: {.callout-note}
 ## Disconnected graphs
@@ -288,7 +297,7 @@ for node, c in sorted(bc.items(), key=lambda kv: kv[1], reverse=True):
     print(f"  {node}: {c:.3f}")
 ```
 
-Higher betweenness centrality means the node acts as a bridge between different parts of the graph. In our food graph, "bread" and "cured ham" have the highest betweenness centrality because they connect different groups of nodes.
+Higher betweenness centrality means the node acts as a bridge between different parts of the graph. In our food graph, "chocolate" has the highest betweenness centrality, with "bread" as the second most important bridge.
 
 ### PageRank (Directed Networks)
 
