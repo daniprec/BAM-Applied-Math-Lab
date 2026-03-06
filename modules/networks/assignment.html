@@ -586,10 +586,20 @@ window.Quarto = {
   <li><a href="#explore-hubs" id="toc-explore-hubs" class="nav-link" data-scroll-target="#explore-hubs">Explore Hubs</a></li>
   <li><a href="#questions-to-explore-1" id="toc-questions-to-explore-1" class="nav-link" data-scroll-target="#questions-to-explore-1">Questions to Explore</a></li>
   </ul></li>
-  <li><a href="#epidemics-on-your-network-required" id="toc-epidemics-on-your-network-required" class="nav-link" data-scroll-target="#epidemics-on-your-network-required">Epidemics on your Network (Required)</a>
+  <li><a href="#option-c-your-own-network-trusted-source" id="toc-option-c-your-own-network-trusted-source" class="nav-link" data-scroll-target="#option-c-your-own-network-trusted-source">Option C — Your Own Network (trusted source)</a>
   <ul>
-  <li><a href="#sis-required" id="toc-sis-required" class="nav-link" data-scroll-target="#sis-required">SIS (Required)</a></li>
-  <li><a href="#sir-required" id="toc-sir-required" class="nav-link" data-scroll-target="#sir-required">SIR (Required)</a></li>
+  <li><a href="#step-c1-source-the-data-required" id="toc-step-c1-source-the-data-required" class="nav-link" data-scroll-target="#step-c1-source-the-data-required">Step C1 — Source the data (required)</a></li>
+  <li><a href="#step-c2-characterize-structure-required" id="toc-step-c2-characterize-structure-required" class="nav-link" data-scroll-target="#step-c2-characterize-structure-required">Step C2 — Characterize structure (required)</a></li>
+  <li><a href="#step-c3-choose-propagation-track" id="toc-step-c3-choose-propagation-track" class="nav-link" data-scroll-target="#step-c3-choose-propagation-track">Step C3 — Choose propagation track</a></li>
+  </ul></li>
+  <li><a href="#propagation-on-your-network-required" id="toc-propagation-on-your-network-required" class="nav-link" data-scroll-target="#propagation-on-your-network-required">Propagation on your Network (Required)</a>
+  <ul>
+  <li><a href="#track-1-sis-and-sir" id="toc-track-1-sis-and-sir" class="nav-link" data-scroll-target="#track-1-sis-and-sir">Track 1 — SIS and SIR</a>
+  <ul class="collapse">
+  <li><a href="#sis-required-in-track-1" id="toc-sis-required-in-track-1" class="nav-link" data-scroll-target="#sis-required-in-track-1">SIS (Required in Track 1)</a></li>
+  <li><a href="#sir-required-in-track-1" id="toc-sir-required-in-track-1" class="nav-link" data-scroll-target="#sir-required-in-track-1">SIR (Required in Track 1)</a></li>
+  </ul></li>
+  <li><a href="#track-2-alternative-propagation" id="toc-track-2-alternative-propagation" class="nav-link" data-scroll-target="#track-2-alternative-propagation">Track 2 — Alternative Propagation</a></li>
   </ul></li>
   <li><a href="#extra-mile-optional" id="toc-extra-mile-optional" class="nav-link" data-scroll-target="#extra-mile-optional">Extra Mile (Optional)</a></li>
   </ul>
@@ -621,7 +631,11 @@ window.Quarto = {
 <p>In this assignment you will pick <strong>one</strong> real network and do two things, in order:</p>
 <ol type="1">
 <li><strong>Characterize the network</strong> (basic structural properties).</li>
-<li><strong>Simulate epidemics on it</strong> with <strong>both</strong> SIS and SIR.</li>
+<li><strong>Simulate propagation on it</strong>:
+<ul>
+<li>Default track: epidemics with <strong>both</strong> SIS and SIR.</li>
+<li>Alternative track: a different propagation process (e.g., fake-news spreading).</li>
+</ul></li>
 </ol>
 <p>These networks are meaningful contexts for epidemics:</p>
 <ul>
@@ -647,17 +661,21 @@ Submission (Deliverable)
 <li>a table of core network metrics,</li>
 <li>at least 1 structural plot (e.g., degree histogram),</li>
 <li>top-10 nodes by degree centrality + one additional centrality metric (with interpretation),</li>
-<li>1 SIS figure and 1 SIR figure (mean over multiple runs),</li>
+<li>propagation figures:
+<ul>
+<li>default track: 1 SIS figure and 1 SIR figure (mean over multiple runs), or</li>
+<li>alternative track: at least 2 figures for your chosen propagation model (mean behavior + variability or sensitivity),</li>
+</ul></li>
 <li>a concise interpretation answering the questions under “Discuss”.</li>
 </ul></li>
 </ol>
-<p>Your report must state the exact parameters you used (<span class="math inline">\(\beta, \mu\)</span>, initial infected, number of runs, and the seed protocol).</p>
+<p>Your report must state the exact parameters you used (for example <span class="math inline">\(\beta, \mu\)</span>, initial infected/seeds, number of runs, seed protocol, and any model-specific probabilities or thresholds).</p>
 </div>
 </div>
 <section id="setup-reproducibility" class="level2">
 <h2 class="anchored" data-anchor-id="setup-reproducibility">Setup (Reproducibility)</h2>
 <p>Use a fixed seed for reproducible results. When running multiple trials, use <code>SEED + r</code> (where <code>r</code> is the trial index) so trials differ but remain reproducible.</p>
-<div id="69f3d4ac" class="cell" data-message="false" data-execution_count="1">
+<div id="c35e7610" class="cell" data-message="false" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
@@ -820,34 +838,94 @@ Optional warm-up: node attributes and itineraries
 </ul>
 </section>
 </section>
-<section id="epidemics-on-your-network-required" class="level2">
-<h2 class="anchored" data-anchor-id="epidemics-on-your-network-required">Epidemics on your Network (Required)</h2>
-<p>You must simulate <strong>both</strong> SIS and SIR on the same chosen network.</p>
+<section id="option-c-your-own-network-trusted-source" class="level2">
+<h2 class="anchored" data-anchor-id="option-c-your-own-network-trusted-source">Option C — Your Own Network (trusted source)</h2>
+<p>If you prefer, you can choose <strong>any real network</strong> instead of Enron or USA Flights.</p>
+<section id="step-c1-source-the-data-required" class="level3">
+<h3 class="anchored" data-anchor-id="step-c1-source-the-data-required">Step C1 — Source the data (required)</h3>
+<p>Your data must come from a <strong>trusted source</strong>. In your report, include:</p>
+<ul>
+<li>source URL,</li>
+<li>source organization (who publishes/maintains it),</li>
+<li>date accessed,</li>
+<li>file format and any preprocessing you performed.</li>
+</ul>
+<p>Accepted source types include university/government open-data portals, curated research repositories, or peer-reviewed supplementary datasets.</p>
+</section>
+<section id="step-c2-characterize-structure-required" class="level3">
+<h3 class="anchored" data-anchor-id="step-c2-characterize-structure-required">Step C2 — Characterize structure (required)</h3>
+<p>Report the same core metrics as Options A/B:</p>
+<ul>
+<li><span class="math inline">\(N\)</span>, <span class="math inline">\(E\)</span>, average degree, density,</li>
+<li>connected components + largest component size,</li>
+<li>clustering,</li>
+<li>top-10 by degree centrality + one additional centrality metric.</li>
+</ul>
+</section>
+<section id="step-c3-choose-propagation-track" class="level3">
+<h3 class="anchored" data-anchor-id="step-c3-choose-propagation-track">Step C3 — Choose propagation track</h3>
+<p>You may choose one of these:</p>
+<ul>
+<li><strong>Default epidemic track</strong>: SIS + SIR.</li>
+<li><strong>Alternative propagation track</strong>: another process such as fake-news diffusion, independent cascade, threshold adoption, or rumor spreading.</li>
+</ul>
+<p>For the alternative track, clearly define your node states and transition rules.</p>
+</section>
+</section>
+<section id="propagation-on-your-network-required" class="level2">
+<h2 class="anchored" data-anchor-id="propagation-on-your-network-required">Propagation on your Network (Required)</h2>
+<p>Choose one track:</p>
+<ul>
+<li><strong>Track 1 (default):</strong> SIS + SIR.</li>
+<li><strong>Track 2 (alternative):</strong> one non-SIS/SIR propagation model.</li>
+</ul>
+<p>In all cases, use the same network for your structural analysis and propagation experiments.</p>
 <p>Implementation requirement:</p>
 <ul>
-<li>store node states as a node attribute <code>state</code> (as in <a href="../../modules/networks/sis.html">SIS Model</a> and <a href="../../modules/networks/sir.html">SIR Model</a>).</li>
+<li>store node states as a node attribute <code>state</code>.</li>
 </ul>
 <p>Protocol requirement:</p>
 <ul>
 <li>run at least <code>runs = 20</code> trials,</li>
 <li>use <code>seed_run = SEED + r</code> for trial <code>r</code>,</li>
-<li>plot the <strong>mean</strong> epidemic curve across trials.</li>
+<li>plot the <strong>mean</strong> propagation curve(s) across trials.</li>
 </ul>
-<section id="sis-required" class="level3">
-<h3 class="anchored" data-anchor-id="sis-required">SIS (Required)</h3>
+<section id="track-1-sis-and-sir" class="level3">
+<h3 class="anchored" data-anchor-id="track-1-sis-and-sir">Track 1 — SIS and SIR</h3>
+<p>If you choose Track 1, simulate <strong>both</strong> SIS and SIR on the same graph (as in <a href="../../modules/networks/sis.html">SIS Model</a> and <a href="../../modules/networks/sir.html">SIR Model</a>).</p>
+<section id="sis-required-in-track-1" class="level4">
+<h4 class="anchored" data-anchor-id="sis-required-in-track-1">SIS (Required in Track 1)</h4>
 <p>Report and plot:</p>
 <ul>
 <li>mean infected fraction <span class="math inline">\(\mathbb{E}[I(t)/N]\)</span> over time,</li>
 <li>variability: either show a band (e.g., 25–75%) or overlay 3–5 individual runs.</li>
 </ul>
 </section>
-<section id="sir-required" class="level3">
-<h3 class="anchored" data-anchor-id="sir-required">SIR (Required)</h3>
+<section id="sir-required-in-track-1" class="level4">
+<h4 class="anchored" data-anchor-id="sir-required-in-track-1">SIR (Required in Track 1)</h4>
 <p>Report and plot:</p>
 <ul>
 <li>mean curves for <span class="math inline">\(S(t)/N\)</span>, <span class="math inline">\(I(t)/N\)</span>, <span class="math inline">\(R(t)/N\)</span>,</li>
 <li><strong>final epidemic size</strong> <span class="math inline">\(R(\infty)/N\)</span> (estimate from your finite simulation horizon).</li>
 </ul>
+</section>
+</section>
+<section id="track-2-alternative-propagation" class="level3">
+<h3 class="anchored" data-anchor-id="track-2-alternative-propagation">Track 2 — Alternative Propagation</h3>
+<p>If you choose Track 2, define and simulate one propagation model other than SIS/SIR.</p>
+<p>Report and plot at least:</p>
+<ul>
+<li>mean fraction of relevant states over time (e.g., spreaders, adopters, skeptics),</li>
+<li>variability (band or 3-5 individual runs),</li>
+<li>one final-outcome metric (e.g., final reach, extinction probability, time-to-peak),</li>
+<li>one sensitivity experiment (change one key parameter and compare outcomes).</li>
+</ul>
+<p>Your write-up must explicitly explain how both:</p>
+<ul>
+<li>the <strong>propagation rules</strong> (who can influence whom, with what probability/threshold), and</li>
+<li>the <strong>network structure</strong> (hubs, clustering, path lengths, components)</li>
+</ul>
+<p>shape the observed dynamics.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -881,11 +959,11 @@ Discuss (answer in the report)
 </div>
 <div class="callout-body-container callout-body">
 <ol type="1">
-<li>Structural: what features suggest “hub-like” spreading vs “cluster-local” spreading?</li>
-<li>SIS vs SIR: how does permanent immunity change the long-run behavior?</li>
-<li>Can the network become fully infected (all nodes infected) under your parameters? Did you observe it?</li>
-<li>Can the network become fully healed (no infected nodes)? How does this differ between SIS and SIR in your simulations?</li>
-<li>Sensitivity: if you increase <span class="math inline">\(\beta\)</span> or decrease <span class="math inline">\(\mu\)</span>, what changes first: peak height, persistence, or final size?</li>
+<li>Structural: what features suggest “hub-like” propagation vs “cluster-local” propagation?</li>
+<li>Rules: how do your propagation rules (infection/recovery/immunity, forwarding/forgetting, thresholds, etc.) change long-run behavior?</li>
+<li>Reach: can the process spread to almost all nodes under your parameters? Did you observe it?</li>
+<li>Extinction: can the process die out (no active spreaders/infected)? Under what conditions?</li>
+<li>Sensitivity: if you increase spreading strength (e.g., <span class="math inline">\(\beta\)</span> or equivalent) or reduce recovery/forgetting, what changes first: peak height, persistence, or final size?</li>
 </ol>
 </div>
 </div>
@@ -898,10 +976,10 @@ Discuss (answer in the report)
 <li>Compare two different centrality metrics and discuss differences.</li>
 <li>Try a community detection method and summarize results.</li>
 </ul>
-<p><strong>Extra-mile epidemic ideas:</strong></p>
+<p><strong>Extra-mile propagation ideas:</strong></p>
 <ul>
 <li>Hold the <strong>graph fixed</strong> (same graph seed) but vary only the <strong>dynamics seed</strong> to separate “graph randomness” from “process randomness”.</li>
-<li>Compare targeted removal (top-degree or top-betweenness) vs random removal and re-run SIS/SIR.</li>
+<li>Compare targeted removal (top-degree or top-betweenness) vs random removal and re-run your chosen propagation model.</li>
 </ul>
 <p><strong>Good luck and enjoy your coding!</strong></p>
 
@@ -1378,303 +1456,367 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>In this assignment you will pick **one** real network and do two things, in order:</span>
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Characterize the network** (basic structural properties).</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Simulate epidemics on it** with **both** SIS and SIR.</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>These networks are meaningful contexts for epidemics:</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Simulate propagation on it**:</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>Default track: epidemics with **both** SIS and SIR.</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>Alternative track: a different propagation process (e.g., fake-news spreading).</span>
 <span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Enron email** approximates a *contact/communication* network between people.</span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**USA Flights** approximates a *mobility/transport* network connecting locations.</span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>Your goal is not only to "run code", but to justify what you measure, make your results reproducible, and interpret them.</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>These networks are meaningful contexts for epidemics:</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Enron email** approximates a *contact/communication* network between people.</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**USA Flights** approximates a *mobility/transport* network connecting locations.</span>
 <span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="fu">## Submission (Deliverable)</span></span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>Submit **two files**:</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>Your goal is not only to "run code", but to justify what you measure, make your results reproducible, and interpret them.</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="fu">## Submission (Deliverable)</span></span>
 <span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Code**: a notebook/script that reproduces all figures and numbers (must run end-to-end).</span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Short report (PDF using LaTeX, 2–3 pages)** with:</span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>a table of core network metrics,</span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>at least 1 structural plot (e.g., degree histogram),</span>
-<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>top-10 nodes by degree centrality + one additional centrality metric (with interpretation),</span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>1 SIS figure and 1 SIR figure (mean over multiple runs),</span>
-<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>a concise interpretation answering the questions under "Discuss".</span>
-<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>Your report must state the exact parameters you used ($\beta, \mu$, initial infected, number of runs, and the seed protocol).</span>
-<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a><span class="fu">## Setup (Reproducibility)</span></span>
-<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>Use a fixed seed for reproducible results. When running multiple trials, use <span class="in">`SEED + r`</span> (where <span class="in">`r`</span> is the trial index) so trials differ but remain reproducible.</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>Submit **two files**:</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Code**: a notebook/script that reproduces all figures and numbers (must run end-to-end).</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Short report (PDF using LaTeX, 2–3 pages)** with:</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>a table of core network metrics,</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>at least 1 structural plot (e.g., degree histogram),</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>top-10 nodes by degree centrality + one additional centrality metric (with interpretation),</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>propagation figures:</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a><span class="ss">      - </span>default track: 1 SIS figure and 1 SIR figure (mean over multiple runs), or</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a><span class="ss">      - </span>alternative track: at least 2 figures for your chosen propagation model (mean behavior + variability or sensitivity),</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>a concise interpretation answering the questions under "Discuss".</span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>Your report must state the exact parameters you used (for example $\beta, \mu$, initial infected/seeds, number of runs, seed protocol, and any model-specific probabilities or thresholds).</span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
-<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
-<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>SEED <span class="op">=</span> <span class="dv">7</span>  <span class="co"># fixed seed for reproducibility</span></span>
-<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a><span class="fu">## Option A — Enron Email Network (person-to-person connections)</span></span>
-<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a>The Enron email dataset can be represented as a graph where nodes are email addresses and edges represent communication. It is widely used to study centrality, communities, and robustness <span class="co">[</span><span class="ot">@snapenrondataset</span><span class="co">]</span>.</span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a><span class="fu">## Setup (Reproducibility)</span></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>Use a fixed seed for reproducible results. When running multiple trials, use <span class="in">`SEED + r`</span> (where <span class="in">`r`</span> is the trial index) so trials differ but remain reproducible.</span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a>SEED <span class="op">=</span> <span class="dv">7</span>  <span class="co"># fixed seed for reproducibility</span></span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-enron-degree</span></span>
-<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: 'Enron network: degree histogram (log scale).'</span></span>
-<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 7</span></span>
-<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 4</span></span>
-<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a>path <span class="op">=</span> <span class="st">"data/ia-enron-only/ia-enron-only.edges"</span></span>
-<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.read_edgelist(path)</span>
-<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a>degrees <span class="op">=</span> [d <span class="cf">for</span> _, d <span class="kw">in</span> G.degree()]</span>
-<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">4</span>))</span>
-<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a>ax.hist(degrees, bins<span class="op">=</span><span class="dv">50</span>)</span>
-<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Degree"</span>)</span>
-<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Count"</span>)</span>
-<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a>ax.set_yscale(<span class="st">"log"</span>)</span>
-<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Enron degree distribution"</span>)</span>
-<span id="cb10-73"><a href="#cb10-73" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb10-74"><a href="#cb10-74" aria-hidden="true" tabindex="-1"></a>plt.close()</span>
-<span id="cb10-75"><a href="#cb10-75" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-76"><a href="#cb10-76" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step A1 — Load and sanity-check</span></span>
-<span id="cb10-78"><a href="#cb10-78" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a>Use the local edge list if you cloned this repository:</span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a><span class="fu">## Option A — Enron Email Network (person-to-person connections)</span></span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a>The Enron email dataset can be represented as a graph where nodes are email addresses and edges represent communication. It is widely used to study centrality, communities, and robustness <span class="co">[</span><span class="ot">@snapenrondataset</span><span class="co">]</span>.</span>
+<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-enron-degree</span></span>
+<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: 'Enron network: degree histogram (log scale).'</span></span>
+<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 7</span></span>
+<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 4</span></span>
+<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a>path <span class="op">=</span> <span class="st">"data/ia-enron-only/ia-enron-only.edges"</span></span>
+<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.read_edgelist(path)</span>
+<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a>degrees <span class="op">=</span> [d <span class="cf">for</span> _, d <span class="kw">in</span> G.degree()]</span>
+<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">4</span>))</span>
+<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a>ax.hist(degrees, bins<span class="op">=</span><span class="dv">50</span>)</span>
+<span id="cb10-73"><a href="#cb10-73" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Degree"</span>)</span>
+<span id="cb10-74"><a href="#cb10-74" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Count"</span>)</span>
+<span id="cb10-75"><a href="#cb10-75" aria-hidden="true" tabindex="-1"></a>ax.set_yscale(<span class="st">"log"</span>)</span>
+<span id="cb10-76"><a href="#cb10-76" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Enron degree distribution"</span>)</span>
+<span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb10-78"><a href="#cb10-78" aria-hidden="true" tabindex="-1"></a>plt.close()</span>
+<span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb10-80"><a href="#cb10-80" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-81"><a href="#cb10-81" aria-hidden="true" tabindex="-1"></a><span class="in">`data/ia-enron-only/ia-enron-only.edges`</span></span>
+<span id="cb10-81"><a href="#cb10-81" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step A1 — Load and sanity-check</span></span>
 <span id="cb10-82"><a href="#cb10-82" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-83"><a href="#cb10-83" aria-hidden="true" tabindex="-1"></a>If you are working from the rendered website and do not have the <span class="in">`data/`</span> folder, download the official SNAP file:</span>
+<span id="cb10-83"><a href="#cb10-83" aria-hidden="true" tabindex="-1"></a>Use the local edge list if you cloned this repository:</span>
 <span id="cb10-84"><a href="#cb10-84" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-85"><a href="#cb10-85" aria-hidden="true" tabindex="-1"></a><span class="in">`https://snap.stanford.edu/data/email-Enron.txt.gz`</span> <span class="co">[</span><span class="ot">@snapenrondataset</span><span class="co">]</span></span>
+<span id="cb10-85"><a href="#cb10-85" aria-hidden="true" tabindex="-1"></a><span class="in">`data/ia-enron-only/ia-enron-only.edges`</span></span>
 <span id="cb10-86"><a href="#cb10-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-87"><a href="#cb10-87" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-88"><a href="#cb10-88" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
-<span id="cb10-89"><a href="#cb10-89" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-90"><a href="#cb10-90" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.read_edgelist(<span class="st">"data/ia-enron-only/ia-enron-only.edges"</span>)</span>
-<span id="cb10-91"><a href="#cb10-91" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.Graph(G)  <span class="co"># ensure undirected simple graph</span></span>
-<span id="cb10-92"><a href="#cb10-92" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-93"><a href="#cb10-93" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"N, E ="</span>, G.number_of_nodes(), G.number_of_edges())</span>
-<span id="cb10-94"><a href="#cb10-94" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Self-loops:"</span>, nx.number_of_selfloops(G))</span>
-<span id="cb10-95"><a href="#cb10-95" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-87"><a href="#cb10-87" aria-hidden="true" tabindex="-1"></a>If you are working from the rendered website and do not have the <span class="in">`data/`</span> folder, download the official SNAP file:</span>
+<span id="cb10-88"><a href="#cb10-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-89"><a href="#cb10-89" aria-hidden="true" tabindex="-1"></a><span class="in">`https://snap.stanford.edu/data/email-Enron.txt.gz`</span> <span class="co">[</span><span class="ot">@snapenrondataset</span><span class="co">]</span></span>
+<span id="cb10-90"><a href="#cb10-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-91"><a href="#cb10-91" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb10-92"><a href="#cb10-92" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
+<span id="cb10-93"><a href="#cb10-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-94"><a href="#cb10-94" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.read_edgelist(<span class="st">"data/ia-enron-only/ia-enron-only.edges"</span>)</span>
+<span id="cb10-95"><a href="#cb10-95" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.Graph(G)  <span class="co"># ensure undirected simple graph</span></span>
 <span id="cb10-96"><a href="#cb10-96" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-97"><a href="#cb10-97" aria-hidden="true" tabindex="-1"></a>If the graph is disconnected, you may choose to work on the **largest connected component** for path-based metrics:</span>
-<span id="cb10-98"><a href="#cb10-98" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-99"><a href="#cb10-99" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-100"><a href="#cb10-100" aria-hidden="true" tabindex="-1"></a>largest_cc_nodes <span class="op">=</span> <span class="bu">max</span>(nx.connected_components(G), key<span class="op">=</span><span class="bu">len</span>)</span>
-<span id="cb10-101"><a href="#cb10-101" aria-hidden="true" tabindex="-1"></a>H <span class="op">=</span> G.subgraph(largest_cc_nodes).copy()</span>
-<span id="cb10-102"><a href="#cb10-102" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Largest CC size:"</span>, H.number_of_nodes())</span>
-<span id="cb10-103"><a href="#cb10-103" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-104"><a href="#cb10-104" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-105"><a href="#cb10-105" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step A2 — Basic properties (required)</span></span>
-<span id="cb10-106"><a href="#cb10-106" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-107"><a href="#cb10-107" aria-hidden="true" tabindex="-1"></a>Using definitions from <span class="co">[</span><span class="ot">Connectivity</span><span class="co">](connectivity.qmd)</span>, report at least:</span>
+<span id="cb10-97"><a href="#cb10-97" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"N, E ="</span>, G.number_of_nodes(), G.number_of_edges())</span>
+<span id="cb10-98"><a href="#cb10-98" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Self-loops:"</span>, nx.number_of_selfloops(G))</span>
+<span id="cb10-99"><a href="#cb10-99" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-100"><a href="#cb10-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-101"><a href="#cb10-101" aria-hidden="true" tabindex="-1"></a>If the graph is disconnected, you may choose to work on the **largest connected component** for path-based metrics:</span>
+<span id="cb10-102"><a href="#cb10-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-103"><a href="#cb10-103" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb10-104"><a href="#cb10-104" aria-hidden="true" tabindex="-1"></a>largest_cc_nodes <span class="op">=</span> <span class="bu">max</span>(nx.connected_components(G), key<span class="op">=</span><span class="bu">len</span>)</span>
+<span id="cb10-105"><a href="#cb10-105" aria-hidden="true" tabindex="-1"></a>H <span class="op">=</span> G.subgraph(largest_cc_nodes).copy()</span>
+<span id="cb10-106"><a href="#cb10-106" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Largest CC size:"</span>, H.number_of_nodes())</span>
+<span id="cb10-107"><a href="#cb10-107" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb10-108"><a href="#cb10-108" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-109"><a href="#cb10-109" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$N$, $E$, average degree, density</span>
-<span id="cb10-110"><a href="#cb10-110" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>number of connected components + size of largest component</span>
-<span id="cb10-111"><a href="#cb10-111" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>clustering (average clustering and/or transitivity)</span>
-<span id="cb10-112"><a href="#cb10-112" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>top-10 nodes by degree centrality + one additional centrality metric (betweenness, PageRank, etc.)</span>
-<span id="cb10-113"><a href="#cb10-113" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-114"><a href="#cb10-114" aria-hidden="true" tabindex="-1"></a>You may also report average shortest path length / diameter **on the largest component**.</span>
-<span id="cb10-115"><a href="#cb10-115" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-116"><a href="#cb10-116" aria-hidden="true" tabindex="-1"></a><span class="fu">### Centrality Metrics</span></span>
+<span id="cb10-109"><a href="#cb10-109" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step A2 — Basic properties (required)</span></span>
+<span id="cb10-110"><a href="#cb10-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-111"><a href="#cb10-111" aria-hidden="true" tabindex="-1"></a>Using definitions from <span class="co">[</span><span class="ot">Connectivity</span><span class="co">](connectivity.qmd)</span>, report at least:</span>
+<span id="cb10-112"><a href="#cb10-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-113"><a href="#cb10-113" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$N$, $E$, average degree, density</span>
+<span id="cb10-114"><a href="#cb10-114" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>number of connected components + size of largest component</span>
+<span id="cb10-115"><a href="#cb10-115" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>clustering (average clustering and/or transitivity)</span>
+<span id="cb10-116"><a href="#cb10-116" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>top-10 nodes by degree centrality + one additional centrality metric (betweenness, PageRank, etc.)</span>
 <span id="cb10-117"><a href="#cb10-117" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-118"><a href="#cb10-118" aria-hidden="true" tabindex="-1"></a>Compute the top nodes by betweenness centrality.</span>
+<span id="cb10-118"><a href="#cb10-118" aria-hidden="true" tabindex="-1"></a>You may also report average shortest path length / diameter **on the largest component**.</span>
 <span id="cb10-119"><a href="#cb10-119" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-120"><a href="#cb10-120" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-121"><a href="#cb10-121" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
-<span id="cb10-122"><a href="#cb10-122" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-123"><a href="#cb10-123" aria-hidden="true" tabindex="-1"></a>bc <span class="op">=</span> nx.betweenness_centrality(G)</span>
-<span id="cb10-124"><a href="#cb10-124" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">TODO</span><span class="co">: sort and print top 10 nodes</span></span>
-<span id="cb10-125"><a href="#cb10-125" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-120"><a href="#cb10-120" aria-hidden="true" tabindex="-1"></a><span class="fu">### Centrality Metrics</span></span>
+<span id="cb10-121"><a href="#cb10-121" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-122"><a href="#cb10-122" aria-hidden="true" tabindex="-1"></a>Compute the top nodes by betweenness centrality.</span>
+<span id="cb10-123"><a href="#cb10-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-124"><a href="#cb10-124" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb10-125"><a href="#cb10-125" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
 <span id="cb10-126"><a href="#cb10-126" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-127"><a href="#cb10-127" aria-hidden="true" tabindex="-1"></a><span class="fu">### Questions to Explore</span></span>
-<span id="cb10-128"><a href="#cb10-128" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-129"><a href="#cb10-129" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Which nodes act as brokers (hubs) in the network?</span>
-<span id="cb10-130"><a href="#cb10-130" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>How does the graph change if you remove high-betweenness nodes? Answering this questions will be relevant for the epidemic simulations later.</span>
-<span id="cb10-131"><a href="#cb10-131" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Can you detect communities with a simple algorithm?</span>
+<span id="cb10-127"><a href="#cb10-127" aria-hidden="true" tabindex="-1"></a>bc <span class="op">=</span> nx.betweenness_centrality(G)</span>
+<span id="cb10-128"><a href="#cb10-128" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">TODO</span><span class="co">: sort and print top 10 nodes</span></span>
+<span id="cb10-129"><a href="#cb10-129" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-130"><a href="#cb10-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-131"><a href="#cb10-131" aria-hidden="true" tabindex="-1"></a><span class="fu">### Questions to Explore</span></span>
 <span id="cb10-132"><a href="#cb10-132" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-133"><a href="#cb10-133" aria-hidden="true" tabindex="-1"></a><span class="fu">## Option B — USA Flights Network (mobility connections)</span></span>
-<span id="cb10-134"><a href="#cb10-134" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-135"><a href="#cb10-135" aria-hidden="true" tabindex="-1"></a>The USA Flights graph used here is a preprocessed snapshot built from OpenFlights airport/route data <span class="co">[</span><span class="ot">@openflightsdataset</span><span class="co">]</span>. It is commonly used to study connectivity, robustness, and hub structure.</span>
+<span id="cb10-133"><a href="#cb10-133" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Which nodes act as brokers (hubs) in the network?</span>
+<span id="cb10-134"><a href="#cb10-134" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>How does the graph change if you remove high-betweenness nodes? Answering this questions will be relevant for the epidemic simulations later.</span>
+<span id="cb10-135"><a href="#cb10-135" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Can you detect communities with a simple algorithm?</span>
 <span id="cb10-136"><a href="#cb10-136" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-139"><a href="#cb10-139" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb10-140"><a href="#cb10-140" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-usa-flights</span></span>
-<span id="cb10-141"><a href="#cb10-141" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: 'USA flights: subgraph snapshot (random sample of airports).'</span></span>
-<span id="cb10-142"><a href="#cb10-142" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 7</span></span>
-<span id="cb10-143"><a href="#cb10-143" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 4</span></span>
-<span id="cb10-144"><a href="#cb10-144" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb10-145"><a href="#cb10-145" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> random</span>
-<span id="cb10-146"><a href="#cb10-146" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-147"><a href="#cb10-147" aria-hidden="true" tabindex="-1"></a>path <span class="op">=</span> <span class="st">"data/openflights/openflights_usa.graphml.gz"</span></span>
-<span id="cb10-148"><a href="#cb10-148" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.read_graphml(path)</span>
-<span id="cb10-149"><a href="#cb10-149" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.Graph(G)</span>
+<span id="cb10-137"><a href="#cb10-137" aria-hidden="true" tabindex="-1"></a><span class="fu">## Option B — USA Flights Network (mobility connections)</span></span>
+<span id="cb10-138"><a href="#cb10-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-139"><a href="#cb10-139" aria-hidden="true" tabindex="-1"></a>The USA Flights graph used here is a preprocessed snapshot built from OpenFlights airport/route data <span class="co">[</span><span class="ot">@openflightsdataset</span><span class="co">]</span>. It is commonly used to study connectivity, robustness, and hub structure.</span>
+<span id="cb10-140"><a href="#cb10-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-143"><a href="#cb10-143" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb10-144"><a href="#cb10-144" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-usa-flights</span></span>
+<span id="cb10-145"><a href="#cb10-145" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: 'USA flights: subgraph snapshot (random sample of airports).'</span></span>
+<span id="cb10-146"><a href="#cb10-146" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 7</span></span>
+<span id="cb10-147"><a href="#cb10-147" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 4</span></span>
+<span id="cb10-148"><a href="#cb10-148" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb10-149"><a href="#cb10-149" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> random</span>
 <span id="cb10-150"><a href="#cb10-150" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-151"><a href="#cb10-151" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample a manageable subgraph for visualization</span></span>
-<span id="cb10-152"><a href="#cb10-152" aria-hidden="true" tabindex="-1"></a>nodes <span class="op">=</span> <span class="bu">list</span>(G.nodes)</span>
-<span id="cb10-153"><a href="#cb10-153" aria-hidden="true" tabindex="-1"></a>random.seed(SEED)</span>
-<span id="cb10-154"><a href="#cb10-154" aria-hidden="true" tabindex="-1"></a>sub_nodes <span class="op">=</span> random.sample(nodes, k<span class="op">=</span><span class="bu">min</span>(<span class="dv">250</span>, <span class="bu">len</span>(nodes)))</span>
-<span id="cb10-155"><a href="#cb10-155" aria-hidden="true" tabindex="-1"></a>H <span class="op">=</span> G.subgraph(sub_nodes).copy()</span>
-<span id="cb10-156"><a href="#cb10-156" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-157"><a href="#cb10-157" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.spring_layout(H, seed<span class="op">=</span>SEED)</span>
-<span id="cb10-158"><a href="#cb10-158" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">4</span>))</span>
-<span id="cb10-159"><a href="#cb10-159" aria-hidden="true" tabindex="-1"></a>nx.draw(H, pos<span class="op">=</span>pos, node_size<span class="op">=</span><span class="dv">10</span>, edge_color<span class="op">=</span><span class="st">"#999"</span>, node_color<span class="op">=</span><span class="st">"#1f77b4"</span>, ax<span class="op">=</span>ax)</span>
-<span id="cb10-160"><a href="#cb10-160" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"OpenFlights USA (sample)"</span>)</span>
-<span id="cb10-161"><a href="#cb10-161" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb10-162"><a href="#cb10-162" aria-hidden="true" tabindex="-1"></a>plt.close()</span>
-<span id="cb10-163"><a href="#cb10-163" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-164"><a href="#cb10-164" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-165"><a href="#cb10-165" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step B1 — Load and sanity-check</span></span>
-<span id="cb10-166"><a href="#cb10-166" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-167"><a href="#cb10-167" aria-hidden="true" tabindex="-1"></a>Use the local GraphML file if you cloned this repository:</span>
+<span id="cb10-151"><a href="#cb10-151" aria-hidden="true" tabindex="-1"></a>path <span class="op">=</span> <span class="st">"data/openflights/openflights_usa.graphml.gz"</span></span>
+<span id="cb10-152"><a href="#cb10-152" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.read_graphml(path)</span>
+<span id="cb10-153"><a href="#cb10-153" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.Graph(G)</span>
+<span id="cb10-154"><a href="#cb10-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-155"><a href="#cb10-155" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample a manageable subgraph for visualization</span></span>
+<span id="cb10-156"><a href="#cb10-156" aria-hidden="true" tabindex="-1"></a>nodes <span class="op">=</span> <span class="bu">list</span>(G.nodes)</span>
+<span id="cb10-157"><a href="#cb10-157" aria-hidden="true" tabindex="-1"></a>random.seed(SEED)</span>
+<span id="cb10-158"><a href="#cb10-158" aria-hidden="true" tabindex="-1"></a>sub_nodes <span class="op">=</span> random.sample(nodes, k<span class="op">=</span><span class="bu">min</span>(<span class="dv">250</span>, <span class="bu">len</span>(nodes)))</span>
+<span id="cb10-159"><a href="#cb10-159" aria-hidden="true" tabindex="-1"></a>H <span class="op">=</span> G.subgraph(sub_nodes).copy()</span>
+<span id="cb10-160"><a href="#cb10-160" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-161"><a href="#cb10-161" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.spring_layout(H, seed<span class="op">=</span>SEED)</span>
+<span id="cb10-162"><a href="#cb10-162" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">4</span>))</span>
+<span id="cb10-163"><a href="#cb10-163" aria-hidden="true" tabindex="-1"></a>nx.draw(H, pos<span class="op">=</span>pos, node_size<span class="op">=</span><span class="dv">10</span>, edge_color<span class="op">=</span><span class="st">"#999"</span>, node_color<span class="op">=</span><span class="st">"#1f77b4"</span>, ax<span class="op">=</span>ax)</span>
+<span id="cb10-164"><a href="#cb10-164" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"OpenFlights USA (sample)"</span>)</span>
+<span id="cb10-165"><a href="#cb10-165" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb10-166"><a href="#cb10-166" aria-hidden="true" tabindex="-1"></a>plt.close()</span>
+<span id="cb10-167"><a href="#cb10-167" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb10-168"><a href="#cb10-168" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-169"><a href="#cb10-169" aria-hidden="true" tabindex="-1"></a><span class="in">`data/openflights/openflights_usa.graphml.gz`</span></span>
+<span id="cb10-169"><a href="#cb10-169" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step B1 — Load and sanity-check</span></span>
 <span id="cb10-170"><a href="#cb10-170" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-171"><a href="#cb10-171" aria-hidden="true" tabindex="-1"></a>If you are working from the rendered website and do not have the <span class="in">`data/`</span> folder, download the exact same file from this repository:</span>
+<span id="cb10-171"><a href="#cb10-171" aria-hidden="true" tabindex="-1"></a>Use the local GraphML file if you cloned this repository:</span>
 <span id="cb10-172"><a href="#cb10-172" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-173"><a href="#cb10-173" aria-hidden="true" tabindex="-1"></a><span class="in">`https://raw.githubusercontent.com/daniprec/BAM-Applied-Math-Lab/main/data/openflights/openflights_usa.graphml.gz`</span></span>
+<span id="cb10-173"><a href="#cb10-173" aria-hidden="true" tabindex="-1"></a><span class="in">`data/openflights/openflights_usa.graphml.gz`</span></span>
 <span id="cb10-174"><a href="#cb10-174" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-175"><a href="#cb10-175" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-176"><a href="#cb10-176" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
-<span id="cb10-177"><a href="#cb10-177" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
-<span id="cb10-178"><a href="#cb10-178" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> urllib.request</span>
-<span id="cb10-179"><a href="#cb10-179" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-180"><a href="#cb10-180" aria-hidden="true" tabindex="-1"></a>path <span class="op">=</span> Path(<span class="st">"data/openflights/openflights_usa.graphml.gz"</span>)</span>
-<span id="cb10-181"><a href="#cb10-181" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> path.exists():</span>
-<span id="cb10-182"><a href="#cb10-182" aria-hidden="true" tabindex="-1"></a>    url <span class="op">=</span> <span class="st">"https://raw.githubusercontent.com/daniprec/BAM-Applied-Math-Lab/main/data/openflights/openflights_usa.graphml.gz"</span></span>
-<span id="cb10-183"><a href="#cb10-183" aria-hidden="true" tabindex="-1"></a>    path.parent.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb10-184"><a href="#cb10-184" aria-hidden="true" tabindex="-1"></a>    urllib.request.urlretrieve(url, path)</span>
-<span id="cb10-185"><a href="#cb10-185" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-186"><a href="#cb10-186" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.read_graphml(path)</span>
-<span id="cb10-187"><a href="#cb10-187" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.Graph(G)  <span class="co"># simplify to undirected graph for this assignment</span></span>
-<span id="cb10-188"><a href="#cb10-188" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-189"><a href="#cb10-189" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"N, E ="</span>, G.number_of_nodes(), G.number_of_edges())</span>
-<span id="cb10-190"><a href="#cb10-190" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is connected?"</span>, nx.is_connected(G))</span>
-<span id="cb10-191"><a href="#cb10-191" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-175"><a href="#cb10-175" aria-hidden="true" tabindex="-1"></a>If you are working from the rendered website and do not have the <span class="in">`data/`</span> folder, download the exact same file from this repository:</span>
+<span id="cb10-176"><a href="#cb10-176" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-177"><a href="#cb10-177" aria-hidden="true" tabindex="-1"></a><span class="in">`https://raw.githubusercontent.com/daniprec/BAM-Applied-Math-Lab/main/data/openflights/openflights_usa.graphml.gz`</span></span>
+<span id="cb10-178"><a href="#cb10-178" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-179"><a href="#cb10-179" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb10-180"><a href="#cb10-180" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
+<span id="cb10-181"><a href="#cb10-181" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb10-182"><a href="#cb10-182" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> urllib.request</span>
+<span id="cb10-183"><a href="#cb10-183" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-184"><a href="#cb10-184" aria-hidden="true" tabindex="-1"></a>path <span class="op">=</span> Path(<span class="st">"data/openflights/openflights_usa.graphml.gz"</span>)</span>
+<span id="cb10-185"><a href="#cb10-185" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> path.exists():</span>
+<span id="cb10-186"><a href="#cb10-186" aria-hidden="true" tabindex="-1"></a>    url <span class="op">=</span> <span class="st">"https://raw.githubusercontent.com/daniprec/BAM-Applied-Math-Lab/main/data/openflights/openflights_usa.graphml.gz"</span></span>
+<span id="cb10-187"><a href="#cb10-187" aria-hidden="true" tabindex="-1"></a>    path.parent.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb10-188"><a href="#cb10-188" aria-hidden="true" tabindex="-1"></a>    urllib.request.urlretrieve(url, path)</span>
+<span id="cb10-189"><a href="#cb10-189" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-190"><a href="#cb10-190" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.read_graphml(path)</span>
+<span id="cb10-191"><a href="#cb10-191" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> nx.Graph(G)  <span class="co"># simplify to undirected graph for this assignment</span></span>
 <span id="cb10-192"><a href="#cb10-192" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-193"><a href="#cb10-193" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
-<span id="cb10-194"><a href="#cb10-194" aria-hidden="true" tabindex="-1"></a><span class="fu">## Optional warm-up: node attributes and itineraries</span></span>
-<span id="cb10-195"><a href="#cb10-195" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-196"><a href="#cb10-196" aria-hidden="true" tabindex="-1"></a>The OpenFlights data comes with **node attributes** (metadata) stored in the GraphML.</span>
-<span id="cb10-197"><a href="#cb10-197" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-198"><a href="#cb10-198" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-199"><a href="#cb10-199" aria-hidden="true" tabindex="-1"></a>airport <span class="op">=</span> <span class="bu">next</span>(<span class="bu">iter</span>(G.nodes))</span>
-<span id="cb10-200"><a href="#cb10-200" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Example airport:"</span>, airport)</span>
-<span id="cb10-201"><a href="#cb10-201" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Attributes:"</span>, G.nodes[airport])</span>
-<span id="cb10-202"><a href="#cb10-202" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-203"><a href="#cb10-203" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-204"><a href="#cb10-204" aria-hidden="true" tabindex="-1"></a>You can also ask simple connectivity questions:</span>
-<span id="cb10-205"><a href="#cb10-205" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-206"><a href="#cb10-206" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-207"><a href="#cb10-207" aria-hidden="true" tabindex="-1"></a>a, b <span class="op">=</span> <span class="st">"IND"</span>, <span class="st">"FAI"</span>  <span class="co"># pick two IATA codes that exist in the graph</span></span>
-<span id="cb10-208"><a href="#cb10-208" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Direct flight?"</span>, G.has_edge(a, b))</span>
-<span id="cb10-209"><a href="#cb10-209" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Path exists?"</span>, nx.has_path(G, a, b))</span>
-<span id="cb10-210"><a href="#cb10-210" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-211"><a href="#cb10-211" aria-hidden="true" tabindex="-1"></a><span class="co"># Fewest flights itinerary (unweighted shortest path)</span></span>
-<span id="cb10-212"><a href="#cb10-212" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Itinerary:"</span>, nx.shortest_path(G, a, b))</span>
-<span id="cb10-213"><a href="#cb10-213" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-214"><a href="#cb10-214" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb10-215"><a href="#cb10-215" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-216"><a href="#cb10-216" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step B2 — Basic properties (required)</span></span>
-<span id="cb10-217"><a href="#cb10-217" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-218"><a href="#cb10-218" aria-hidden="true" tabindex="-1"></a>In addition to core connectivity/clustering metrics, report the top-10 nodes by degree centrality and one other centrality metric (betweenness, PageRank, etc.) with a brief interpretation.</span>
+<span id="cb10-193"><a href="#cb10-193" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"N, E ="</span>, G.number_of_nodes(), G.number_of_edges())</span>
+<span id="cb10-194"><a href="#cb10-194" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Is connected?"</span>, nx.is_connected(G))</span>
+<span id="cb10-195"><a href="#cb10-195" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-196"><a href="#cb10-196" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-197"><a href="#cb10-197" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb10-198"><a href="#cb10-198" aria-hidden="true" tabindex="-1"></a><span class="fu">## Optional warm-up: node attributes and itineraries</span></span>
+<span id="cb10-199"><a href="#cb10-199" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-200"><a href="#cb10-200" aria-hidden="true" tabindex="-1"></a>The OpenFlights data comes with **node attributes** (metadata) stored in the GraphML.</span>
+<span id="cb10-201"><a href="#cb10-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-202"><a href="#cb10-202" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb10-203"><a href="#cb10-203" aria-hidden="true" tabindex="-1"></a>airport <span class="op">=</span> <span class="bu">next</span>(<span class="bu">iter</span>(G.nodes))</span>
+<span id="cb10-204"><a href="#cb10-204" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Example airport:"</span>, airport)</span>
+<span id="cb10-205"><a href="#cb10-205" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Attributes:"</span>, G.nodes[airport])</span>
+<span id="cb10-206"><a href="#cb10-206" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-207"><a href="#cb10-207" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-208"><a href="#cb10-208" aria-hidden="true" tabindex="-1"></a>You can also ask simple connectivity questions:</span>
+<span id="cb10-209"><a href="#cb10-209" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-210"><a href="#cb10-210" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb10-211"><a href="#cb10-211" aria-hidden="true" tabindex="-1"></a>a, b <span class="op">=</span> <span class="st">"IND"</span>, <span class="st">"FAI"</span>  <span class="co"># pick two IATA codes that exist in the graph</span></span>
+<span id="cb10-212"><a href="#cb10-212" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Direct flight?"</span>, G.has_edge(a, b))</span>
+<span id="cb10-213"><a href="#cb10-213" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Path exists?"</span>, nx.has_path(G, a, b))</span>
+<span id="cb10-214"><a href="#cb10-214" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-215"><a href="#cb10-215" aria-hidden="true" tabindex="-1"></a><span class="co"># Fewest flights itinerary (unweighted shortest path)</span></span>
+<span id="cb10-216"><a href="#cb10-216" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Itinerary:"</span>, nx.shortest_path(G, a, b))</span>
+<span id="cb10-217"><a href="#cb10-217" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-218"><a href="#cb10-218" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb10-219"><a href="#cb10-219" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-220"><a href="#cb10-220" aria-hidden="true" tabindex="-1"></a>Try these metrics:</span>
+<span id="cb10-220"><a href="#cb10-220" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step B2 — Basic properties (required)</span></span>
 <span id="cb10-221"><a href="#cb10-221" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-222"><a href="#cb10-222" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-223"><a href="#cb10-223" aria-hidden="true" tabindex="-1"></a>num_nodes <span class="op">=</span> G.number_of_nodes()</span>
-<span id="cb10-224"><a href="#cb10-224" aria-hidden="true" tabindex="-1"></a>num_edges <span class="op">=</span> G.number_of_edges()</span>
-<span id="cb10-225"><a href="#cb10-225" aria-hidden="true" tabindex="-1"></a>avg_degree <span class="op">=</span> <span class="bu">sum</span>(<span class="bu">dict</span>(G.degree()).values()) <span class="op">/</span> num_nodes</span>
-<span id="cb10-226"><a href="#cb10-226" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-227"><a href="#cb10-227" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(num_nodes, num_edges, avg_degree)</span>
-<span id="cb10-228"><a href="#cb10-228" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-229"><a href="#cb10-229" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-230"><a href="#cb10-230" aria-hidden="true" tabindex="-1"></a><span class="fu">### Explore Hubs</span></span>
-<span id="cb10-231"><a href="#cb10-231" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-232"><a href="#cb10-232" aria-hidden="true" tabindex="-1"></a>Compute the top airports by degree centrality.</span>
+<span id="cb10-222"><a href="#cb10-222" aria-hidden="true" tabindex="-1"></a>In addition to core connectivity/clustering metrics, report the top-10 nodes by degree centrality and one other centrality metric (betweenness, PageRank, etc.) with a brief interpretation.</span>
+<span id="cb10-223"><a href="#cb10-223" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-224"><a href="#cb10-224" aria-hidden="true" tabindex="-1"></a>Try these metrics:</span>
+<span id="cb10-225"><a href="#cb10-225" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-226"><a href="#cb10-226" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb10-227"><a href="#cb10-227" aria-hidden="true" tabindex="-1"></a>num_nodes <span class="op">=</span> G.number_of_nodes()</span>
+<span id="cb10-228"><a href="#cb10-228" aria-hidden="true" tabindex="-1"></a>num_edges <span class="op">=</span> G.number_of_edges()</span>
+<span id="cb10-229"><a href="#cb10-229" aria-hidden="true" tabindex="-1"></a>avg_degree <span class="op">=</span> <span class="bu">sum</span>(<span class="bu">dict</span>(G.degree()).values()) <span class="op">/</span> num_nodes</span>
+<span id="cb10-230"><a href="#cb10-230" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-231"><a href="#cb10-231" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(num_nodes, num_edges, avg_degree)</span>
+<span id="cb10-232"><a href="#cb10-232" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb10-233"><a href="#cb10-233" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-234"><a href="#cb10-234" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-235"><a href="#cb10-235" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
-<span id="cb10-236"><a href="#cb10-236" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-237"><a href="#cb10-237" aria-hidden="true" tabindex="-1"></a>centrality <span class="op">=</span> nx.degree_centrality(G)</span>
-<span id="cb10-238"><a href="#cb10-238" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">TODO</span><span class="co">: sort and print top 10 airports</span></span>
-<span id="cb10-239"><a href="#cb10-239" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-234"><a href="#cb10-234" aria-hidden="true" tabindex="-1"></a><span class="fu">### Explore Hubs</span></span>
+<span id="cb10-235"><a href="#cb10-235" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-236"><a href="#cb10-236" aria-hidden="true" tabindex="-1"></a>Compute the top airports by degree centrality.</span>
+<span id="cb10-237"><a href="#cb10-237" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-238"><a href="#cb10-238" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb10-239"><a href="#cb10-239" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
 <span id="cb10-240"><a href="#cb10-240" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-241"><a href="#cb10-241" aria-hidden="true" tabindex="-1"></a><span class="fu">### Questions to Explore</span></span>
-<span id="cb10-242"><a href="#cb10-242" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-243"><a href="#cb10-243" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Which airports act as hubs? Answering this question will be relevant for the epidemic simulations later.</span>
-<span id="cb10-244"><a href="#cb10-244" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>How does the network change if you remove the top hub?</span>
-<span id="cb10-245"><a href="#cb10-245" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Is the graph connected, or are there isolated components?</span>
+<span id="cb10-241"><a href="#cb10-241" aria-hidden="true" tabindex="-1"></a>centrality <span class="op">=</span> nx.degree_centrality(G)</span>
+<span id="cb10-242"><a href="#cb10-242" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">TODO</span><span class="co">: sort and print top 10 airports</span></span>
+<span id="cb10-243"><a href="#cb10-243" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-244"><a href="#cb10-244" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-245"><a href="#cb10-245" aria-hidden="true" tabindex="-1"></a><span class="fu">### Questions to Explore</span></span>
 <span id="cb10-246"><a href="#cb10-246" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-247"><a href="#cb10-247" aria-hidden="true" tabindex="-1"></a><span class="fu">## Epidemics on your Network (Required)</span></span>
-<span id="cb10-248"><a href="#cb10-248" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-249"><a href="#cb10-249" aria-hidden="true" tabindex="-1"></a>You must simulate **both** SIS and SIR on the same chosen network.</span>
+<span id="cb10-247"><a href="#cb10-247" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Which airports act as hubs? Answering this question will be relevant for the epidemic simulations later.</span>
+<span id="cb10-248"><a href="#cb10-248" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>How does the network change if you remove the top hub?</span>
+<span id="cb10-249"><a href="#cb10-249" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Is the graph connected, or are there isolated components?</span>
 <span id="cb10-250"><a href="#cb10-250" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-251"><a href="#cb10-251" aria-hidden="true" tabindex="-1"></a>Implementation requirement:</span>
+<span id="cb10-251"><a href="#cb10-251" aria-hidden="true" tabindex="-1"></a><span class="fu">## Option C — Your Own Network (trusted source)</span></span>
 <span id="cb10-252"><a href="#cb10-252" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-253"><a href="#cb10-253" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>store node states as a node attribute <span class="in">`state`</span> (as in <span class="co">[</span><span class="ot">SIS Model</span><span class="co">](sis.qmd)</span> and <span class="co">[</span><span class="ot">SIR Model</span><span class="co">](sir.qmd)</span>).</span>
+<span id="cb10-253"><a href="#cb10-253" aria-hidden="true" tabindex="-1"></a>If you prefer, you can choose **any real network** instead of Enron or USA Flights.</span>
 <span id="cb10-254"><a href="#cb10-254" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-255"><a href="#cb10-255" aria-hidden="true" tabindex="-1"></a>Protocol requirement:</span>
+<span id="cb10-255"><a href="#cb10-255" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step C1 — Source the data (required)</span></span>
 <span id="cb10-256"><a href="#cb10-256" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-257"><a href="#cb10-257" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>run at least <span class="in">`runs = 20`</span> trials,</span>
-<span id="cb10-258"><a href="#cb10-258" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>use <span class="in">`seed_run = SEED + r`</span> for trial <span class="in">`r`</span>,</span>
-<span id="cb10-259"><a href="#cb10-259" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>plot the **mean** epidemic curve across trials.</span>
-<span id="cb10-260"><a href="#cb10-260" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-261"><a href="#cb10-261" aria-hidden="true" tabindex="-1"></a><span class="fu">### SIS (Required)</span></span>
-<span id="cb10-262"><a href="#cb10-262" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-263"><a href="#cb10-263" aria-hidden="true" tabindex="-1"></a>Report and plot:</span>
-<span id="cb10-264"><a href="#cb10-264" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-265"><a href="#cb10-265" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>mean infected fraction $\mathbb{E}<span class="co">[</span><span class="ot">I(t)/N</span><span class="co">]</span>$ over time,</span>
-<span id="cb10-266"><a href="#cb10-266" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>variability: either show a band (e.g., 25–75%) or overlay 3–5 individual runs.</span>
+<span id="cb10-257"><a href="#cb10-257" aria-hidden="true" tabindex="-1"></a>Your data must come from a **trusted source**. In your report, include:</span>
+<span id="cb10-258"><a href="#cb10-258" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-259"><a href="#cb10-259" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>source URL,</span>
+<span id="cb10-260"><a href="#cb10-260" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>source organization (who publishes/maintains it),</span>
+<span id="cb10-261"><a href="#cb10-261" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>date accessed,</span>
+<span id="cb10-262"><a href="#cb10-262" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>file format and any preprocessing you performed.</span>
+<span id="cb10-263"><a href="#cb10-263" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-264"><a href="#cb10-264" aria-hidden="true" tabindex="-1"></a>Accepted source types include university/government open-data portals, curated research repositories, or peer-reviewed supplementary datasets.</span>
+<span id="cb10-265"><a href="#cb10-265" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-266"><a href="#cb10-266" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step C2 — Characterize structure (required)</span></span>
 <span id="cb10-267"><a href="#cb10-267" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-268"><a href="#cb10-268" aria-hidden="true" tabindex="-1"></a><span class="fu">### SIR (Required)</span></span>
+<span id="cb10-268"><a href="#cb10-268" aria-hidden="true" tabindex="-1"></a>Report the same core metrics as Options A/B:</span>
 <span id="cb10-269"><a href="#cb10-269" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-270"><a href="#cb10-270" aria-hidden="true" tabindex="-1"></a>Report and plot:</span>
-<span id="cb10-271"><a href="#cb10-271" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-272"><a href="#cb10-272" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>mean curves for $S(t)/N$, $I(t)/N$, $R(t)/N$,</span>
-<span id="cb10-273"><a href="#cb10-273" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**final epidemic size** $R(\infty)/N$ (estimate from your finite simulation horizon).</span>
+<span id="cb10-270"><a href="#cb10-270" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$N$, $E$, average degree, density,</span>
+<span id="cb10-271"><a href="#cb10-271" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>connected components + largest component size,</span>
+<span id="cb10-272"><a href="#cb10-272" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>clustering,</span>
+<span id="cb10-273"><a href="#cb10-273" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>top-10 by degree centrality + one additional centrality metric.</span>
 <span id="cb10-274"><a href="#cb10-274" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-275"><a href="#cb10-275" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
-<span id="cb10-276"><a href="#cb10-276" aria-hidden="true" tabindex="-1"></a><span class="fu">## Practical tip</span></span>
-<span id="cb10-277"><a href="#cb10-277" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-278"><a href="#cb10-278" aria-hidden="true" tabindex="-1"></a>For large networks, you can simulate on:</span>
-<span id="cb10-279"><a href="#cb10-279" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-280"><a href="#cb10-280" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the full graph (if it runs fast enough), or</span>
-<span id="cb10-281"><a href="#cb10-281" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the largest connected component, or</span>
-<span id="cb10-282"><a href="#cb10-282" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>a sampled subgraph (state your sampling method and seed).</span>
+<span id="cb10-275"><a href="#cb10-275" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step C3 — Choose propagation track</span></span>
+<span id="cb10-276"><a href="#cb10-276" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-277"><a href="#cb10-277" aria-hidden="true" tabindex="-1"></a>You may choose one of these:</span>
+<span id="cb10-278"><a href="#cb10-278" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-279"><a href="#cb10-279" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Default epidemic track**: SIS + SIR.</span>
+<span id="cb10-280"><a href="#cb10-280" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Alternative propagation track**: another process such as fake-news diffusion, independent cascade, threshold adoption, or rumor spreading.</span>
+<span id="cb10-281"><a href="#cb10-281" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-282"><a href="#cb10-282" aria-hidden="true" tabindex="-1"></a>For the alternative track, clearly define your node states and transition rules.</span>
 <span id="cb10-283"><a href="#cb10-283" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-284"><a href="#cb10-284" aria-hidden="true" tabindex="-1"></a>The key is that your plots and conclusions must refer to the exact graph you simulated.</span>
-<span id="cb10-285"><a href="#cb10-285" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb10-286"><a href="#cb10-286" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-287"><a href="#cb10-287" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
-<span id="cb10-288"><a href="#cb10-288" aria-hidden="true" tabindex="-1"></a><span class="fu">## Discuss (answer in the report)</span></span>
-<span id="cb10-289"><a href="#cb10-289" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-290"><a href="#cb10-290" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Structural: what features suggest "hub-like" spreading vs "cluster-local" spreading?</span>
-<span id="cb10-291"><a href="#cb10-291" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>SIS vs SIR: how does permanent immunity change the long-run behavior?</span>
-<span id="cb10-292"><a href="#cb10-292" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Can the network become fully infected (all nodes infected) under your parameters? Did you observe it?</span>
-<span id="cb10-293"><a href="#cb10-293" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Can the network become fully healed (no infected nodes)? How does this differ between SIS and SIR in your simulations?</span>
-<span id="cb10-294"><a href="#cb10-294" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>Sensitivity: if you increase $\beta$ or decrease $\mu$, what changes first: peak height, persistence, or final size?</span>
-<span id="cb10-295"><a href="#cb10-295" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb10-284"><a href="#cb10-284" aria-hidden="true" tabindex="-1"></a><span class="fu">## Propagation on your Network (Required)</span></span>
+<span id="cb10-285"><a href="#cb10-285" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-286"><a href="#cb10-286" aria-hidden="true" tabindex="-1"></a>Choose one track:</span>
+<span id="cb10-287"><a href="#cb10-287" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-288"><a href="#cb10-288" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Track 1 (default):** SIS + SIR.</span>
+<span id="cb10-289"><a href="#cb10-289" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Track 2 (alternative):** one non-SIS/SIR propagation model.</span>
+<span id="cb10-290"><a href="#cb10-290" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-291"><a href="#cb10-291" aria-hidden="true" tabindex="-1"></a>In all cases, use the same network for your structural analysis and propagation experiments.</span>
+<span id="cb10-292"><a href="#cb10-292" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-293"><a href="#cb10-293" aria-hidden="true" tabindex="-1"></a>Implementation requirement:</span>
+<span id="cb10-294"><a href="#cb10-294" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-295"><a href="#cb10-295" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>store node states as a node attribute <span class="in">`state`</span>.</span>
 <span id="cb10-296"><a href="#cb10-296" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-297"><a href="#cb10-297" aria-hidden="true" tabindex="-1"></a><span class="fu">## Extra Mile (Optional)</span></span>
+<span id="cb10-297"><a href="#cb10-297" aria-hidden="true" tabindex="-1"></a>Protocol requirement:</span>
 <span id="cb10-298"><a href="#cb10-298" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-299"><a href="#cb10-299" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Remove a high-centrality node and analyze changes in connectivity and epidemic outcome.</span>
-<span id="cb10-300"><a href="#cb10-300" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Compare two different centrality metrics and discuss differences.</span>
-<span id="cb10-301"><a href="#cb10-301" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Try a community detection method and summarize results.</span>
+<span id="cb10-299"><a href="#cb10-299" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>run at least <span class="in">`runs = 20`</span> trials,</span>
+<span id="cb10-300"><a href="#cb10-300" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>use <span class="in">`seed_run = SEED + r`</span> for trial <span class="in">`r`</span>,</span>
+<span id="cb10-301"><a href="#cb10-301" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>plot the **mean** propagation curve(s) across trials.</span>
 <span id="cb10-302"><a href="#cb10-302" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-303"><a href="#cb10-303" aria-hidden="true" tabindex="-1"></a>\vspace{0.5cm}</span>
+<span id="cb10-303"><a href="#cb10-303" aria-hidden="true" tabindex="-1"></a><span class="fu">### Track 1 — SIS and SIR</span></span>
 <span id="cb10-304"><a href="#cb10-304" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-305"><a href="#cb10-305" aria-hidden="true" tabindex="-1"></a>**Extra-mile epidemic ideas:**</span>
+<span id="cb10-305"><a href="#cb10-305" aria-hidden="true" tabindex="-1"></a>If you choose Track 1, simulate **both** SIS and SIR on the same graph (as in <span class="co">[</span><span class="ot">SIS Model</span><span class="co">](sis.qmd)</span> and <span class="co">[</span><span class="ot">SIR Model</span><span class="co">](sir.qmd)</span>).</span>
 <span id="cb10-306"><a href="#cb10-306" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-307"><a href="#cb10-307" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Hold the **graph fixed** (same graph seed) but vary only the **dynamics seed** to separate "graph randomness" from "process randomness".</span>
-<span id="cb10-308"><a href="#cb10-308" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Compare targeted removal (top-degree or top-betweenness) vs random removal and re-run SIS/SIR.</span>
-<span id="cb10-309"><a href="#cb10-309" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-310"><a href="#cb10-310" aria-hidden="true" tabindex="-1"></a>\vspace{1cm}</span>
-<span id="cb10-311"><a href="#cb10-311" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-312"><a href="#cb10-312" aria-hidden="true" tabindex="-1"></a>**Good luck and enjoy your coding!**</span>
+<span id="cb10-307"><a href="#cb10-307" aria-hidden="true" tabindex="-1"></a><span class="fu">#### SIS (Required in Track 1)</span></span>
+<span id="cb10-308"><a href="#cb10-308" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-309"><a href="#cb10-309" aria-hidden="true" tabindex="-1"></a>Report and plot:</span>
+<span id="cb10-310"><a href="#cb10-310" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-311"><a href="#cb10-311" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>mean infected fraction $\mathbb{E}<span class="co">[</span><span class="ot">I(t)/N</span><span class="co">]</span>$ over time,</span>
+<span id="cb10-312"><a href="#cb10-312" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>variability: either show a band (e.g., 25–75%) or overlay 3–5 individual runs.</span>
+<span id="cb10-313"><a href="#cb10-313" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-314"><a href="#cb10-314" aria-hidden="true" tabindex="-1"></a><span class="fu">#### SIR (Required in Track 1)</span></span>
+<span id="cb10-315"><a href="#cb10-315" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-316"><a href="#cb10-316" aria-hidden="true" tabindex="-1"></a>Report and plot:</span>
+<span id="cb10-317"><a href="#cb10-317" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-318"><a href="#cb10-318" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>mean curves for $S(t)/N$, $I(t)/N$, $R(t)/N$,</span>
+<span id="cb10-319"><a href="#cb10-319" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**final epidemic size** $R(\infty)/N$ (estimate from your finite simulation horizon).</span>
+<span id="cb10-320"><a href="#cb10-320" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-321"><a href="#cb10-321" aria-hidden="true" tabindex="-1"></a><span class="fu">### Track 2 — Alternative Propagation</span></span>
+<span id="cb10-322"><a href="#cb10-322" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-323"><a href="#cb10-323" aria-hidden="true" tabindex="-1"></a>If you choose Track 2, define and simulate one propagation model other than SIS/SIR.</span>
+<span id="cb10-324"><a href="#cb10-324" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-325"><a href="#cb10-325" aria-hidden="true" tabindex="-1"></a>Report and plot at least:</span>
+<span id="cb10-326"><a href="#cb10-326" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-327"><a href="#cb10-327" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>mean fraction of relevant states over time (e.g., spreaders, adopters, skeptics),</span>
+<span id="cb10-328"><a href="#cb10-328" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>variability (band or 3-5 individual runs),</span>
+<span id="cb10-329"><a href="#cb10-329" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>one final-outcome metric (e.g., final reach, extinction probability, time-to-peak),</span>
+<span id="cb10-330"><a href="#cb10-330" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>one sensitivity experiment (change one key parameter and compare outcomes).</span>
+<span id="cb10-331"><a href="#cb10-331" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-332"><a href="#cb10-332" aria-hidden="true" tabindex="-1"></a>Your write-up must explicitly explain how both:</span>
+<span id="cb10-333"><a href="#cb10-333" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-334"><a href="#cb10-334" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the **propagation rules** (who can influence whom, with what probability/threshold), and</span>
+<span id="cb10-335"><a href="#cb10-335" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the **network structure** (hubs, clustering, path lengths, components)</span>
+<span id="cb10-336"><a href="#cb10-336" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-337"><a href="#cb10-337" aria-hidden="true" tabindex="-1"></a>shape the observed dynamics.</span>
+<span id="cb10-338"><a href="#cb10-338" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-339"><a href="#cb10-339" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb10-340"><a href="#cb10-340" aria-hidden="true" tabindex="-1"></a><span class="fu">## Practical tip</span></span>
+<span id="cb10-341"><a href="#cb10-341" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-342"><a href="#cb10-342" aria-hidden="true" tabindex="-1"></a>For large networks, you can simulate on:</span>
+<span id="cb10-343"><a href="#cb10-343" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-344"><a href="#cb10-344" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the full graph (if it runs fast enough), or</span>
+<span id="cb10-345"><a href="#cb10-345" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the largest connected component, or</span>
+<span id="cb10-346"><a href="#cb10-346" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>a sampled subgraph (state your sampling method and seed).</span>
+<span id="cb10-347"><a href="#cb10-347" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-348"><a href="#cb10-348" aria-hidden="true" tabindex="-1"></a>The key is that your plots and conclusions must refer to the exact graph you simulated.</span>
+<span id="cb10-349"><a href="#cb10-349" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb10-350"><a href="#cb10-350" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-351"><a href="#cb10-351" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb10-352"><a href="#cb10-352" aria-hidden="true" tabindex="-1"></a><span class="fu">## Discuss (answer in the report)</span></span>
+<span id="cb10-353"><a href="#cb10-353" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-354"><a href="#cb10-354" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Structural: what features suggest "hub-like" propagation vs "cluster-local" propagation?</span>
+<span id="cb10-355"><a href="#cb10-355" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Rules: how do your propagation rules (infection/recovery/immunity, forwarding/forgetting, thresholds, etc.) change long-run behavior?</span>
+<span id="cb10-356"><a href="#cb10-356" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Reach: can the process spread to almost all nodes under your parameters? Did you observe it?</span>
+<span id="cb10-357"><a href="#cb10-357" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Extinction: can the process die out (no active spreaders/infected)? Under what conditions?</span>
+<span id="cb10-358"><a href="#cb10-358" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>Sensitivity: if you increase spreading strength (e.g., $\beta$ or equivalent) or reduce recovery/forgetting, what changes first: peak height, persistence, or final size?</span>
+<span id="cb10-359"><a href="#cb10-359" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb10-360"><a href="#cb10-360" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-361"><a href="#cb10-361" aria-hidden="true" tabindex="-1"></a><span class="fu">## Extra Mile (Optional)</span></span>
+<span id="cb10-362"><a href="#cb10-362" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-363"><a href="#cb10-363" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Remove a high-centrality node and analyze changes in connectivity and epidemic outcome.</span>
+<span id="cb10-364"><a href="#cb10-364" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Compare two different centrality metrics and discuss differences.</span>
+<span id="cb10-365"><a href="#cb10-365" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Try a community detection method and summarize results.</span>
+<span id="cb10-366"><a href="#cb10-366" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-367"><a href="#cb10-367" aria-hidden="true" tabindex="-1"></a>\vspace{0.5cm}</span>
+<span id="cb10-368"><a href="#cb10-368" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-369"><a href="#cb10-369" aria-hidden="true" tabindex="-1"></a>**Extra-mile propagation ideas:**</span>
+<span id="cb10-370"><a href="#cb10-370" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-371"><a href="#cb10-371" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Hold the **graph fixed** (same graph seed) but vary only the **dynamics seed** to separate "graph randomness" from "process randomness".</span>
+<span id="cb10-372"><a href="#cb10-372" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Compare targeted removal (top-degree or top-betweenness) vs random removal and re-run your chosen propagation model.</span>
+<span id="cb10-373"><a href="#cb10-373" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-374"><a href="#cb10-374" aria-hidden="true" tabindex="-1"></a>\vspace{1cm}</span>
+<span id="cb10-375"><a href="#cb10-375" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-376"><a href="#cb10-376" aria-hidden="true" tabindex="-1"></a>**Good luck and enjoy your coding!**</span>
 </code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
