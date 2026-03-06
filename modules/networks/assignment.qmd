@@ -7,7 +7,9 @@ format: html
 In this assignment you will pick **one** real network and do two things, in order:
 
 1. **Characterize the network** (basic structural properties).
-2. **Simulate epidemics on it** with **both** SIS and SIR.
+2. **Simulate propagation on it**:
+	- Default track: epidemics with **both** SIS and SIR.
+	- Alternative track: a different propagation process (e.g., fake-news spreading).
 
 These networks are meaningful contexts for epidemics:
 
@@ -26,10 +28,12 @@ Submit **two files**:
 	- a table of core network metrics,
 	- at least 1 structural plot (e.g., degree histogram),
 	- top-10 nodes by degree centrality + one additional centrality metric (with interpretation),
-	- 1 SIS figure and 1 SIR figure (mean over multiple runs),
+	- propagation figures:
+	  - default track: 1 SIS figure and 1 SIR figure (mean over multiple runs), or
+	  - alternative track: at least 2 figures for your chosen propagation model (mean behavior + variability or sensitivity),
 	- a concise interpretation answering the questions under "Discuss".
 
-Your report must state the exact parameters you used ($\beta, \mu$, initial infected, number of runs, and the seed protocol).
+Your report must state the exact parameters you used (for example $\beta, \mu$, initial infected/seeds, number of runs, seed protocol, and any model-specific probabilities or thresholds).
 :::
 
 ## Setup (Reproducibility)
@@ -238,33 +242,93 @@ centrality = nx.degree_centrality(G)
 - How does the network change if you remove the top hub?
 - Is the graph connected, or are there isolated components?
 
-## Epidemics on your Network (Required)
+## Option C — Your Own Network (trusted source)
 
-You must simulate **both** SIS and SIR on the same chosen network.
+If you prefer, you can choose **any real network** instead of Enron or USA Flights.
+
+### Step C1 — Source the data (required)
+
+Your data must come from a **trusted source**. In your report, include:
+
+- source URL,
+- source organization (who publishes/maintains it),
+- date accessed,
+- file format and any preprocessing you performed.
+
+Accepted source types include university/government open-data portals, curated research repositories, or peer-reviewed supplementary datasets.
+
+### Step C2 — Characterize structure (required)
+
+Report the same core metrics as Options A/B:
+
+- $N$, $E$, average degree, density,
+- connected components + largest component size,
+- clustering,
+- top-10 by degree centrality + one additional centrality metric.
+
+### Step C3 — Choose propagation track
+
+You may choose one of these:
+
+- **Default epidemic track**: SIS + SIR.
+- **Alternative propagation track**: another process such as fake-news diffusion, independent cascade, threshold adoption, or rumor spreading.
+
+For the alternative track, clearly define your node states and transition rules.
+
+## Propagation on your Network (Required)
+
+Choose one track:
+
+- **Track 1 (default):** SIS + SIR.
+- **Track 2 (alternative):** one non-SIS/SIR propagation model.
+
+In all cases, use the same network for your structural analysis and propagation experiments.
 
 Implementation requirement:
 
-- store node states as a node attribute `state` (as in [SIS Model](sis.qmd) and [SIR Model](sir.qmd)).
+- store node states as a node attribute `state`.
 
 Protocol requirement:
 
 - run at least `runs = 20` trials,
 - use `seed_run = SEED + r` for trial `r`,
-- plot the **mean** epidemic curve across trials.
+- plot the **mean** propagation curve(s) across trials.
 
-### SIS (Required)
+### Track 1 — SIS and SIR
+
+If you choose Track 1, simulate **both** SIS and SIR on the same graph (as in [SIS Model](sis.qmd) and [SIR Model](sir.qmd)).
+
+#### SIS (Required in Track 1)
 
 Report and plot:
 
 - mean infected fraction $\mathbb{E}[I(t)/N]$ over time,
 - variability: either show a band (e.g., 25–75%) or overlay 3–5 individual runs.
 
-### SIR (Required)
+#### SIR (Required in Track 1)
 
 Report and plot:
 
 - mean curves for $S(t)/N$, $I(t)/N$, $R(t)/N$,
 - **final epidemic size** $R(\infty)/N$ (estimate from your finite simulation horizon).
+
+### Track 2 — Alternative Propagation
+
+If you choose Track 2, define and simulate one propagation model other than SIS/SIR.
+
+Report and plot at least:
+
+- mean fraction of relevant states over time (e.g., spreaders, adopters, skeptics),
+- variability (band or 3-5 individual runs),
+- one final-outcome metric (e.g., final reach, extinction probability, time-to-peak),
+- one sensitivity experiment (change one key parameter and compare outcomes).
+
+Your write-up must explicitly explain how both:
+
+- the **propagation rules** (who can influence whom, with what probability/threshold), and
+- the **network structure** (hubs, clustering, path lengths, components)
+
+shape the observed dynamics.
 
 ::: {.callout-tip collapse="true"}
 ## Practical tip
@@ -281,11 +345,11 @@ The key is that your plots and conclusions must refer to the exact graph you sim
 ::: {.callout-note}
 ## Discuss (answer in the report)
 
-1. Structural: what features suggest "hub-like" spreading vs "cluster-local" spreading?
-2. SIS vs SIR: how does permanent immunity change the long-run behavior?
-3. Can the network become fully infected (all nodes infected) under your parameters? Did you observe it?
-4. Can the network become fully healed (no infected nodes)? How does this differ between SIS and SIR in your simulations?
-5. Sensitivity: if you increase $\beta$ or decrease $\mu$, what changes first: peak height, persistence, or final size?
+1. Structural: what features suggest "hub-like" propagation vs "cluster-local" propagation?
+2. Rules: how do your propagation rules (infection/recovery/immunity, forwarding/forgetting, thresholds, etc.) change long-run behavior?
+3. Reach: can the process spread to almost all nodes under your parameters? Did you observe it?
+4. Extinction: can the process die out (no active spreaders/infected)? Under what conditions?
+5. Sensitivity: if you increase spreading strength (e.g., $\beta$ or equivalent) or reduce recovery/forgetting, what changes first: peak height, persistence, or final size?
 :::
 
 ## Extra Mile (Optional)
@@ -296,10 +360,10 @@ The key is that your plots and conclusions must refer to the exact graph you sim
 
 \vspace{0.5cm}
 
-**Extra-mile epidemic ideas:**
+**Extra-mile propagation ideas:**
 
 - Hold the **graph fixed** (same graph seed) but vary only the **dynamics seed** to separate "graph randomness" from "process randomness".
-- Compare targeted removal (top-degree or top-betweenness) vs random removal and re-run SIS/SIR.
+- Compare targeted removal (top-degree or top-betweenness) vs random removal and re-run your chosen propagation model.
 
 \vspace{1cm}
 
