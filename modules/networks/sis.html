@@ -54,7 +54,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -601,7 +621,7 @@ window.Quarto = {
 </header>
 
 
-<p>The SIS (Susceptible–Infected–Susceptible) model is a simple epidemic model where individuals can be infected multiple times. In this module, we implement SIS on networks using NetworkX and explore how <strong>network structure</strong> (random vs small-world vs scale-free) changes spreading.</p>
+<p>The SIS (Susceptible–Infected–Susceptible) model is a simple epidemic model where individuals can be infected multiple times <span class="citation" data-cites="keeling2008modeling pastor2015epidemic">(<a href="#ref-keeling2008modeling" role="doc-biblioref">Keeling and Rohani 2008</a>; <a href="#ref-pastor2015epidemic" role="doc-biblioref">Pastor-Satorras et al. 2015</a>)</span>. In this module, we implement SIS on networks using NetworkX and explore how <strong>network structure</strong> (random vs small-world vs scale-free) changes spreading.</p>
 <section id="what-is-the-sis-model" class="level2">
 <h2 class="anchored" data-anchor-id="what-is-the-sis-model">What is the SIS Model?</h2>
 <ul>
@@ -616,7 +636,7 @@ window.Quarto = {
 <section id="discrete-time-update-rule" class="level3">
 <h3 class="anchored" data-anchor-id="discrete-time-update-rule">Discrete-Time Update Rule</h3>
 <p>We simulate in discrete time steps <span class="math inline">\(t = 0, 1, 2, \dots\)</span>.</p>
-<p>A susceptible node with <span class="math inline">\(m\)</span> infected neighbors becomes infected with probability:</p>
+<p>A susceptible node with <span class="math inline">\(m\)</span> infected neighbors becomes infected with probability <span class="citation" data-cites="keeling2008modeling">(<a href="#ref-keeling2008modeling" role="doc-biblioref">Keeling and Rohani 2008</a>)</span>:</p>
 <p><span class="math display">\[
 \mathbb{P}(S \to I) = 1 - (1 - \beta)^m.
 \]</span></p>
@@ -654,13 +674,13 @@ Why <span class="math inline">\(1 - (1-\beta)^m\)</span>?
 </section>
 <section id="imports-and-parameters" class="level2">
 <h2 class="anchored" data-anchor-id="imports-and-parameters">Imports and Parameters</h2>
-<div id="1adfb7a1" class="cell" data-message="false" data-execution_count="1">
+<div id="d1b2530a" class="cell" data-message="false" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>These are the parameters you can tune:</p>
-<div id="88364b19" class="cell" data-execution_count="2">
+<div id="4e585d02" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>SEED <span class="op">=</span> <span class="dv">7</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Model parameters</span></span>
@@ -729,7 +749,7 @@ Solved: <code>make_graph()</code>
 </div>
 <div id="callout-4" class="callout-4-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div id="58ee604f" class="cell" data-message="false" data-execution_count="3">
+<div id="c2be4a28" class="cell" data-message="false" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_graph(model: <span class="bu">str</span>, n: <span class="bu">int</span>, seed: <span class="bu">int</span> <span class="op">=</span> SEED):</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> model <span class="op">==</span> <span class="st">"random"</span>:</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> nx.erdos_renyi_graph(n<span class="op">=</span>n, p<span class="op">=</span><span class="fl">0.08</span>, seed<span class="op">=</span>seed)</span>
@@ -743,7 +763,7 @@ Solved: <code>make_graph()</code>
 </div>
 </div>
 <p>Now you can easily create different graph types:</p>
-<div id="6879c2d9" class="cell" data-execution_count="4">
+<div id="b8055593" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> make_graph(<span class="st">"random"</span>, n<span class="op">=</span><span class="dv">100</span>)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"N, E ="</span>, G.number_of_nodes(), G.number_of_edges())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -751,7 +771,7 @@ Solved: <code>make_graph()</code>
 </div>
 </div>
 <p>Optional quick visualization:</p>
-<div id="8705b105" class="cell" data-execution_count="5">
+<div id="216579e9" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.spring_layout(G)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>nx.draw(G, pos<span class="op">=</span>pos, node_size<span class="op">=</span><span class="dv">50</span>, edge_color<span class="op">=</span><span class="st">"gray"</span>)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Baseline network"</span>)</span>
@@ -769,7 +789,7 @@ Solved: <code>make_graph()</code>
 <h2 class="anchored" data-anchor-id="initialize-states">Initialize States</h2>
 <p>We will store the state of each individual directly on the graph as a <strong>node attribute</strong> called <code>state</code>.</p>
 <p>For example, we can start with everyone susceptible. We will create the attribute “state” and set it to “S” for all nodes:</p>
-<div id="34ea7c6d" class="cell" data-execution_count="6">
+<div id="e7a2732a" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>nx.set_node_attributes(G, <span class="st">"S"</span>, <span class="st">"state"</span>)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Node 0:"</span>, G.nodes[<span class="dv">0</span>])  <span class="co"># node attributes are stored in a dictionary</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -778,7 +798,7 @@ Solved: <code>make_graph()</code>
 </div>
 </div>
 <p>If we wanted to infect node 20, we could do:</p>
-<div id="d0ed966a" class="cell" data-execution_count="7">
+<div id="bb463523" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>node_20 <span class="op">=</span> G.nodes[<span class="dv">20</span>]</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>node_20[<span class="st">"state"</span>] <span class="op">=</span> <span class="st">"I"</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -788,7 +808,7 @@ Solved: <code>make_graph()</code>
 </div>
 </div>
 <p>Alternatively, we could use a dictionary to set the states of multiple nodes at once:</p>
-<div id="e2d1a5f8" class="cell" data-execution_count="8">
+<div id="5a34c4c2" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Infect nodes 20, 35, and 50</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co"># The rest will be susceptible by default</span></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>state_dict <span class="op">=</span> {node: <span class="st">"I"</span> <span class="cf">if</span> node <span class="kw">in</span> [<span class="dv">20</span>, <span class="dv">35</span>, <span class="dv">50</span>] <span class="cf">else</span> <span class="st">"S"</span> <span class="cf">for</span> node <span class="kw">in</span> G.nodes()}</span>
@@ -820,7 +840,7 @@ Solved: <code>initialize_state()</code>
 </div>
 <div id="callout-5" class="callout-5-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div id="d2897c21" class="cell" data-message="false" data-execution_count="9">
+<div id="f9247d24" class="cell" data-message="false" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> initialize_state(G, initial_infected<span class="op">=</span><span class="dv">5</span>, seed<span class="op">=</span>SEED, rng<span class="op">=</span><span class="va">None</span>):</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> rng <span class="kw">is</span> <span class="va">None</span>:</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>        rng <span class="op">=</span> np.random.default_rng(seed)</span>
@@ -839,7 +859,7 @@ Solved: <code>initialize_state()</code>
 </div>
 </div>
 <p>Always validate your functions! In this case, we can check that the number of infected nodes is correct:</p>
-<div id="894dc23e" class="cell" data-execution_count="10">
+<div id="3acb66b3" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>initialize_state(G, initial_infected<span class="op">=</span>initial_infected, seed<span class="op">=</span>SEED)</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Initially infected:"</span>,</span>
@@ -872,7 +892,7 @@ Solved: <code>step_sis()</code>
 </div>
 <div id="callout-6" class="callout-6-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div id="a50fbaf0" class="cell" data-message="false" data-execution_count="11">
+<div id="1c988a93" class="cell" data-message="false" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> step_sis(G, beta, mu, rng<span class="op">=</span><span class="va">None</span>):</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> rng <span class="kw">is</span> <span class="va">None</span>:</span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>        rng <span class="op">=</span> np.random.default_rng()</span>
@@ -915,7 +935,7 @@ Solved: <code>run_sis()</code>
 </div>
 <div id="callout-7" class="callout-7-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div id="ee13c515" class="cell" data-message="false" data-execution_count="12">
+<div id="2d41a792" class="cell" data-message="false" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_sis(G, beta, mu, steps<span class="op">=</span><span class="dv">100</span>, initial_infected<span class="op">=</span><span class="dv">5</span>, seed<span class="op">=</span>SEED):</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Copy the graph to avoid mutating the original</span></span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    H <span class="op">=</span> G.copy()</span>
@@ -937,7 +957,7 @@ Solved: <code>run_sis()</code>
 </div>
 </div>
 <p>Execute the function to make sure it runs without errors and returns a reasonable output:</p>
-<div id="ae8961eb" class="cell" data-execution_count="13">
+<div id="9c898d85" class="cell" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>counts <span class="op">=</span> run_sis(G, beta<span class="op">=</span>beta, mu<span class="op">=</span>mu, steps<span class="op">=</span>steps, initial_infected<span class="op">=</span>initial_infected)</span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Infected counts over time:"</span>, counts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -1008,9 +1028,17 @@ Discuss
 
 <!-- -->
 
+
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-keeling2008modeling" class="csl-entry" role="listitem">
+Keeling, Matt J., and Pejman Rohani. 2008. <em>Modeling Infectious Diseases in Humans and Animals</em>. Princeton University Press.
+</div>
+<div id="ref-pastor2015epidemic" class="csl-entry" role="listitem">
+Pastor-Satorras, Romualdo, Claudio Castellano, Piet Van Mieghem, and Alessandro Vespignani. 2015. <span>“Epidemic Processes in Complex Networks.”</span> <em>Reviews of Modern Physics</em> 87 (3): 925–79. <a href="https://doi.org/10.1103/RevModPhys.87.925">https://doi.org/10.1103/RevModPhys.87.925</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -1467,7 +1495,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
 <span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
 <span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>The SIS (Susceptible–Infected–Susceptible) model is a simple epidemic model where individuals can be infected multiple times. In this module, we implement SIS on networks using NetworkX and explore how **network structure** (random vs small-world vs scale-free) changes spreading.</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>The SIS (Susceptible–Infected–Susceptible) model is a simple epidemic model where individuals can be infected multiple times <span class="co">[</span><span class="ot">@keeling2008modeling; @pastor2015epidemic</span><span class="co">]</span>. In this module, we implement SIS on networks using NetworkX and explore how **network structure** (random vs small-world vs scale-free) changes spreading.</span>
 <span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## What is the SIS Model?</span></span>
 <span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a></span>
@@ -1481,7 +1509,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>We simulate in discrete time steps $t = 0, 1, 2, \dots$.</span>
 <span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>A susceptible node with $m$ infected neighbors becomes infected with probability:</span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>A susceptible node with $m$ infected neighbors becomes infected with probability <span class="co">[</span><span class="ot">@keeling2008modeling</span><span class="co">]</span>:</span>
 <span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>$$</span>
 <span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a>\mathbb{P}(S \to I) = 1 - (1 - \beta)^m.</span>

@@ -54,7 +54,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -601,7 +621,7 @@ window.Quarto = {
 </header>
 
 
-<p>The SIR (Susceptible–Infected–Recovered) model is the “next step” after SIS: once a node recovers, it becomes <strong>permanently immune</strong>.</p>
+<p>The SIR (Susceptible–Infected–Recovered) model is the “next step” after SIS: once a node recovers, it becomes <strong>permanently immune</strong> <span class="citation" data-cites="kermack1927contribution keeling2008modeling">(<a href="#ref-kermack1927contribution" role="doc-biblioref">Kermack and McKendrick 1927</a>; <a href="#ref-keeling2008modeling" role="doc-biblioref">Keeling and Rohani 2008</a>)</span>.</p>
 <p>In this module, we reuse the same ideas from the SIS page (graph models + node attributes) and focus on what is new:</p>
 <ul>
 <li>the new <strong>Recovered (R)</strong> state,</li>
@@ -622,7 +642,7 @@ window.Quarto = {
 <section id="discrete-time-update-rule" class="level3">
 <h3 class="anchored" data-anchor-id="discrete-time-update-rule">Discrete-Time Update Rule</h3>
 <p>We simulate in discrete time steps <span class="math inline">\(t = 0, 1, 2, \dots\)</span>.</p>
-<p>If a susceptible node has <span class="math inline">\(m\)</span> infected neighbors, we use the same “independent trials” rule as SIS:</p>
+<p>If a susceptible node has <span class="math inline">\(m\)</span> infected neighbors, we use the same “independent trials” rule as SIS <span class="citation" data-cites="keeling2008modeling">(<a href="#ref-keeling2008modeling" role="doc-biblioref">Keeling and Rohani 2008</a>)</span>:</p>
 <p><span class="math display">\[
 \mathbb{P}(S \to I) = 1 - (1 - \beta)^m.
 \]</span></p>
@@ -654,13 +674,13 @@ What changes compared to SIS?
 </section>
 <section id="a-key-rigorous-fact-absorbing-states" class="level2">
 <h2 class="anchored" data-anchor-id="a-key-rigorous-fact-absorbing-states">A key rigorous fact (absorbing states)</h2>
-<p>On a finite graph with <span class="math inline">\(\mu &gt; 0\)</span>, the process reaches a time <span class="math inline">\(T\)</span> such that there are <strong>no infected nodes</strong> (<span class="math inline">\(I(T)=0\)</span>), and after that nothing can ever change.</p>
+<p>On a finite graph with <span class="math inline">\(\mu &gt; 0\)</span>, the process reaches a time <span class="math inline">\(T\)</span> such that there are <strong>no infected nodes</strong> (<span class="math inline">\(I(T)=0\)</span>), and after that nothing can ever change <span class="citation" data-cites="keeling2008modeling pastor2015epidemic">(<a href="#ref-keeling2008modeling" role="doc-biblioref">Keeling and Rohani 2008</a>; <a href="#ref-pastor2015epidemic" role="doc-biblioref">Pastor-Satorras et al. 2015</a>)</span>.</p>
 <p>Intuition (but still rigorous): each node can become infected <strong>at most once</strong> (because <span class="math inline">\(R\)</span> is permanent), so there can be at most <span class="math inline">\(N\)</span> infection events. Since recovery happens with positive probability, infections cannot persist forever.</p>
 <p>This means SIR always ends in a “frozen” configuration containing only <span class="math inline">\(S\)</span> and <span class="math inline">\(R\)</span> nodes.</p>
 </section>
 <section id="imports-and-parameters" class="level2">
 <h2 class="anchored" data-anchor-id="imports-and-parameters">Imports and Parameters</h2>
-<div id="a75bcdc7" class="cell" data-message="false" data-execution_count="1">
+<div id="5c4970b4" class="cell" data-message="false" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
@@ -680,7 +700,7 @@ What changes compared to SIS?
 <section id="choose-a-network" class="level2">
 <h2 class="anchored" data-anchor-id="choose-a-network">Choose a Network</h2>
 <p>We will reuse the same helper pattern as in the SIS page (see <a href="../../modules/networks/sis.html">SIS Model</a>).</p>
-<div id="6fec6b5e" class="cell" data-execution_count="3">
+<div id="8baff134" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> make_graph(<span class="st">"random"</span>, n<span class="op">=</span>N, seed<span class="op">=</span>SEED)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"N, E ="</span>, G.number_of_nodes(), G.number_of_edges())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -691,7 +711,7 @@ What changes compared to SIS?
 <section id="initialize-states" class="level2">
 <h2 class="anchored" data-anchor-id="initialize-states">Initialize States</h2>
 <p>As in SIS, we store states on the graph using a node attribute called <code>state</code>.</p>
-<div id="b13591ea" class="cell" data-execution_count="5">
+<div id="3c7fb282" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>initialize_state(G, initial_infected<span class="op">=</span>initial_infected, seed<span class="op">=</span>SEED)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Initial counts (S, I, R) ="</span>,</span>
@@ -724,7 +744,7 @@ Solved: <code>step_sir()</code>
 </div>
 <div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div id="227d8ce7" class="cell" data-message="false" data-execution_count="6">
+<div id="cc2872db" class="cell" data-message="false" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> step_sir(G, beta, mu):</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    current <span class="op">=</span> {u: G.nodes[u][<span class="st">"state"</span>] <span class="cf">for</span> u <span class="kw">in</span> G.nodes()}</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    new_state <span class="op">=</span> current.copy()</span>
@@ -767,7 +787,7 @@ Solved: <code>run_sir()</code>
 </div>
 <div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div id="9333aa3b" class="cell" data-message="false" data-execution_count="7">
+<div id="38c380db" class="cell" data-message="false" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_sir(G, beta, mu, steps<span class="op">=</span><span class="dv">100</span>, initial_infected<span class="op">=</span><span class="dv">5</span>, seed<span class="op">=</span>SEED):</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    H <span class="op">=</span> G.copy()</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -859,9 +879,20 @@ Discuss
 
 <!-- -->
 
+
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-keeling2008modeling" class="csl-entry" role="listitem">
+Keeling, Matt J., and Pejman Rohani. 2008. <em>Modeling Infectious Diseases in Humans and Animals</em>. Princeton University Press.
+</div>
+<div id="ref-kermack1927contribution" class="csl-entry" role="listitem">
+Kermack, William O., and Anderson G. McKendrick. 1927. <span>“A Contribution to the Mathematical Theory of Epidemics.”</span> <em>Proceedings of the Royal Society A</em> 115 (772): 700–721. <a href="https://doi.org/10.1098/rspa.1927.0118">https://doi.org/10.1098/rspa.1927.0118</a>.
+</div>
+<div id="ref-pastor2015epidemic" class="csl-entry" role="listitem">
+Pastor-Satorras, Romualdo, Claudio Castellano, Piet Van Mieghem, and Alessandro Vespignani. 2015. <span>“Epidemic Processes in Complex Networks.”</span> <em>Reviews of Modern Physics</em> 87 (3): 925–79. <a href="https://doi.org/10.1103/RevModPhys.87.925">https://doi.org/10.1103/RevModPhys.87.925</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -1318,7 +1349,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>The SIR (Susceptible–Infected–Recovered) model is the "next step" after SIS: once a node recovers, it becomes **permanently immune**.</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>The SIR (Susceptible–Infected–Recovered) model is the "next step" after SIS: once a node recovers, it becomes **permanently immune** <span class="co">[</span><span class="ot">@kermack1927contribution; @keeling2008modeling</span><span class="co">]</span>.</span>
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>In this module, we reuse the same ideas from the SIS page (graph models + node attributes) and focus on what is new:</span>
 <span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
@@ -1338,7 +1369,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>We simulate in discrete time steps $t = 0, 1, 2, \dots$.</span>
 <span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>If a susceptible node has $m$ infected neighbors, we use the same "independent trials" rule as SIS:</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>If a susceptible node has $m$ infected neighbors, we use the same "independent trials" rule as SIS <span class="co">[</span><span class="ot">@keeling2008modeling</span><span class="co">]</span>:</span>
 <span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>$$</span>
 <span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>\mathbb{P}(S \to I) = 1 - (1 - \beta)^m.</span>
@@ -1364,7 +1395,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a><span class="fu">## A key rigorous fact (absorbing states)</span></span>
 <span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a>On a finite graph with $\mu &gt; 0$, the process reaches a time $T$ such that there are **no infected nodes** ($I(T)=0$), and after that nothing can ever change.</span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a>On a finite graph with $\mu &gt; 0$, the process reaches a time $T$ such that there are **no infected nodes** ($I(T)=0$), and after that nothing can ever change <span class="co">[</span><span class="ot">@keeling2008modeling; @pastor2015epidemic</span><span class="co">]</span>.</span>
 <span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a>Intuition (but still rigorous): each node can become infected **at most once** (because $R$ is permanent), so there can be at most $N$ infection events. Since recovery happens with positive probability, infections cannot persist forever.</span>
 <span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a></span>

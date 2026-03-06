@@ -54,7 +54,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -593,7 +613,7 @@ window.Quarto = {
 </header>
 
 
-<p>Real networks (social, transportation, communication) are not arbitrary: they tend to have <strong>short paths</strong>, <strong>clustering</strong>, and sometimes <strong>hubs</strong>.</p>
+<p>Real networks (social, transportation, communication) are not arbitrary: they tend to have <strong>short paths</strong>, <strong>clustering</strong>, and sometimes <strong>hubs</strong> <span class="citation" data-cites="newman2018networks">(<a href="#ref-newman2018networks" role="doc-biblioref">Newman 2018</a>)</span>.</p>
 <p>In this page, we introduce three classic <strong>synthetic graph models</strong> that help us reproduce (some of) these properties:</p>
 <ul>
 <li><strong>Random graphs</strong> (Erdős–Rényi / Gilbert)</li>
@@ -608,7 +628,7 @@ window.Quarto = {
 <li>Average shortest path length <span class="math inline">\(L\)</span> (on the largest connected component if needed)</li>
 </ul>
 <p>If you have not seen these metrics before, the definitions and examples are in the previous page: <a href="../../modules/networks/connectivity.html">Network Connectivity</a>.</p>
-<div id="4cd356d7" class="cell" data-execution_count="1">
+<div id="b6b45cf8" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -658,7 +678,7 @@ window.Quarto = {
 </div>
 <section id="random-graphs-erdosrényi-gilbert" class="level2">
 <h2 class="anchored" data-anchor-id="random-graphs-erdosrényi-gilbert">Random graphs (Erdos–Rényi / Gilbert)</h2>
-<p>In the <strong>Gilbert</strong> model <span class="math inline">\(G(N, p)\)</span>, we consider every possible pair of nodes and include the edge independently with probability <span class="math inline">\(p\)</span>.</p>
+<p>In the <strong>Gilbert</strong> model <span class="math inline">\(G(N, p)\)</span>, we consider every possible pair of nodes and include the edge independently with probability <span class="math inline">\(p\)</span> <span class="citation" data-cites="gilbert1959random erdos1959random">(<a href="#ref-gilbert1959random" role="doc-biblioref">Gilbert 1959</a>; <a href="#ref-erdos1959random" role="doc-biblioref">Erdos and Renyi 1959</a>)</span>.</p>
 <p>Key properties (typical, for large <span class="math inline">\(N\)</span>):</p>
 <ul>
 <li>Degree distribution is approximately <strong>binomial</strong>, and approaches <strong>Poisson</strong> in the sparse limit.</li>
@@ -671,7 +691,7 @@ window.Quarto = {
 <li>Generate a random number r between 0 and 1. If r &lt; p, then add a link between i and j.</li>
 <li>Repeat (1) and (2) for all pairs of nodes.</li>
 </ol>
-<div id="0359cd66" class="cell" data-execution_count="2">
+<div id="b340e1ad" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Random graph G(N, p)</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>G_random <span class="op">=</span> nx.erdos_renyi_graph(n<span class="op">=</span><span class="dv">80</span>, p<span class="op">=</span><span class="fl">0.06</span>, seed<span class="op">=</span>SEED)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -724,7 +744,7 @@ avg shortest path L = 2.766 (largest CC if disconnected)</code></pre>
 </div>
 </div>
 </div>
-<div id="3d8c0bba" class="cell" data-execution_count="3">
+<div id="89591acc" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Random graph G(N, m)</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>G_gnm <span class="op">=</span> nx.gnm_random_graph(n<span class="op">=</span><span class="dv">80</span>, m<span class="op">=</span><span class="dv">180</span>, seed<span class="op">=</span>SEED)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>summarize_graph(G_gnm, name<span class="op">=</span><span class="st">"Random (G(N,m))"</span>)</span>
@@ -747,7 +767,7 @@ avg shortest path L = 3.026 (largest CC if disconnected)</code></pre>
 </section>
 <section id="small-world-graphs-wattsstrogatz" class="level2">
 <h2 class="anchored" data-anchor-id="small-world-graphs-wattsstrogatz">Small-world graphs (Watts–Strogatz)</h2>
-<p>Watts–Strogatz networks start from a <strong>ring lattice</strong> (high clustering, long paths) and then <strong>rewire edges</strong> with probability <span class="math inline">\(p\)</span>.</p>
+<p>Watts–Strogatz networks start from a <strong>ring lattice</strong> (high clustering, long paths) and then <strong>rewire edges</strong> with probability <span class="math inline">\(p\)</span> <span class="citation" data-cites="watts1998collective">(<a href="#ref-watts1998collective" role="doc-biblioref">Watts and Strogatz 1998</a>)</span>.</p>
 <p>Key properties:</p>
 <ul>
 <li>For small <span class="math inline">\(p\)</span> (e.g.&nbsp;<span class="math inline">\(p \in [0.01, 0.2]\)</span>), you often get <strong>high clustering</strong> <em>and</em> <strong>short path lengths</strong> (“small-world”).</li>
@@ -763,7 +783,7 @@ avg shortest path L = 3.026 (largest CC if disconnected)</code></pre>
 <li>Connect each node to its <span class="math inline">\(k\)</span> nearest neighbors (or <span class="math inline">\(k-1\)</span> if k is odd).</li>
 <li>For each edge <span class="math inline">\((u, v)\)</span>, with probability <span class="math inline">\(p\)</span>, replace edge <span class="math inline">\((u, v)\)</span> with <span class="math inline">\((u, w)\)</span> where <span class="math inline">\(w\)</span> is not a neighbor of <span class="math inline">\(u\)</span>.</li>
 </ol>
-<div id="616a4a01" class="cell" data-execution_count="4">
+<div id="d06eb63d" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Watts-Strogatz small-world graph with n nodes, k neighbors, and probability p of rewiring</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>G_sw <span class="op">=</span> nx.watts_strogatz_graph(n<span class="op">=</span><span class="dv">80</span>, k<span class="op">=</span><span class="dv">6</span>, p<span class="op">=</span><span class="fl">0.08</span>, seed<span class="op">=</span>SEED)</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -799,8 +819,8 @@ avg shortest path L = 3.694 (largest CC if disconnected)</code></pre>
 </section>
 <section id="scale-free-graphs-preferential-attachment" class="level2">
 <h2 class="anchored" data-anchor-id="scale-free-graphs-preferential-attachment">Scale-free graphs (preferential attachment)</h2>
-<p>Many real networks exhibit a <strong>heavy-tailed</strong> (sometimes approximately <strong>power-law</strong>) degree distribution: most nodes have small degree, but a few nodes become <strong>hubs</strong>.</p>
-<p>The <strong>Barabási–Albert (BA)</strong> model generates this effect via <strong>preferential attachment</strong>:</p>
+<p>Many real networks exhibit a <strong>heavy-tailed</strong> (sometimes approximately <strong>power-law</strong>) degree distribution: most nodes have small degree, but a few nodes become <strong>hubs</strong> <span class="citation" data-cites="barabasi1999emergence newman2018networks">(<a href="#ref-barabasi1999emergence" role="doc-biblioref">Barabasi and Albert 1999</a>; <a href="#ref-newman2018networks" role="doc-biblioref">Newman 2018</a>)</span>.</p>
+<p>The <strong>Barabási–Albert (BA)</strong> model generates this effect via <strong>preferential attachment</strong> <span class="citation" data-cites="barabasi1999emergence">(<a href="#ref-barabasi1999emergence" role="doc-biblioref">Barabasi and Albert 1999</a>)</span>:</p>
 <ul>
 <li>Nodes that already have many edges are more likely to receive new edges.</li>
 </ul>
@@ -820,7 +840,7 @@ avg shortest path L = 3.694 (largest CC if disconnected)</code></pre>
 <li>Add a new node <span class="math inline">\(i\)</span> and link it with the <span class="math inline">\(m\)</span> nodes from the previous step.</li>
 <li>Repeat 2-3 until there are N nodes in the graph.</li>
 </ol>
-<div id="b43c682e" class="cell" data-execution_count="5">
+<div id="dcbb7782" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Barabasi-Albert preferential attachment graph with n nodes and m edges</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>G_sf <span class="op">=</span> nx.barabasi_albert_graph(n<span class="op">=</span><span class="dv">200</span>, m<span class="op">=</span><span class="dv">2</span>, seed<span class="op">=</span>SEED)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -883,9 +903,26 @@ avg shortest path L = 3.483 (largest CC if disconnected)</code></pre>
 
 <!-- -->
 
+
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-barabasi1999emergence" class="csl-entry" role="listitem">
+Barabasi, Albert-Laszlo, and Reka Albert. 1999. <span>“Emergence of Scaling in Random Networks.”</span> <em>Science</em> 286 (5439): 509–12. <a href="https://doi.org/10.1126/science.286.5439.509">https://doi.org/10.1126/science.286.5439.509</a>.
+</div>
+<div id="ref-erdos1959random" class="csl-entry" role="listitem">
+Erdos, Paul, and Alfred Renyi. 1959. <span>“On Random Graphs i.”</span> <em>Publicationes Mathematicae</em> 6: 290–97.
+</div>
+<div id="ref-gilbert1959random" class="csl-entry" role="listitem">
+Gilbert, Edgar N. 1959. <span>“Random Graphs.”</span> <em>The Annals of Mathematical Statistics</em> 30 (4): 1141–44. <a href="https://doi.org/10.1214/aoms/1177706098">https://doi.org/10.1214/aoms/1177706098</a>.
+</div>
+<div id="ref-newman2018networks" class="csl-entry" role="listitem">
+Newman, Mark. 2018. <em>Networks</em>. 2nd ed. Oxford University Press.
+</div>
+<div id="ref-watts1998collective" class="csl-entry" role="listitem">
+Watts, Duncan J., and Steven H. Strogatz. 1998. <span>“Collective Dynamics of ’Small-World’ Networks.”</span> <em>Nature</em> 393 (6684): 440–42. <a href="https://doi.org/10.1038/30918">https://doi.org/10.1038/30918</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -1342,7 +1379,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>Real networks (social, transportation, communication) are not arbitrary: they tend to have **short paths**, **clustering**, and sometimes **hubs**.</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>Real networks (social, transportation, communication) are not arbitrary: they tend to have **short paths**, **clustering**, and sometimes **hubs** <span class="co">[</span><span class="ot">@newman2018networks</span><span class="co">]</span>.</span>
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>In this page, we introduce three classic **synthetic graph models** that help us reproduce (some of) these properties:</span>
 <span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
@@ -1410,7 +1447,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb10-74"><a href="#cb10-74" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-75"><a href="#cb10-75" aria-hidden="true" tabindex="-1"></a><span class="fu">## Random graphs (Erdos–Rényi / Gilbert)</span></span>
 <span id="cb10-76"><a href="#cb10-76" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a>In the **Gilbert** model $G(N, p)$, we consider every possible pair of nodes and include the edge independently with probability $p$.</span>
+<span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a>In the **Gilbert** model $G(N, p)$, we consider every possible pair of nodes and include the edge independently with probability $p$ <span class="co">[</span><span class="ot">@gilbert1959random; @erdos1959random</span><span class="co">]</span>.</span>
 <span id="cb10-78"><a href="#cb10-78" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a>Key properties (typical, for large $N$):</span>
 <span id="cb10-80"><a href="#cb10-80" aria-hidden="true" tabindex="-1"></a></span>
@@ -1456,7 +1493,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb10-124"><a href="#cb10-124" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-125"><a href="#cb10-125" aria-hidden="true" tabindex="-1"></a><span class="fu">## Small-world graphs (Watts–Strogatz)</span></span>
 <span id="cb10-126"><a href="#cb10-126" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-127"><a href="#cb10-127" aria-hidden="true" tabindex="-1"></a>Watts–Strogatz networks start from a **ring lattice** (high clustering, long paths) and then **rewire edges** with probability $p$.</span>
+<span id="cb10-127"><a href="#cb10-127" aria-hidden="true" tabindex="-1"></a>Watts–Strogatz networks start from a **ring lattice** (high clustering, long paths) and then **rewire edges** with probability $p$ <span class="co">[</span><span class="ot">@watts1998collective</span><span class="co">]</span>.</span>
 <span id="cb10-128"><a href="#cb10-128" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-129"><a href="#cb10-129" aria-hidden="true" tabindex="-1"></a>Key properties:</span>
 <span id="cb10-130"><a href="#cb10-130" aria-hidden="true" tabindex="-1"></a></span>
@@ -1488,9 +1525,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb10-158"><a href="#cb10-158" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-159"><a href="#cb10-159" aria-hidden="true" tabindex="-1"></a><span class="fu">## Scale-free graphs (preferential attachment)</span></span>
 <span id="cb10-160"><a href="#cb10-160" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-161"><a href="#cb10-161" aria-hidden="true" tabindex="-1"></a>Many real networks exhibit a **heavy-tailed** (sometimes approximately **power-law**) degree distribution: most nodes have small degree, but a few nodes become **hubs**.</span>
+<span id="cb10-161"><a href="#cb10-161" aria-hidden="true" tabindex="-1"></a>Many real networks exhibit a **heavy-tailed** (sometimes approximately **power-law**) degree distribution: most nodes have small degree, but a few nodes become **hubs** <span class="co">[</span><span class="ot">@barabasi1999emergence; @newman2018networks</span><span class="co">]</span>.</span>
 <span id="cb10-162"><a href="#cb10-162" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-163"><a href="#cb10-163" aria-hidden="true" tabindex="-1"></a>The **Barabási–Albert (BA)** model generates this effect via **preferential attachment**:</span>
+<span id="cb10-163"><a href="#cb10-163" aria-hidden="true" tabindex="-1"></a>The **Barabási–Albert (BA)** model generates this effect via **preferential attachment** <span class="co">[</span><span class="ot">@barabasi1999emergence</span><span class="co">]</span>:</span>
 <span id="cb10-164"><a href="#cb10-164" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-165"><a href="#cb10-165" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Nodes that already have many edges are more likely to receive new edges.</span>
 <span id="cb10-166"><a href="#cb10-166" aria-hidden="true" tabindex="-1"></a></span>
