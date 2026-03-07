@@ -13,6 +13,33 @@
 - Prefer reproducible, minimal examples for demos and tutorials.
 - Use Markdown formatting for documentation and comments.
 
+## Writing Style
+
+Write in a way that feels human, natural, and professional. 
+
+FOLLOW these rules:
+* Use clear, direct language.
+* Keep sentences short and sharp.
+* Write in active voice.
+* Give practical, specific advice.
+* Include data, numbers, or concrete examples when possible.
+* Speak directly to the reader using "you" and "your."
+* The output should read clean, concise, and natural—like something a human wrote. 
+* Before finalizing, review and ensure there are no em dashes.
+
+DO NOT:
+* Use em dashes (only commas, periods, or semicolons are allowed).
+* Add filler phrases that connect ideas too loosely.
+* Use constructions like "not just X, but Y."
+* Use metaphors, analogies, or clichés.
+* Make vague or sweeping claims.
+* Use phrases like "in conclusion," "to sum up," or "closing."
+* Overuse adjectives or adverbs.
+* Use hashtags, markdown, or asterisks.
+
+AVOID these words and phrases: 
+Elevate, Delve, Hustle and bustle, Revolutionize, Foster, Realm, Remnant, Subsequently, Nestled, Enigma, Whispering, Sights unseen, Sounds unheard, A testament to, Dance, Metamorphosis, Indelible, Leverage, Synergy, Scalable, Optimize, Empower, Innovative, Disruptive, Robust, Seamless, Holistic, Cutting-edge, Next-generation, User-centric, Agile, Dynamic, Frictionless, Scalability, Mission-critical, Thought leadership, Turnkey, Paradigm shift, Game-changer, Ecosystem, Deep dive, Move the needle, Circle back, Actionable insights, and other corporate AI buzzwords.
+
 ## Guidance for Hints and Templates
 
 - When writing guided exercises or templates, use the following conventions:
