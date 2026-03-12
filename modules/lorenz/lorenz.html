@@ -84,7 +84,7 @@ div.csl-indent {
 <script src="../../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../">
-<link href="../../modules/lorenz/assignment.html" rel="next">
+<link href="../../modules/lorenz/sensitivity.html" rel="next">
 <link href="../../modules/lorenz/index.html" rel="prev">
 <script src="../../site_libs/quarto-html/quarto.js"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
@@ -544,6 +544,12 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../../modules/lorenz/sensitivity.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sensitivity and Chaos</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../../modules/lorenz/assignment.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Assignment</span></a>
   </div>
@@ -561,7 +567,10 @@ window.Quarto = {
    
   <ul>
   <li><a href="#implement-the-vector-field" id="toc-implement-the-vector-field" class="nav-link active" data-scroll-target="#implement-the-vector-field">Implement the vector field</a></li>
+  <li><a href="#fixed-points" id="toc-fixed-points" class="nav-link" data-scroll-target="#fixed-points">Fixed points</a></li>
   <li><a href="#simulate-with-euler" id="toc-simulate-with-euler" class="nav-link" data-scroll-target="#simulate-with-euler">Simulate with Euler</a></li>
+  <li><a href="#what-to-look-for" id="toc-what-to-look-for" class="nav-link" data-scroll-target="#what-to-look-for">What to look for</a></li>
+  <li><a href="#whats-next" id="toc-whats-next" class="nav-link" data-scroll-target="#whats-next">What’s Next?</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/lorenz/lorenz.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -571,7 +580,7 @@ window.Quarto = {
 <header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../modules/lorenz/index.html">Extra: Lorenz Attractor</a></li><li class="breadcrumb-item"><a href="../../modules/lorenz/lorenz.html">Lorenz Attractor</a></li></ol></nav>
 <div class="quarto-title">
 <div class="quarto-title-block"><div><h1 class="title">Lorenz Attractor</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
-<p class="subtitle lead">3D Chaotic Dynamics</p>
+<p class="subtitle lead">Vector Field, Fixed Points, and Euler Simulation</p>
 </div>
 
 
@@ -588,7 +597,7 @@ window.Quarto = {
 </header>
 
 
-<p>The Lorenz system is a classic example of deterministic chaos <span class="citation" data-cites="lorenz1963deterministic">(<a href="#ref-lorenz1963deterministic" role="doc-biblioref">Lorenz 1963</a>)</span>:</p>
+<p>The Lorenz system is one of the standard examples where a smooth deterministic ODE produces irregular long-term behavior <span class="citation" data-cites="lorenz1963deterministic strogatz2024nonlinear">(<a href="#ref-lorenz1963deterministic" role="doc-biblioref">Lorenz 1963</a>; <a href="#ref-strogatz2024nonlinear" role="doc-biblioref">Strogatz 2024</a>)</span>.</p>
 <p><span id="eq-lorenz-lorenz-1"><span class="math display">\[
 \begin{aligned}
 \dot x &amp;= s (y - x), \\
@@ -596,6 +605,14 @@ window.Quarto = {
 \dot z &amp;= x y - b z.
 \end{aligned}
 \tag{1}\]</span></span></p>
+<p>For the classical Lorenz attractor, the standard parameter choice is</p>
+<p><span class="math display">\[
+s = 10,
+\qquad
+r = 28,
+\qquad
+b = \frac{8}{3}.
+\]</span></p>
 <div id="cell-fig-lorenz" class="cell" data-fig-height="5" data-fig-width="6" data-execution_count="1">
 <div class="cell-output cell-output-display">
 <div id="fig-lorenz" class="quarto-figure quarto-figure-center quarto-float anchored">
@@ -612,24 +629,57 @@ Figure&nbsp;1: Lorenz attractor trajectory (Euler integration).
 </div>
 <section id="implement-the-vector-field" class="level2">
 <h2 class="anchored" data-anchor-id="implement-the-vector-field">Implement the vector field</h2>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> lorenz(xyz, s<span class="op">=</span><span class="dv">10</span>, r<span class="op">=</span><span class="dv">28</span>, b<span class="op">=</span><span class="fl">2.667</span>):</span>
+<p>The right-hand side takes one point <span class="math inline">\((x,y,z)\)</span> and returns the instantaneous velocity in phase space.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> lorenz(xyz, s<span class="op">=</span><span class="fl">10.0</span>, r<span class="op">=</span><span class="fl">28.0</span>, b<span class="op">=</span><span class="fl">8.0</span> <span class="op">/</span> <span class="fl">3.0</span>):</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    x, y, z <span class="op">=</span> xyz</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    x_dot <span class="op">=</span> s <span class="op">*</span> (y <span class="op">-</span> x)</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    y_dot <span class="op">=</span> r <span class="op">*</span> x <span class="op">-</span> y <span class="op">-</span> x <span class="op">*</span> z</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    z_dot <span class="op">=</span> x <span class="op">*</span> y <span class="op">-</span> b <span class="op">*</span> z</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array([x_dot, y_dot, z_dot])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
+<section id="fixed-points" class="level2">
+<h2 class="anchored" data-anchor-id="fixed-points">Fixed points</h2>
+<p>Setting the right-hand side equal to zero gives the equilibrium points.</p>
+<p>For <span class="math inline">\(r &gt; 1\)</span>, the Lorenz system has three fixed points:</p>
+<p><span class="math display">\[
+(0,0,0),
+\qquad
+\left(\sqrt{b(r-1)}, \sqrt{b(r-1)}, r-1\right),
+\qquad
+\left(-\sqrt{b(r-1)}, -\sqrt{b(r-1)}, r-1\right).
+\]</span></p>
+<p>The classical chaotic regime appears when trajectories do not settle near a single fixed point, but instead keep circling around the two lobes of the attractor.</p>
+</section>
 <section id="simulate-with-euler" class="level2">
 <h2 class="anchored" data-anchor-id="simulate-with-euler">Simulate with Euler</h2>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>num_steps <span class="op">=</span> <span class="dv">10000</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>dt <span class="op">=</span> <span class="fl">0.01</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>xyzs <span class="op">=</span> np.empty((num_steps <span class="op">+</span> <span class="dv">1</span>, <span class="dv">3</span>))</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>xyzs[<span class="dv">0</span>] <span class="op">=</span> (<span class="fl">0.0</span>, <span class="fl">1.0</span>, <span class="fl">1.05</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(num_steps):</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    xyzs[i <span class="op">+</span> <span class="dv">1</span>] <span class="op">=</span> xyzs[i] <span class="op">+</span> lorenz(xyzs[i]) <span class="op">*</span> dt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Forward Euler updates the state by</p>
+<p><span class="math display">\[
+\mathbf{x}_{n+1} = \mathbf{x}_n + \Delta t\, f(\mathbf{x}_n).
+\]</span></p>
+<p>In code, that becomes a simple loop over time steps.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> simulate_lorenz(initial_state<span class="op">=</span>(<span class="fl">0.0</span>, <span class="fl">1.0</span>, <span class="fl">1.05</span>), dt<span class="op">=</span><span class="fl">0.01</span>, num_steps<span class="op">=</span><span class="dv">10000</span>):</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    xyzs <span class="op">=</span> np.empty((num_steps <span class="op">+</span> <span class="dv">1</span>, <span class="dv">3</span>))</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    xyzs[<span class="dv">0</span>] <span class="op">=</span> initial_state</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(num_steps):</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        xyzs[i <span class="op">+</span> <span class="dv">1</span>] <span class="op">=</span> xyzs[i] <span class="op">+</span> lorenz(xyzs[i]) <span class="op">*</span> dt</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> xyzs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="what-to-look-for" class="level2">
+<h2 class="anchored" data-anchor-id="what-to-look-for">What to look for</h2>
+<ul>
+<li>The trajectory stays in a bounded region of phase space.</li>
+<li>It alternates between two lobes instead of converging to one point.</li>
+<li>The geometry looks structured, but the switching times are hard to predict over long intervals.</li>
+</ul>
 <p>Try changing <span class="math inline">\(r\)</span> or the initial condition and observe how the trajectory changes.</p>
 <p>Reference code: <a href="../../amlab/extra/lorenz_attractor.py">amlab/extra/lorenz_attractor.py</a>.</p>
+</section>
+<section id="whats-next" class="level2">
+<h2 class="anchored" data-anchor-id="whats-next">What’s Next?</h2>
+<p>One trajectory shows the geometry of the attractor. The next page compares two nearby trajectories so you can see sensitivity to initial conditions directly.</p>
+<p><a href="../../modules/lorenz/sensitivity.html" class="btn btn-primary">Sensitivity and Chaos</a> <a href="../../modules/lorenz/index.html" class="btn btn-secondary">Back to Session Index</a></p>
 
 
 <!-- -->
@@ -640,6 +690,9 @@ Figure&nbsp;1: Lorenz attractor trajectory (Euler integration).
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
 <div id="ref-lorenz1963deterministic" class="csl-entry" role="listitem">
 Lorenz, Edward N. 1963. <span>“Deterministic Nonperiodic Flow.”</span> <em>Journal of the Atmospheric Sciences</em> 20 (2): 130–41. <a href="https://doi.org/10.1175/1520-0469(1963)020<0130:DNF>2.0.CO;2">https://doi.org/10.1175/1520-0469(1963)020&lt;0130:DNF&gt;2.0.CO;2</a>.
+</div>
+<div id="ref-strogatz2024nonlinear" class="csl-entry" role="listitem">
+Strogatz, Steven H. 2024. <em>Nonlinear Dynamics and Chaos: With Applications to Physics, Biology, Chemistry, and Engineering</em>. Chapman; Hall/CRC.
 </div>
 </div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -1087,18 +1140,18 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../../modules/lorenz/assignment.html" class="pagination-link" aria-label="Assignment">
-        <span class="nav-page-text">Assignment</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../../modules/lorenz/sensitivity.html" class="pagination-link" aria-label="Sensitivity and Chaos">
+        <span class="nav-page-text">Sensitivity and Chaos</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
 <div class="sourceCode" id="cb3" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Lorenz Attractor"</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "3D Chaotic Dynamics"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Vector Field, Fixed Points, and Euler Simulation"</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>The Lorenz system is a classic example of deterministic chaos <span class="co">[</span><span class="ot">@lorenz1963deterministic</span><span class="co">]</span>:</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>The Lorenz system is one of the standard examples where a smooth deterministic ODE produces irregular long-term behavior <span class="co">[</span><span class="ot">@lorenz1963deterministic; @strogatz2024nonlinear</span><span class="co">]</span>.</span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>$$</span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
@@ -1108,62 +1161,109 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
 <span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>$$ {#eq-lorenz-lorenz-1}</span>
 <span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-lorenz</span></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: 'Lorenz attractor trajectory (Euler integration).'</span></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 6</span></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 5</span></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.extra.lorenz_attractor <span class="im">import</span> lorenz</span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>num_steps <span class="op">=</span> <span class="dv">5000</span></span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>dt <span class="op">=</span> <span class="fl">0.01</span></span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>xyzs <span class="op">=</span> np.empty((num_steps <span class="op">+</span> <span class="dv">1</span>, <span class="dv">3</span>))</span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>xyzs[<span class="dv">0</span>] <span class="op">=</span> (<span class="fl">0.0</span>, <span class="fl">1.0</span>, <span class="fl">1.05</span>)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>For the classical Lorenz attractor, the standard parameter choice is</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>s = 10,</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>\qquad</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>r = 28,</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>\qquad</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>b = \frac{8}{3}.</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-lorenz</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: 'Lorenz attractor trajectory (Euler integration).'</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 6</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 5</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
 <span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(num_steps):</span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>    xyzs[i <span class="op">+</span> <span class="dv">1</span>] <span class="op">=</span> xyzs[i] <span class="op">+</span> lorenz(xyzs[i]) <span class="op">*</span> dt</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> plt.figure().add_subplot(projection<span class="op">=</span><span class="st">"3d"</span>)</span>
-<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>ax.plot(<span class="op">*</span>xyzs.T, lw<span class="op">=</span><span class="fl">0.6</span>)</span>
-<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"X"</span>)</span>
-<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Y"</span>)</span>
-<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>ax.set_zlabel(<span class="st">"Z"</span>)</span>
-<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Lorenz Attractor"</span>)</span>
-<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>plt.close()</span>
-<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a><span class="fu">## Implement the vector field</span></span>
-<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> lorenz(xyz, s<span class="op">=</span><span class="dv">10</span>, r<span class="op">=</span><span class="dv">28</span>, b<span class="op">=</span><span class="fl">2.667</span>):</span>
-<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>    x, y, z <span class="op">=</span> xyz</span>
-<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>    x_dot <span class="op">=</span> s <span class="op">*</span> (y <span class="op">-</span> x)</span>
-<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>    y_dot <span class="op">=</span> r <span class="op">*</span> x <span class="op">-</span> y <span class="op">-</span> x <span class="op">*</span> z</span>
-<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>    z_dot <span class="op">=</span> x <span class="op">*</span> y <span class="op">-</span> b <span class="op">*</span> z</span>
-<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array([x_dot, y_dot, z_dot])</span>
-<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.extra.lorenz_attractor <span class="im">import</span> simulate_lorenz</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>num_steps <span class="op">=</span> <span class="dv">5000</span></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>dt <span class="op">=</span> <span class="fl">0.01</span></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>xyzs <span class="op">=</span> simulate_lorenz(initial_state<span class="op">=</span>(<span class="fl">0.0</span>, <span class="fl">1.0</span>, <span class="fl">1.05</span>), dt<span class="op">=</span>dt, num_steps<span class="op">=</span>num_steps)</span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">5</span>))</span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> fig.add_subplot(projection<span class="op">=</span><span class="st">"3d"</span>)</span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>ax.plot(<span class="op">*</span>xyzs.T, lw<span class="op">=</span><span class="fl">0.6</span>)</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"X"</span>)</span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Y"</span>)</span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>ax.set_zlabel(<span class="st">"Z"</span>)</span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Lorenz Attractor"</span>)</span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>plt.close()</span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a><span class="fu">## Implement the vector field</span></span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>The right-hand side takes one point $(x,y,z)$ and returns the instantaneous velocity in phase space.</span>
 <span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a><span class="fu">## Simulate with Euler</span></span>
-<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>num_steps <span class="op">=</span> <span class="dv">10000</span></span>
-<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>dt <span class="op">=</span> <span class="fl">0.01</span></span>
-<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>xyzs <span class="op">=</span> np.empty((num_steps <span class="op">+</span> <span class="dv">1</span>, <span class="dv">3</span>))</span>
-<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>xyzs[<span class="dv">0</span>] <span class="op">=</span> (<span class="fl">0.0</span>, <span class="fl">1.0</span>, <span class="fl">1.05</span>)</span>
-<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(num_steps):</span>
-<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>    xyzs[i <span class="op">+</span> <span class="dv">1</span>] <span class="op">=</span> xyzs[i] <span class="op">+</span> lorenz(xyzs[i]) <span class="op">*</span> dt</span>
-<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>Try changing $r$ or the initial condition and observe how the trajectory changes.</span>
-<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a>Reference code: <span class="co">[</span><span class="ot">amlab/extra/lorenz_attractor.py</span><span class="co">](../../amlab/extra/lorenz_attractor.py)</span>.</span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> lorenz(xyz, s<span class="op">=</span><span class="fl">10.0</span>, r<span class="op">=</span><span class="fl">28.0</span>, b<span class="op">=</span><span class="fl">8.0</span> <span class="op">/</span> <span class="fl">3.0</span>):</span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>    x, y, z <span class="op">=</span> xyz</span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>    x_dot <span class="op">=</span> s <span class="op">*</span> (y <span class="op">-</span> x)</span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>    y_dot <span class="op">=</span> r <span class="op">*</span> x <span class="op">-</span> y <span class="op">-</span> x <span class="op">*</span> z</span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>    z_dot <span class="op">=</span> x <span class="op">*</span> y <span class="op">-</span> b <span class="op">*</span> z</span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array([x_dot, y_dot, z_dot])</span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a><span class="fu">## Fixed points</span></span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>Setting the right-hand side equal to zero gives the equilibrium points.</span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a>For $r &gt; 1$, the Lorenz system has three fixed points:</span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a>(0,0,0),</span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a>\qquad</span>
+<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>\left(\sqrt{b(r-1)}, \sqrt{b(r-1)}, r-1\right),</span>
+<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a>\qquad</span>
+<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a>\left(-\sqrt{b(r-1)}, -\sqrt{b(r-1)}, r-1\right).</span>
+<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a>The classical chaotic regime appears when trajectories do not settle near a single fixed point, but instead keep circling around the two lobes of the attractor.</span>
+<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a><span class="fu">## Simulate with Euler</span></span>
+<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a>Forward Euler updates the state by</span>
+<span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-89"><a href="#cb3-89" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb3-90"><a href="#cb3-90" aria-hidden="true" tabindex="-1"></a>\mathbf{x}_{n+1} = \mathbf{x}_n + \Delta t\, f(\mathbf{x}_n).</span>
+<span id="cb3-91"><a href="#cb3-91" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb3-92"><a href="#cb3-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-93"><a href="#cb3-93" aria-hidden="true" tabindex="-1"></a>In code, that becomes a simple loop over time steps.</span>
+<span id="cb3-94"><a href="#cb3-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-95"><a href="#cb3-95" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb3-96"><a href="#cb3-96" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> simulate_lorenz(initial_state<span class="op">=</span>(<span class="fl">0.0</span>, <span class="fl">1.0</span>, <span class="fl">1.05</span>), dt<span class="op">=</span><span class="fl">0.01</span>, num_steps<span class="op">=</span><span class="dv">10000</span>):</span>
+<span id="cb3-97"><a href="#cb3-97" aria-hidden="true" tabindex="-1"></a>    xyzs <span class="op">=</span> np.empty((num_steps <span class="op">+</span> <span class="dv">1</span>, <span class="dv">3</span>))</span>
+<span id="cb3-98"><a href="#cb3-98" aria-hidden="true" tabindex="-1"></a>    xyzs[<span class="dv">0</span>] <span class="op">=</span> initial_state</span>
+<span id="cb3-99"><a href="#cb3-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-100"><a href="#cb3-100" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(num_steps):</span>
+<span id="cb3-101"><a href="#cb3-101" aria-hidden="true" tabindex="-1"></a>        xyzs[i <span class="op">+</span> <span class="dv">1</span>] <span class="op">=</span> xyzs[i] <span class="op">+</span> lorenz(xyzs[i]) <span class="op">*</span> dt</span>
+<span id="cb3-102"><a href="#cb3-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-103"><a href="#cb3-103" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> xyzs</span>
+<span id="cb3-104"><a href="#cb3-104" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb3-105"><a href="#cb3-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-106"><a href="#cb3-106" aria-hidden="true" tabindex="-1"></a><span class="fu">## What to look for</span></span>
+<span id="cb3-107"><a href="#cb3-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-108"><a href="#cb3-108" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The trajectory stays in a bounded region of phase space.</span>
+<span id="cb3-109"><a href="#cb3-109" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>It alternates between two lobes instead of converging to one point.</span>
+<span id="cb3-110"><a href="#cb3-110" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The geometry looks structured, but the switching times are hard to predict over long intervals.</span>
+<span id="cb3-111"><a href="#cb3-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-112"><a href="#cb3-112" aria-hidden="true" tabindex="-1"></a>Try changing $r$ or the initial condition and observe how the trajectory changes.</span>
+<span id="cb3-113"><a href="#cb3-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-114"><a href="#cb3-114" aria-hidden="true" tabindex="-1"></a>Reference code: <span class="co">[</span><span class="ot">amlab/extra/lorenz_attractor.py</span><span class="co">](../../amlab/extra/lorenz_attractor.py)</span>.</span>
+<span id="cb3-115"><a href="#cb3-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-116"><a href="#cb3-116" aria-hidden="true" tabindex="-1"></a><span class="fu">## What's Next?</span></span>
+<span id="cb3-117"><a href="#cb3-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-118"><a href="#cb3-118" aria-hidden="true" tabindex="-1"></a>One trajectory shows the geometry of the attractor. The next page compares two nearby trajectories so you can see sensitivity to initial conditions directly.</span>
+<span id="cb3-119"><a href="#cb3-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-120"><a href="#cb3-120" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Sensitivity and Chaos</span><span class="co">](sensitivity.qmd)</span>{.btn .btn-primary}</span>
+<span id="cb3-121"><a href="#cb3-121" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Back to Session Index</span><span class="co">](index.qmd)</span>{.btn .btn-secondary}</span>
 </code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
