@@ -451,46 +451,6 @@
     ]
   },
   {
-    "objectID": "modules/network-dynamics/index.html",
-    "href": "modules/network-dynamics/index.html",
-    "title": "Network Dynamics",
-    "section": "",
-    "text": "The SIS materials were consolidated into Session 5: Networks to remove duplicated content.\nUse these canonical pages instead:\nSIS Model SIR Model Networks Assignment\nRumor-model note: the Daley-Kendall model is the classical Ignorant → Spreader → Stifler variant (Daley and Kendall 1965).",
-    "crumbs": [
-      "Session 7: Networks (part 2)"
-    ]
-  },
-  {
-    "objectID": "modules/network-dynamics/index.html#legacy-assignment",
-    "href": "modules/network-dynamics/index.html#legacy-assignment",
-    "title": "Network Dynamics",
-    "section": "Legacy Assignment",
-    "text": "Legacy Assignment\nIf you still want to use the old assignment variant, it remains available here:\nNetwork Dynamics Assignment",
-    "crumbs": [
-      "Session 7: Networks (part 2)"
-    ]
-  },
-  {
-    "objectID": "modules/network-dynamics/index.html#what-do-we-need",
-    "href": "modules/network-dynamics/index.html#what-do-we-need",
-    "title": "Network Dynamics",
-    "section": "What do we need?",
-    "text": "What do we need?\n\nnetworkx\nCreate graphs and store node states.\n\n\nmatplotlib.pyplot\nDraw graphs and plot time series of state counts.",
-    "crumbs": [
-      "Session 7: Networks (part 2)"
-    ]
-  },
-  {
-    "objectID": "modules/network-dynamics/index.html#references",
-    "href": "modules/network-dynamics/index.html#references",
-    "title": "Network Dynamics",
-    "section": "References",
-    "text": "References\n\nSession code: amlab/networks_complex, amlab/networkx_data\nCurated references: references",
-    "crumbs": [
-      "Session 7: Networks (part 2)"
-    ]
-  },
-  {
     "objectID": "modules/networks/fundamentals.html",
     "href": "modules/networks/fundamentals.html",
     "title": "Networks: Fundamentals",
@@ -733,7 +693,7 @@
     "section": "",
     "text": "Traffic flow can be modeled with a 1D cellular automaton. Cars occupy cells and move forward each step according to simple rules (Nagel and Schreckenberg 1992).\nFigure 1: Traffic CA space-time diagram (cars as black pixels).",
     "crumbs": [
-      "Session 9: Agent Based Modeling",
+      "Session 8: Agent Based Modeling",
       "Traffic Models"
     ]
   },
@@ -744,7 +704,7 @@
     "section": "Model rules",
     "text": "Model rules\nAt each step:\n\nAccelerate up to \\(v_{\\max}\\).\nBrake to avoid collisions.\nRandom slowdown with probability \\(p\\).\nMove forward.",
     "crumbs": [
-      "Session 9: Agent Based Modeling",
+      "Session 8: Agent Based Modeling",
       "Traffic Models"
     ]
   },
@@ -755,7 +715,7 @@
     "section": "Initialize the road",
     "text": "Initialize the road\noccupied, speeds = initialize_road(length=100, density=0.2, vmax=5)",
     "crumbs": [
-      "Session 9: Agent Based Modeling",
+      "Session 8: Agent Based Modeling",
       "Traffic Models"
     ]
   },
@@ -766,7 +726,7 @@
     "section": "Update one step (template)",
     "text": "Update one step (template)\ndef step(occupied, speeds, vmax=5, p_slow=0.3):\n    # TODO: accelerate\n    # TODO: brake to avoid collisions\n    # TODO: random slowdown\n    # TODO: move cars\n    return new_occupied, new_speeds\n\n\n\n\n\n\nHint: Update step (click to expand)\n\n\n\n\n\ndef step(occupied, speeds, vmax=5, p_slow=0.3):\n    length = len(occupied)\n    positions = np.where(occupied)[0]\n    speeds_new = speeds.copy()\n\n    speeds_new[positions] = np.minimum(speeds_new[positions] + 1, vmax)\n\n    gaps = np.zeros_like(positions)\n    for idx, pos in enumerate(positions):\n        next_pos = positions[(idx + 1) % len(positions)]\n        gaps[idx] = (next_pos - pos - 1) % length\n    speeds_new[positions] = np.minimum(speeds_new[positions], gaps)\n\n    rng = np.random.default_rng()\n    slow_mask = rng.random(len(positions)) &lt; p_slow\n    speeds_new[positions[slow_mask]] = np.maximum(\n        speeds_new[positions[slow_mask]] - 1, 0\n    )\n\n    new_occupied = np.zeros_like(occupied)\n    new_speeds = np.zeros_like(speeds)\n    new_positions = (positions + speeds_new[positions]) % length\n    new_occupied[new_positions] = True\n    new_speeds[new_positions] = speeds_new[positions]\n\n    return new_occupied, new_speeds",
     "crumbs": [
-      "Session 9: Agent Based Modeling",
+      "Session 8: Agent Based Modeling",
       "Traffic Models"
     ]
   },
@@ -777,7 +737,7 @@
     "section": "Space-time diagram",
     "text": "Space-time diagram\nRun the model for many steps and plot the grid.\ngrid = simulate(steps=200, length=100, density=0.2, vmax=5, p_slow=0.3)\nplt.imshow(grid, cmap=\"binary\", interpolation=\"nearest\", aspect=\"auto\")\nplt.show()\nFull reference: amlab/cellular_automata/traffic.py.",
     "crumbs": [
-      "Session 9: Agent Based Modeling",
+      "Session 8: Agent Based Modeling",
       "Traffic Models"
     ]
   },
@@ -788,7 +748,7 @@
     "section": "",
     "text": "In this session we explore agent-based models: simple local rules that produce global patterns. We focus on simulation, visualization, and interpretation (Wilensky and Rand 2015).",
     "crumbs": [
-      "Session 9: Agent Based Modeling"
+      "Session 8: Agent Based Modeling"
     ]
   },
   {
@@ -798,7 +758,7 @@
     "section": "Case Studies",
     "text": "Case Studies\nAssignment",
     "crumbs": [
-      "Session 9: Agent Based Modeling"
+      "Session 8: Agent Based Modeling"
     ]
   },
   {
@@ -808,7 +768,7 @@
     "section": "What do we need?",
     "text": "What do we need?\n\nnumpy\nEfficient arrays to store agent states and positions.\n\n\nmatplotlib.pyplot\nPlot agent positions and time evolution.\n\n\nmatplotlib.animation\nAnimate the system over time.",
     "crumbs": [
-      "Session 9: Agent Based Modeling"
+      "Session 8: Agent Based Modeling"
     ]
   },
   {
@@ -818,7 +778,7 @@
     "section": "",
     "text": "Complete a 1D cellular automaton and a traffic model simulation (Wolfram 1983; Nagel and Schreckenberg 1992).",
     "crumbs": [
-      "Session 8: Cellular Automata",
+      "Session 7: Cellular Automata",
       "Assignment"
     ]
   },
@@ -829,7 +789,7 @@
     "section": "Required",
     "text": "Required\n\nImplement Rule 30 and plot a space-time diagram.\nModify the initial row (at least 3 different initial conditions).\nImplement the traffic CA and generate a space-time diagram.\nCompare two densities and discuss the patterns.",
     "crumbs": [
-      "Session 8: Cellular Automata",
+      "Session 7: Cellular Automata",
       "Assignment"
     ]
   },
@@ -840,7 +800,7 @@
     "section": "Extra Mile (Optional)",
     "text": "Extra Mile (Optional)\n\nImplement another rule (e.g., Rule 110).\nAdd interactivity to the traffic model (sliders for density or \\(p\\)).\n\nGood luck and enjoy your coding!",
     "crumbs": [
-      "Session 8: Cellular Automata",
+      "Session 7: Cellular Automata",
       "Assignment"
     ]
   },
@@ -937,7 +897,7 @@
     "href": "modules/ode-2d/van-der-pol.html#the-stable-limit-cycle",
     "title": "Van der Pol Oscillator",
     "section": "The Stable Limit Cycle",
-    "text": "The Stable Limit Cycle\nThe Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions. Plot this limit cycle as a \\(x(t)-t\\) plot, and verify that it matches the phase plane trajectories.\n\n\n/tmp/ipykernel_3280/2854713749.py:14: UserWarning:\n\nNo artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.\n\n\n\n\n\n\n\n\n\nFigure 2: Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nThe amplitude and period of the limit cycle depend on \\(\\mu\\). There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with \\(\\mu\\), while the fast phase becomes more abrupt. This leads to a characteristic “relaxation oscillation” shape for large \\(\\mu\\).\nPlay with the parameter \\(\\mu\\) to see how it changes the shape of the limit cycle and the transient dynamics.",
+    "text": "The Stable Limit Cycle\nThe Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions. Plot this limit cycle as a \\(x(t)-t\\) plot, and verify that it matches the phase plane trajectories.\n\n\n/tmp/ipykernel_3312/2854713749.py:14: UserWarning:\n\nNo artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.\n\n\n\n\n\n\n\n\n\nFigure 2: Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nThe amplitude and period of the limit cycle depend on \\(\\mu\\). There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with \\(\\mu\\), while the fast phase becomes more abrupt. This leads to a characteristic “relaxation oscillation” shape for large \\(\\mu\\).\nPlay with the parameter \\(\\mu\\) to see how it changes the shape of the limit cycle and the transient dynamics.",
     "crumbs": [
       "Session 2: ODEs in 2D",
       "Van der Pol Oscillator"
@@ -2118,7 +2078,7 @@
     "section": "",
     "text": "In this session we explore 1D cellular automata and apply them to traffic models (Wolfram 1983; Nagel and Schreckenberg 1992).",
     "crumbs": [
-      "Session 8: Cellular Automata"
+      "Session 7: Cellular Automata"
     ]
   },
   {
@@ -2128,7 +2088,7 @@
     "section": "Case Studies",
     "text": "Case Studies\n1D Cellular AutomataAssignment",
     "crumbs": [
-      "Session 8: Cellular Automata"
+      "Session 7: Cellular Automata"
     ]
   },
   {
@@ -2138,7 +2098,7 @@
     "section": "What do we need?",
     "text": "What do we need?\n\nnumpy\nEfficient arrays for state updates.\n\n\nmatplotlib.pyplot\nVisualize space-time diagrams.\n\n\nmatplotlib.backend_bases\nHandle mouse clicks for interactive initial conditions.",
     "crumbs": [
-      "Session 8: Cellular Automata"
+      "Session 7: Cellular Automata"
     ]
   },
   {
@@ -2148,7 +2108,7 @@
     "section": "",
     "text": "A 1D cellular automaton updates each cell using its local neighborhood. We will use elementary 3-cell rules, such as Rule 30 (Wolfram 1983).\nFigure 1: Rule 30 space-time diagram.",
     "crumbs": [
-      "Session 8: Cellular Automata",
+      "Session 7: Cellular Automata",
       "1D Cellular Automata"
     ]
   },
@@ -2159,7 +2119,7 @@
     "section": "Define the rule",
     "text": "Define the rule\nA rule is an 8-bit binary table that maps each neighborhood to a new cell value.\nrule_number = 30\nrule_bin = np.array([int(x) for x in f\"{rule_number:08b}\"])",
     "crumbs": [
-      "Session 8: Cellular Automata",
+      "Session 7: Cellular Automata",
       "1D Cellular Automata"
     ]
   },
@@ -2170,7 +2130,7 @@
     "section": "Apply the rule (template)",
     "text": "Apply the rule (template)\ndef apply_rule(state, rule_bin):\n    new_state = np.zeros_like(state)\n    for i in range(1, len(state) - 1):\n        neighborhood = state[i - 1 : i + 2]\n        index = 7 - int(\"\".join(neighborhood.astype(str)), 2)\n        new_state[i] = rule_bin[index]\n    return new_state",
     "crumbs": [
-      "Session 8: Cellular Automata",
+      "Session 7: Cellular Automata",
       "1D Cellular Automata"
     ]
   },
@@ -2181,7 +2141,7 @@
     "section": "Build a space-time diagram",
     "text": "Build a space-time diagram\niterations = 60\ngrid_size = 101\n\ngrid = np.zeros((iterations, grid_size), dtype=int)\ngrid[0, grid_size // 2] = 1\n\nfor t in range(1, iterations):\n    grid[t] = apply_rule(grid[t - 1], rule_bin)\n\nplt.imshow(grid, cmap=\"binary\", interpolation=\"nearest\", aspect=\"auto\")\nplt.show()",
     "crumbs": [
-      "Session 8: Cellular Automata",
+      "Session 7: Cellular Automata",
       "1D Cellular Automata"
     ]
   },
@@ -2192,7 +2152,7 @@
     "section": "Interactive initial row",
     "text": "Interactive initial row\nThe script amlab/cellular_automata/cellular.py lets you click on the first row to toggle cells and recompute the automaton.",
     "crumbs": [
-      "Session 8: Cellular Automata",
+      "Session 7: Cellular Automata",
       "1D Cellular Automata"
     ]
   },
@@ -2508,7 +2468,7 @@
     "href": "modules/networks/connectivity.html#connectivity-in-undirected-graphs",
     "title": "Networks: Connectivity",
     "section": "Connectivity in Undirected Graphs",
-    "text": "Connectivity in Undirected Graphs\nConnectivity is a fundamental property of graphs that describes how well the nodes are connected to each other. In an undirected graph, a graph is connected if there is a path between any two nodes. If a graph is not connected, it consists of multiple connected components, which are subgraphs in which any two nodes are connected by a path.\n\nPaths in an Undirected Graph\nA path in a network is a sequence of edges connecting two nodes.\nTake a look at the food graph we created above. Is there a path from “bread” to “watermelon”?\n\n# Draw the graph\npos = nx.circular_layout(G_foods)\nnx.draw(G_foods, node_color=\"lightblue\", with_labels=True, pos=pos)\nplt.show()\n\n\n\n\n\n\n\n\nNetworkX provides has_path(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;) to check if there is a path between two nodes:\n\n# Check if there is a path from 'bread' to 'watermelon'\nprint(\n    \"Is there a path from 'bread' to 'watermelon'?\",\n    nx.has_path(G_foods, \"bread\", \"watermelon\")\n)\n\nIs there a path from 'bread' to 'watermelon'? True\n\n\nThere can be more than one path between two nodes. We can use all_simple_paths(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;) to find all the simple paths between two nodes:\n\nls_paths = list(nx.all_simple_paths(G_foods, \"bread\", \"watermelon\"))\nprint(\"All paths from 'bread' to 'watermelon':\", ls_paths)\n\nAll paths from 'bread' to 'watermelon': [['bread', 'cheese', 'cured ham', 'watermelon'], ['bread', 'chocolate', 'watermelon'], ['bread', 'cured ham', 'watermelon']]\n\n\n\n\nConnected Components in Undirected Graphs\nA connected component is a subgraph in which any two nodes are connected by a path. A graph is connected if it has only one connected component.\n\n\n\n\n\n\nHow many connected components does G_foods have?\n\n\n\n\n\nG_foods has one connected component, since all nodes are connected to each other through some path.\nAs usual, we can verify this with NetworkX:\n\nprint(\"Connected components:\", list(nx.connected_components(G_foods)))\n\nConnected components: [{'cookies', 'cheese', 'chocolate', 'bread', 'watermelon', 'milk', 'cured ham'}]\n\n\n\n\n\n\n\nDiameter and Average Path Length\nThe diameter of a graph is the length of the longest shortest path between any two nodes in the graph. It gives us an idea of how “far apart” the nodes are in the graph.\n\nprint(\"Diameter:\", nx.diameter(G_foods))\n\nDiameter: 3\n\n\nThe average path length (APL) is the average of the shortest paths between all pairs of nodes.\n\nprint(\"Average shortest path length:\", nx.average_shortest_path_length(G_foods))\n\nAverage shortest path length: 1.7619047619047619",
+    "text": "Connectivity in Undirected Graphs\nConnectivity is a fundamental property of graphs that describes how well the nodes are connected to each other. In an undirected graph, a graph is connected if there is a path between any two nodes. If a graph is not connected, it consists of multiple connected components, which are subgraphs in which any two nodes are connected by a path.\n\nPaths in an Undirected Graph\nA path in a network is a sequence of edges connecting two nodes.\nTake a look at the food graph we created above. Is there a path from “bread” to “watermelon”?\n\n# Draw the graph\npos = nx.circular_layout(G_foods)\nnx.draw(G_foods, node_color=\"lightblue\", with_labels=True, pos=pos)\nplt.show()\n\n\n\n\n\n\n\n\nNetworkX provides has_path(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;) to check if there is a path between two nodes:\n\n# Check if there is a path from 'bread' to 'watermelon'\nprint(\n    \"Is there a path from 'bread' to 'watermelon'?\",\n    nx.has_path(G_foods, \"bread\", \"watermelon\")\n)\n\nIs there a path from 'bread' to 'watermelon'? True\n\n\nThere can be more than one path between two nodes. We can use all_simple_paths(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;) to find all the simple paths between two nodes:\n\nls_paths = list(nx.all_simple_paths(G_foods, \"bread\", \"watermelon\"))\nprint(\"All paths from 'bread' to 'watermelon':\", ls_paths)\n\nAll paths from 'bread' to 'watermelon': [['bread', 'cheese', 'cured ham', 'watermelon'], ['bread', 'chocolate', 'watermelon'], ['bread', 'cured ham', 'watermelon']]\n\n\n\n\nConnected Components in Undirected Graphs\nA connected component is a subgraph in which any two nodes are connected by a path. A graph is connected if it has only one connected component.\n\n\n\n\n\n\nHow many connected components does G_foods have?\n\n\n\n\n\nG_foods has one connected component, since all nodes are connected to each other through some path.\nAs usual, we can verify this with NetworkX:\n\nprint(\"Connected components:\", list(nx.connected_components(G_foods)))\n\nConnected components: [{'watermelon', 'milk', 'cookies', 'cured ham', 'bread', 'chocolate', 'cheese'}]\n\n\n\n\n\n\n\nDiameter and Average Path Length\nThe diameter of a graph is the length of the longest shortest path between any two nodes in the graph. It gives us an idea of how “far apart” the nodes are in the graph.\n\nprint(\"Diameter:\", nx.diameter(G_foods))\n\nDiameter: 3\n\n\nThe average path length (APL) is the average of the shortest paths between all pairs of nodes.\n\nprint(\"Average shortest path length:\", nx.average_shortest_path_length(G_foods))\n\nAverage shortest path length: 1.7619047619047619",
     "crumbs": [
       "Session 5: Networks",
       "Network Connectivity"
@@ -2530,7 +2490,7 @@
     "href": "modules/networks/connectivity.html#connectivity-in-directed-graphs",
     "title": "Networks: Connectivity",
     "section": "Connectivity in Directed Graphs",
-    "text": "Connectivity in Directed Graphs\nConnectivity in directed graphs is more complex than in undirected graphs, because we have to consider the direction of the edges. In a directed graph, we can have strongly connected components and weakly connected components.\n\nPaths in Directed Graphs\nIn a directed graph, a path must follow the direction of the edges. For example, in the directed food chain graph D, is there a path from “grass” to “lion”?\n\n# Draw the graph\npos = nx.spring_layout(D_food_chain)\nnx.draw(D_food_chain, node_color=\"lightgreen\", with_labels=True, pos=pos)\nplt.show()\n\n\n\n\n\n\n\n\nWe can check for the existence of a path in a directed graph using the same has_path(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;) function:\n\nprint(\"Is there a path from 'grass' to 'lion'?\", nx.has_path(D_food_chain, \"grass\", \"lion\"))   \nprint(\"Is there a path from 'lion' to 'grass'?\", nx.has_path(D_food_chain, \"lion\", \"grass\"))\n\nIs there a path from 'grass' to 'lion'? True\nIs there a path from 'lion' to 'grass'? False\n\n\n\n\nStrongly Connected Components\nA strongly connected component is a subgraph in which there is a directed path from any node to any other node. A directed graph is strongly connected if it has only one strongly connected component.\n\nprint(\"Is strongly connected:\", nx.is_strongly_connected(D_food_chain))\nprint(\"Strongly connected components:\", list(nx.strongly_connected_components(D_food_chain)))\n\nIs strongly connected: False\nStrongly connected components: [{'lion'}, {'hyena'}, {'antelope'}, {'zebra'}, {'grass'}]\n\n\n\n\nWeakly Connected Components\nA weakly connected component is a subgraph in which there is an undirected path from any node to any other node. A directed graph is weakly connected if it has only one weakly connected component.\n\nprint(\"Is weakly connected:\", nx.is_weakly_connected(D_food_chain))\nprint(\"Weakly connected components:\", list(nx.weakly_connected_components(D_food_chain)))\n\nIs weakly connected: True\nWeakly connected components: [{'zebra', 'antelope', 'lion', 'grass', 'hyena'}]\n\n\nExercise. How can we turn D_food_chain into a strongly connected graph? Try adding some edges to make it strongly connected.\n\n\n\n\n\n\nSolution\n\n\n\n\n\nTo make D_food_chain strongly connected, we need to ensure that there is a directed path from every node to every other node. One way to achieve this is to add edges that create cycles between the nodes. Our example is a though one, as food chains are typically acyclic. Still, we can take note from “The Lion King”:\n\n“When we die, our bodies become the grass, and the antelope eat the grass. And so, we are all connected in the great Circle of Life.” - Mufasa (lion)\n\n\n# When a predator dies, it returns to the food chain as prey for the grass\nD_food_chain.add_edges_from([\n    (\"lion\", \"grass\"),\n])\n\n# Visualize the new graph\npos = nx.spring_layout(D_food_chain)\nnx.draw(D_food_chain, node_color=\"lightgreen\", with_labels=True, pos=pos)\nplt.show()\n\n\n\n\n\n\n\n\n\nprint(\"Is strongly connected:\", nx.is_strongly_connected(D_food_chain))\nprint(\"Strongly connected components:\", list(nx.strongly_connected_components(D_food_chain)))\n\nIs strongly connected: True\nStrongly connected components: [{'zebra', 'antelope', 'lion', 'grass', 'hyena'}]\n\n\n\n\n\n\n\nDiameter and Average Path Length in Directed Graphs\nThe diameter and average path length in directed graphs are calculated based on the shortest paths that follow the direction of the edges. If the graph is not strongly connected, we can only calculate these metrics for the largest strongly connected component.\n\n# Get the largest strongly connected component\nlargest_scc = max(nx.strongly_connected_components(D_food_chain), key=len)\nsubgraph = D_food_chain.subgraph(largest_scc)\nprint(\"Diameter of the largest strongly connected component:\", nx.diameter(subgraph))\nprint(\"Average shortest path length of the largest strongly connected component:\", nx.average_shortest_path_length(subgraph))\n\nDiameter of the largest strongly connected component: 3\nAverage shortest path length of the largest strongly connected component: 1.85",
+    "text": "Connectivity in Directed Graphs\nConnectivity in directed graphs is more complex than in undirected graphs, because we have to consider the direction of the edges. In a directed graph, we can have strongly connected components and weakly connected components.\n\nPaths in Directed Graphs\nIn a directed graph, a path must follow the direction of the edges. For example, in the directed food chain graph D, is there a path from “grass” to “lion”?\n\n# Draw the graph\npos = nx.spring_layout(D_food_chain)\nnx.draw(D_food_chain, node_color=\"lightgreen\", with_labels=True, pos=pos)\nplt.show()\n\n\n\n\n\n\n\n\nWe can check for the existence of a path in a directed graph using the same has_path(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;) function:\n\nprint(\"Is there a path from 'grass' to 'lion'?\", nx.has_path(D_food_chain, \"grass\", \"lion\"))   \nprint(\"Is there a path from 'lion' to 'grass'?\", nx.has_path(D_food_chain, \"lion\", \"grass\"))\n\nIs there a path from 'grass' to 'lion'? True\nIs there a path from 'lion' to 'grass'? False\n\n\n\n\nStrongly Connected Components\nA strongly connected component is a subgraph in which there is a directed path from any node to any other node. A directed graph is strongly connected if it has only one strongly connected component.\n\nprint(\"Is strongly connected:\", nx.is_strongly_connected(D_food_chain))\nprint(\"Strongly connected components:\", list(nx.strongly_connected_components(D_food_chain)))\n\nIs strongly connected: False\nStrongly connected components: [{'lion'}, {'hyena'}, {'antelope'}, {'zebra'}, {'grass'}]\n\n\n\n\nWeakly Connected Components\nA weakly connected component is a subgraph in which there is an undirected path from any node to any other node. A directed graph is weakly connected if it has only one weakly connected component.\n\nprint(\"Is weakly connected:\", nx.is_weakly_connected(D_food_chain))\nprint(\"Weakly connected components:\", list(nx.weakly_connected_components(D_food_chain)))\n\nIs weakly connected: True\nWeakly connected components: [{'antelope', 'grass', 'lion', 'hyena', 'zebra'}]\n\n\nExercise. How can we turn D_food_chain into a strongly connected graph? Try adding some edges to make it strongly connected.\n\n\n\n\n\n\nSolution\n\n\n\n\n\nTo make D_food_chain strongly connected, we need to ensure that there is a directed path from every node to every other node. One way to achieve this is to add edges that create cycles between the nodes. Our example is a though one, as food chains are typically acyclic. Still, we can take note from “The Lion King”:\n\n“When we die, our bodies become the grass, and the antelope eat the grass. And so, we are all connected in the great Circle of Life.” - Mufasa (lion)\n\n\n# When a predator dies, it returns to the food chain as prey for the grass\nD_food_chain.add_edges_from([\n    (\"lion\", \"grass\"),\n])\n\n# Visualize the new graph\npos = nx.spring_layout(D_food_chain)\nnx.draw(D_food_chain, node_color=\"lightgreen\", with_labels=True, pos=pos)\nplt.show()\n\n\n\n\n\n\n\n\n\nprint(\"Is strongly connected:\", nx.is_strongly_connected(D_food_chain))\nprint(\"Strongly connected components:\", list(nx.strongly_connected_components(D_food_chain)))\n\nIs strongly connected: True\nStrongly connected components: [{'antelope', 'grass', 'lion', 'hyena', 'zebra'}]\n\n\n\n\n\n\n\nDiameter and Average Path Length in Directed Graphs\nThe diameter and average path length in directed graphs are calculated based on the shortest paths that follow the direction of the edges. If the graph is not strongly connected, we can only calculate these metrics for the largest strongly connected component.\n\n# Get the largest strongly connected component\nlargest_scc = max(nx.strongly_connected_components(D_food_chain), key=len)\nsubgraph = D_food_chain.subgraph(largest_scc)\nprint(\"Diameter of the largest strongly connected component:\", nx.diameter(subgraph))\nprint(\"Average shortest path length of the largest strongly connected component:\", nx.average_shortest_path_length(subgraph))\n\nDiameter of the largest strongly connected component: 3\nAverage shortest path length of the largest strongly connected component: 1.85",
     "crumbs": [
       "Session 5: Networks",
       "Network Connectivity"
@@ -2545,39 +2505,6 @@
     "crumbs": [
       "Session 5: Networks",
       "Network Connectivity"
-    ]
-  },
-  {
-    "objectID": "modules/network-dynamics/assignment.html",
-    "href": "modules/network-dynamics/assignment.html",
-    "title": "Assignment",
-    "section": "",
-    "text": "Implement the SIS model (Keeling and Rohani 2008; Pastor-Satorras et al. 2015) and explore its behavior.",
-    "crumbs": [
-      "Session 7: Networks (part 2)",
-      "Assignment"
-    ]
-  },
-  {
-    "objectID": "modules/network-dynamics/assignment.html#required",
-    "href": "modules/network-dynamics/assignment.html#required",
-    "title": "Assignment",
-    "section": "Required",
-    "text": "Required\n\nSimulate SIS on a graph with 20 nodes.\nUse at least two different network types (random, Watts-Strogatz, or Barabasi-Albert).\nPlot the time evolution of S and I.\nTry two sets of \\((\\beta, \\gamma)\\) and compare outcomes.",
-    "crumbs": [
-      "Session 7: Networks (part 2)",
-      "Assignment"
-    ]
-  },
-  {
-    "objectID": "modules/network-dynamics/assignment.html#extra-mile-optional",
-    "href": "modules/network-dynamics/assignment.html#extra-mile-optional",
-    "title": "Assignment",
-    "section": "Extra Mile (Optional)",
-    "text": "Extra Mile (Optional)\n\nExtend to SIR or SIRS.\nAdd a stop condition when infections die out.\nVisualize the network at different time steps.\n\nGood luck and enjoy your coding!",
-    "crumbs": [
-      "Session 7: Networks (part 2)",
-      "Assignment"
     ]
   },
   {
