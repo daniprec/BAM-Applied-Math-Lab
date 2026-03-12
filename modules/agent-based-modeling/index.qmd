@@ -1,25 +1,75 @@
 ---
 title: "Agent-Based Modeling"
-subtitle: "Individual Rules, Emergent Behavior"
+subtitle: "Traffic, Interaction, and Congestion"
 format: html
 ---
 
-In this session we explore agent-based models: simple local rules that produce global patterns. We focus on simulation, visualization, and interpretation [@wilensky2015abm].
+This session turns the rule-based perspective from cellular automata into a simple agent-based model. Cars are individual agents with positions and speeds, and large traffic jams emerge from repeated local decisions [@nagel1992cellular; @wilensky2015abm].
+
+## From Cellular Automata to Agents
+
+In the previous session, every cell followed the same binary rule.
+
+Now we keep discrete time and a one-dimensional road, but we enrich the state:
+
+- Occupied cells correspond to cars.
+- Each car stores a speed.
+- The update depends on the gap ahead and a stochastic slowdown rule.
+
+This is still local. It is also more expressive, because agents now carry internal state.
+
+[Back to Cellular Automata](../cellular-automata/index.qmd){.btn .btn-secondary}
 
 ## Case Studies
 
+Start with the Nagel-Schreckenberg traffic model and implement the update rules carefully.
+
+[Traffic Model](traffic.qmd){.btn .btn-primary}
+
+Then move from one simulation to macroscopic measurements such as flow and congestion.
+
+[Flow and Congestion](traffic-analysis.qmd){.btn .btn-primary}
+
+When both pieces work, complete the assignment.
+
 [Assignment](assignment.qmd){.btn .btn-secondary}
+
+## Learning Goals
+
+- Represent traffic with occupancy and speed arrays.
+- Implement the Nagel-Schreckenberg update rules.
+- Produce space-time diagrams of traffic flow.
+- Measure density and average flow.
+- Explain how local agent behavior creates stop-and-go waves and jams.
+
+## Flow of This Session
+
+- Encode the road state.
+- Implement accelerate, brake, random slowdown, and move.
+- Simulate many time steps and visualize the road.
+- Measure macroscopic observables such as density and flow.
+- Compare free-flow and congested regimes.
 
 ## What do we need?
 
 ### `numpy`
 
-Efficient arrays to store agent states and positions.
+Store the occupancy pattern, the speed of each car, and the experimental results.
 
 ### `matplotlib.pyplot`
 
-Plot agent positions and time evolution.
+Plot space-time diagrams and flow-density curves.
 
-### `matplotlib.animation`
+### Why call this agent-based if the road is still a grid?
 
-Animate the system over time.
+Because each occupied site corresponds to an individual car with its own speed. The update is written from the point of view of each agent and its local environment, not as a closed-form equation for a global density field.
+
+::: {.callout-tip}
+## Scripts or notebooks?
+
+Use a notebook for density sweeps, repeated trials, and parameter scans. Use a script if you want a faster interactive visualization or plan to add widgets later.
+:::
+
+::: {.callout-note}
+We model a periodic road, so the first and last cells are neighbors. This removes boundary effects and makes the congestion dynamics easier to interpret.
+:::

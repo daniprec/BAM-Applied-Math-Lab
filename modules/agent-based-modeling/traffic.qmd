@@ -1,10 +1,10 @@
 ---
-title: "Traffic Models with CA"
-subtitle: "Nagel-Schreckenberg"
+title: "Traffic Model"
+subtitle: "Nagel-Schreckenberg Dynamics"
 format: html
 ---
 
-Traffic flow can be modeled with a 1D cellular automaton. Cars occupy cells and move forward each step according to simple rules [@nagel1992cellular].
+Traffic flow is a natural agent-based model. Each car moves according to simple local rules, but repeated interactions create stop-and-go waves, jams, and phase transitions between free flow and congestion [@nagel1992cellular].
 
 ```{python}
 #| label: fig-traffic
@@ -27,25 +27,45 @@ plt.show()
 plt.close()
 ```
 
-## Model rules
+## Represent the road state
 
-At each step:
+We store the system with two arrays of length `length`:
 
-1. Accelerate up to $v_{\max}$.
-2. Brake to avoid collisions.
-3. Random slowdown with probability $p$.
-4. Move forward.
+- `occupied[i]` tells us whether cell `i` contains a car.
+- `speeds[i]` stores the speed of that car, measured in cells per step.
 
-## Initialize the road
+This lets the road stay discrete while each agent still has its own internal state.
+
+## Initialize the agents
+
+The initialization function samples an occupancy pattern and assigns a random speed to each occupied cell.
 
 ```python
 occupied, speeds = initialize_road(length=100, density=0.2, vmax=5)
 ```
 
-## Update one step (template)
+The density is
+
+$$
+\rho = \frac{\text{number of cars}}{\text{road length}}.
+$$
+
+## Implement one synchronous update
+
+At each time step, every car follows the same four rules:
+
+1. Accelerate up to $v_{\max}$.
+2. Brake so it does not collide with the next car.
+3. Slow down randomly with probability $p_{\text{slow}}$.
+4. Move forward by its new speed.
+
+The key point is that all cars update synchronously.
 
 ```python
-def step(occupied, speeds, vmax=5, p_slow=0.3):
+def step(occupied, speeds, vmax=5, p_slow=0.3, rng=None):
+    if rng is None:
+        rng = np.random.default_rng()
+
     # TODO: accelerate
     # TODO: brake to avoid collisions
     # TODO: random slowdown
@@ -57,7 +77,10 @@ def step(occupied, speeds, vmax=5, p_slow=0.3):
 ## Hint: Update step (click to expand)
 
 ```python
-def step(occupied, speeds, vmax=5, p_slow=0.3):
+def step(occupied, speeds, vmax=5, p_slow=0.3, rng=None):
+    if rng is None:
+        rng = np.random.default_rng()
+
     length = len(occupied)
     positions = np.where(occupied)[0]
     speeds_new = speeds.copy()
@@ -70,7 +93,6 @@ def step(occupied, speeds, vmax=5, p_slow=0.3):
         gaps[idx] = (next_pos - pos - 1) % length
     speeds_new[positions] = np.minimum(speeds_new[positions], gaps)
 
-    rng = np.random.default_rng()
     slow_mask = rng.random(len(positions)) < p_slow
     speeds_new[positions[slow_mask]] = np.maximum(
         speeds_new[positions[slow_mask]] - 1, 0
@@ -86,14 +108,34 @@ def step(occupied, speeds, vmax=5, p_slow=0.3):
 ```
 :::
 
-## Space-time diagram
+## Simulate a full run
 
-Run the model for many steps and plot the grid.
+Wrap the update in a loop and save the occupancy pattern at every time step.
 
 ```python
-grid = simulate(steps=200, length=100, density=0.2, vmax=5, p_slow=0.3)
+grid = simulate(steps=200, length=100, density=0.2, vmax=5, p_slow=0.3, seed=1)
+```
+
+## Plot the space-time diagram
+
+```python
 plt.imshow(grid, cmap="binary", interpolation="nearest", aspect="auto")
+plt.xlabel("Road position")
+plt.ylabel("Time")
 plt.show()
 ```
 
+## What the dark bands mean
+
+In the diagram, black cells are occupied sites. When dense diagonal bands become nearly horizontal, cars are moving slowly and congestion is forming. When the pattern is sparse and diagonal, cars are advancing freely.
+
+This is the central modeling lesson of the session: a jam is not imposed externally. It emerges from repeated local braking and stochastic slowdown.
+
 Full reference: [amlab/cellular_automata/traffic.py](../../amlab/cellular_automata/traffic.py).
+
+## What's Next?
+
+Once the simulator works, the next step is to measure macroscopic quantities such as average flow and to build the traffic fundamental diagram.
+
+[Flow and Congestion](traffic-analysis.qmd){.btn .btn-primary}
+[Back to Session Index](index.qmd){.btn .btn-secondary}

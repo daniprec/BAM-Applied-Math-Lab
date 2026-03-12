@@ -1,25 +1,81 @@
 ---
 title: "Cellular Automata"
-subtitle: "1D Rules and Traffic"
+subtitle: "Discrete Rules and Emergent Patterns"
 format: html
 ---
 
-In this session we explore **1D cellular automata** and apply them to traffic models [@wolfram1983statistical; @nagel1992cellular].
+This session moves from PDE grids to fully discrete dynamical systems. We keep a lattice and local neighborhoods, but now time, space, and state are all discrete. Even a one-dimensional binary rule can generate rich large-scale behavior [@wolfram1983statistical].
+
+## From PDEs to Cellular Automata
+
+In the previous session on PDEs, you updated each grid point with a local stencil and explicit time stepping.
+
+In this session we keep the same local-update mindset, but we change the mathematical object:
+
+- A field value becomes a discrete state, usually `0` or `1`.
+- A finite-difference stencil becomes a lookup rule on a small neighborhood.
+- A PDE time step becomes one synchronous rule application across the whole row.
+
+The main idea stays the same. Local interactions create global structure.
+
+[Back to PDEs](../pde/index.qmd){.btn .btn-secondary}
 
 ## Case Studies
 
-[1D Cellular Automata](cellular-1d.qmd){.btn .btn-primary}[Assignment](assignment.qmd){.btn .btn-secondary}
+Start with the core mechanics: neighborhoods, rule tables, and space-time diagrams.
+
+[1D Cellular Automata](cellular-1d.qmd){.btn .btn-primary}
+
+Then turn that first example into a reusable simulator and compare several rules and several initial conditions.
+
+[Rule Exploration](rule-exploration.qmd){.btn .btn-primary}
+
+Once the workflow is clear, move to the assignment.
+
+[Assignment](assignment.qmd){.btn .btn-secondary}
+
+## Learning Goals
+
+- Encode an elementary cellular automaton rule as an 8-entry lookup table.
+- Implement synchronous updates on a one-dimensional lattice.
+- Build and interpret space-time diagrams.
+- Compare how rule choice and initial condition affect long-run behavior.
+- Distinguish ordered, periodic, and irregular pattern growth qualitatively.
+
+## Flow of This Session
+
+- Start with one rule and one seeded initial row.
+- Implement the local update from three-cell neighborhoods.
+- Simulate repeated synchronous updates.
+- Visualize the result as a space-time diagram.
+- Reuse the same code to compare several rules and initial conditions.
 
 ## What do we need?
 
 ### `numpy`
 
-Efficient arrays for state updates.
+Store the lattice, build rule tables, and update rows efficiently.
 
 ### `matplotlib.pyplot`
 
-Visualize space-time diagrams.
+Plot space-time diagrams and rule comparisons.
 
 ### `matplotlib.backend_bases`
 
 Handle mouse clicks for interactive initial conditions.
+
+### Why not use `scipy.solve_ivp` here?
+
+A cellular automaton is not defined by a differential equation. It is defined by a synchronous local rule: each cell looks at a small neighborhood and updates directly.
+
+So we do not need an ODE solver. A simple loop over time steps is the right numerical tool.
+
+::: {.callout-tip}
+## Scripts or notebooks?
+
+Use a notebook when you want to compare several rules, inspect arrays, or save snapshots. Use a script when you want quick interaction, such as clicking on the first row and recomputing the full diagram.
+:::
+
+::: {.callout-note}
+In the first implementation we keep the boundary cells fixed at zero. Later you can test periodic boundaries and see how much the long-run pattern depends on the edges.
+:::
