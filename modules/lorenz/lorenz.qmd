@@ -1,10 +1,10 @@
 ---
 title: "Lorenz Attractor"
-subtitle: "3D Chaotic Dynamics"
+subtitle: "Vector Field, Fixed Points, and Euler Simulation"
 format: html
 ---
 
-The Lorenz system is a classic example of deterministic chaos [@lorenz1963deterministic]:
+The Lorenz system is one of the standard examples where a smooth deterministic ODE produces irregular long-term behavior [@lorenz1963deterministic; @strogatz2024nonlinear].
 
 $$
 \begin{aligned}
@@ -13,6 +13,16 @@ $$
 \dot z &= x y - b z.
 \end{aligned}
 $$ {#eq-lorenz-lorenz-1}
+
+For the classical Lorenz attractor, the standard parameter choice is
+
+$$
+s = 10,
+\qquad
+r = 28,
+\qquad
+b = \frac{8}{3}.
+$$
 
 ```{python}
 #| label: fig-lorenz
@@ -24,17 +34,14 @@ $$ {#eq-lorenz-lorenz-1}
 import numpy as np
 import matplotlib.pyplot as plt
 
-from amlab.extra.lorenz_attractor import lorenz
+from amlab.extra.lorenz_attractor import simulate_lorenz
 
 num_steps = 5000
 dt = 0.01
-xyzs = np.empty((num_steps + 1, 3))
-xyzs[0] = (0.0, 1.0, 1.05)
+xyzs = simulate_lorenz(initial_state=(0.0, 1.0, 1.05), dt=dt, num_steps=num_steps)
 
-for i in range(num_steps):
-    xyzs[i + 1] = xyzs[i] + lorenz(xyzs[i]) * dt
-
-ax = plt.figure().add_subplot(projection="3d")
+fig = plt.figure(figsize=(6, 5))
+ax = fig.add_subplot(projection="3d")
 ax.plot(*xyzs.T, lw=0.6)
 ax.set_xlabel("X")
 ax.set_ylabel("Y")
@@ -46,8 +53,10 @@ plt.close()
 
 ## Implement the vector field
 
+The right-hand side takes one point $(x,y,z)$ and returns the instantaneous velocity in phase space.
+
 ```python
-def lorenz(xyz, s=10, r=28, b=2.667):
+def lorenz(xyz, s=10.0, r=28.0, b=8.0 / 3.0):
     x, y, z = xyz
     x_dot = s * (y - x)
     y_dot = r * x - y - x * z
@@ -55,18 +64,56 @@ def lorenz(xyz, s=10, r=28, b=2.667):
     return np.array([x_dot, y_dot, z_dot])
 ```
 
+## Fixed points
+
+Setting the right-hand side equal to zero gives the equilibrium points.
+
+For $r > 1$, the Lorenz system has three fixed points:
+
+$$
+(0,0,0),
+\qquad
+\left(\sqrt{b(r-1)}, \sqrt{b(r-1)}, r-1\right),
+\qquad
+\left(-\sqrt{b(r-1)}, -\sqrt{b(r-1)}, r-1\right).
+$$
+
+The classical chaotic regime appears when trajectories do not settle near a single fixed point, but instead keep circling around the two lobes of the attractor.
+
 ## Simulate with Euler
 
-```python
-num_steps = 10000
-dt = 0.01
-xyzs = np.empty((num_steps + 1, 3))
-xyzs[0] = (0.0, 1.0, 1.05)
+Forward Euler updates the state by
 
-for i in range(num_steps):
-    xyzs[i + 1] = xyzs[i] + lorenz(xyzs[i]) * dt
+$$
+\mathbf{x}_{n+1} = \mathbf{x}_n + \Delta t\, f(\mathbf{x}_n).
+$$
+
+In code, that becomes a simple loop over time steps.
+
+```python
+def simulate_lorenz(initial_state=(0.0, 1.0, 1.05), dt=0.01, num_steps=10000):
+    xyzs = np.empty((num_steps + 1, 3))
+    xyzs[0] = initial_state
+
+    for i in range(num_steps):
+        xyzs[i + 1] = xyzs[i] + lorenz(xyzs[i]) * dt
+
+    return xyzs
 ```
+
+## What to look for
+
+- The trajectory stays in a bounded region of phase space.
+- It alternates between two lobes instead of converging to one point.
+- The geometry looks structured, but the switching times are hard to predict over long intervals.
 
 Try changing $r$ or the initial condition and observe how the trajectory changes.
 
 Reference code: [amlab/extra/lorenz_attractor.py](../../amlab/extra/lorenz_attractor.py).
+
+## What's Next?
+
+One trajectory shows the geometry of the attractor. The next page compares two nearby trajectories so you can see sensitivity to initial conditions directly.
+
+[Sensitivity and Chaos](sensitivity.qmd){.btn .btn-primary}
+[Back to Session Index](index.qmd){.btn .btn-secondary}

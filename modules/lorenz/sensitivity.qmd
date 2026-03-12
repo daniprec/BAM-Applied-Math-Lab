@@ -1,0 +1,117 @@
+---
+title: "Sensitivity and Chaos"
+subtitle: "Nearby Trajectories and Predictability"
+format: html
+---
+
+The Lorenz attractor is deterministic, but long-term prediction is still limited because nearby trajectories diverge over time [@lorenz1963deterministic; @strogatz2024nonlinear]. This is the signature feature of sensitivity to initial conditions.
+
+```{python}
+#| label: fig-lorenz-sensitivity
+#| fig-cap: 'Two nearby Lorenz trajectories and their separation over time.'
+#| fig-width: 10
+#| fig-height: 4
+#| echo: false
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+from amlab.extra.lorenz_attractor import simulate_lorenz, trajectory_separation
+
+
+dt = 0.01
+num_steps = 3000
+initial_state_a = (0.0, 1.0, 1.05)
+initial_state_b = (0.0, 1.0, 1.05001)
+
+trajectory_a = simulate_lorenz(initial_state=initial_state_a, dt=dt, num_steps=num_steps)
+trajectory_b = simulate_lorenz(initial_state=initial_state_b, dt=dt, num_steps=num_steps)
+
+times = dt * np.arange(num_steps + 1)
+separation = trajectory_separation(trajectory_a, trajectory_b)
+
+fig = plt.figure(figsize=(10, 4))
+ax1 = fig.add_subplot(1, 2, 1, projection="3d")
+ax2 = fig.add_subplot(1, 2, 2)
+
+ax1.plot(*trajectory_a.T, lw=0.6, label="Run A")
+ax1.plot(*trajectory_b.T, lw=0.6, label="Run B")
+ax1.set_xlabel("X")
+ax1.set_ylabel("Y")
+ax1.set_zlabel("Z")
+ax1.set_title("Nearby trajectories")
+
+ax2.semilogy(times, separation)
+ax2.set_xlabel("Time")
+ax2.set_ylabel("Separation")
+ax2.set_title("Divergence over time")
+
+plt.tight_layout()
+plt.show()
+plt.close()
+```
+
+## Compare two nearby initial conditions
+
+To test sensitivity, keep the parameters fixed and change only the initial state by a tiny amount.
+
+```python
+initial_state_a = (0.0, 1.0, 1.05)
+initial_state_b = (0.0, 1.0, 1.05001)
+
+trajectory_a = simulate_lorenz(initial_state=initial_state_a, dt=0.01, num_steps=3000)
+trajectory_b = simulate_lorenz(initial_state=initial_state_b, dt=0.01, num_steps=3000)
+```
+
+At first, the two runs are nearly indistinguishable. Later, they separate enough that their detailed future motion no longer matches.
+
+## Measure the separation
+
+The most direct diagnostic is the Euclidean distance between the two trajectories at each time step:
+
+$$
+d_n = \left\|\mathbf{x}_n^{(1)} - \mathbf{x}_n^{(2)}\right\|.
+$$
+
+```python
+separation = np.linalg.norm(trajectory_a - trajectory_b, axis=1)
+times = 0.01 * np.arange(len(separation))
+
+plt.semilogy(times, separation)
+plt.xlabel("Time")
+plt.ylabel("Separation")
+plt.show()
+```
+
+If the separation grows rapidly from a tiny initial perturbation, then the predictability horizon is short even though the equations themselves are deterministic.
+
+## What chaos means here
+
+In this context, chaos does not mean that the model is random.
+
+- The update rule is fixed.
+- The same initial condition gives the same trajectory.
+- Small errors in the initial state can still lead to very different long-run outcomes.
+
+This is why deterministic chaos matters in modeling. Exact equations do not guarantee exact long-term forecasts.
+
+## Parameter variation
+
+The parameter `r` strongly influences the geometry of the trajectories. A useful first comparison is to simulate one run with a smaller value such as `r=10` and another with the standard value `r=28`.
+
+```python
+trajectory_low_r = simulate_lorenz(dt=0.01, num_steps=3000, r=10)
+trajectory_standard = simulate_lorenz(dt=0.01, num_steps=3000, r=28)
+```
+
+That comparison helps separate two ideas:
+
+- sensitivity to initial conditions at fixed parameters,
+- and qualitative changes driven by the parameter regime.
+
+## What's Next?
+
+The assignment combines the geometric picture of the attractor with the quantitative evidence for sensitivity to initial conditions.
+
+[Assignment](assignment.qmd){.btn .btn-primary}
+[Back to Session Index](index.qmd){.btn .btn-secondary}
