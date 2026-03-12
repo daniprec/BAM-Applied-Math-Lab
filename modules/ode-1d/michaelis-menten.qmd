@@ -1,18 +1,44 @@
 ---
 title: "Michaelis–Menten Enzyme Kinetics"
-subtitle: "1D Ordinary Differential Equations"
+subtitle: "Saturation as a One-Dimensional Rate Law"
 format: html
 ---
 
-Michaelis–Menten kinetics is a foundational model in biochemical reaction dynamics [@michaelis1913kinetik]. It relates substrate concentration to reaction rate using a saturating nonlinearity.
+Michaelis–Menten kinetics is one of the standard examples of a saturating nonlinear rate law [@michaelis1913kinetik]. The classical instantaneous rate is
 
-The (simplified) substrate dynamics implemented in the reference script is:
+$$
+v(s) = \frac{V_{\max} s}{K_m + s},
+$$
+
+where $V_{\max}$ is the maximum rate and $K_m$ is the Michaelis constant.
+
+In the reference script used in this course, the same saturating expression is reused as a simple teaching ODE,
 
 $$
 \dot s = \frac{V_{\max}s}{K_m + s}
 $$ {#eq-ode-1d-michaelis-menten-1}
 
-where $V_{\max}$ is the maximum rate and $K_m$ is the Michaelis constant.
+This is not a full enzyme-substrate mass-action model. It is a compact one-dimensional example that lets you study how saturation changes both the rate curve and the time evolution of the state variable.
+
+## Small and Large Concentration Regimes
+
+The rate law has two useful asymptotic regimes:
+
+$$
+v(s) \approx \frac{V_{\max}}{K_m} s \quad \text{for } s \ll K_m,
+\qquad
+v(s) \approx V_{\max} \quad \text{for } s \gg K_m.
+$$
+
+So the system is approximately linear at small $s$ and nearly constant-rate at large $s$.
+
+## Implement the Saturating Rate Law
+
+```python
+def michaelis_menten(t, s, vmax=1.0, km=0.5):
+	dsdt = (vmax * s) / (km + s)
+	return dsdt
+```
 
 ## Reference Implementation {#sec-reference}
 
@@ -42,6 +68,12 @@ plt.show()
 plt.close()
 ```
 
+## Interpret the Parameters
+
+- Increasing $V_{\max}$ raises the saturation plateau.
+- Increasing $K_m$ shifts the curve so larger values of $s$ are needed before the rate is close to saturation.
+- In the teaching ODE used here, larger $V_{\max}$ also makes the state variable evolve faster in time.
+
 ## Exploration {#sec-exploration}
 
 1. Increase $V_{\max}$ and observe how the rate curve changes.
@@ -52,3 +84,10 @@ plt.close()
 ```bash
 python amlab/odes_1d/michaelis_menten.py
 ```
+
+## What's Next?
+
+The Michaelis–Menten example highlights saturation. The spruce budworm model adds phase-line reasoning, multiple equilibria, and bistability.
+
+[Spruce Budworm Model](spruce-budworm.qmd){.btn .btn-primary}
+[Back to Session Index](index.qmd){.btn .btn-secondary}

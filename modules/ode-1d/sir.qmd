@@ -1,10 +1,12 @@
 ---
 title: "SIR Epidemic Model"
-subtitle: "1D Ordinary Differential Equations"
+subtitle: "Compartments, Thresholds, and Numerical Simulation"
 format: html
 ---
 
-The SIR model is a classical compartmental model in epidemiology [@kermack1927contribution; @keeling2008modeling]. It splits the population into:
+The SIR model is a classical compartmental model in epidemiology [@kermack1927contribution; @keeling2008modeling]. It is also a good first reminder that the `solve_ivp` workflow from Session 1 applies to small systems just as naturally as to scalar equations.
+
+We split the population into:
 
 - $S(t)$: susceptible
 - $I(t)$: infected
@@ -22,8 +24,40 @@ $$
 \end{aligned}
 $$ {#eq-ode-1d-sir-1}
 
-- $\beta$ controls infection/transmission.
-- $\gamma$ controls recovery.
+Here $\beta$ controls transmission and $\gamma$ controls recovery.
+
+## Conservation of Total Population
+
+For the normalized model,
+
+$$
+S(t) + I(t) + R(t) = 1.
+$$
+
+That means the full state has three components, but only two are independent. The model still fits the same initial value problem structure as the scalar examples.
+
+## Implement the Right-Hand Side
+
+The numerical solver only needs one function that returns the three derivatives.
+
+```python
+def sir_model(t, y, beta, gamma):
+	s, i, r = y
+	dsdt = -beta * s * i
+	didt = beta * s * i - gamma * i
+	drdt = gamma * i
+	return [dsdt, didt, drdt]
+```
+
+## A Useful Threshold
+
+The ratio
+
+$$
+R_0 = \frac{\beta}{\gamma}
+$$
+
+is the basic reproduction number in the normalized model. When $R_0 > 1$ and the susceptible fraction is still large, the infected compartment initially grows. When $R_0 < 1$, infection decays instead of taking off.
 
 ## Reference Implementation {#sec-reference}
 
@@ -52,6 +86,28 @@ plt.show()
 plt.close()
 ```
 
+## Simulate with `solve_ivp()`
+
+The solver call follows the same pattern as every other ODE example in the course:
+
+```python
+solution = solve_ivp(
+	sir_model,
+	t_span=(0, 160),
+	y0=[0.99, 0.01, 0.0],
+	args=(0.3, 0.1),
+	t_eval=np.linspace(0, 160, 1000),
+)
+```
+
+## What to Look For
+
+- The susceptible population decreases monotonically.
+- The infected population typically rises, peaks, and then falls.
+- The recovered population grows monotonically.
+- Changing $\beta$ mostly affects how fast the outbreak grows.
+- Changing $\gamma$ mostly affects how quickly the outbreak resolves.
+
 ## Exploration {#sec-exploration}
 
 1. Increase $\beta$ while keeping $\gamma$ fixed. What happens to the peak of $I(t)$?
@@ -65,3 +121,10 @@ To run the standalone script and show the plot:
 ```bash
 python amlab/odes_1d/sir_model.py
 ```
+
+## What's Next?
+
+The SIR model shows how the same solver handles several coupled state variables. The next page returns to a scalar nonlinear rate law with saturation.
+
+[Michaelis–Menten Kinetics](michaelis-menten.qmd){.btn .btn-primary}
+[Back to Session Index](index.qmd){.btn .btn-secondary}

@@ -1,6 +1,6 @@
 ---
 title: "FitzHugh–Nagumo Model"
-subtitle: "2D Ordinary Differential Equations"
+subtitle: "Excitability, Spikes, and Fast-Slow Dynamics"
 format: html
 ---
 
@@ -17,6 +17,20 @@ Where $v$ is the fast variable representing the membrane potential, $w$ is a rec
 $$
 f(v) = v (1 - v)(v - \alpha),\quad \text{for } 0 < \alpha < 1
 $$ {#eq-ode-2d-fitzhugh-nagumo-2}
+
+Here $v$ is the fast variable and $w$ is the slow recovery variable. That time-scale split is what makes the model a useful example of excitability and spike-like excursions.
+
+## Nullclines and Geometry
+
+The nullclines are
+
+$$
+\dot v = 0 \quad \Longrightarrow \quad w = f(v) + I_{\text{app}},
+\qquad
+\dot w = 0 \quad \Longrightarrow \quad w = \frac{v}{\gamma}.
+$$
+
+The cubic-shaped $v$-nullcline and the straight-line $w$-nullcline organize the phase-plane flow. Depending on the parameter values, trajectories may relax to rest, produce a large excursion, or settle into sustained oscillations.
 
 ```{python}
 #| label: fig-phase-plane
@@ -50,7 +64,18 @@ plt.show()
 plt.close()
 ```
 
-Follow the steps outline in [the CDIMA model](cdima.qmd) to explore how the FitzHugh–Nagumo system behaves for different initial conditions and parameters.
+## Implement the Vector Field
+
+```python
+def fitzhugh_nagumo(t, vw, i_app=0.5, gamma=0.5, alpha=0.1, epsilon=0.01):
+    v, w = vw
+    fv = v * (1 - v) * (v - alpha)
+    dvdt = (fv - w + i_app) / epsilon
+    dwdt = v - gamma * w
+    return np.array([dvdt, dwdt])
+```
+
+Follow the CDIMA pipeline again: solve trajectories, inspect the phase plane, compute nullclines, and then animate the motion.
 
 ## Time Series and Excitability
 
@@ -87,9 +112,23 @@ plt.show()
 plt.close()
 ```
 
-Try changing the initial condition and parameters to see how the time series changes. What regimes of behavior do you observe? Can you connect these observations to the phase plane trajectories and the underlying theory of excitability?
+## Interpret the Parameters
 
-## Resources
+- Smaller $\epsilon$ strengthens the fast-slow separation.
+- Changing $I_{\text{app}}$ shifts the system between rest and stronger activation.
+- The parameters $\gamma$ and $\alpha$ reshape the nullclines and therefore the trajectory geometry.
 
-- SciPy documentation: <https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html>
-- Reference implementation: <https://github.com/daniprec/BAM-Applied-Math-Lab/tree/main/amlab/odes_2d>
+## What to Look For
+
+- Some initial conditions return directly to equilibrium.
+- Others produce a large transient spike before recovery.
+- The time trace and the phase-plane picture explain the same phenomenon from two complementary viewpoints.
+
+Try changing the initial condition and parameters to see how the time series changes. Then connect those changes back to the nullclines and the phase-plane trajectories.
+
+## What's Next?
+
+Once the fast-slow geometry is clear, use the animation pattern to turn the static phase plane into an interactive exploration tool.
+
+[Animation Template](animation.qmd){.btn .btn-primary}
+[Assignment](assignment.qmd){.btn .btn-secondary}

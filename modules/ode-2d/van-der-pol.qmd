@@ -1,6 +1,6 @@
 ---
 title: "Van der Pol Oscillator"
-subtitle: "2D Ordinary Differential Equations"
+subtitle: "Limit Cycles and Relaxation Oscillations"
 format: html
 ---
 
@@ -19,6 +19,18 @@ where $\mu>0$ controls the strength of the nonlinearity (and the fast–slow cha
 $$
 f(x) = \frac{x^3}{3} - x.
 $$ {#eq-ode-2d-van-der-pol-2}
+
+## Nullclines and Fixed Point
+
+The nullclines are especially simple in this model:
+
+$$
+\dot x = 0 \quad \Longrightarrow \quad y = \frac{x^3}{3} - x,
+\qquad
+\dot y = 0 \quad \Longrightarrow \quad x = 0.
+$$
+
+They intersect at the origin, so $(0,0)$ is the equilibrium point. For the parameter regime used in this session, the main long-run object of interest is not the equilibrium itself, but the attracting limit cycle around it.
 
 ```{python}
 #| label: fig-phase-plane
@@ -56,7 +68,18 @@ plt.show()
 plt.close()
 ```
 
-Follow the steps outline in [the CDIMA model](cdima.qmd) to explore how the Van der Pol system behaves for different initial conditions and parameters.
+## Implement the Vector Field
+
+```python
+def van_der_pol(t, xy, mu=1.0):
+	x, y = xy
+	fx = x**3 / 3 - x
+	dxdt = mu * (y - fx)
+	dydt = -x / mu
+	return np.array([dxdt, dydt])
+```
+
+Follow the same pipeline as in [CDIMA Reaction](cdima.qmd): define the right-hand side, solve the initial value problem, compute nullclines, and then animate the resulting trajectory.
 
 ## The Stable Limit Cycle
 
@@ -87,12 +110,27 @@ plt.show()
 plt.close()
 ```
 
-The amplitude and period of the limit cycle depend on $\mu$. There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with $\mu$, while the fast phase becomes more abrupt. This leads to a characteristic "relaxation oscillation" shape for large $\mu$.
+## The Role of $\mu$
+
+The amplitude and period of the limit cycle depend on $\mu$.
+
+- For smaller $\mu$, the oscillation looks smoother and less sharply separated into time scales.
+- For larger $\mu$, the motion develops a clear slow-fast structure.
+- The trajectory spends long intervals drifting near the cubic nullcline, then jumps rapidly between branches.
+
+This is the characteristic relaxation-oscillation picture.
+
+## What to Look For
+
+- Different initial conditions approach the same closed orbit.
+- The transient depends on the initial state, but the long-run behavior does not.
+- The time trace $x(t)$ reflects the same slow-fast pattern you see in the phase plane.
 
 Play with the parameter $\mu$ to see how it changes the shape of the limit cycle and the transient dynamics.
 
-## Resources
+## What's Next?
 
-- [@strogatz2024nonlinear, chap. 7.5] for theoretical background on the Van der Pol oscillator.
-- SciPy documentation: <https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html>
-- Reference implementation: <https://github.com/daniprec/BAM-Applied-Math-Lab/tree/main/amlab/odes_2d>
+Once the geometry is clear, the next step is to animate the trajectory and, if needed, make the initial condition interactive.
+
+[Animation Template](animation.qmd){.btn .btn-primary}
+[Assignment](assignment.qmd){.btn .btn-secondary}

@@ -1,101 +1,94 @@
 ---
 title: "Ordinary Differential Equations in 1D"
-subtitle: "Numerical Integration with SciPy"
+subtitle: "Initial Value Problems and Nonlinear Rate Laws"
 format: html
 ---
 
-Numerical integration is fundamental for solving ordinary differential equations (ODEs) that don't have analytical solutions [@strogatz2024nonlinear; @virtanen2020scipy]. In this first session, you will learn how to:
+This first session builds the numerical workflow used throughout the whole course: define a right-hand side, choose an initial condition, integrate forward in time, and interpret the solution [@strogatz2024nonlinear; @virtanen2020scipy].
 
-- Formulate ODEs in Python.
-- Use SciPy's `solve_ivp` to numerically integrate ODEs.
-- Visualize solutions and explore parameter spaces.
-- Apply these techniques to real-world models.
+## From One Variable to Small Systems
 
+The core mathematical object is the initial value problem
 
-## Contents
+$$
+\dot y = f(t, y),
+\qquad
+y(t_0) = y_0.
+$$ {#eq-ode-1d-index-1}
 
-- [SIR Epidemic Model](sir.qmd)
-- [Michaelis–Menten Enzyme Kinetics](michaelis-menten.qmd)
-- [Spruce Budworm Population Model](spruce-budworm.qmd)
-- [Assignment](assignment.qmd)
+In a scalar problem, $y(t)$ is one number. In a small system, $y(t)$ becomes a vector. The numerical workflow stays the same.
 
-## The Initial Value Problem
+That is why this session starts with the label “1D” but already includes the SIR model: the main skill is not the number of components, but how you turn a rate law into a computable trajectory.
 
-An **initial value problem (IVP)** consists of:
+## Case Studies
 
-$$\frac{dy}{dt} = f(t, y), \quad y(t_0) = y_0$$ {#eq-ode-1d-index-1}
+Start with a classical epidemic model and see how a coupled ODE system fits into the same `solve_ivp` pipeline.
 
-Where:
-- $f(t, y)$ is the rate of change function
-- $y_0$ is the initial condition at time $t_0$
+[SIR Epidemic Model](sir.qmd){.btn .btn-primary}
 
-## SciPy's `solve_ivp`
+Then study a saturating nonlinear rate law through a Michaelis–Menten inspired example.
 
-The `scipy.integrate.solve_ivp` function is the standard tool for solving ODEs in Python. Try the following code:
+[Michaelis–Menten Kinetics](michaelis-menten.qmd){.btn .btn-primary}
+
+Finally, combine phase-line reasoning, numerical integration, and interactivity in the spruce budworm model.
+
+[Spruce Budworm Model](spruce-budworm.qmd){.btn .btn-primary}
+
+When the workflow is clear, move to the assignment.
+
+[Assignment](assignment.qmd){.btn .btn-secondary}
+
+## Learning Goals
+
+- Formulate an ODE or a small ODE system in Python.
+- Use `scipy.integrate.solve_ivp()` to integrate an initial value problem.
+- Interpret trajectories in time and connect them to parameters.
+- Recognize threshold, saturation, and bistability effects in simple models.
+- Reuse the same solver workflow across very different applications.
+
+## Flow of This Session
+
+- Write the right-hand side of the model.
+- Choose parameters, a time span, and an initial condition.
+- Integrate with `solve_ivp()`.
+- Plot the solution and interpret the result.
+- Compare how the behavior changes when you vary parameters or initial data.
+
+## What do we need?
+
+### `scipy.integrate.solve_ivp`
+
+This is the main solver for initial value problems in the course. It takes the right-hand side `fun(t, y)`, the interval `t_span`, the initial state `y0`, and optional arguments such as `t_eval`, `method`, and `args`.
 
 ```python
 import numpy as np
 from scipy.integrate import solve_ivp
 
+
 def exponential_decay(t, y):
-     return -0.5 * y
+    return -0.5 * y
 
-t_span = [0, 10]
-y0 = [2, 4, 8]
+
 sol = solve_ivp(
-    fun=exponential_decay,
-    t_span=t_span, 
-    y0=y0)
-
-print(sol.t)
-
-print(sol.y)
+    exponential_decay,
+    t_span=(0, 10),
+    y0=[2.0],
+    t_eval=np.linspace(0, 10, 200),
+)
 ```
 
-**How does `solve_ivp` work?** Let's understand its parameters (copied from the [documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html)):
+### `numpy`
 
-- `fun`: Right-hand side of the system: the time derivative of the state $y$ at time $t$. The calling signature is `fun(t, y)`, where `t` is a scalar and `y` is an ndarray with `len(y) = len(y0)`. Additional arguments need to be passed if `args` is used (see documentation of `args` argument). `fun` must return an array of the same shape as `y`.
-   In our example, `exponential_decay` defines the ODE $\frac{dy}{dt} = -0.5y$, which models exponential decay $y(t) = y_0 e^{-0.5t}$.
-- `t_span`: Interval of integration $(t_0, t_f)$. The solver starts with $t=t_0$ and integrates until it reaches $t=t_f$. Both $t_0$ and $t_f$ must be floats or values interpretable by the float conversion function.
-- `y0`: Initial state. For problems in the complex domain, pass `y0` with a complex data type (even if the initial value is purely real).
+Use NumPy arrays for initial conditions, evaluation grids, and post-processing of trajectories.
 
-You can also specify additional parameters:
-- `method`: Integration method to use. Common choices include `'RK45'` (default), `'RK23'`, `'DOP853'`, `'Radau'`, `'BDF'`, and `'LSODA'`.
-- `t_eval`: Times at which to store the computed solution, must be sorted and lie within `t_span`. If None (default), use points selected by the solver.
-- `args`: Additional arguments to pass to the user-defined functions. If, for example, `fun` has the signature `fun(t, y, a, b, c)`, then `args=(a, b, c)`.
+### `matplotlib.pyplot`
 
-## Systems of ODEs
+Use Matplotlib to visualize time series, parameter comparisons, and phase-line style diagnostics.
 
-For multiple coupled equations, return a list or array of derivatives:
+### Why start with `solve_ivp()`?
 
-```python
-def sir_model(t, y, beta, gamma):
-    S, I, R = y
-    N = S + I + R
-    
-    dSdt = -beta * S * I / N
-    dIdt = beta * S * I / N - gamma * I
-    dRdt = gamma * I
-    
-    return [dSdt, dIdt, dRdt]
-```
+Because once you understand the initial value problem pipeline, you can reuse it almost unchanged in later sessions on planar systems, coupled oscillators, and PDE-inspired reductions.
 
-## Best Practices
-
-1. **Always check convergence**: Plot solutions at different tolerances
-2. **Use appropriate methods**: `'RK45'` (default) works well for most problems
-3. **Vectorize when possible**: Makes code faster and cleaner
-4. **Document parameters**: Keep track of units and meanings
-5. **Validate against known solutions**: Test your implementation
-
-## Next Steps
-
-Apply these techniques to the classical models in Session 1:
-- SIR epidemiological model
-- Spruce budworm population dynamics
-- Michaelis–Menten enzyme kinetics
-
-## Resources
-
-- [SciPy solve_ivp documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html)
-- [Python for ODEs tutorial](https://python-numerical-methods.berkeley.edu/notebooks/chapter22.00-ODE-Initial-Value-Problems.html)
+::: {.callout-tip}
+The default `RK45` method is a good first choice for most examples in this session. Later sessions will make the method choice itself part of the modeling discussion.
+:::
