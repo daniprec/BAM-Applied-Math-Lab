@@ -1,0 +1,120 @@
+---
+title: "Partial Differential Equations"
+subtitle: "Reaction-Diffusion in 1D and 2D"
+format: html
+---
+
+This session moves from ODEs and graph-based dynamics to PDEs. We will discretize space with finite differences, advance in time with explicit Euler, and build our own Gray-Scott reaction-diffusion model [@turing1952chemical; @gierer1972theory; @gray1984autocatalytic; @pearson1993complex].
+
+## From Networks to PDEs
+
+In the previous session on **networks**, you studied how local rules acting on nodes and edges can create large-scale spreading patterns.
+
+In this session we keep the same simulation mindset, but we change the space where the dynamics live:
+
+- Graph nodes become values on a spatial grid.
+- Edges become local neighbor couplings through the Laplacian.
+- Spreading on a network becomes diffusion on a continuous domain.
+
+The idea is still local interaction creating global structure. The difference is that now the state is a **field** such as $u(x, t)$ or $v(x, y, t)$ instead of a list of node states.
+
+[Back to Networks](../networks/index.qmd){.btn .btn-secondary}
+
+## Case Studies
+
+We will build this session in layers.
+
+First, we start with the **Gierer-Meinhardt model in 1D**. This is the cleanest place to learn the PDE workflow: grid, Laplacian, Euler update, boundary conditions, and animation.
+
+[Gierer-Meinhardt 1D](gierer-meinhardt-1d.qmd){.btn .btn-primary}
+
+Then we pause and ask the theoretical question: **when should patterns appear at all?** That is where Turing instability enters.
+
+[Turing Instability](turing-instability.qmd){.btn .btn-primary}
+
+Once the 1D solver and the theory are clear, we extend the same ideas to **two spatial dimensions**.
+
+[Gierer-Meinhardt 2D](gierer-meinhardt-2d.qmd){.btn .btn-primary}
+
+After that, we switch reaction terms and build the **Gray-Scott model**, which is the final target of the session.
+
+[Gray-Scott](gray-scott.qmd){.btn .btn-primary}
+
+Finally, we turn the simulation into an interactive experiment with drawing, pause/resume, and sliders.
+
+[Gray-Scott: Interaction](gray-scott-art.qmd){.btn .btn-primary}
+
+When all the ingredients are in place, you will combine them in the assignment.
+
+[Assignment](assignment.qmd){.btn .btn-secondary}
+
+## Learning Goals
+
+- Implement 1D and 2D Laplacians with `np.roll()`.
+- Explain how boundary conditions affect a PDE solver.
+- Simulate a reaction-diffusion system in 1D and 2D.
+- Connect observed patterns with Turing instability.
+- Build a Gray-Scott simulator and add basic interaction.
+
+## Flow of This Session
+
+1. Start in 1D and implement the Laplacian with centered differences.
+2. Add explicit Euler time stepping and boundary conditions.
+3. Study Turing instability and connect the theory to the patterns you see.
+4. Extend the same workflow to 2D on a rectangular grid.
+5. Build the Gray-Scott model and experiment with feed and kill rates.
+
+## Numerical Workflow
+
+Every page in this session follows the same numerical loop:
+
+1. Create a spatial grid.
+2. Approximate the Laplacian with finite differences.
+3. Evaluate the reaction terms.
+4. Update the fields with Euler's method.
+5. Enforce the boundary conditions.
+6. Plot or animate the result.
+
+## What Do We Need?
+
+### `numpy`
+
+We store spatial fields in NumPy arrays and use `np.roll()` to access neighboring grid points.
+
+### `matplotlib.pyplot`
+
+We initialize figures, axes, labels, and static plot elements.
+
+### `matplotlib.animation`
+
+We update lines and images frame by frame to animate the PDE dynamics.
+
+### `matplotlib.backend_bases`
+
+We handle mouse clicks and key presses for interactive experiments.
+
+### `matplotlib.widgets`
+
+We use sliders on the Gray-Scott interaction page.
+
+### Why not use `scipy.solve_ivp` here?
+
+In Sessions 1 to 3, `scipy.integrate.solve_ivp()` handled the time integration for us because the state was a finite-dimensional ODE vector.
+
+Here the key numerical work is different:
+
+- we must discretize space first,
+- we must update every grid point at every step,
+- and we must enforce the boundary conditions ourselves.
+
+That is why we use explicit Euler loops instead of `solve_ivp()` in this session.
+
+::: {.callout-tip}
+## Scripts or notebooks?
+
+Use notebooks when you want to test stencils, plot snapshots, or inspect intermediate arrays. Use Python scripts when you want smooth animations or interactive figures with callbacks and sliders.
+:::
+
+::: {.callout-note}
+Explicit Euler is simple and transparent, but it is only conditionally stable. If a simulation explodes immediately, reduce `dt`, increase `dx`, or test on a smaller grid first.
+:::

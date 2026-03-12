@@ -1,0 +1,190 @@
+---
+title: "Gray-Scott: Interaction"
+subtitle: "Drawing, Pause, and Sliders"
+format: html
+---
+
+Start from the animation on the previous page. Now we will turn it into a small laboratory where you can inject perturbations, pause the evolution, and change parameters while the simulation is running.
+
+This is the same pattern you already saw in the interactive pages from earlier sessions: keep the model update fixed, then wrap it with event handlers and controls.
+
+## Step 1: Draw on the Field
+
+Left click should add a local perturbation and right click should reset a small patch to the base state.
+
+```python
+from matplotlib.backend_bases import MouseEvent
+
+def update_uv(event: MouseEvent, r: int = 3):
+    # TODO: ignore clicks outside the axes
+    # TODO: convert the mouse location into integer grid indices
+
+    # TODO: left click should add a local perturbation near (u, v) = (0.5, 0.5)
+    # TODO: right click should reset the patch to (u, v) = (1.0, 0.0)
+
+    # TODO: update the selected patch in uv and refresh the image
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: update_uv (click to expand)
+
+```python
+def update_uv(event: MouseEvent, r: int = 3):
+    if event.inaxes != ax_uv:
+        return
+    if event.xdata is None or event.ydata is None:
+        return
+
+    x = int(event.xdata)
+    y = int(event.ydata)
+
+    if event.button == 1:
+        u_new = 0.5 * (1 + 0.1 * np.random.randn())
+        v_new = 0.5 * (1 + 0.1 * np.random.randn())
+    elif event.button == 3:
+        u_new = 1.0
+        v_new = 0.0
+    else:
+        return
+
+    uv[0, y - r : y + r, x - r : x + r] = u_new
+    uv[1, y - r : y + r, x - r : x + r] = v_new
+    im.set_array(uv[1])
+```
+:::
+
+## Step 2: Allow Continuous Drawing
+
+Use three event handlers so the perturbation follows the mouse while the button is pressed.
+
+```python
+from matplotlib.backend_bases import MouseEvent
+
+drawing = False
+
+def on_click(event: MouseEvent):
+    # TODO: start drawing and call update_uv(event)
+
+def on_release(event: MouseEvent):
+    # TODO: stop drawing
+
+def on_motion(event: MouseEvent):
+    # TODO: if drawing is active, update the field
+
+fig.canvas.mpl_connect("button_press_event", on_click)
+fig.canvas.mpl_connect("button_release_event", on_release)
+fig.canvas.mpl_connect("motion_notify_event", on_motion)
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: Mouse handlers (click to expand)
+
+```python
+def on_click(event: MouseEvent):
+    nonlocal drawing
+    drawing = True
+    update_uv(event)
+
+
+def on_release(event: MouseEvent):
+    nonlocal drawing
+    drawing = False
+
+
+def on_motion(event: MouseEvent):
+    if drawing:
+        update_uv(event)
+```
+:::
+
+## Step 3: Pause and Resume with the Keyboard
+
+```python
+from matplotlib.backend_bases import KeyEvent
+
+pause = False
+
+def on_keypress(event: KeyEvent):
+    # TODO: toggle pause when the space bar is pressed
+
+fig.canvas.mpl_connect("key_press_event", on_keypress)
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: Pause handler (click to expand)
+
+```python
+def on_keypress(event: KeyEvent):
+    nonlocal pause
+    if event.key == " ":
+        pause ^= True
+```
+:::
+
+## Step 4: Add Sliders for the Parameters
+
+```python
+from matplotlib.widgets import Slider
+
+ax_d1 = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])
+ax_d2 = ax_sliders.inset_axes([0.0, 0.6, 0.8, 0.1])
+ax_f = ax_sliders.inset_axes([0.0, 0.4, 0.8, 0.1])
+ax_k = ax_sliders.inset_axes([0.0, 0.2, 0.8, 0.1])
+
+slider_d1 = Slider(ax_d1, "D1", 0.01, 0.2, valinit=d1, valstep=0.01)
+slider_d2 = Slider(ax_d2, "D2", 0.01, 0.2, valinit=d2, valstep=0.01)
+slider_f = Slider(ax_f, "F", 0.01, 0.09, valinit=f, valstep=0.001)
+slider_k = Slider(ax_k, "k", 0.04, 0.07, valinit=k, valstep=0.001)
+
+def update_sliders(_):
+    # TODO: read the slider values into d1, d2, f, and k
+    # TODO: pause the simulation so the new pattern is easier to inspect
+
+slider_d1.on_changed(update_sliders)
+slider_d2.on_changed(update_sliders)
+slider_f.on_changed(update_sliders)
+slider_k.on_changed(update_sliders)
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: Slider callback (click to expand)
+
+```python
+def update_sliders(_):
+    nonlocal d1, d2, f, k, pause
+    d1 = slider_d1.val
+    d2 = slider_d2.val
+    f = slider_f.val
+    k = slider_k.val
+    pause = True
+```
+:::
+
+## Step 5: Put It Together
+
+Inside your animation callback, respect the `pause` flag before advancing the PDE.
+
+```python
+def update_frame(_):
+    nonlocal uv
+    if pause:
+        return [im]
+
+    for _ in range(anim_speed):
+        uv = uv + gray_scott_pde(0, uv, d1=d1, d2=d2, f=f, k=k) * dt
+
+    im.set_array(uv[1])
+    return [im]
+```
+
+This setup is enough to create your own Gray-Scott experiments. Try drawing thin lines, large blobs, or repeated point sources and see which parameter sets erase the perturbation and which ones amplify it.
+
+## What's Next?
+
+At this point you have all the ingredients of the session: a 1D solver, the Turing test, a 2D solver, and an interactive Gray-Scott simulation. The next step is to package those pieces into the assignment.
+
+[Assignment](assignment.qmd){.btn .btn-secondary}
+
+::: {.callout-tip}
+Reference code is available in [amlab/pdes_2d/gray_scott.py](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/pdes_2d/gray_scott.py).
+:::
