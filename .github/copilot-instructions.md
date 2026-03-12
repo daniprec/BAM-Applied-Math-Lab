@@ -26,6 +26,7 @@ FOLLOW these rules:
 * Speak directly to the reader using "you" and "your."
 * The output should read clean, concise, and natural—like something a human wrote. 
 * Before finalizing, review and ensure there are no em dashes.
+* Never use enumerations in section titles or headings. Use descriptive headings without prefixes like "Step 1", "1)", or "Track 2".
 
 DO NOT:
 * Use em dashes (only commas, periods, or semicolons are allowed).
