@@ -84,6 +84,8 @@ div.csl-indent {
 <script src="../../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../">
+<link href="../../modules/lorenz/index.html" rel="next">
+<link href="../../modules/agent-based-modeling/traffic-analysis.html" rel="prev">
 <script src="../../site_libs/quarto-html/quarto.js"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -121,6 +123,35 @@ div.csl-indent {
   }
 }</script>
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../../assets/styles.css">
 </head>
@@ -134,9 +165,7 @@ div.csl-indent {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">
-      Applied Math Lab
-      </li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../modules/agent-based-modeling/index.html">Session 8: Agent-Based Modeling</a></li><li class="breadcrumb-item"><a href="../../modules/agent-based-modeling/assignment.html">Assignment</a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -457,6 +486,12 @@ div.csl-indent {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../../modules/cellular-automata/rule-exploration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Rule Exploration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../../modules/cellular-automata/assignment.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Assignment</span></a>
   </div>
@@ -466,16 +501,28 @@ div.csl-indent {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../../modules/agent-based-modeling/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Session 8: Agent Based Modeling</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" aria-expanded="false" aria-label="Toggle section">
+ <span class="menu-text">Session 8: Agent-Based Modeling</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../modules/agent-based-modeling/traffic.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Traffic Models</span></a>
+ <span class="menu-text">Traffic Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/agent-based-modeling/traffic-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Flow and Congestion</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/agent-based-modeling/assignment.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Assignment</span></a>
   </div>
 </li>
       </ul>
@@ -513,18 +560,21 @@ div.csl-indent {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#required" id="toc-required" class="nav-link active" data-scroll-target="#required">Required</a></li>
-  <li><a href="#extra-mile-optional" id="toc-extra-mile-optional" class="nav-link" data-scroll-target="#extra-mile-optional">Extra Mile (Optional)</a></li>
+  <li><a href="#summary-of-goals" id="toc-summary-of-goals" class="nav-link active" data-scroll-target="#summary-of-goals">Summary of Goals</a></li>
+  <li><a href="#required" id="toc-required" class="nav-link" data-scroll-target="#required">Required</a></li>
+  <li><a href="#short-discussion" id="toc-short-discussion" class="nav-link" data-scroll-target="#short-discussion">Short Discussion</a></li>
+  <li><a href="#optional-extensions" id="toc-optional-extensions" class="nav-link" data-scroll-target="#optional-extensions">Optional Extensions</a></li>
+  <li><a href="#tips-for-success" id="toc-tips-for-success" class="nav-link" data-scroll-target="#tips-for-success">Tips for Success</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/agent-based-modeling/assignment.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../modules/agent-based-modeling/index.html">Session 8: Agent-Based Modeling</a></li><li class="breadcrumb-item"><a href="../../modules/agent-based-modeling/assignment.html">Assignment</a></li></ol></nav>
 <div class="quarto-title">
 <div class="quarto-title-block"><div><h1 class="title">Assignment</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
-<p class="subtitle lead">To-Do</p>
+<p class="subtitle lead">Session 8: Agent-Based Traffic</p>
 </div>
 
 
@@ -541,21 +591,85 @@ div.csl-indent {
 </header>
 
 
-<p>Implement a simple agent-based traffic simulation and analyze emergent congestion patterns <span class="citation" data-cites="wilensky2015abm nagel1992cellular">(<a href="#ref-wilensky2015abm" role="doc-biblioref">Wilensky and Rand 2015</a>; <a href="#ref-nagel1992cellular" role="doc-biblioref">Nagel and Schreckenberg 1992</a>)</span>.</p>
+<p>You now have the core ingredients of an agent-based traffic model: local update rules, a reproducible simulator, a space-time diagram, and macroscopic observables such as density and flow <span class="citation" data-cites="nagel1992cellular wilensky2015abm">(<a href="#ref-nagel1992cellular" role="doc-biblioref">Nagel and Schreckenberg 1992</a>; <a href="#ref-wilensky2015abm" role="doc-biblioref">Wilensky and Rand 2015</a>)</span>.</p>
+<p>You can follow the guide here:</p>
+<p><a href="../../modules/agent-based-modeling/traffic.html" class="btn btn-primary">Traffic Model</a> <a href="../../modules/agent-based-modeling/traffic-analysis.html" class="btn btn-primary">Flow and Congestion</a></p>
+<section id="summary-of-goals" class="level2">
+<h2 class="anchored" data-anchor-id="summary-of-goals">Summary of Goals</h2>
+<p>Your submission should show that you can do three things:</p>
+<ol type="1">
+<li>Build a correct agent-based traffic simulator.</li>
+<li>Connect microscopic update rules with macroscopic observables.</li>
+<li>Explain when and why congestion appears.</li>
+</ol>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Submission
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Submit two files:</p>
+<ol type="1">
+<li>Code that reproduces all figures and metrics.</li>
+<li>A short report, 1 to 2 pages, that summarizes your experiments and interpretation.</li>
+</ol>
+</div>
+</div>
+</section>
 <section id="required" class="level2">
 <h2 class="anchored" data-anchor-id="required">Required</h2>
 <ol type="1">
-<li>Simulate a 1D traffic cellular automaton for at least two densities.</li>
-<li>Plot one space-time diagram for each density.</li>
-<li>Compare how jam formation changes with random slowdown probability.</li>
+<li>Implement <code>initialize_road()</code>, <code>step()</code>, and <code>simulate()</code> for the Nagel-Schreckenberg model.</li>
+<li>Produce space-time diagrams for at least three densities, one low-density regime, one intermediate regime, and one congested regime.</li>
+<li>Estimate the fundamental diagram <span class="math inline">\(q(\rho)\)</span> using at least 10 density values and a burn-in period before you average the flow.</li>
+<li>Compare the flow-density curve for at least two values of <code>p_slow</code>.</li>
+<li>Write a short discussion of where the maximum flow occurs and how the onset of congestion changes when <code>p_slow</code> increases.</li>
 </ol>
 </section>
-<section id="extra-mile-optional" class="level2">
-<h2 class="anchored" data-anchor-id="extra-mile-optional">Extra Mile (Optional)</h2>
+<section id="short-discussion" class="level2">
+<h2 class="anchored" data-anchor-id="short-discussion">Short Discussion</h2>
+<p>Include a brief paragraph that answers these questions:</p>
+<ol type="1">
+<li>At what density does free flow begin to break down in your experiments?</li>
+<li>Does higher random slowdown mostly change the peak flow, the jam onset, or both?</li>
+<li>Which figure best explains the transition from microscopic rules to macroscopic congestion?</li>
+</ol>
+</section>
+<section id="optional-extensions" class="level2">
+<h2 class="anchored" data-anchor-id="optional-extensions">Optional Extensions</h2>
 <ul>
-<li>Add sliders for density and slowdown probability.</li>
-<li>Compare random vs localized perturbations in the initial condition.</li>
+<li>Add sliders for density, <code>p_slow</code>, or <code>vmax</code>.</li>
+<li>Compare random initial conditions with a localized dense cluster of cars.</li>
+<li>Introduce a small fraction of slow vehicles and study the effect on the flow curve.</li>
+<li>Replace the periodic road by open boundaries with inflow and outflow.</li>
 </ul>
+</section>
+<section id="tips-for-success" class="level2">
+<h2 class="anchored" data-anchor-id="tips-for-success">Tips for Success</h2>
+<ul>
+<li>Test one update step on a short road before you launch long runs.</li>
+<li>Fix the seed when you debug.</li>
+<li>Discard an initial burn-in window when you estimate stationary flow.</li>
+<li>Keep the plotting code separate from the simulation code so repeated experiments stay simple.</li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Reference code is available in <a href="../../amlab/cellular_automata/traffic.py">amlab/cellular_automata/traffic.py</a>.</p>
+</div>
+</div>
+<p>Good luck.</p>
 
 
 <!-- -->
@@ -1008,25 +1122,86 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
 });
-</script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../modules/agent-based-modeling/traffic-analysis.html" class="pagination-link  aria-label=" flow="" and="" congestion"="">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Flow and Congestion</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../modules/lorenz/index.html" class="pagination-link" aria-label="Extra: Lorenz Attractor">
+        <span class="nav-page-text">Extra: Lorenz Attractor</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
 <div class="sourceCode" id="cb1" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Assignment"</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "To-Do"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Session 8: Agent-Based Traffic"</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>Implement a simple agent-based traffic simulation and analyze emergent congestion patterns <span class="co">[</span><span class="ot">@wilensky2015abm; @nagel1992cellular</span><span class="co">]</span>.</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>You now have the core ingredients of an agent-based traffic model: local update rules, a reproducible simulator, a space-time diagram, and macroscopic observables such as density and flow <span class="co">[</span><span class="ot">@nagel1992cellular; @wilensky2015abm</span><span class="co">]</span>.</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## Required</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>You can follow the guide here:</span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Simulate a 1D traffic cellular automaton for at least two densities.</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Plot one space-time diagram for each density.</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Compare how jam formation changes with random slowdown probability.</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">## Extra Mile (Optional)</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Add sliders for density and slowdown probability.</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Compare random vs localized perturbations in the initial condition.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Traffic Model</span><span class="co">](traffic.qmd)</span>{.btn .btn-primary}</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Flow and Congestion</span><span class="co">](traffic-analysis.qmd)</span>{.btn .btn-primary}</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">## Summary of Goals</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>Your submission should show that you can do three things:</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Build a correct agent-based traffic simulator.</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Connect microscopic update rules with macroscopic observables.</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Explain when and why congestion appears.</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="fu">## Submission</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>Submit two files:</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Code that reproduces all figures and metrics.</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>A short report, 1 to 2 pages, that summarizes your experiments and interpretation.</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="fu">## Required</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Implement <span class="in">`initialize_road()`</span>, <span class="in">`step()`</span>, and <span class="in">`simulate()`</span> for the Nagel-Schreckenberg model.</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Produce space-time diagrams for at least three densities, one low-density regime, one intermediate regime, and one congested regime.</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Estimate the fundamental diagram $q(\rho)$ using at least 10 density values and a burn-in period before you average the flow.</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Compare the flow-density curve for at least two values of <span class="in">`p_slow`</span>.</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>Write a short discussion of where the maximum flow occurs and how the onset of congestion changes when <span class="in">`p_slow`</span> increases.</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="fu">## Short Discussion</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>Include a brief paragraph that answers these questions:</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>At what density does free flow begin to break down in your experiments?</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Does higher random slowdown mostly change the peak flow, the jam onset, or both?</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Which figure best explains the transition from microscopic rules to macroscopic congestion?</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a><span class="fu">## Optional Extensions</span></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Add sliders for density, <span class="in">`p_slow`</span>, or <span class="in">`vmax`</span>.</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Compare random initial conditions with a localized dense cluster of cars.</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Introduce a small fraction of slow vehicles and study the effect on the flow curve.</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Replace the periodic road by open boundaries with inflow and outflow.</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a><span class="fu">## Tips for Success</span></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Test one update step on a short road before you launch long runs.</span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Fix the seed when you debug.</span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Discard an initial burn-in window when you estimate stationary flow.</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Keep the plotting code separate from the simulation code so repeated experiments stay simple.</span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip}</span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>Reference code is available in <span class="co">[</span><span class="ot">amlab/cellular_automata/traffic.py</span><span class="co">](../../amlab/cellular_automata/traffic.py)</span>.</span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a>\vspace{1cm}</span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a>Good luck.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 <footer class="footer">

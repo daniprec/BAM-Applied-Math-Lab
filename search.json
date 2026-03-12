@@ -689,86 +689,243 @@
   {
     "objectID": "modules/agent-based-modeling/traffic.html",
     "href": "modules/agent-based-modeling/traffic.html",
-    "title": "Traffic Models with CA",
+    "title": "Traffic Model",
     "section": "",
-    "text": "Traffic flow can be modeled with a 1D cellular automaton. Cars occupy cells and move forward each step according to simple rules (Nagel and Schreckenberg 1992).\nFigure 1: Traffic CA space-time diagram (cars as black pixels).",
+    "text": "Traffic flow is a natural agent-based model. Each car moves according to simple local rules, but repeated interactions create stop-and-go waves, jams, and phase transitions between free flow and congestion (Nagel and Schreckenberg 1992).\nFigure 1: Traffic CA space-time diagram (cars as black pixels).",
     "crumbs": [
-      "Session 8: Agent Based Modeling",
-      "Traffic Models"
+      "Session 8: Agent-Based Modeling",
+      "Traffic Model"
     ]
   },
   {
-    "objectID": "modules/agent-based-modeling/traffic.html#model-rules",
-    "href": "modules/agent-based-modeling/traffic.html#model-rules",
-    "title": "Traffic Models with CA",
-    "section": "Model rules",
-    "text": "Model rules\nAt each step:\n\nAccelerate up to \\(v_{\\max}\\).\nBrake to avoid collisions.\nRandom slowdown with probability \\(p\\).\nMove forward.",
+    "objectID": "modules/agent-based-modeling/traffic.html#represent-the-road-state",
+    "href": "modules/agent-based-modeling/traffic.html#represent-the-road-state",
+    "title": "Traffic Model",
+    "section": "Represent the road state",
+    "text": "Represent the road state\nWe store the system with two arrays of length length:\n\noccupied[i] tells us whether cell i contains a car.\nspeeds[i] stores the speed of that car, measured in cells per step.\n\nThis lets the road stay discrete while each agent still has its own internal state.",
     "crumbs": [
-      "Session 8: Agent Based Modeling",
-      "Traffic Models"
+      "Session 8: Agent-Based Modeling",
+      "Traffic Model"
     ]
   },
   {
-    "objectID": "modules/agent-based-modeling/traffic.html#initialize-the-road",
-    "href": "modules/agent-based-modeling/traffic.html#initialize-the-road",
-    "title": "Traffic Models with CA",
-    "section": "Initialize the road",
-    "text": "Initialize the road\noccupied, speeds = initialize_road(length=100, density=0.2, vmax=5)",
+    "objectID": "modules/agent-based-modeling/traffic.html#initialize-the-agents",
+    "href": "modules/agent-based-modeling/traffic.html#initialize-the-agents",
+    "title": "Traffic Model",
+    "section": "Initialize the agents",
+    "text": "Initialize the agents\nThe initialization function samples an occupancy pattern and assigns a random speed to each occupied cell.\noccupied, speeds = initialize_road(length=100, density=0.2, vmax=5)\nThe density is\n\\[\n\\rho = \\frac{\\text{number of cars}}{\\text{road length}}.\n\\]",
     "crumbs": [
-      "Session 8: Agent Based Modeling",
-      "Traffic Models"
+      "Session 8: Agent-Based Modeling",
+      "Traffic Model"
     ]
   },
   {
-    "objectID": "modules/agent-based-modeling/traffic.html#update-one-step-template",
-    "href": "modules/agent-based-modeling/traffic.html#update-one-step-template",
-    "title": "Traffic Models with CA",
-    "section": "Update one step (template)",
-    "text": "Update one step (template)\ndef step(occupied, speeds, vmax=5, p_slow=0.3):\n    # TODO: accelerate\n    # TODO: brake to avoid collisions\n    # TODO: random slowdown\n    # TODO: move cars\n    return new_occupied, new_speeds\n\n\n\n\n\n\nHint: Update step (click to expand)\n\n\n\n\n\ndef step(occupied, speeds, vmax=5, p_slow=0.3):\n    length = len(occupied)\n    positions = np.where(occupied)[0]\n    speeds_new = speeds.copy()\n\n    speeds_new[positions] = np.minimum(speeds_new[positions] + 1, vmax)\n\n    gaps = np.zeros_like(positions)\n    for idx, pos in enumerate(positions):\n        next_pos = positions[(idx + 1) % len(positions)]\n        gaps[idx] = (next_pos - pos - 1) % length\n    speeds_new[positions] = np.minimum(speeds_new[positions], gaps)\n\n    rng = np.random.default_rng()\n    slow_mask = rng.random(len(positions)) &lt; p_slow\n    speeds_new[positions[slow_mask]] = np.maximum(\n        speeds_new[positions[slow_mask]] - 1, 0\n    )\n\n    new_occupied = np.zeros_like(occupied)\n    new_speeds = np.zeros_like(speeds)\n    new_positions = (positions + speeds_new[positions]) % length\n    new_occupied[new_positions] = True\n    new_speeds[new_positions] = speeds_new[positions]\n\n    return new_occupied, new_speeds",
+    "objectID": "modules/agent-based-modeling/traffic.html#implement-one-synchronous-update",
+    "href": "modules/agent-based-modeling/traffic.html#implement-one-synchronous-update",
+    "title": "Traffic Model",
+    "section": "Implement one synchronous update",
+    "text": "Implement one synchronous update\nAt each time step, every car follows the same four rules:\n\nAccelerate up to \\(v_{\\max}\\).\nBrake so it does not collide with the next car.\nSlow down randomly with probability \\(p_{\\text{slow}}\\).\nMove forward by its new speed.\n\nThe key point is that all cars update synchronously.\ndef step(occupied, speeds, vmax=5, p_slow=0.3, rng=None):\n    if rng is None:\n        rng = np.random.default_rng()\n\n    # TODO: accelerate\n    # TODO: brake to avoid collisions\n    # TODO: random slowdown\n    # TODO: move cars\n    return new_occupied, new_speeds\n\n\n\n\n\n\nHint: Update step (click to expand)\n\n\n\n\n\ndef step(occupied, speeds, vmax=5, p_slow=0.3, rng=None):\n    if rng is None:\n        rng = np.random.default_rng()\n\n    length = len(occupied)\n    positions = np.where(occupied)[0]\n    speeds_new = speeds.copy()\n\n    speeds_new[positions] = np.minimum(speeds_new[positions] + 1, vmax)\n\n    gaps = np.zeros_like(positions)\n    for idx, pos in enumerate(positions):\n        next_pos = positions[(idx + 1) % len(positions)]\n        gaps[idx] = (next_pos - pos - 1) % length\n    speeds_new[positions] = np.minimum(speeds_new[positions], gaps)\n\n    slow_mask = rng.random(len(positions)) &lt; p_slow\n    speeds_new[positions[slow_mask]] = np.maximum(\n        speeds_new[positions[slow_mask]] - 1, 0\n    )\n\n    new_occupied = np.zeros_like(occupied)\n    new_speeds = np.zeros_like(speeds)\n    new_positions = (positions + speeds_new[positions]) % length\n    new_occupied[new_positions] = True\n    new_speeds[new_positions] = speeds_new[positions]\n\n    return new_occupied, new_speeds",
     "crumbs": [
-      "Session 8: Agent Based Modeling",
-      "Traffic Models"
+      "Session 8: Agent-Based Modeling",
+      "Traffic Model"
     ]
   },
   {
-    "objectID": "modules/agent-based-modeling/traffic.html#space-time-diagram",
-    "href": "modules/agent-based-modeling/traffic.html#space-time-diagram",
-    "title": "Traffic Models with CA",
-    "section": "Space-time diagram",
-    "text": "Space-time diagram\nRun the model for many steps and plot the grid.\ngrid = simulate(steps=200, length=100, density=0.2, vmax=5, p_slow=0.3)\nplt.imshow(grid, cmap=\"binary\", interpolation=\"nearest\", aspect=\"auto\")\nplt.show()\nFull reference: amlab/cellular_automata/traffic.py.",
+    "objectID": "modules/agent-based-modeling/traffic.html#simulate-a-full-run",
+    "href": "modules/agent-based-modeling/traffic.html#simulate-a-full-run",
+    "title": "Traffic Model",
+    "section": "Simulate a full run",
+    "text": "Simulate a full run\nWrap the update in a loop and save the occupancy pattern at every time step.\ngrid = simulate(steps=200, length=100, density=0.2, vmax=5, p_slow=0.3, seed=1)",
     "crumbs": [
-      "Session 8: Agent Based Modeling",
-      "Traffic Models"
+      "Session 8: Agent-Based Modeling",
+      "Traffic Model"
     ]
   },
   {
-    "objectID": "modules/agent-based-modeling/index.html",
-    "href": "modules/agent-based-modeling/index.html",
-    "title": "Agent-Based Modeling",
+    "objectID": "modules/agent-based-modeling/traffic.html#plot-the-space-time-diagram",
+    "href": "modules/agent-based-modeling/traffic.html#plot-the-space-time-diagram",
+    "title": "Traffic Model",
+    "section": "Plot the space-time diagram",
+    "text": "Plot the space-time diagram\nplt.imshow(grid, cmap=\"binary\", interpolation=\"nearest\", aspect=\"auto\")\nplt.xlabel(\"Road position\")\nplt.ylabel(\"Time\")\nplt.show()",
+    "crumbs": [
+      "Session 8: Agent-Based Modeling",
+      "Traffic Model"
+    ]
+  },
+  {
+    "objectID": "modules/agent-based-modeling/traffic.html#what-the-dark-bands-mean",
+    "href": "modules/agent-based-modeling/traffic.html#what-the-dark-bands-mean",
+    "title": "Traffic Model",
+    "section": "What the dark bands mean",
+    "text": "What the dark bands mean\nIn the diagram, black cells are occupied sites. When dense diagonal bands become nearly horizontal, cars are moving slowly and congestion is forming. When the pattern is sparse and diagonal, cars are advancing freely.\nThis is the central modeling lesson of the session: a jam is not imposed externally. It emerges from repeated local braking and stochastic slowdown.\nFull reference: amlab/cellular_automata/traffic.py.",
+    "crumbs": [
+      "Session 8: Agent-Based Modeling",
+      "Traffic Model"
+    ]
+  },
+  {
+    "objectID": "modules/agent-based-modeling/traffic.html#whats-next",
+    "href": "modules/agent-based-modeling/traffic.html#whats-next",
+    "title": "Traffic Model",
+    "section": "What’s Next?",
+    "text": "What’s Next?\nOnce the simulator works, the next step is to measure macroscopic quantities such as average flow and to build the traffic fundamental diagram.\nFlow and Congestion Back to Session Index",
+    "crumbs": [
+      "Session 8: Agent-Based Modeling",
+      "Traffic Model"
+    ]
+  },
+  {
+    "objectID": "modules/agent-based-modeling/traffic-analysis.html",
+    "href": "modules/agent-based-modeling/traffic-analysis.html",
+    "title": "Flow and Congestion",
     "section": "",
-    "text": "In this session we explore agent-based models: simple local rules that produce global patterns. We focus on simulation, visualization, and interpretation (Wilensky and Rand 2015).",
+    "text": "Once the simulator works, the next step is to extract macroscopic observables. In traffic modeling the most important one is the fundamental diagram, the relationship between density and average flow (Nagel and Schreckenberg 1992).\nFigure 1: Estimated fundamental diagram for two slowdown probabilities.",
     "crumbs": [
-      "Session 8: Agent Based Modeling"
+      "Session 8: Agent-Based Modeling",
+      "Flow and Congestion"
     ]
   },
   {
-    "objectID": "modules/agent-based-modeling/index.html#case-studies",
-    "href": "modules/agent-based-modeling/index.html#case-studies",
-    "title": "Agent-Based Modeling",
-    "section": "Case Studies",
-    "text": "Case Studies\nAssignment",
+    "objectID": "modules/agent-based-modeling/traffic-analysis.html#measure-density-and-flow",
+    "href": "modules/agent-based-modeling/traffic-analysis.html#measure-density-and-flow",
+    "title": "Flow and Congestion",
+    "section": "Measure density and flow",
+    "text": "Measure density and flow\nTwo standard macroscopic quantities are\n\\[\n\\rho = \\frac{N_{\\mathrm{cars}}}{L},\n\\qquad\nq(t) = \\frac{1}{L}\\sum_{i \\in \\mathrm{cars}} v_i(t).\n\\]\nHere \\(\\rho\\) is the density and \\(q(t)\\) is the instantaneous flow, measured as the mean number of cells traveled per road cell and per time step.\nTo estimate stationary behavior, average \\(q(t)\\) after a burn-in window.",
     "crumbs": [
-      "Session 8: Agent Based Modeling"
+      "Session 8: Agent-Based Modeling",
+      "Flow and Congestion"
     ]
   },
   {
-    "objectID": "modules/agent-based-modeling/index.html#what-do-we-need",
-    "href": "modules/agent-based-modeling/index.html#what-do-we-need",
-    "title": "Agent-Based Modeling",
-    "section": "What do we need?",
-    "text": "What do we need?\n\nnumpy\nEfficient arrays to store agent states and positions.\n\n\nmatplotlib.pyplot\nPlot agent positions and time evolution.\n\n\nmatplotlib.animation\nAnimate the system over time.",
+    "objectID": "modules/agent-based-modeling/traffic-analysis.html#record-flow-during-one-run",
+    "href": "modules/agent-based-modeling/traffic-analysis.html#record-flow-during-one-run",
+    "title": "Flow and Congestion",
+    "section": "Record flow during one run",
+    "text": "Record flow during one run\nThe simplest extension of the simulator is to track the flow after each update.\ndef simulate_with_flow(steps, length, density, vmax, p_slow, seed):\n    rng = np.random.default_rng(seed)\n    occupied, speeds = initialize_road(length=length, density=density, vmax=vmax, rng=rng)\n\n    flow_history = np.zeros(steps)\n    flow_history[0] = speeds[occupied].sum() / length\n\n    for t in range(1, steps):\n        occupied, speeds = step(\n            occupied,\n            speeds,\n            vmax=vmax,\n            p_slow=p_slow,\n            rng=rng,\n        )\n        flow_history[t] = speeds[occupied].sum() / length\n\n    return flow_history",
     "crumbs": [
-      "Session 8: Agent Based Modeling"
+      "Session 8: Agent-Based Modeling",
+      "Flow and Congestion"
+    ]
+  },
+  {
+    "objectID": "modules/agent-based-modeling/traffic-analysis.html#sweep-the-density",
+    "href": "modules/agent-based-modeling/traffic-analysis.html#sweep-the-density",
+    "title": "Flow and Congestion",
+    "section": "Sweep the density",
+    "text": "Sweep the density\nNow repeat the experiment for many densities.\ndensities = np.linspace(0.05, 0.95, 19)\nmean_flows = []\n\nfor density in densities:\n    flow_history = simulate_with_flow(\n        steps=300,\n        length=100,\n        density=density,\n        vmax=5,\n        p_slow=0.3,\n        seed=7,\n    )\n    mean_flows.append(flow_history[100:].mean())\nPlotting mean_flows against densities gives the fundamental diagram.",
+    "crumbs": [
+      "Session 8: Agent-Based Modeling",
+      "Flow and Congestion"
+    ]
+  },
+  {
+    "objectID": "modules/agent-based-modeling/traffic-analysis.html#compare-slowdown-probabilities",
+    "href": "modules/agent-based-modeling/traffic-analysis.html#compare-slowdown-probabilities",
+    "title": "Flow and Congestion",
+    "section": "Compare slowdown probabilities",
+    "text": "Compare slowdown probabilities\nThe most informative parameter to vary is p_slow.\n\nAt small density, cars rarely interact and the flow grows roughly linearly with density.\nAt intermediate density, the flow reaches a maximum.\nAt high density, braking dominates and the flow drops because congestion limits motion.\n\nIncreasing p_slow usually lowers the peak flow and shifts the congested regime earlier.\n\n\n\n\n\n\nPractical tip\n\n\n\nUse several seeds if you want smoother curves. For example, estimate the mean flow for each density with 5 to 10 trials and then average the stationary values.",
+    "crumbs": [
+      "Session 8: Agent-Based Modeling",
+      "Flow and Congestion"
+    ]
+  },
+  {
+    "objectID": "modules/agent-based-modeling/traffic-analysis.html#what-to-report",
+    "href": "modules/agent-based-modeling/traffic-analysis.html#what-to-report",
+    "title": "Flow and Congestion",
+    "section": "What to Report",
+    "text": "What to Report\n\nA space-time diagram in a free-flow regime.\nA space-time diagram in a congested regime.\nAt least one flow-density curve.\nA short interpretation of where the maximum flow occurs and how noise changes it.",
+    "crumbs": [
+      "Session 8: Agent-Based Modeling",
+      "Flow and Congestion"
+    ]
+  },
+  {
+    "objectID": "modules/agent-based-modeling/traffic-analysis.html#whats-next",
+    "href": "modules/agent-based-modeling/traffic-analysis.html#whats-next",
+    "title": "Flow and Congestion",
+    "section": "What’s Next?",
+    "text": "What’s Next?\nYou now have both scales of the model: the microscopic update and the macroscopic observables. The assignment combines them into one coherent traffic study.\nAssignment Back to Session Index",
+    "crumbs": [
+      "Session 8: Agent-Based Modeling",
+      "Flow and Congestion"
+    ]
+  },
+  {
+    "objectID": "modules/cellular-automata/rule-exploration.html",
+    "href": "modules/cellular-automata/rule-exploration.html",
+    "title": "Rule Exploration",
+    "section": "",
+    "text": "Once one simulator works, the interesting question is no longer “can I update the row?” but “what changes when only the local rule changes?” This is where cellular automata become a modeling lab rather than a single example.\nFigure 1: Four elementary rules started from the same single-seed initial condition.",
+    "crumbs": [
+      "Session 7: Cellular Automata",
+      "Rule Exploration"
+    ]
+  },
+  {
+    "objectID": "modules/cellular-automata/rule-exploration.html#build-a-reusable-simulator",
+    "href": "modules/cellular-automata/rule-exploration.html#build-a-reusable-simulator",
+    "title": "Rule Exploration",
+    "section": "Build a reusable simulator",
+    "text": "Build a reusable simulator\nThe core function should take three inputs: an initial row, a rule number, and the number of time steps.\ndef simulate_ca(initial_state, rule_number, steps):\n    rule_bin = np.array([int(bit) for bit in f\"{rule_number:08b}\"])\n    grid = np.zeros((steps, len(initial_state)), dtype=int)\n    grid[0] = initial_state\n\n    for t in range(1, steps):\n        grid[t] = apply_rule(grid[t - 1], rule_bin)\n\n    return grid\nWith this wrapper in place, changing the experiment only means changing the inputs.",
+    "crumbs": [
+      "Session 7: Cellular Automata",
+      "Rule Exploration"
+    ]
+  },
+  {
+    "objectID": "modules/cellular-automata/rule-exploration.html#compare-several-rules",
+    "href": "modules/cellular-automata/rule-exploration.html#compare-several-rules",
+    "title": "Rule Exploration",
+    "section": "Compare several rules",
+    "text": "Compare several rules\nRules 30, 90, 110, and 184 are a good first comparison because they already show very different behavior.\n\nRule 90 creates a highly regular, symmetric pattern.\nRule 30 quickly becomes irregular and looks almost random.\nRule 110 shows localized structures and interacting motifs.\nRule 184 transports occupied sites to the right and is a useful bridge to traffic models.\n\nrules = [30, 90, 110, 184]\n\nfor rule_number in rules:\n    grid = simulate_ca(initial_state, rule_number, steps=80)\n    plt.figure(figsize=(6, 4))\n    plt.imshow(grid, cmap=\"binary\", interpolation=\"nearest\", aspect=\"auto\")\n    plt.title(f\"Rule {rule_number}\")\n    plt.xlabel(\"Cell index\")\n    plt.ylabel(\"Time\")\n    plt.show()",
+    "crumbs": [
+      "Session 7: Cellular Automata",
+      "Rule Exploration"
+    ]
+  },
+  {
+    "objectID": "modules/cellular-automata/rule-exploration.html#change-the-initial-condition",
+    "href": "modules/cellular-automata/rule-exploration.html#change-the-initial-condition",
+    "title": "Rule Exploration",
+    "section": "Change the initial condition",
+    "text": "Change the initial condition\nThe second important experiment is to keep the rule fixed and change only the first row.\nrng = np.random.default_rng(7)\ninitial_state = (rng.random(121) &lt; 0.5).astype(int)\n\ngrid = simulate_ca(initial_state, rule_number=110, steps=80)\nplt.imshow(grid, cmap=\"binary\", interpolation=\"nearest\", aspect=\"auto\")\nplt.show()\nThis lets you separate two effects:\n\nwhat is imposed by the rule itself,\nand what is inherited from the initial data.",
+    "crumbs": [
+      "Session 7: Cellular Automata",
+      "Rule Exploration"
+    ]
+  },
+  {
+    "objectID": "modules/cellular-automata/rule-exploration.html#optional-stochastic-extension",
+    "href": "modules/cellular-automata/rule-exploration.html#optional-stochastic-extension",
+    "title": "Rule Exploration",
+    "section": "Optional stochastic extension",
+    "text": "Optional stochastic extension\nIf you want to go one step further, add noise after each update. For example, flip each cell with a small probability p_flip.\ndef noisy_update(state, rule_bin, p_flip=0.01, rng=None):\n    if rng is None:\n        rng = np.random.default_rng()\n\n    new_state = apply_rule(state, rule_bin)\n    flips = rng.random(len(new_state)) &lt; p_flip\n    new_state[flips] = 1 - new_state[flips]\n    return new_state\nThat changes the model from a deterministic rule system into a stochastic one.",
+    "crumbs": [
+      "Session 7: Cellular Automata",
+      "Rule Exploration"
+    ]
+  },
+  {
+    "objectID": "modules/cellular-automata/rule-exploration.html#questions-for-your-notes",
+    "href": "modules/cellular-automata/rule-exploration.html#questions-for-your-notes",
+    "title": "Rule Exploration",
+    "section": "Questions for Your Notes",
+    "text": "Questions for Your Notes\n\nWhich rule preserves symmetry most clearly?\nWhich rule seems most sensitive to tiny changes in the first row?\nWhich rule looks most like transport or directed motion?",
+    "crumbs": [
+      "Session 7: Cellular Automata",
+      "Rule Exploration"
+    ]
+  },
+  {
+    "objectID": "modules/cellular-automata/rule-exploration.html#whats-next",
+    "href": "modules/cellular-automata/rule-exploration.html#whats-next",
+    "title": "Rule Exploration",
+    "section": "What’s Next?",
+    "text": "What’s Next?\nRule 184 is already a useful bridge to traffic because occupied cells move to the right under a local exclusion rule. In the next session we keep that traffic intuition, but each car gets its own speed and a random braking rule.\nAssignment Next Session: Agent-Based Modeling",
+    "crumbs": [
+      "Session 7: Cellular Automata",
+      "Rule Exploration"
     ]
   },
   {
@@ -776,7 +933,18 @@
     "href": "modules/cellular-automata/assignment.html",
     "title": "Assignment",
     "section": "",
-    "text": "Complete a 1D cellular automaton and a traffic model simulation (Wolfram 1983; Nagel and Schreckenberg 1992).",
+    "text": "You now have the full workflow for a one-dimensional cellular automaton: encode the rule, update the row synchronously, build a space-time diagram, and compare outcomes across experiments (Wolfram 1983).\nYou can follow the guide here:\n1D Cellular Automata Rule Exploration",
+    "crumbs": [
+      "Session 7: Cellular Automata",
+      "Assignment"
+    ]
+  },
+  {
+    "objectID": "modules/cellular-automata/assignment.html#summary-of-goals",
+    "href": "modules/cellular-automata/assignment.html#summary-of-goals",
+    "title": "Assignment",
+    "section": "Summary of Goals",
+    "text": "Summary of Goals\nYour submission should show that you can do three things:\n\nTranslate a rule number into a working local update.\nSimulate repeated synchronous updates on a one-dimensional lattice.\nInterpret how rule choice and initial condition shape the global pattern.",
     "crumbs": [
       "Session 7: Cellular Automata",
       "Assignment"
@@ -787,18 +955,40 @@
     "href": "modules/cellular-automata/assignment.html#required",
     "title": "Assignment",
     "section": "Required",
-    "text": "Required\n\nImplement Rule 30 and plot a space-time diagram.\nModify the initial row (at least 3 different initial conditions).\nImplement the traffic CA and generate a space-time diagram.\nCompare two densities and discuss the patterns.",
+    "text": "Required\n\nImplement apply_rule() and a reusable simulate_ca() function.\nReproduce a space-time diagram for Rule 30 starting from a single occupied cell at the center.\nCompare at least three rules from the set {30, 90, 110, 184} using the same initial condition.\nFor one chosen rule, compare two different initial conditions, one single-seed row and one random row.\nWrite a short discussion that explains which features are controlled by the rule and which features depend strongly on the initial condition.",
     "crumbs": [
       "Session 7: Cellular Automata",
       "Assignment"
     ]
   },
   {
-    "objectID": "modules/cellular-automata/assignment.html#extra-mile-optional",
-    "href": "modules/cellular-automata/assignment.html#extra-mile-optional",
+    "objectID": "modules/cellular-automata/assignment.html#short-discussion",
+    "href": "modules/cellular-automata/assignment.html#short-discussion",
     "title": "Assignment",
-    "section": "Extra Mile (Optional)",
-    "text": "Extra Mile (Optional)\n\nImplement another rule (e.g., Rule 110).\nAdd interactivity to the traffic model (sliders for density or \\(p\\)).\n\nGood luck and enjoy your coding!",
+    "section": "Short Discussion",
+    "text": "Short Discussion\nInclude a brief paragraph that answers these questions:\n\nWhich rule in your experiments produced the most regular pattern?\nWhich rule was most sensitive to the initial condition?\nDid you find one rule that already looks like transport or directed motion? Explain why.",
+    "crumbs": [
+      "Session 7: Cellular Automata",
+      "Assignment"
+    ]
+  },
+  {
+    "objectID": "modules/cellular-automata/assignment.html#optional-extensions",
+    "href": "modules/cellular-automata/assignment.html#optional-extensions",
+    "title": "Assignment",
+    "section": "Optional Extensions",
+    "text": "Optional Extensions\n\nImplement periodic boundary conditions and compare the result with fixed-zero edges.\nAdd a stochastic flip rule, for example flipping a cell with small probability after each update.\nTrack the density of occupied cells over time for one rule and interpret the trend.\nAdd interactivity to the initial row, either in a notebook or with the reference script.",
+    "crumbs": [
+      "Session 7: Cellular Automata",
+      "Assignment"
+    ]
+  },
+  {
+    "objectID": "modules/cellular-automata/assignment.html#tips-for-success",
+    "href": "modules/cellular-automata/assignment.html#tips-for-success",
+    "title": "Assignment",
+    "section": "Tips for Success",
+    "text": "Tips for Success\n\nTest apply_rule() on a short row before you run a long simulation.\nPrint the rule table once so you know which output corresponds to each neighborhood.\nKeep the first experiments small enough that you can inspect the pattern visually.\nReuse the same plotting code when you compare rules so the differences are easier to see.\n\n\n\n\n\n\n\nTip\n\n\n\nReference code is available in amlab/cellular_automata/cellular.py.\n\n\nGood luck.",
     "crumbs": [
       "Session 7: Cellular Automata",
       "Assignment"
@@ -897,7 +1087,7 @@
     "href": "modules/ode-2d/van-der-pol.html#the-stable-limit-cycle",
     "title": "Van der Pol Oscillator",
     "section": "The Stable Limit Cycle",
-    "text": "The Stable Limit Cycle\nThe Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions. Plot this limit cycle as a \\(x(t)-t\\) plot, and verify that it matches the phase plane trajectories.\n\n\n/tmp/ipykernel_3312/2854713749.py:14: UserWarning:\n\nNo artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.\n\n\n\n\n\n\n\n\n\nFigure 2: Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nThe amplitude and period of the limit cycle depend on \\(\\mu\\). There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with \\(\\mu\\), while the fast phase becomes more abrupt. This leads to a characteristic “relaxation oscillation” shape for large \\(\\mu\\).\nPlay with the parameter \\(\\mu\\) to see how it changes the shape of the limit cycle and the transient dynamics.",
+    "text": "The Stable Limit Cycle\nThe Van der Pol system has a stable limit cycle that attracts trajectories from a wide range of initial conditions. Plot this limit cycle as a \\(x(t)-t\\) plot, and verify that it matches the phase plane trajectories.\n\n\n/tmp/ipykernel_3217/2854713749.py:14: UserWarning:\n\nNo artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.\n\n\n\n\n\n\n\n\n\nFigure 2: Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with scipy.integrate.solve_ivp() and matplotlib.\n\n\n\n\n\nThe amplitude and period of the limit cycle depend on \\(\\mu\\). There are two phases of the limit cycle: a slow phase where trajectories move slowly near the cubic nullcline, and a fast phase where trajectories rapidly jump between branches of the nullcline. The speed of the slow phase increases with \\(\\mu\\), while the fast phase becomes more abrupt. This leads to a characteristic “relaxation oscillation” shape for large \\(\\mu\\).\nPlay with the parameter \\(\\mu\\) to see how it changes the shape of the limit cycle and the transient dynamics.",
     "crumbs": [
       "Session 2: ODEs in 2D",
       "Van der Pol Oscillator"
@@ -2076,7 +2266,17 @@
     "href": "modules/cellular-automata/index.html",
     "title": "Cellular Automata",
     "section": "",
-    "text": "In this session we explore 1D cellular automata and apply them to traffic models (Wolfram 1983; Nagel and Schreckenberg 1992).",
+    "text": "This session moves from PDE grids to fully discrete dynamical systems. We keep a lattice and local neighborhoods, but now time, space, and state are all discrete. Even a one-dimensional binary rule can generate rich large-scale behavior (Wolfram 1983).",
+    "crumbs": [
+      "Session 7: Cellular Automata"
+    ]
+  },
+  {
+    "objectID": "modules/cellular-automata/index.html#from-pdes-to-cellular-automata",
+    "href": "modules/cellular-automata/index.html#from-pdes-to-cellular-automata",
+    "title": "Cellular Automata",
+    "section": "From PDEs to Cellular Automata",
+    "text": "From PDEs to Cellular Automata\nIn the previous session on PDEs, you updated each grid point with a local stencil and explicit time stepping.\nIn this session we keep the same local-update mindset, but we change the mathematical object:\n\nA field value becomes a discrete state, usually 0 or 1.\nA finite-difference stencil becomes a lookup rule on a small neighborhood.\nA PDE time step becomes one synchronous rule application across the whole row.\n\nThe main idea stays the same. Local interactions create global structure.\nBack to PDEs",
     "crumbs": [
       "Session 7: Cellular Automata"
     ]
@@ -2086,7 +2286,27 @@
     "href": "modules/cellular-automata/index.html#case-studies",
     "title": "Cellular Automata",
     "section": "Case Studies",
-    "text": "Case Studies\n1D Cellular AutomataAssignment",
+    "text": "Case Studies\nStart with the core mechanics: neighborhoods, rule tables, and space-time diagrams.\n1D Cellular Automata\nThen turn that first example into a reusable simulator and compare several rules and several initial conditions.\nRule Exploration\nOnce the workflow is clear, move to the assignment.\nAssignment",
+    "crumbs": [
+      "Session 7: Cellular Automata"
+    ]
+  },
+  {
+    "objectID": "modules/cellular-automata/index.html#learning-goals",
+    "href": "modules/cellular-automata/index.html#learning-goals",
+    "title": "Cellular Automata",
+    "section": "Learning Goals",
+    "text": "Learning Goals\n\nEncode an elementary cellular automaton rule as an 8-entry lookup table.\nImplement synchronous updates on a one-dimensional lattice.\nBuild and interpret space-time diagrams.\nCompare how rule choice and initial condition affect long-run behavior.\nDistinguish ordered, periodic, and irregular pattern growth qualitatively.",
+    "crumbs": [
+      "Session 7: Cellular Automata"
+    ]
+  },
+  {
+    "objectID": "modules/cellular-automata/index.html#flow-of-this-session",
+    "href": "modules/cellular-automata/index.html#flow-of-this-session",
+    "title": "Cellular Automata",
+    "section": "Flow of This Session",
+    "text": "Flow of This Session\n\nStart with one rule and one seeded initial row.\nImplement the local update from three-cell neighborhoods.\nSimulate repeated synchronous updates.\nVisualize the result as a space-time diagram.\nReuse the same code to compare several rules and initial conditions.",
     "crumbs": [
       "Session 7: Cellular Automata"
     ]
@@ -2096,7 +2316,7 @@
     "href": "modules/cellular-automata/index.html#what-do-we-need",
     "title": "Cellular Automata",
     "section": "What do we need?",
-    "text": "What do we need?\n\nnumpy\nEfficient arrays for state updates.\n\n\nmatplotlib.pyplot\nVisualize space-time diagrams.\n\n\nmatplotlib.backend_bases\nHandle mouse clicks for interactive initial conditions.",
+    "text": "What do we need?\n\nnumpy\nStore the lattice, build rule tables, and update rows efficiently.\n\n\nmatplotlib.pyplot\nPlot space-time diagrams and rule comparisons.\n\n\nmatplotlib.backend_bases\nHandle mouse clicks for interactive initial conditions.\n\n\nWhy not use scipy.solve_ivp here?\nA cellular automaton is not defined by a differential equation. It is defined by a synchronous local rule: each cell looks at a small neighborhood and updates directly.\nSo we do not need an ODE solver. A simple loop over time steps is the right numerical tool.\n\n\n\n\n\n\nScripts or notebooks?\n\n\n\nUse a notebook when you want to compare several rules, inspect arrays, or save snapshots. Use a script when you want quick interaction, such as clicking on the first row and recomputing the full diagram.\n\n\n\n\n\n\n\n\nNote\n\n\n\nIn the first implementation we keep the boundary cells fixed at zero. Later you can test periodic boundaries and see how much the long-run pattern depends on the edges.",
     "crumbs": [
       "Session 7: Cellular Automata"
     ]
@@ -2104,42 +2324,64 @@
   {
     "objectID": "modules/cellular-automata/cellular-1d.html",
     "href": "modules/cellular-automata/cellular-1d.html",
-    "title": "Intro to 1D Cellular Automata",
+    "title": "1D Cellular Automata",
     "section": "",
-    "text": "A 1D cellular automaton updates each cell using its local neighborhood. We will use elementary 3-cell rules, such as Rule 30 (Wolfram 1983).\nFigure 1: Rule 30 space-time diagram.",
+    "text": "Elementary cellular automata are one of the cleanest examples of emergence in a discrete system. Each cell stores a binary state, each update only depends on the three-cell neighborhood, and repeated rule application creates nontrivial large-scale patterns (Wolfram 1983).\nFigure 1: Rule 30 space-time diagram.",
     "crumbs": [
       "Session 7: Cellular Automata",
       "1D Cellular Automata"
     ]
   },
   {
-    "objectID": "modules/cellular-automata/cellular-1d.html#define-the-rule",
-    "href": "modules/cellular-automata/cellular-1d.html#define-the-rule",
-    "title": "Intro to 1D Cellular Automata",
-    "section": "Define the rule",
-    "text": "Define the rule\nA rule is an 8-bit binary table that maps each neighborhood to a new cell value.\nrule_number = 30\nrule_bin = np.array([int(x) for x in f\"{rule_number:08b}\"])",
+    "objectID": "modules/cellular-automata/cellular-1d.html#local-state-and-neighborhood",
+    "href": "modules/cellular-automata/cellular-1d.html#local-state-and-neighborhood",
+    "title": "1D Cellular Automata",
+    "section": "Local state and neighborhood",
+    "text": "Local state and neighborhood\nLet \\(x_i^t \\in \\{0,1\\}\\) be the state of cell \\(i\\) at time \\(t\\). An elementary cellular automaton updates the row through a local rule\n\\[\nx_i^{t+1} = f\\big(x_{i-1}^t, x_i^t, x_{i+1}^t\\big).\n\\]\nBecause each neighborhood has three binary entries, there are only \\(2^3 = 8\\) possible patterns. A rule is therefore an 8-entry lookup table.",
     "crumbs": [
       "Session 7: Cellular Automata",
       "1D Cellular Automata"
     ]
   },
   {
-    "objectID": "modules/cellular-automata/cellular-1d.html#apply-the-rule-template",
-    "href": "modules/cellular-automata/cellular-1d.html#apply-the-rule-template",
-    "title": "Intro to 1D Cellular Automata",
-    "section": "Apply the rule (template)",
-    "text": "Apply the rule (template)\ndef apply_rule(state, rule_bin):\n    new_state = np.zeros_like(state)\n    for i in range(1, len(state) - 1):\n        neighborhood = state[i - 1 : i + 2]\n        index = 7 - int(\"\".join(neighborhood.astype(str)), 2)\n        new_state[i] = rule_bin[index]\n    return new_state",
+    "objectID": "modules/cellular-automata/cellular-1d.html#encode-the-rule-table",
+    "href": "modules/cellular-automata/cellular-1d.html#encode-the-rule-table",
+    "title": "1D Cellular Automata",
+    "section": "Encode the rule table",
+    "text": "Encode the rule table\nBy convention we order the neighborhoods from 111 down to 000.\nrule_number = 30\nrule_bin = np.array([int(bit) for bit in f\"{rule_number:08b}\"])\nFor Rule 30 this produces the binary table 00011110, which tells us the output for each of the eight neighborhoods.",
     "crumbs": [
       "Session 7: Cellular Automata",
       "1D Cellular Automata"
     ]
   },
   {
-    "objectID": "modules/cellular-automata/cellular-1d.html#build-a-space-time-diagram",
-    "href": "modules/cellular-automata/cellular-1d.html#build-a-space-time-diagram",
-    "title": "Intro to 1D Cellular Automata",
-    "section": "Build a space-time diagram",
-    "text": "Build a space-time diagram\niterations = 60\ngrid_size = 101\n\ngrid = np.zeros((iterations, grid_size), dtype=int)\ngrid[0, grid_size // 2] = 1\n\nfor t in range(1, iterations):\n    grid[t] = apply_rule(grid[t - 1], rule_bin)\n\nplt.imshow(grid, cmap=\"binary\", interpolation=\"nearest\", aspect=\"auto\")\nplt.show()",
+    "objectID": "modules/cellular-automata/cellular-1d.html#implement-the-local-update",
+    "href": "modules/cellular-automata/cellular-1d.html#implement-the-local-update",
+    "title": "1D Cellular Automata",
+    "section": "Implement the local update",
+    "text": "Implement the local update\ndef apply_rule(state, rule_bin):\n    new_state = np.zeros_like(state)\n    for i in range(1, len(state) - 1):\n        neighborhood = state[i - 1 : i + 2]\n        index = 7 - int(\"\".join(neighborhood.astype(str)), 2)\n        new_state[i] = rule_bin[index]\n    return new_state\n\n\n\n\n\n\nSolved: apply_rule()\n\n\n\n\n\ndef apply_rule(state, rule_bin):\n    new_state = np.zeros_like(state)\n    for i in range(1, len(state) - 1):\n        neighborhood = state[i - 1 : i + 2]\n        index = 7 - int(\"\".join(neighborhood.astype(str)), 2)\n        new_state[i] = rule_bin[index]\n    return new_state\n\n\n\nThis first version keeps the boundary cells at zero because the loop only updates indices 1 through len(state) - 2.",
+    "crumbs": [
+      "Session 7: Cellular Automata",
+      "1D Cellular Automata"
+    ]
+  },
+  {
+    "objectID": "modules/cellular-automata/cellular-1d.html#simulate-many-time-steps",
+    "href": "modules/cellular-automata/cellular-1d.html#simulate-many-time-steps",
+    "title": "1D Cellular Automata",
+    "section": "Simulate many time steps",
+    "text": "Simulate many time steps\nNow wrap the update in a reusable simulator.\ndef simulate_ca(initial_state, rule_number, steps):\n    rule_bin = np.array([int(bit) for bit in f\"{rule_number:08b}\"])\n    grid = np.zeros((steps, len(initial_state)), dtype=int)\n    grid[0] = initial_state\n\n    for t in range(1, steps):\n        grid[t] = apply_rule(grid[t - 1], rule_bin)\n\n    return grid",
+    "crumbs": [
+      "Session 7: Cellular Automata",
+      "1D Cellular Automata"
+    ]
+  },
+  {
+    "objectID": "modules/cellular-automata/cellular-1d.html#plot-the-space-time-diagram",
+    "href": "modules/cellular-automata/cellular-1d.html#plot-the-space-time-diagram",
+    "title": "1D Cellular Automata",
+    "section": "Plot the space-time diagram",
+    "text": "Plot the space-time diagram\niterations = 80\ngrid_size = 121\n\ninitial_state = np.zeros(grid_size, dtype=int)\ninitial_state[grid_size // 2] = 1\n\ngrid = simulate_ca(initial_state, rule_number=30, steps=iterations)\n\nplt.imshow(grid, cmap=\"binary\", interpolation=\"nearest\", aspect=\"auto\")\nplt.xlabel(\"Cell index\")\nplt.ylabel(\"Time\")\nplt.show()",
     "crumbs": [
       "Session 7: Cellular Automata",
       "1D Cellular Automata"
@@ -2148,12 +2390,94 @@
   {
     "objectID": "modules/cellular-automata/cellular-1d.html#interactive-initial-row",
     "href": "modules/cellular-automata/cellular-1d.html#interactive-initial-row",
-    "title": "Intro to 1D Cellular Automata",
+    "title": "1D Cellular Automata",
     "section": "Interactive initial row",
-    "text": "Interactive initial row\nThe script amlab/cellular_automata/cellular.py lets you click on the first row to toggle cells and recompute the automaton.",
+    "text": "Interactive initial row\nThe script amlab/cellular_automata/cellular.py lets you click on the first row, toggle cells, and recompute the automaton immediately. That is a good way to build intuition for how sensitive a rule is to its initial condition.",
     "crumbs": [
       "Session 7: Cellular Automata",
       "1D Cellular Automata"
+    ]
+  },
+  {
+    "objectID": "modules/cellular-automata/cellular-1d.html#what-to-look-for",
+    "href": "modules/cellular-automata/cellular-1d.html#what-to-look-for",
+    "title": "1D Cellular Automata",
+    "section": "What to look for",
+    "text": "What to look for\n\nDoes the pattern stay symmetric or break symmetry quickly?\nDo you see long diagonal structures, nested triangles, or irregular texture?\nIf you change one cell in the first row, does the effect stay local or spread through the whole diagram?",
+    "crumbs": [
+      "Session 7: Cellular Automata",
+      "1D Cellular Automata"
+    ]
+  },
+  {
+    "objectID": "modules/cellular-automata/cellular-1d.html#whats-next",
+    "href": "modules/cellular-automata/cellular-1d.html#whats-next",
+    "title": "1D Cellular Automata",
+    "section": "What’s Next?",
+    "text": "What’s Next?\nOne rule is enough to learn the mechanics. The next page turns the simulator into a small experimental lab where you compare Rule 30, Rule 90, Rule 110, and Rule 184.\nRule Exploration Back to Session Index",
+    "crumbs": [
+      "Session 7: Cellular Automata",
+      "1D Cellular Automata"
+    ]
+  },
+  {
+    "objectID": "modules/agent-based-modeling/index.html",
+    "href": "modules/agent-based-modeling/index.html",
+    "title": "Agent-Based Modeling",
+    "section": "",
+    "text": "This session turns the rule-based perspective from cellular automata into a simple agent-based model. Cars are individual agents with positions and speeds, and large traffic jams emerge from repeated local decisions (Nagel and Schreckenberg 1992; Wilensky and Rand 2015).",
+    "crumbs": [
+      "Session 8: Agent-Based Modeling"
+    ]
+  },
+  {
+    "objectID": "modules/agent-based-modeling/index.html#from-cellular-automata-to-agents",
+    "href": "modules/agent-based-modeling/index.html#from-cellular-automata-to-agents",
+    "title": "Agent-Based Modeling",
+    "section": "From Cellular Automata to Agents",
+    "text": "From Cellular Automata to Agents\nIn the previous session, every cell followed the same binary rule.\nNow we keep discrete time and a one-dimensional road, but we enrich the state:\n\nOccupied cells correspond to cars.\nEach car stores a speed.\nThe update depends on the gap ahead and a stochastic slowdown rule.\n\nThis is still local. It is also more expressive, because agents now carry internal state.\nBack to Cellular Automata",
+    "crumbs": [
+      "Session 8: Agent-Based Modeling"
+    ]
+  },
+  {
+    "objectID": "modules/agent-based-modeling/index.html#case-studies",
+    "href": "modules/agent-based-modeling/index.html#case-studies",
+    "title": "Agent-Based Modeling",
+    "section": "Case Studies",
+    "text": "Case Studies\nStart with the Nagel-Schreckenberg traffic model and implement the update rules carefully.\nTraffic Model\nThen move from one simulation to macroscopic measurements such as flow and congestion.\nFlow and Congestion\nWhen both pieces work, complete the assignment.\nAssignment",
+    "crumbs": [
+      "Session 8: Agent-Based Modeling"
+    ]
+  },
+  {
+    "objectID": "modules/agent-based-modeling/index.html#learning-goals",
+    "href": "modules/agent-based-modeling/index.html#learning-goals",
+    "title": "Agent-Based Modeling",
+    "section": "Learning Goals",
+    "text": "Learning Goals\n\nRepresent traffic with occupancy and speed arrays.\nImplement the Nagel-Schreckenberg update rules.\nProduce space-time diagrams of traffic flow.\nMeasure density and average flow.\nExplain how local agent behavior creates stop-and-go waves and jams.",
+    "crumbs": [
+      "Session 8: Agent-Based Modeling"
+    ]
+  },
+  {
+    "objectID": "modules/agent-based-modeling/index.html#flow-of-this-session",
+    "href": "modules/agent-based-modeling/index.html#flow-of-this-session",
+    "title": "Agent-Based Modeling",
+    "section": "Flow of This Session",
+    "text": "Flow of This Session\n\nEncode the road state.\nImplement accelerate, brake, random slowdown, and move.\nSimulate many time steps and visualize the road.\nMeasure macroscopic observables such as density and flow.\nCompare free-flow and congested regimes.",
+    "crumbs": [
+      "Session 8: Agent-Based Modeling"
+    ]
+  },
+  {
+    "objectID": "modules/agent-based-modeling/index.html#what-do-we-need",
+    "href": "modules/agent-based-modeling/index.html#what-do-we-need",
+    "title": "Agent-Based Modeling",
+    "section": "What do we need?",
+    "text": "What do we need?\n\nnumpy\nStore the occupancy pattern, the speed of each car, and the experimental results.\n\n\nmatplotlib.pyplot\nPlot space-time diagrams and flow-density curves.\n\n\nWhy call this agent-based if the road is still a grid?\nBecause each occupied site corresponds to an individual car with its own speed. The update is written from the point of view of each agent and its local environment, not as a closed-form equation for a global density field.\n\n\n\n\n\n\nScripts or notebooks?\n\n\n\nUse a notebook for density sweeps, repeated trials, and parameter scans. Use a script if you want a faster interactive visualization or plan to add widgets later.\n\n\n\n\n\n\n\n\nNote\n\n\n\nWe model a periodic road, so the first and last cells are neighbors. This removes boundary effects and makes the congestion dynamics easier to interpret.",
+    "crumbs": [
+      "Session 8: Agent-Based Modeling"
     ]
   },
   {
@@ -2161,21 +2485,66 @@
     "href": "modules/agent-based-modeling/assignment.html",
     "title": "Assignment",
     "section": "",
-    "text": "Implement a simple agent-based traffic simulation and analyze emergent congestion patterns (Wilensky and Rand 2015; Nagel and Schreckenberg 1992)."
+    "text": "You now have the core ingredients of an agent-based traffic model: local update rules, a reproducible simulator, a space-time diagram, and macroscopic observables such as density and flow (Nagel and Schreckenberg 1992; Wilensky and Rand 2015).\nYou can follow the guide here:\nTraffic Model Flow and Congestion",
+    "crumbs": [
+      "Session 8: Agent-Based Modeling",
+      "Assignment"
+    ]
+  },
+  {
+    "objectID": "modules/agent-based-modeling/assignment.html#summary-of-goals",
+    "href": "modules/agent-based-modeling/assignment.html#summary-of-goals",
+    "title": "Assignment",
+    "section": "Summary of Goals",
+    "text": "Summary of Goals\nYour submission should show that you can do three things:\n\nBuild a correct agent-based traffic simulator.\nConnect microscopic update rules with macroscopic observables.\nExplain when and why congestion appears.\n\n\n\n\n\n\n\nSubmission\n\n\n\nSubmit two files:\n\nCode that reproduces all figures and metrics.\nA short report, 1 to 2 pages, that summarizes your experiments and interpretation.",
+    "crumbs": [
+      "Session 8: Agent-Based Modeling",
+      "Assignment"
+    ]
   },
   {
     "objectID": "modules/agent-based-modeling/assignment.html#required",
     "href": "modules/agent-based-modeling/assignment.html#required",
     "title": "Assignment",
     "section": "Required",
-    "text": "Required\n\nSimulate a 1D traffic cellular automaton for at least two densities.\nPlot one space-time diagram for each density.\nCompare how jam formation changes with random slowdown probability."
+    "text": "Required\n\nImplement initialize_road(), step(), and simulate() for the Nagel-Schreckenberg model.\nProduce space-time diagrams for at least three densities, one low-density regime, one intermediate regime, and one congested regime.\nEstimate the fundamental diagram \\(q(\\rho)\\) using at least 10 density values and a burn-in period before you average the flow.\nCompare the flow-density curve for at least two values of p_slow.\nWrite a short discussion of where the maximum flow occurs and how the onset of congestion changes when p_slow increases.",
+    "crumbs": [
+      "Session 8: Agent-Based Modeling",
+      "Assignment"
+    ]
   },
   {
-    "objectID": "modules/agent-based-modeling/assignment.html#extra-mile-optional",
-    "href": "modules/agent-based-modeling/assignment.html#extra-mile-optional",
+    "objectID": "modules/agent-based-modeling/assignment.html#short-discussion",
+    "href": "modules/agent-based-modeling/assignment.html#short-discussion",
     "title": "Assignment",
-    "section": "Extra Mile (Optional)",
-    "text": "Extra Mile (Optional)\n\nAdd sliders for density and slowdown probability.\nCompare random vs localized perturbations in the initial condition."
+    "section": "Short Discussion",
+    "text": "Short Discussion\nInclude a brief paragraph that answers these questions:\n\nAt what density does free flow begin to break down in your experiments?\nDoes higher random slowdown mostly change the peak flow, the jam onset, or both?\nWhich figure best explains the transition from microscopic rules to macroscopic congestion?",
+    "crumbs": [
+      "Session 8: Agent-Based Modeling",
+      "Assignment"
+    ]
+  },
+  {
+    "objectID": "modules/agent-based-modeling/assignment.html#optional-extensions",
+    "href": "modules/agent-based-modeling/assignment.html#optional-extensions",
+    "title": "Assignment",
+    "section": "Optional Extensions",
+    "text": "Optional Extensions\n\nAdd sliders for density, p_slow, or vmax.\nCompare random initial conditions with a localized dense cluster of cars.\nIntroduce a small fraction of slow vehicles and study the effect on the flow curve.\nReplace the periodic road by open boundaries with inflow and outflow.",
+    "crumbs": [
+      "Session 8: Agent-Based Modeling",
+      "Assignment"
+    ]
+  },
+  {
+    "objectID": "modules/agent-based-modeling/assignment.html#tips-for-success",
+    "href": "modules/agent-based-modeling/assignment.html#tips-for-success",
+    "title": "Assignment",
+    "section": "Tips for Success",
+    "text": "Tips for Success\n\nTest one update step on a short road before you launch long runs.\nFix the seed when you debug.\nDiscard an initial burn-in window when you estimate stationary flow.\nKeep the plotting code separate from the simulation code so repeated experiments stay simple.\n\n\n\n\n\n\n\nTip\n\n\n\nReference code is available in amlab/cellular_automata/traffic.py.\n\n\nGood luck.",
+    "crumbs": [
+      "Session 8: Agent-Based Modeling",
+      "Assignment"
+    ]
   },
   {
     "objectID": "modules/networks/sis.html",
@@ -2468,7 +2837,7 @@
     "href": "modules/networks/connectivity.html#connectivity-in-undirected-graphs",
     "title": "Networks: Connectivity",
     "section": "Connectivity in Undirected Graphs",
-    "text": "Connectivity in Undirected Graphs\nConnectivity is a fundamental property of graphs that describes how well the nodes are connected to each other. In an undirected graph, a graph is connected if there is a path between any two nodes. If a graph is not connected, it consists of multiple connected components, which are subgraphs in which any two nodes are connected by a path.\n\nPaths in an Undirected Graph\nA path in a network is a sequence of edges connecting two nodes.\nTake a look at the food graph we created above. Is there a path from “bread” to “watermelon”?\n\n# Draw the graph\npos = nx.circular_layout(G_foods)\nnx.draw(G_foods, node_color=\"lightblue\", with_labels=True, pos=pos)\nplt.show()\n\n\n\n\n\n\n\n\nNetworkX provides has_path(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;) to check if there is a path between two nodes:\n\n# Check if there is a path from 'bread' to 'watermelon'\nprint(\n    \"Is there a path from 'bread' to 'watermelon'?\",\n    nx.has_path(G_foods, \"bread\", \"watermelon\")\n)\n\nIs there a path from 'bread' to 'watermelon'? True\n\n\nThere can be more than one path between two nodes. We can use all_simple_paths(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;) to find all the simple paths between two nodes:\n\nls_paths = list(nx.all_simple_paths(G_foods, \"bread\", \"watermelon\"))\nprint(\"All paths from 'bread' to 'watermelon':\", ls_paths)\n\nAll paths from 'bread' to 'watermelon': [['bread', 'cheese', 'cured ham', 'watermelon'], ['bread', 'chocolate', 'watermelon'], ['bread', 'cured ham', 'watermelon']]\n\n\n\n\nConnected Components in Undirected Graphs\nA connected component is a subgraph in which any two nodes are connected by a path. A graph is connected if it has only one connected component.\n\n\n\n\n\n\nHow many connected components does G_foods have?\n\n\n\n\n\nG_foods has one connected component, since all nodes are connected to each other through some path.\nAs usual, we can verify this with NetworkX:\n\nprint(\"Connected components:\", list(nx.connected_components(G_foods)))\n\nConnected components: [{'watermelon', 'milk', 'cookies', 'cured ham', 'bread', 'chocolate', 'cheese'}]\n\n\n\n\n\n\n\nDiameter and Average Path Length\nThe diameter of a graph is the length of the longest shortest path between any two nodes in the graph. It gives us an idea of how “far apart” the nodes are in the graph.\n\nprint(\"Diameter:\", nx.diameter(G_foods))\n\nDiameter: 3\n\n\nThe average path length (APL) is the average of the shortest paths between all pairs of nodes.\n\nprint(\"Average shortest path length:\", nx.average_shortest_path_length(G_foods))\n\nAverage shortest path length: 1.7619047619047619",
+    "text": "Connectivity in Undirected Graphs\nConnectivity is a fundamental property of graphs that describes how well the nodes are connected to each other. In an undirected graph, a graph is connected if there is a path between any two nodes. If a graph is not connected, it consists of multiple connected components, which are subgraphs in which any two nodes are connected by a path.\n\nPaths in an Undirected Graph\nA path in a network is a sequence of edges connecting two nodes.\nTake a look at the food graph we created above. Is there a path from “bread” to “watermelon”?\n\n# Draw the graph\npos = nx.circular_layout(G_foods)\nnx.draw(G_foods, node_color=\"lightblue\", with_labels=True, pos=pos)\nplt.show()\n\n\n\n\n\n\n\n\nNetworkX provides has_path(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;) to check if there is a path between two nodes:\n\n# Check if there is a path from 'bread' to 'watermelon'\nprint(\n    \"Is there a path from 'bread' to 'watermelon'?\",\n    nx.has_path(G_foods, \"bread\", \"watermelon\")\n)\n\nIs there a path from 'bread' to 'watermelon'? True\n\n\nThere can be more than one path between two nodes. We can use all_simple_paths(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;) to find all the simple paths between two nodes:\n\nls_paths = list(nx.all_simple_paths(G_foods, \"bread\", \"watermelon\"))\nprint(\"All paths from 'bread' to 'watermelon':\", ls_paths)\n\nAll paths from 'bread' to 'watermelon': [['bread', 'cheese', 'cured ham', 'watermelon'], ['bread', 'chocolate', 'watermelon'], ['bread', 'cured ham', 'watermelon']]\n\n\n\n\nConnected Components in Undirected Graphs\nA connected component is a subgraph in which any two nodes are connected by a path. A graph is connected if it has only one connected component.\n\n\n\n\n\n\nHow many connected components does G_foods have?\n\n\n\n\n\nG_foods has one connected component, since all nodes are connected to each other through some path.\nAs usual, we can verify this with NetworkX:\n\nprint(\"Connected components:\", list(nx.connected_components(G_foods)))\n\nConnected components: [{'cheese', 'chocolate', 'milk', 'watermelon', 'bread', 'cured ham', 'cookies'}]\n\n\n\n\n\n\n\nDiameter and Average Path Length\nThe diameter of a graph is the length of the longest shortest path between any two nodes in the graph. It gives us an idea of how “far apart” the nodes are in the graph.\n\nprint(\"Diameter:\", nx.diameter(G_foods))\n\nDiameter: 3\n\n\nThe average path length (APL) is the average of the shortest paths between all pairs of nodes.\n\nprint(\"Average shortest path length:\", nx.average_shortest_path_length(G_foods))\n\nAverage shortest path length: 1.7619047619047619",
     "crumbs": [
       "Session 5: Networks",
       "Network Connectivity"
@@ -2490,7 +2859,7 @@
     "href": "modules/networks/connectivity.html#connectivity-in-directed-graphs",
     "title": "Networks: Connectivity",
     "section": "Connectivity in Directed Graphs",
-    "text": "Connectivity in Directed Graphs\nConnectivity in directed graphs is more complex than in undirected graphs, because we have to consider the direction of the edges. In a directed graph, we can have strongly connected components and weakly connected components.\n\nPaths in Directed Graphs\nIn a directed graph, a path must follow the direction of the edges. For example, in the directed food chain graph D, is there a path from “grass” to “lion”?\n\n# Draw the graph\npos = nx.spring_layout(D_food_chain)\nnx.draw(D_food_chain, node_color=\"lightgreen\", with_labels=True, pos=pos)\nplt.show()\n\n\n\n\n\n\n\n\nWe can check for the existence of a path in a directed graph using the same has_path(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;) function:\n\nprint(\"Is there a path from 'grass' to 'lion'?\", nx.has_path(D_food_chain, \"grass\", \"lion\"))   \nprint(\"Is there a path from 'lion' to 'grass'?\", nx.has_path(D_food_chain, \"lion\", \"grass\"))\n\nIs there a path from 'grass' to 'lion'? True\nIs there a path from 'lion' to 'grass'? False\n\n\n\n\nStrongly Connected Components\nA strongly connected component is a subgraph in which there is a directed path from any node to any other node. A directed graph is strongly connected if it has only one strongly connected component.\n\nprint(\"Is strongly connected:\", nx.is_strongly_connected(D_food_chain))\nprint(\"Strongly connected components:\", list(nx.strongly_connected_components(D_food_chain)))\n\nIs strongly connected: False\nStrongly connected components: [{'lion'}, {'hyena'}, {'antelope'}, {'zebra'}, {'grass'}]\n\n\n\n\nWeakly Connected Components\nA weakly connected component is a subgraph in which there is an undirected path from any node to any other node. A directed graph is weakly connected if it has only one weakly connected component.\n\nprint(\"Is weakly connected:\", nx.is_weakly_connected(D_food_chain))\nprint(\"Weakly connected components:\", list(nx.weakly_connected_components(D_food_chain)))\n\nIs weakly connected: True\nWeakly connected components: [{'antelope', 'grass', 'lion', 'hyena', 'zebra'}]\n\n\nExercise. How can we turn D_food_chain into a strongly connected graph? Try adding some edges to make it strongly connected.\n\n\n\n\n\n\nSolution\n\n\n\n\n\nTo make D_food_chain strongly connected, we need to ensure that there is a directed path from every node to every other node. One way to achieve this is to add edges that create cycles between the nodes. Our example is a though one, as food chains are typically acyclic. Still, we can take note from “The Lion King”:\n\n“When we die, our bodies become the grass, and the antelope eat the grass. And so, we are all connected in the great Circle of Life.” - Mufasa (lion)\n\n\n# When a predator dies, it returns to the food chain as prey for the grass\nD_food_chain.add_edges_from([\n    (\"lion\", \"grass\"),\n])\n\n# Visualize the new graph\npos = nx.spring_layout(D_food_chain)\nnx.draw(D_food_chain, node_color=\"lightgreen\", with_labels=True, pos=pos)\nplt.show()\n\n\n\n\n\n\n\n\n\nprint(\"Is strongly connected:\", nx.is_strongly_connected(D_food_chain))\nprint(\"Strongly connected components:\", list(nx.strongly_connected_components(D_food_chain)))\n\nIs strongly connected: True\nStrongly connected components: [{'antelope', 'grass', 'lion', 'hyena', 'zebra'}]\n\n\n\n\n\n\n\nDiameter and Average Path Length in Directed Graphs\nThe diameter and average path length in directed graphs are calculated based on the shortest paths that follow the direction of the edges. If the graph is not strongly connected, we can only calculate these metrics for the largest strongly connected component.\n\n# Get the largest strongly connected component\nlargest_scc = max(nx.strongly_connected_components(D_food_chain), key=len)\nsubgraph = D_food_chain.subgraph(largest_scc)\nprint(\"Diameter of the largest strongly connected component:\", nx.diameter(subgraph))\nprint(\"Average shortest path length of the largest strongly connected component:\", nx.average_shortest_path_length(subgraph))\n\nDiameter of the largest strongly connected component: 3\nAverage shortest path length of the largest strongly connected component: 1.85",
+    "text": "Connectivity in Directed Graphs\nConnectivity in directed graphs is more complex than in undirected graphs, because we have to consider the direction of the edges. In a directed graph, we can have strongly connected components and weakly connected components.\n\nPaths in Directed Graphs\nIn a directed graph, a path must follow the direction of the edges. For example, in the directed food chain graph D, is there a path from “grass” to “lion”?\n\n# Draw the graph\npos = nx.spring_layout(D_food_chain)\nnx.draw(D_food_chain, node_color=\"lightgreen\", with_labels=True, pos=pos)\nplt.show()\n\n\n\n\n\n\n\n\nWe can check for the existence of a path in a directed graph using the same has_path(&lt;graph&gt;, &lt;node1&gt;, &lt;node2&gt;) function:\n\nprint(\"Is there a path from 'grass' to 'lion'?\", nx.has_path(D_food_chain, \"grass\", \"lion\"))   \nprint(\"Is there a path from 'lion' to 'grass'?\", nx.has_path(D_food_chain, \"lion\", \"grass\"))\n\nIs there a path from 'grass' to 'lion'? True\nIs there a path from 'lion' to 'grass'? False\n\n\n\n\nStrongly Connected Components\nA strongly connected component is a subgraph in which there is a directed path from any node to any other node. A directed graph is strongly connected if it has only one strongly connected component.\n\nprint(\"Is strongly connected:\", nx.is_strongly_connected(D_food_chain))\nprint(\"Strongly connected components:\", list(nx.strongly_connected_components(D_food_chain)))\n\nIs strongly connected: False\nStrongly connected components: [{'lion'}, {'hyena'}, {'antelope'}, {'zebra'}, {'grass'}]\n\n\n\n\nWeakly Connected Components\nA weakly connected component is a subgraph in which there is an undirected path from any node to any other node. A directed graph is weakly connected if it has only one weakly connected component.\n\nprint(\"Is weakly connected:\", nx.is_weakly_connected(D_food_chain))\nprint(\"Weakly connected components:\", list(nx.weakly_connected_components(D_food_chain)))\n\nIs weakly connected: True\nWeakly connected components: [{'antelope', 'grass', 'zebra', 'lion', 'hyena'}]\n\n\nExercise. How can we turn D_food_chain into a strongly connected graph? Try adding some edges to make it strongly connected.\n\n\n\n\n\n\nSolution\n\n\n\n\n\nTo make D_food_chain strongly connected, we need to ensure that there is a directed path from every node to every other node. One way to achieve this is to add edges that create cycles between the nodes. Our example is a though one, as food chains are typically acyclic. Still, we can take note from “The Lion King”:\n\n“When we die, our bodies become the grass, and the antelope eat the grass. And so, we are all connected in the great Circle of Life.” - Mufasa (lion)\n\n\n# When a predator dies, it returns to the food chain as prey for the grass\nD_food_chain.add_edges_from([\n    (\"lion\", \"grass\"),\n])\n\n# Visualize the new graph\npos = nx.spring_layout(D_food_chain)\nnx.draw(D_food_chain, node_color=\"lightgreen\", with_labels=True, pos=pos)\nplt.show()\n\n\n\n\n\n\n\n\n\nprint(\"Is strongly connected:\", nx.is_strongly_connected(D_food_chain))\nprint(\"Strongly connected components:\", list(nx.strongly_connected_components(D_food_chain)))\n\nIs strongly connected: True\nStrongly connected components: [{'antelope', 'grass', 'zebra', 'lion', 'hyena'}]\n\n\n\n\n\n\n\nDiameter and Average Path Length in Directed Graphs\nThe diameter and average path length in directed graphs are calculated based on the shortest paths that follow the direction of the edges. If the graph is not strongly connected, we can only calculate these metrics for the largest strongly connected component.\n\n# Get the largest strongly connected component\nlargest_scc = max(nx.strongly_connected_components(D_food_chain), key=len)\nsubgraph = D_food_chain.subgraph(largest_scc)\nprint(\"Diameter of the largest strongly connected component:\", nx.diameter(subgraph))\nprint(\"Average shortest path length of the largest strongly connected component:\", nx.average_shortest_path_length(subgraph))\n\nDiameter of the largest strongly connected component: 3\nAverage shortest path length of the largest strongly connected component: 1.85",
     "crumbs": [
       "Session 5: Networks",
       "Network Connectivity"

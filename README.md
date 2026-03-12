@@ -56,13 +56,40 @@ conda create --name amlab python=3.13
 conda activate amlab
 ```
 
-**Install Required Packages**: Install the necessary packages listed in `requirements.txt`.
+Python 3.13 is the safest choice for the current pinned scientific stack. Python 3.14 is not yet recommended here because some pinned wheels are not available and pip may fall back to a local source build.
+
+**Install Required Packages**: Install the full course and site dependencies from `requirements.txt`, then install the local package in editable mode.
 
 ```bash
-conda install --yes --file requirements.txt
+python -m pip install -r requirements.txt
+python -m pip install -e .
 ```
 
 Now you are all set up and ready to use the repository!
+
+## Package Installation
+
+If you only want the reusable Python package and not the full Quarto or Streamlit authoring environment, install the package directly:
+
+```bash
+python -m pip install .
+```
+
+The full pinned course environment is currently validated on Python 3.11 through 3.13. The package metadata itself stays unpinned above that range so newer Python versions can still work when compatible wheels are available.
+
+## Rendering Quarto Modules
+
+The Quarto lessons execute Python code cells during rendering. After installing `requirements.txt`, you can render the full site or a single lesson page.
+
+```bash
+quarto render
+```
+
+or
+
+```bash
+quarto render modules/cellular-automata/cellular-1d.qmd
+```
 
 ## Running Streamlit
 
