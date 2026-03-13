@@ -57,6 +57,62 @@ plt.show()
 plt.close()
 ```
 
+## Read the Parameters First
+
+Before you discretize the PDE, it helps to know what each symbol controls.
+
+- $u(x,t)$ is the activator. Through the term $u^2 / v$, a local increase in $u$ tends to reinforce further production of $u$.
+- $v(x,t)$ is the inhibitor. It suppresses activation because larger $v$ reduces the ratio $u^2 / v$.
+- $a$ is a baseline source term for $u$. Larger $a$ raises the background activity level.
+- $b$ damps the activator linearly. Larger $b$ makes it harder for $u$ to remain large.
+- $\gamma$ sets the reaction timescale. Larger $\gamma$ makes the reaction terms act faster relative to diffusion.
+- $d$ is the diffusion ratio of the inhibitor. In this nondimensional form, $u$ diffuses with coefficient $1$, so large $d$ means that $v$ spreads much faster than $u$.
+
+The homogeneous steady state is
+
+$$
+u_* = \frac{a+1}{b}, \qquad v_* = \left(\frac{a+1}{b}\right)^2.
+$$ {#eq-pde-gm-1d-steady}
+
+This is the flat state that we later test for pattern formation.
+
+The short picture is this: the activator tends to build local peaks, while the inhibitor spreads the suppressing signal over a wider region.
+
+## What Instability Means Here
+
+The phrase "Turing instability" has a very specific meaning. It does not mean the model explodes or becomes unstable in every possible way. It means the flat steady state is stable to spatially uniform perturbations, but unstable to some spatially varying ones.
+
+In practice, this means two things.
+
+- If every point is nudged in the same way, the system relaxes back toward the steady state.
+- If one region is nudged slightly above its neighbors, that spatial difference can grow into a visible pattern.
+
+This is why the model is interesting. Diffusion does not only smooth the field. For suitable reaction parameters, a fast-diffusing inhibitor can make a subset of spatial perturbations grow instead of decay.
+
+The next page, [Turing Instability](turing-instability.qmd), turns this intuition into algebra and gives the inequalities that define the instability region.
+
+## What the Modes Mean
+
+The instability does not amplify every spatial perturbation equally. On a finite domain with fixed boundary conditions, only certain spatial shapes are natural building blocks. These are the modes.
+
+For Neumann boundary conditions on $[0,L]$, the admissible 1D modes are proportional to
+
+$$
+\cos\left(\frac{n\pi x}{L}\right), \qquad n = 0, 1, 2, \dots
+$$ {#eq-pde-gm-1d-modes}
+
+These mode numbers have a simple interpretation as spatial frequencies.
+
+- Mode $0$ is flat, with no spatial variation.
+- Mode $1$ has the longest non-constant wavelength allowed by the domain.
+- Mode $2$ oscillates twice as fast in space.
+- Mode $3$ oscillates three times as fast.
+- Higher modes have shorter wavelengths and finer structure.
+
+When we say a mode is unstable, we mean that a tiny perturbation with that spatial shape grows over time in the linearized system. The leading mode is the one with the largest growth rate, so it usually sets the early spacing of the pattern.
+
+Later, the full nonlinear dynamics can merge peaks, saturate amplitudes, or shift the final profile. That is why the leading mode predicts the early pattern best, even if the long-time state looks different.
+
 ## Discretize the Laplacian
 
 In one dimension, the Laplacian is the second derivative:
