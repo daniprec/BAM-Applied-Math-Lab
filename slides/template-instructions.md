@@ -38,6 +38,7 @@ Use this guide when you create or revise a Quarto slide deck for Applied Math La
 
 - Use the shared reveal.js settings in `slides/_metadata.yml`.
 - Use the shared styling in `slides/amlab-slides.css`.
+- Use `##` headings for real slide breaks. Inner panel labels are normalized by the shared slide filter so Reveal only sees actual slides.
 - Favor `card`, `grid-2`, `grid-3`, `module-links`, `inverse`, and `section-break` layouts.
 - Use `section-break` only for high-level transitions.
 - Use `inverse` for emphasis slides with one core message.
