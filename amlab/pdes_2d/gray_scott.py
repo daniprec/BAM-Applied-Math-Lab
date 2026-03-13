@@ -190,11 +190,23 @@ def run_simulation(
     fig, axs = plt.subplots(
         nrows=1, ncols=2, figsize=(10, 6), gridspec_kw={"width_ratios": [6, 4]}
     )
+    fig.subplots_adjust(bottom=0.18)
 
     # Initialize the v field image
     ax_uv: Axes = axs[0]
     ax_uv.axis("off")  # Turn off the axis (the grid and numbers)
     im = ax_uv.imshow(uv[1], cmap=cmap, interpolation="bilinear", vmin=0, vmax=1.0)
+    ax_uv.text(
+        0.0,
+        -0.14,
+        "Controls: Space pauses or resumes. Left click or drag adds a perturbation. "
+        "Right click or drag resets the field.",
+        transform=ax_uv.transAxes,
+        ha="left",
+        va="top",
+        fontsize=10,
+        wrap=True,
+    )
 
     # ------------------------------------------------------------------------#
     # ANIMATION
