@@ -4,9 +4,28 @@ subtitle: "Reaction-Diffusion PDEs"
 format: html
 ---
 
-You now have all the ingredients of the session. In this assignment you will connect them into one coherent reaction-diffusion workflow, starting from 1D finite differences and ending with your own Gray-Scott simulation [@turing1952chemical; @gierer1972theory; @gray1984autocatalytic; @pearson1993complex].
+This assignment follows the original brief for the session. You will take an analytical and numerical approach to two reaction-diffusion systems that exhibit Turing instability for suitable parameter values, Gierer-Meinhardt and Gray-Scott [@turing1952chemical; @gierer1972theory; @gray1984autocatalytic; @pearson1993complex].
 
-You can follow the guide here:
+The governing equations are
+
+$$
+u_t = D_1 \Delta u + \gamma f(u, v), \qquad
+v_t = D_2 \Delta v + \gamma g(u, v).
+$$
+
+For the two models,
+
+$$
+	ext{Gierer-Meinhardt: } f(u, v) = a - bu + \frac{u^2}{v}, \qquad g(u, v) = u^2 - v, \qquad a, b > 0,
+$$
+
+$$
+	ext{Gray-Scott: } f(u, v) = -uv^2 + F(1-u), \qquad g(u, v) = uv^2 - (F + k)v, \qquad F, k > 0.
+$$
+
+In both cases, consider the equations on the interior of a rectangular region $\Omega_2 = (0, L_1) \times (0, L_2)$ with Neumann zero-flux boundary conditions on $\partial \Omega$. Start by reducing the problem to one spatial dimension, $\Omega_1 = (0, L_1)$.
+
+You can use the session pages below as a guide:
 
 [Gierer-Meinhardt 1D](gierer-meinhardt-1d.qmd){.btn .btn-primary}
 [Turing Instability](turing-instability.qmd){.btn .btn-primary}
@@ -14,52 +33,101 @@ You can follow the guide here:
 [Gierer-Meinhardt 2D](gierer-meinhardt-2d.qmd){.btn .btn-primary}
 [Gray-Scott](gray-scott.qmd){.btn .btn-primary}
 
-## Summary of Goals
+## Gierer-Meinhardt 1D
 
-Your submission should show that you can do three things:
+### Analytic Approach
 
-1. Build a PDE solver from local update rules.
-2. Connect numerical behavior to Turing instability.
-3. Extend the same workflow from 1D to 2D and then to Gray-Scott.
+The explicit conditions for Turing instability are
 
-## Required
+$$
+\operatorname{Tr} J = f_u + g_v < 0
+$$
 
-1. Implement the 1D Gierer-Meinhardt solver with explicit Euler time stepping.
-2. Enforce Neumann boundary conditions and plot the final profile of $v(x)$ for $L=40$, $dx=0.5$, $dt=0.001$, $a=0.40$, $b=1.00$, $d=20$, and $\gamma=1$.
-3. Create a 1D animation of $v(x)$.
-4. Implement `gierer_meinhardt_jacobian()` and `is_turing_instability()`, then plot the Turing space in the $(a, d)$ plane.
-5. Mark on the Turing diagram the parameter pair you used in the 1D simulation.
-6. Implement the 2D Gierer-Meinhardt solver with a 5-point stencil on a rectangle with $L_x=20$, $L_y=50$, $dx=1$, and $dt=0.001$.
-7. Plot one 2D snapshot of $v(x, y)$ and report whether the pattern agrees with your Turing analysis.
-8. Implement the Gray-Scott model and reproduce at least one parameter set from the session notes.
+$$
+\det J \equiv \Delta = f_u g_v - f_v g_u > 0
+$$
 
-## Short Discussion
+$$
+D_1 g_v + D_2 f_u > 2 \sqrt{D_1 D_2} \sqrt{\Delta} > 0.
+$$
 
-Include a brief paragraph that answers these questions:
+These conditions do not depend on $\gamma$ or on the size of the region. They are only necessary conditions. To make them sufficient, check explicitly that unstable spatial modes exist, which does depend on the size of the region through the Laplacian eigenvalues $\lambda_n$.
 
-1. What changes when you move from 1D to 2D?
-2. Which quantity is controlled by the diffusion ratio in Gierer-Meinhardt?
-3. How is Gray-Scott different from Gierer-Meinhardt in the type of patterns it produces?
+1. In the Gierer-Meinhardt model take $\gamma = 1$, $D_1 = 1$, and $D_2 = d > 0$. Study in which region of parameter space $(a, b, d)$ the conditions above hold. This region is the Turing space. For convenience, take $b = 1$ and plot the 2D section in the $(a, d)$ plane.
+2. Solve the Sturm-Liouville problem on the line segment and identify the spectrum of the Laplacian with Neumann boundary conditions. Study the two temporal eigenvalues associated with each spatial mode, determine the leading spatial mode, and list the unstable spatial modes. Remember that the temporal eigenvalues associated with the spatial eigenvalue $\lambda_n$ are the eigenvalues of
 
-## Optional Extensions
+$$
+A_n = J + \lambda_n D =
+\begin{pmatrix}
+\gamma f_u + \lambda_n D_1 & \gamma f_v \\
+\gamma g_u & \gamma g_v + \lambda_n D_2
+\end{pmatrix},
+\qquad
+\det(A_n - \sigma^{(n)} I) = 0.
+$$
 
-- Scan unstable spatial modes in 1D and 2D and report the leading mode.
-- Replace the 5-point stencil by a 9-point stencil and compare the result.
-- Add interaction to Gray-Scott with drawing, pause and resume, and sliders.
-- Compare two different Gray-Scott parameter sets and describe the visual change.
+3. For Gierer-Meinhardt in 1D on $(0, L)$ with $L = 40$, compare the following two parameter sets and decide which one leads to Turing instability. In the unstable case, determine the leading spatial mode.
+	- Case A: $\gamma = 1$, $a = 0.4$, $b = 1$, $d = 30$
+	- Case B: $\gamma = 1$, $a = 0.4$, $b = 1$, $d = 20$
 
-## Tips for Success
+### Numerical Approach
 
-- Start on a small grid before you run the full simulation.
-- Fix the random seed when you debug.
-- If the fields explode, reduce `dt` first.
-- Check the Laplacian separately before you combine it with the reaction terms.
-- Reuse your 2D Laplacian in both Gierer-Meinhardt and Gray-Scott.
+Implement a 1D finite-difference scheme for space and an explicit Euler scheme for time. The stability of the numerical scheme depends critically on the choice of `dt` and `dx`.
 
-::: {.callout-tip}
-Reference code is available in [amlab/pdes/gierer_meinhardt_1d.py](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/pdes/gierer_meinhardt_1d.py), [amlab/pdes/gierer_meinhardt_2d.py](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/pdes/gierer_meinhardt_2d.py), and [amlab/pdes/gray_scott.py](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/pdes/gray_scott.py).
-:::
+1. Use the following discretization, for which the numerical scheme is stable:
+	- $N = 40$, the number of spatial points
+	- $dx = 1$, so that $L = N dx = 40$
+	- $dt = 0.01$
+2. Start from the homogeneous stationary solution plus a 1% additive noise and observe the evolution in both parameter cases. In one case the perturbation should fall back to the homogeneous solution, while in the other the unstable spatial mode should be amplified.
+3. Integrate the problem for $5 \times 10^4$ time steps of size $dt = 0.01$, saving one image every 500 steps. Join the resulting 100 frames into an animation.
+4. Try other parameter values, integration steps, and region sizes. Compare what you see with the predictions from your analytic work until you have a complete understanding of the Turing instability mechanism.
 
-\vspace{1cm}
+## Gierer-Meinhardt 2D
 
-Good luck.
+1. Modify your integration scheme and your symbolic calculations so that you can integrate Gierer-Meinhardt on a rectangular region $\Omega_2 = (0, L_1) \times (0, L_2)$. State what type of spatial pattern you expect to see in the numerical integration.
+2. Study whether the following parameter values lead to Turing instability when $L_1 = 20$ and $L_2 = 50$. Compute how many spatial modes are unstable and determine the leading spatial mode.
+	- Case A: $\gamma = 1$, $a = 0.4$, $b = 1$, $d = 30$
+	- Case B: $\gamma = 1$, $a = 0.4$, $b = 1$, $d = 20$
+3. Test your predictions against the numerical integration.
+
+## Gray-Scott 2D
+
+Gray-Scott is a model for an autocatalytic chemical reaction between two substances $U$ and $V$:
+
+$$
+U + 2V \rightarrow 3V, \qquad V \rightarrow P,
+$$
+
+where $P$ is an inert substance and $V$ acts as an activator for its own production. The PDE system is
+
+$$
+u_t = D_1 \Delta u - uv^2 + F(1-u),
+$$
+
+$$
+v_t = D_2 \Delta v + uv^2 - (F + k)v,
+$$
+
+where $D_i$ are the diffusion coefficients and $F, k > 0$ control the feed and removal rates. In this part of the assignment, focus on numerical observation and description of the patterns, following Pearson's approach [@pearson1993complex].
+
+Use the same finite-difference scheme as in the previous section, but now with periodic boundary conditions on the square $\Omega = [0, L] \times [0, L]$.
+
+1. Take a discretization with $N = 250$ and $dx = 1$, so that the square has side length $L = 250$.
+2. Start from the homogeneous stationary solution $(u^*, v^*) = (1, 0)$. Perturb this solution on a $20 \times 20$ square where $(u, v) = (0.5, 0.5)$, then add 10% noise relative to that value. You can start with one square centered in the domain and later place similar perturbed squares at different positions.
+3. Apply periodic boundary conditions.
+4. Use an explicit Euler scheme with $dt = 2$.
+5. Check that the numerical scheme is stable for the chosen $dx$ and $dt$. Try other values to confirm that stability is sensitive to the time and spatial steps.
+6. Take $D_1 = 0.1$ and $D_2 = 0.05$ and integrate Gray-Scott for the following parameter sets:
+	- Type A: $F = 0.040$, $k = 0.060$
+	- Type B: $F = 0.014$, $k = 0.047$
+	- Type C: $F = 0.062$, $k = 0.065$
+	- Type D: $F = 0.078$, $k = 0.061$
+	- Type E: $F = 0.082$, $k = 0.059$
+7. For these cases, use integration times up to $t = 5 \cdot 10^4$, saving one image every $\Delta t = 200$. Build an animation from the resulting 250 frames.
+8. Describe each solution type qualitatively. You can also compare your observations with [Munafo's classification](https://www.mrob.com/pub/comp/xmorphia/index.html), which extends Pearson's classification using Wolfram-style cellular automaton complexity classes.
+
+## Possible Extensions
+
+1. Different domains, square versus rectangle. Repeat the numerical study of Gray-Scott or Gierer-Meinhardt in two dimensions on domains with different shapes, such as $\Omega = (0, L) \times (0, L)$ and $\Omega = (0, 2L) \times (0, L)$. Compare the patterns using the same parameter values and similar random perturbations. Describe differences in stripe orientation, spatial repetition, mode interaction, and the role of domain geometry. If possible, relate your observations to the spectrum of the Laplacian with the corresponding boundary conditions.
+2. Effect of the size of the domain. Investigate how the domain size affects the onset and shape of the patterns. Keep the model parameters fixed and run simulations for several values of $L$ in 1D or several pairs $(L_1, L_2)$ in 2D. Determine whether there is a minimum size below which no visible pattern forms, and study how the dominant wavelength and number of visible peaks or spots depend on the size of the region. Compare what you observe with the prediction from the unstable spatial modes.
+3. Artistic project. Use Gray-Scott to create a dynamic logo or evolving image. Start from an initial condition where the background and the figure use two different hardcoded parameter pairs $(F, k)$, or assign different perturbations to different parts of the domain. Let the PDE evolve and record the result as an animation.
