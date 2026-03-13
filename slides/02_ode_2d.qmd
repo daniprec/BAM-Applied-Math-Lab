@@ -1,0 +1,149 @@
+---
+title: "Ordinary Differential Equations in 2D"
+subtitle: "Phase planes, nullclines, fixed points, and oscillations"
+---
+
+## Geometry Enters the Picture {.section-break}
+
+The solver workflow is still the same, but now the state has two components and the right picture is a trajectory in the phase plane, not just a time series.
+
+$$
+\dot x = f(x, y; \theta), \qquad \dot y = g(x, y; \theta)
+$$
+
+## Session Arc
+
+::: {.grid-3}
+::: {.card}
+### CDIMA reaction
+Use one worked chemical system to build the language of nullclines and fixed points.
+:::
+
+::: {.card}
+### Van der Pol
+See how nonlinear damping creates a stable limit cycle.
+:::
+
+::: {.card}
+### FitzHugh-Nagumo
+Compare oscillation with excitability in a fast-slow system.
+:::
+:::
+
+## Phase-Plane Workflow
+
+::: {.workflow-grid}
+::: {.tool-card}
+### Integrate
+Use `solve_ivp()` exactly as before, but now the state vector is `(x, y)`.
+:::
+
+::: {.tool-card}
+### Plot
+Show trajectories directly in the phase plane.
+:::
+
+::: {.tool-card}
+### Analyze
+Find the curves where $\dot x = 0$ and $\dot y = 0$.
+:::
+
+::: {.tool-card}
+### Classify
+Use the Jacobian to distinguish stable points, saddles, and oscillatory behavior.
+:::
+:::
+
+## Nullclines, Fixed Points, Stability
+
+::: {.grid-3}
+::: {.formula-card}
+### Nullclines
+Solve
+
+$$
+f(x, y; \theta) = 0, \qquad g(x, y; \theta) = 0
+$$
+
+to find where the vector field changes direction.
+:::
+
+::: {.formula-card}
+### Fixed point
+Intersections of the nullclines are the equilibrium candidates.
+:::
+
+::: {.formula-card}
+### Linear test
+Evaluate the Jacobian near the equilibrium and inspect its eigenvalues.
+:::
+:::
+
+## CDIMA Is the Template
+
+$$
+\dot x = a - x - \frac{4xy}{1 + x^2}, \qquad
+\dot y = b x \left(1 - \frac{y}{1 + x^2}\right)
+$$
+
+::: {.grid-2}
+::: {.card}
+### Why it matters
+This model has all the ingredients you need for the rest of the session: nullclines, fixed points, stability, and trajectory comparison.
+:::
+
+::: {.card}
+### Classroom target
+Start here before you move to Van der Pol or FitzHugh-Nagumo. It is the cleanest worked example in the module.
+:::
+:::
+
+## Two Signatures to Compare
+
+::: {.grid-2}
+::: {.formula-card}
+### Van der Pol oscillator
+$$
+\dot x = \mu (y - f(x)), \qquad
+\dot y = -\frac{x}{\mu}, \qquad
+f(x) = \frac{x^3}{3} - x
+$$
+
+Look for a self-sustained stable limit cycle.
+:::
+
+::: {.formula-card}
+### FitzHugh-Nagumo
+$$
+\epsilon \dot v = f(v) - w + I_{\mathrm{app}}, \qquad
+\dot w = v - \gamma w
+$$
+
+Look for excitable transients and timescale separation.
+:::
+:::
+
+## Animation and Interaction
+
+```python
+ani = animation.FuncAnimation(fig, animate, fargs=(sol.y,), interval=20, blit=True)
+
+
+def mouse_click(event):
+    if event.inaxes is ax:
+        x0, y0 = event.xdata, event.ydata
+        # restart solve_ivp with the new initial state
+```
+
+This turns the phase plane into an experiment. Students can click a new initial condition and immediately see whether the system returns to equilibrium, spirals, or converges to a cycle.
+
+## Full Module Pages {.inverse}
+
+::: {.module-links}
+[Session overview](../modules/ode-2d/index.qmd)
+[CDIMA reaction](../modules/ode-2d/cdima.qmd)
+[Van der Pol oscillator](../modules/ode-2d/van-der-pol.qmd)
+[FitzHugh-Nagumo](../modules/ode-2d/fitzhugh-nagumo.qmd)
+[Animation template](../modules/ode-2d/animation.qmd)
+[Assignment](../modules/ode-2d/assignment.qmd)
+:::

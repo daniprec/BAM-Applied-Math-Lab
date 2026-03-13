@@ -1,0 +1,210 @@
+---
+title: "Partial Differential Equations"
+subtitle: "Finite differences, Turing instability, and reaction-diffusion patterns"
+---
+
+## From State Vectors to Fields {.section-break}
+
+The key change in the PDE session is spatial structure. The state is no longer a short vector of variables. It is a field spread over a grid.
+
+::: {.grid-3}
+::: {.card}
+### Mathematical object
+<span class="metric">u(x, t)</span>
+
+The unknown is now a field over space, not a short state vector.
+:::
+
+::: {.card}
+### Coupling mechanism
+Diffusion enters through the Laplacian, which links each location to its neighbors.
+:::
+
+::: {.card}
+### Student payoff
+You build a solver that reaches stripes, spots, and an interactive Gray-Scott laboratory.
+:::
+:::
+
+## Session Arc
+
+::: {.grid-2}
+::: {.card}
+### Learn the stencil
+Start in 1D and write the Laplacian with centered finite differences.
+:::
+
+::: {.card}
+### Explain the instability
+Use the Turing conditions to identify when spatial modes can grow.
+:::
+
+::: {.card}
+### Extend to 2D
+Reuse the same workflow on a rectangular grid with a 5-point stencil.
+:::
+
+::: {.card}
+### Build the lab
+Finish with Gray-Scott, then add drawing, pause, and sliders.
+:::
+:::
+
+## Numerical Workflow
+
+::: {.workflow-grid}
+::: {.tool-card}
+### Grid
+Discretize the spatial domain into 1D or 2D arrays.
+:::
+
+::: {.tool-card}
+### Laplacian
+Approximate diffusion with finite differences, often through `np.roll()`.
+:::
+
+::: {.tool-card}
+### Time stepping
+Advance the system with explicit Euler updates.
+:::
+
+::: {.tool-card}
+### Boundary conditions
+Enforce Neumann, Dirichlet, or periodic behavior explicitly.
+:::
+:::
+
+## Laplacian in 1D and 2D
+
+::: {.grid-2}
+::: {.formula-card}
+### 1D stencil
+$$
+\Delta u(x) \approx \frac{u(x + \Delta x) - 2u(x) + u(x - \Delta x)}{\Delta x^2}
+$$
+
+In code, `np.roll(u, 1) - 2*u + np.roll(u, -1)` gives the centered stencil.
+:::
+
+::: {.formula-card}
+### 2D stencil
+$$
+\Delta u \approx u_{i+1,j} + u_{i-1,j} + u_{i,j+1} + u_{i,j-1} - 4u_{i,j}
+$$
+
+The 5-point stencil is the default mental model before you move to richer variants.
+:::
+:::
+
+## What Controls the Outcome
+
+::: {.grid-2}
+::: {.card}
+### Spatial scale $\Delta x$
+Grid spacing changes the cost, the resolved wavelength, and the accuracy of the stencil.
+:::
+
+::: {.card}
+### Time step $\Delta t$
+Explicit Euler is simple, but it is only conditionally stable. If the field explodes, the first parameter to question is the time step.
+:::
+
+::: {.card}
+### Boundary conditions
+Neumann, Dirichlet, and periodic boundaries can favor different symmetries and edge behavior.
+:::
+
+::: {.card}
+### Initial perturbation
+Patterns grow from a nearly homogeneous state plus a small seed, not from a perfectly flat field.
+:::
+:::
+
+## Boundary Conditions Matter
+
+::: {.grid-3}
+::: {.card}
+### Neumann
+Zero-flux boundaries preserve the idea that nothing crosses the edge.
+:::
+
+::: {.card}
+### Dirichlet
+Fix the value at the boundary and force the field to match it.
+:::
+
+::: {.card}
+### Periodic
+Wrap one edge onto the opposite edge, which is especially convenient with `np.roll()`.
+:::
+:::
+
+## Gierer-Meinhardt as the First Pattern Former
+
+$$
+\frac{\partial u}{\partial t} = \Delta u + \gamma \left(a - b u + \frac{u^2}{v}\right),
+\qquad
+\frac{\partial v}{\partial t} = d \Delta v + \gamma (u^2 - v)
+$$
+
+This model is the training ground for grid setup, Laplacian construction, explicit updates, and boundary-condition handling.
+
+## Turing Instability Explains the Pattern Window
+
+$$
+f_u + g_v < 0, \qquad
+f_u g_v - f_v g_u > 0, \qquad
+g_v + d f_u > 2 \sqrt{d (f_u g_v - f_v g_u)}
+$$
+
+::: {.card}
+If these inequalities are satisfied at the homogeneous steady state, spatial modes can grow even when the non-spatial equilibrium is stable. That is the mechanism behind the stripe and spot windows you see numerically.
+:::
+
+::: {.card}
+The inequalities mark a region where pattern growth is possible, but the simulation still decides which wavelength survives, how fast it grows, and whether the final state looks like spots, stripes, or a transient mixture.
+:::
+
+## Gray-Scott Turns the Solver into a Lab
+
+$$
+\frac{\partial u}{\partial t} = d_1 \Delta u - u v^2 + f (1 - u),
+\qquad
+\frac{\partial v}{\partial t} = d_2 \Delta v + u v^2 - (f + k) v
+$$
+
+::: {.grid-2}
+::: {.card}
+### Control knobs
+Feed rate $f$, kill rate $k$, diffusion coefficients, grid size, and time step change the final morphology.
+:::
+
+::: {.card}
+### Interaction layer
+Students add drawing, pause-resume control, and sliders so the PDE becomes an experiment rather than a fixed movie.
+:::
+:::
+
+## The Core Update Loop
+
+```python
+for _ in range(num_steps):
+    lap_u = np.roll(u, 1, axis=0) + np.roll(u, -1, axis=0)
+    lap_u += np.roll(u, 1, axis=1) + np.roll(u, -1, axis=1) - 4 * u
+    lap_v = np.roll(v, 1, axis=0) + np.roll(v, -1, axis=0)
+    lap_v += np.roll(v, 1, axis=1) + np.roll(v, -1, axis=1) - 4 * v
+    u += dt * (d1 * lap_u - u * v**2 + f * (1 - u))
+    v += dt * (d2 * lap_v + u * v**2 - (f + k) * v)
+```
+
+## Full Module Pages {.inverse}
+
+::: {.module-links}
+[Session overview](../modules/pde/index.qmd)
+[Gierer-Meinhardt 1D](../modules/pde/gierer-meinhardt-1d.qmd)
+[Turing instability](../modules/pde/turing-instability.qmd)
+[Gierer-Meinhardt 2D](../modules/pde/gierer-meinhardt-2d.qmd)
+[Gray-Scott](../modules/pde/gray-scott.qmd)
+[Gray-Scott interaction](../modules/pde/gray-scott-art.qmd)
+[Assignment](../modules/pde/assignment.qmd)
+:::
