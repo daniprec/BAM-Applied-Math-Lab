@@ -1,0 +1,80 @@
+---
+title: "Assignment"
+subtitle: "Reaction-Diffusion PDEs in 1D"
+format: html
+---
+
+This assignment focuses on the one-dimensional Gierer-Meinhardt model and the Turing-instability analysis behind it [@turing1952chemical; @gierer1972theory]. You will combine a linear stability calculation with a finite-difference simulation on a finite interval.
+
+The governing equations are
+
+$$
+u_t = D_1 u_{xx} + \gamma f(u, v), \qquad
+v_t = D_2 v_{xx} + \gamma g(u, v),
+$$
+
+with reaction terms
+
+$$
+f(u, v) = a - bu + \frac{u^2}{v}, \qquad g(u, v) = u^2 - v, \qquad a, b > 0.
+$$
+
+Consider the equations on the interval $\Omega = (0, L)$ with Neumann zero-flux boundary conditions. Use the session pages below as a guide:
+
+[Gierer-Meinhardt 1D](gierer-meinhardt-1d.qmd){.btn .btn-primary}
+[Turing Instability](turing-instability.qmd){.btn .btn-primary}
+
+## Analytic Approach
+
+The explicit conditions for Turing instability are
+
+$$
+\operatorname{Tr} J = f_u + g_v < 0
+$$
+
+$$
+\det J \equiv \Delta = f_u g_v - f_v g_u > 0
+$$
+
+$$
+D_1 g_v + D_2 f_u > 2 \sqrt{D_1 D_2} \sqrt{\Delta} > 0.
+$$
+
+These conditions do not depend on $\gamma$ or on the size of the interval. They are only necessary conditions. To make them sufficient, check explicitly that unstable spatial modes exist, which does depend on the interval length through the Laplacian eigenvalues $\lambda_n$.
+
+1. In the Gierer-Meinhardt model take $\gamma = 1$, $D_1 = 1$, and $D_2 = d > 0$. Study in which region of parameter space $(a, b, d)$ the conditions above hold. This region is the Turing space. For convenience, take $b = 1$ and plot the 2D section in the $(a, d)$ plane.
+2. Solve the Sturm-Liouville problem on the line segment and identify the spectrum of the Laplacian with Neumann boundary conditions. Study the two temporal eigenvalues associated with each spatial mode, determine the leading spatial mode, and list the unstable spatial modes. Remember that the temporal eigenvalues associated with the spatial eigenvalue $\lambda_n$ are the eigenvalues of
+
+$$
+A_n = J + \lambda_n D =
+\begin{pmatrix}
+\gamma f_u + \lambda_n D_1 & \gamma f_v \\
+\gamma g_u & \gamma g_v + \lambda_n D_2
+\end{pmatrix},
+\qquad
+\det(A_n - \sigma^{(n)} I) = 0.
+$$
+
+3. For Gierer-Meinhardt in 1D on $(0, L)$ with $L = 40$, compare the following two parameter sets and decide which one leads to Turing instability. In the unstable case, determine the leading spatial mode.
+   - Case A: $\gamma = 1$, $a = 0.4$, $b = 1$, $d = 30$
+   - Case B: $\gamma = 1$, $a = 0.4$, $b = 1$, $d = 20$
+
+## Numerical Approach
+
+Implement a 1D finite-difference scheme for space and an explicit Euler scheme for time. The stability of the numerical scheme depends critically on the choice of `dt` and `dx`.
+
+1. Use the following discretization, for which the numerical scheme is stable:
+   - $N = 40$, the number of spatial points
+   - $dx = 1$, so that $L = N dx = 40$
+   - $dt = 0.01$
+2. Start from the homogeneous stationary solution plus a 1% additive noise and observe the evolution in both parameter cases. In one case the perturbation should fall back to the homogeneous solution, while in the other the unstable spatial mode should be amplified.
+3. Integrate the problem for $5 \times 10^4$ time steps of size $dt = 0.01$, saving one image every 500 steps. Join the resulting 100 frames into an animation.
+4. Try other parameter values, integration steps, and interval lengths. Compare what you see with the predictions from your analytic work until you have a complete understanding of the Turing instability mechanism.
+
+## Possible Extensions
+
+1. Effect of the interval length. Keep the model parameters fixed and repeat the simulation for several values of $L$. Determine whether there is a minimum size below which no visible pattern forms, and study how the dominant wavelength and number of visible peaks depend on the interval length.
+2. Boundary conditions. Replace Neumann boundary conditions with periodic boundary conditions and compare the early unstable modes and the long-time profiles.
+3. Parameter sweeps. Choose a small grid in the $(a, d)$ plane near the edge of the Turing space, simulate each case numerically, and compare the observed transition with the analytical prediction.
+
+The next session extends the same workflow to two spatial dimensions and then switches to Gray-Scott.

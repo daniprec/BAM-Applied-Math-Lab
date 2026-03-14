@@ -1,0 +1,100 @@
+---
+title: "Partial Differential Equations in 1D"
+subtitle: "Gierer-Meinhardt and Turing Instability"
+format: html
+---
+
+This session introduces reaction-diffusion PDEs on a line. We will discretize space with finite differences, advance in time with explicit Euler, and use Turing instability to predict when spatial patterns should appear [@turing1952chemical; @gierer1972theory].
+
+## From Networks to PDEs
+
+In the previous session on **networks**, you studied how local rules acting on nodes and edges can create large-scale spreading patterns.
+
+In this session we keep the same simulation mindset, but we change the space where the dynamics live:
+
+- Graph nodes become values on a spatial grid.
+- Edges become local neighbor couplings through the Laplacian.
+- Spreading on a network becomes diffusion on a continuous domain.
+
+The idea is still local interaction creating global structure. The difference is that now the state is a **field** such as $u(x, t)$ instead of a list of node states.
+
+[Back to Networks](../networks/index.qmd){.btn .btn-secondary}
+
+## Case Studies
+
+We will build this session in layers.
+
+First, we start with the **Gierer-Meinhardt model in 1D**. This is the cleanest place to learn the PDE workflow: grid, Laplacian, Euler update, boundary conditions, and animation.
+
+[Gierer-Meinhardt 1D](gierer-meinhardt-1d.qmd){.btn .btn-primary}
+
+Then we ask the theoretical question: **when should patterns appear at all?** That is where Turing instability enters.
+
+[Turing Instability](turing-instability.qmd){.btn .btn-primary}
+
+Once the numerical and theoretical pieces are in place, package them in the assignment.
+
+[Assignment](assignment.qmd){.btn .btn-secondary}
+
+## Learning Goals
+
+- Implement a 1D Laplacian with `np.roll()`.
+- Explain how boundary conditions affect a PDE solver.
+- Simulate a reaction-diffusion system on an interval.
+- Connect observed patterns with Turing instability.
+- Predict unstable spatial modes on a finite domain.
+
+## Flow of This Session
+
+1. Start in 1D and implement the Laplacian with centered differences.
+2. Add explicit Euler time stepping and boundary conditions.
+3. Study Turing instability and connect the theory to the patterns you see.
+4. Use the theory to predict unstable modes on a finite interval.
+5. Complete the 1D assignment.
+
+## Numerical Workflow
+
+Every page in this session follows the same numerical loop:
+
+1. Create a spatial grid.
+2. Approximate the Laplacian with finite differences.
+3. Evaluate the reaction terms.
+4. Update the fields with Euler's method.
+5. Enforce the boundary conditions.
+6. Plot or animate the result.
+
+## What Do We Need?
+
+### `numpy`
+
+We store spatial fields in NumPy arrays and use `np.roll()` to access neighboring grid points.
+
+### `matplotlib.pyplot`
+
+We initialize figures, axes, labels, and static plot elements.
+
+### `matplotlib.animation`
+
+We update lines frame by frame to animate the PDE dynamics.
+
+### Why not use `scipy.solve_ivp` here?
+
+In Sessions 1 to 3, `scipy.integrate.solve_ivp()` handled the time integration for us because the state was a finite-dimensional ODE vector.
+
+Here the key numerical work is different:
+
+- we must discretize space first,
+- we must update every grid point at every step,
+- and we must enforce the boundary conditions ourselves.
+
+That is why we use explicit Euler loops instead of `solve_ivp()` in this session.
+
+::: {.callout-tip}
+## Scripts or notebooks?
+
+Use notebooks when you want to test stencils, plot snapshots, or inspect intermediate arrays. Use Python scripts when you want smooth animations.
+:::
+
+::: {.callout-note}
+Explicit Euler is simple and transparent, but it is only conditionally stable. If a simulation explodes immediately, reduce `dt`, increase `dx`, or test on a smaller grid first.
+:::
