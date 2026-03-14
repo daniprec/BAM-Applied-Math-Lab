@@ -4,68 +4,158 @@ subtitle: "Coupled ODEs: Millennium Bridge"
 format: html
 ---
 
-This is a joint assignment with the main course **Mathematical Modelling**. Follow the official handout posted on the main course Blackboard: [Kuramoto_assignment.pdf](../../Kuramoto_assignment.pdf).
+This is still a joint assignment with the main course Mathematical Modelling. Upload your submission through the Mathematical Modelling course, since it counts for both courses. This time the assignment is individual.
 
-Your main goal is to **simulate the Millennium Bridge crowd–bridge synchrony model** from the handout. Conceptually, it is Kuramoto-like: pedestrians are phase oscillators, and their coupling is mediated by the bridge motion (@strogatz2005bridge; @eckhardt2007modeling).
+The brief below follows the official handout as closely as possible. Your main goal is to review the theory of synchronization of weakly coupled oscillators, study the Kuramoto model numerically, and then simulate the Millennium Bridge crowd-bridge synchrony model (@kuramoto2003chemical; @strogatz2000kuramoto; @pikovsky2001synchronization; @strogatz2005bridge; @eckhardt2007modeling).
 
-Upload your submission to the Mathematical Modelling course (it counts towards both courses). This time, assignments are **individual**.
+## Kuramoto Model
 
-## Summary of Goals
+Start from the basic Kuramoto model with all-to-all symmetric coupling:
 
-Below is a brief summary of the goals; use the handout for full details and instructions.
+$$
+\dot\theta_i = \omega_i + \frac{K}{N}\sum_{j=1}^N \sin(\theta_j-\theta_i),
+\qquad i=1,\dots,N.
+$$ {#eq-ode-coupled-assignment-1}
 
-### Kuramoto Model (Coupled Oscillators)
+Here $\theta_i \in [0,2\pi]$ is the phase of oscillator $i$, $K>0$ is the coupling constant, and the natural frequencies $\omega_i$ are sampled from a unimodal symmetric distribution $g(\omega)$.
 
-Start with the basic all-to-all Kuramoto ODE (@kuramoto2003chemical; @strogatz2000kuramoto)
-$$\dot\theta_i = \omega_i + \frac{K}{N}\sum_{j=1}^N \sin(\theta_j-\theta_i),\qquad i=1,\dots,N.$$ {#eq-ode-coupled-assignment-1}
+## Numerical Integration
 
-From this, you can implement the following tasks:
+Write a Python script that integrates the Kuramoto equations numerically. Start with the following values:
 
-- Plot $r(t)$ (order parameter) versus time. $r_\infty\approx 0$ for $K<K_c$ (up to fluctuations) and $r_\infty\in(0,1)$ for $K>K_c$, with fluctuations typically decreasing like $\mathcal{O}(N^{-1/2})$.
-- Animate oscillators on the unit circle (optionally plot the centroid $r e^{i\Psi}$).
-- Estimate $K_c$ numerically by sampling multiple $K$ values and plotting $r_\infty(K)$ with error bars. We suggest averaging over a tail window to reduce fluctuations.
-- Compare with the theory in @strogatz2000kuramoto (implicit curve for $r_\infty(K)$) and the special case of the Cauchy distribution.
+- $N=100$ oscillators.
+- $g(\omega)$ equal to the standard normal distribution.
+- $K=7$.
 
-### Millennium Bridge Crowd Synchrony
+For the initial condition, write a function that assigns phases either randomly over the whole circle, the disperse case, or over a small arc, the concentrated case. For the numerical integration, you may write your own scheme, for instance explicit Euler, or use `scipy.integrate`. In either case, produce the following outputs:
 
-Modeling assumptions:
+1. A graph of $r(t)$, the order parameter, versus time. In the subcritical case $K<K_c$, the asymptotic value $r_\infty$ should be approximately zero up to fluctuations, while for $K>K_c$ you should observe $r_\infty \in (0,1)$ for large $t$. The amplitude of the fluctuations should decrease as $N$ grows, typically like $\mathcal{O}(N^{-1/2})$.
+2. An animation of the oscillators moving on the unit circle. You may also plot the centroid $re^{i\Psi}$.
 
-- The bridge is a single lateral vibration mode (damped harmonic oscillator).
-- Each pedestrian is a phase oscillator whose lateral forcing is periodic in its stepping phase.
+## Critical Coupling
 
-Bridge dynamics:
-$$M\,\ddot X(t)+B\,\dot X(t)+KX(t)=\sum_{i=1}^N G\sin\theta_i(t),\qquad \Omega=\sqrt{K/M}.$$ {#eq-ode-coupled-assignment-2}
+Review the lecture notes and the first part of @strogatz2000kuramoto until you are comfortable with the derivation of the critical coupling $K_c$. For more detail, see @pikovsky2001synchronization. Then compare the theoretical prediction with the value obtained numerically.
 
-Pedestrian phase dynamics (see @strogatz2005bridge):
-$$\dot\theta_i(t)=\Omega_i + C\,A(t)\,\sin\big(\Psi(t)-\theta_i(t)+\alpha\big),\qquad i=1,\dots,N.$$ {#eq-ode-coupled-assignment-3}
+1. Sample 20 values of $K$ between $K_{\min}$ and $K_{\max}$ such that $K_{\min}<K_c<K_{\max}$. A reasonable choice is $K_{\min}=K_c/3$ and $K_{\max}=3K_c$.
+2. For each sampled value of $K$, estimate $r_\infty$ by making sure that $r(t)$ has reached its saturation regime, then average over a tail window to reduce fluctuations. The handout suggests averaging over the last 300 time steps. Keep both the mean and standard deviation.
+3. Plot $r_\infty(K)$ with error bars and identify the approximate value of $K_c$, comparing it with the theoretical prediction.
+4. Validate your results with different choices of $g(\omega)$, for instance normal distributions with different variance, and check whether the theoretical prediction for $K_c$ remains consistent.
+5. Plot the smooth theoretical curve defined implicitly in equation (4.5) of @strogatz2000kuramoto together with your numerical points:
 
-Bridge amplitude/phase definitions:
-$$X(t)=A(t)\sin\Psi(t),\quad \dot X(t)=A(t)\Omega\cos\Psi(t),$$ {#eq-ode-coupled-assignment-4}
-$$A(t)=\sqrt{X(t)^2+\Big(\dot X(t)/\Omega\Big)^2},\qquad \Psi(t)=\operatorname{atan2}\!\Big(X(t),\dot X(t)/\Omega\Big).$$ {#eq-ode-coupled-assignment-5}
+$$
+1 = K\int_{-\pi/2}^{\pi/2} \cos^2\theta\, g\big(Kr\sin\theta\big)\,d\theta.
+$$ {#eq-ode-coupled-assignment-2}
 
-Synchronization measure:
-$$R(t)e^{i\Phi(t)}=\frac{1}{N}\sum_{j=1}^N e^{i\theta_j(t)}.$$ {#eq-ode-coupled-assignment-6}
+6. If you are not able to solve the implicit equation numerically for a general distribution $g(\omega)$, include at least the Cauchy case, where the formula is explicit:
 
-Critical crowd size (simplest case $\alpha=\pi/2$ and symmetric $P(\Omega)$ about the bridge frequency):
-$$N_c=\frac{2B\Omega}{\pi G C\,P(\Omega)}.$$ {#eq-ode-coupled-assignment-7}
+$$
+g(\omega) = \frac{1}{\pi(1+\omega^2)},
+\qquad
+r_\infty(K) = \sqrt{1-\frac{K_c}{K}}.
+$$ {#eq-ode-coupled-assignment-3}
 
-Wobbling and synchronization emerge together when $N$ crosses $N_c$ (see also @strogatz2005bridge).
+Check that your numerical points approach the theoretical curve more closely as $N$ becomes large.
 
-## Required (Millennium Bridge experiment)
+## Millennium Bridge Crowd Synchrony
 
-Use `scipy.integrate.solve_ivp` to run the controlled **crowd ramp** experiment:
+Soon after the Millennium Bridge in London opened, it showed unexpected lateral oscillations when crowded. A standard explanation is a positive feedback loop: small lateral bridge motion influences pedestrians' gait, the lateral forcing becomes more coherent, and that increased coherence amplifies the bridge motion (@strogatz2005bridge).
 
-1. Start with $N=N_0$ pedestrians. Every $\Delta T$ seconds, increase the crowd by $\Delta N$ (add new pedestrians with fresh $\theta_i(0)$ and $\Omega_i$) until reaching $N_{\max}$.
-2. Compute $N_c$ using the formula in the handout (using your chosen parameters/distribution).
-3. Define $t_c=\inf\{t: N(t)\ge N_c\}$.
-4. Produce three stacked plots and draw a vertical dashed line at $t=t_c$ labeled "$N=N_c$":
-	- $N(t)$ vs $t$ (crowd size staircase)
-	- $A(t)$ vs $t$ (bridge wobble amplitude)
-	- $R(t)$ vs $t$ (degree of synchronization)
-5. Briefly describe what happens before/after $t_c$ and whether the observed onset is close to the theoretical prediction.
+### Modeling Assumptions
 
-Reference code is available in [amlab/odes_coupled/bridge.py](../../amlab/odes_coupled/bridge.py). Use it for ideas, but **do not copy it**.
+The simplified model uses two main idealizations:
 
-\vspace{1cm}
+- The bridge is represented by a single lateral vibration mode, a damped harmonic oscillator.
+- Each pedestrian is represented by a phase oscillator whose lateral force is periodic in the stepping phase.
 
-**Good luck and enjoy your coding!**
+### Bridge Dynamics
+
+Let $X(t)$ be the lateral displacement of the relevant bridge mode. Then
+
+$$
+M\ddot X(t) + B\dot X(t) + KX(t) = \sum_{i=1}^N G\sin\theta_i(t),
+\qquad
+\Omega = \sqrt{K/M}.
+$$ {#eq-ode-coupled-assignment-4}
+
+Here $M$ is the modal mass, $B$ the damping coefficient, $K$ the stiffness, and $G$ the maximum lateral force per pedestrian.
+
+### Pedestrian Phase Dynamics
+
+Each pedestrian is modeled as a phase oscillator with natural stepping frequency $\Omega_i$ drawn from a unimodal distribution $P(\Omega)$ centered near the bridge frequency. The bridge motion perturbs the gait according to
+
+$$
+\dot\theta_i(t) = \Omega_i + C\,A(t)\sin\big(\Psi(t)-\theta_i(t)+\alpha\big),
+\qquad i=1,\dots,N,
+$$ {#eq-ode-coupled-assignment-5}
+
+where $C$ measures sensitivity to bridge vibrations and $\alpha$ is a phase-lag parameter. The pedestrians do not interact directly with one another. They are all driven by the same bridge motion, and together they drive the bridge through the forcing term in @eq-ode-coupled-assignment-4.
+
+### Bridge Amplitude and Phase
+
+Following @strogatz2005bridge, define the instantaneous bridge amplitude $A(t)$ and phase $\Psi(t)$ by
+
+$$
+X(t) = A(t)\sin\Psi(t),
+\qquad
+\dot X(t) = A(t)\Omega\cos\Psi(t).
+$$ {#eq-ode-coupled-assignment-6}
+
+Equivalently,
+
+$$
+A(t) = \sqrt{X(t)^2 + \Big(\dot X(t)/\Omega\Big)^2},
+\qquad
+\Psi(t) = \operatorname{atan2}\!\Big(X(t),\dot X(t)/\Omega\Big).
+$$ {#eq-ode-coupled-assignment-7}
+
+### Synchronization Measure
+
+Define the Kuramoto order parameter by
+
+$$
+R(t)e^{i\Phi(t)} = \frac{1}{N}\sum_{j=1}^N e^{i\theta_j(t)}.
+$$ {#eq-ode-coupled-assignment-8}
+
+Here $R(t) \in [0,1]$ measures crowd synchrony. For incoherent phases, $R(t)$ fluctuates at scale $\mathcal{O}(N^{-1/2})$, while partial synchronization produces values of order one.
+
+### Theoretical Critical Crowd Size
+
+In the simplest case $\alpha = \pi/2$ and for a distribution $P(\Omega)$ symmetric about the bridge frequency $\Omega$, the theory gives the critical crowd size
+
+$$
+N_c = \frac{2B\Omega}{\pi G C\,P(\Omega)}.
+$$ {#eq-ode-coupled-assignment-9}
+
+When $N$ crosses $N_c$, bridge wobbling and pedestrian synchronization emerge together through the feedback loop.
+
+If you take $P(\Omega)$ to be a normal distribution with mean $\Omega$ and standard deviation $\sigma$, then
+
+$$
+P(\Omega) = \frac{1}{\sqrt{2\pi}\,\sigma},
+\qquad
+N_c = \frac{2B\Omega\sqrt{2\pi}\,\sigma}{\pi G C}.
+$$ {#eq-ode-coupled-assignment-10}
+
+## Required Numerical Experiment
+
+Implement a numerical solver for the coupled bridge-pedestrian system. You may use `scipy.integrate.solve_ivp`, which is recommended here, or another standard ODE solver such as RK4. Use random initial phases $\theta_i(0) \sim \mathrm{Unif}[0,2\pi)$ and small initial bridge motion, for instance $X(0) \approx 0$ and $\dot X(0) \approx 0$.
+
+Perform the following controlled crowd-ramp experiment:
+
+1. Start with $N=N_0$ pedestrians. Every $\Delta T$ seconds, increase the crowd size by $\Delta N$, adding new pedestrians with fresh initial phases and natural frequencies, until reaching $N_{\max}$.
+2. Compute the theoretical value of $N_c$ using your chosen parameters and frequency distribution.
+3. Define the first time at which the crowd reaches the theoretical threshold,
+
+$$
+t_c = \inf\{t : N(t) \ge N_c\}.
+$$ {#eq-ode-coupled-assignment-11}
+
+4. Produce three stacked plots, and in each one draw a vertical dashed line at $t=t_c$ labeled "$N=N_c$":
+   - $N(t)$ versus $t$, the crowd-size staircase.
+   - $A(t)$ versus $t$, the bridge wobble amplitude.
+   - $R(t)$ versus $t$, the degree of synchronization.
+5. Briefly describe what happens before and after $t_c$, and comment on whether the observed onset of wobbling and synchrony is close to the theoretical prediction.
+
+Reference code is available in [amlab/odes_coupled/bridge.py](../../amlab/odes_coupled/bridge.py). Use it for ideas, but do not copy it.
+
+Good luck and enjoy your coding.
