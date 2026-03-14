@@ -1,0 +1,103 @@
+---
+title: "Partial Differential Equations in 2D"
+subtitle: "Gierer-Meinhardt and Gray-Scott"
+format: html
+---
+
+This session builds directly on the 1D PDE workflow. We move from a line to a rectangular grid, keep the same finite-difference and explicit Euler ideas, and then switch to the Gray-Scott model for richer two-dimensional pattern formation [@gray1984autocatalytic; @pearson1993complex].
+
+## From PDEs in 1D to PDEs in 2D
+
+In the previous session on **PDEs in 1D**, you built a solver on an interval and used Turing instability to predict which spatial modes should grow.
+
+In this session we keep the same logic, but the geometry becomes richer:
+
+- A 1D field becomes a 2D grid.
+- The second derivative becomes a 5-point Laplacian stencil.
+- Single mode numbers become mode pairs on a rectangle.
+- Static solvers become full 2D simulations and interactive experiments.
+
+The main idea does not change. Local interaction still creates global structure. The difference is that the geometry now allows spots, stripes, fronts, and labyrinths.
+
+[Back to PDEs in 1D](../pde-1d/index.qmd){.btn .btn-secondary}
+
+## Case Studies
+
+We continue the Gierer-Meinhardt story by extending the solver to **two spatial dimensions**.
+
+[Gierer-Meinhardt 2D](gierer-meinhardt-2d.qmd){.btn .btn-primary}
+
+Then we switch reaction terms and build the **Gray-Scott model**, which is the main simulator for this session.
+
+[Gray-Scott](gray-scott.qmd){.btn .btn-primary}
+
+After that, we turn the simulation into an interactive experiment with drawing, pause-resume, and sliders.
+
+[Gray-Scott: Interaction](gray-scott-art.qmd){.btn .btn-primary}
+
+When all the ingredients are in place, you will combine them in the assignment.
+
+[Assignment](assignment.qmd){.btn .btn-secondary}
+
+## Learning Goals
+
+- Implement a 2D Laplacian with `np.roll()`.
+- Connect domain geometry with unstable spatial modes.
+- Simulate reaction-diffusion systems on a rectangular grid.
+- Build a Gray-Scott simulator with periodic boundary conditions.
+- Add basic interaction with drawing, pause-resume, and sliders.
+
+## Flow of This Session
+
+1. Extend the 1D workflow to a 2D rectangular grid.
+2. Compare the predicted unstable modes with 2D Gierer-Meinhardt patterns.
+3. Build the Gray-Scott model and experiment with feed and kill rates.
+4. Add interaction so the PDE becomes a live experiment.
+5. Complete the assignment.
+
+## Numerical Workflow
+
+Every page in this session follows the same numerical loop:
+
+1. Create a spatial grid.
+2. Approximate the Laplacian with finite differences.
+3. Evaluate the reaction terms.
+4. Update the fields with Euler's method.
+5. Enforce or exploit the boundary conditions.
+6. Plot, animate, or interact with the result.
+
+## What Do We Need?
+
+### `numpy`
+
+We store spatial fields in NumPy arrays and use `np.roll()` to access neighboring grid points.
+
+### `matplotlib.pyplot`
+
+We initialize figures, axes, labels, and static plot elements.
+
+### `matplotlib.animation`
+
+We update images frame by frame to animate the PDE dynamics.
+
+### `matplotlib.backend_bases`
+
+We handle mouse clicks and key presses for interactive experiments.
+
+### `matplotlib.widgets`
+
+We use sliders on the Gray-Scott interaction page.
+
+### Why not use `scipy.solve_ivp` here?
+
+The key numerical work is still spatial discretization plus explicit updates at every grid point. In two dimensions, that bookkeeping becomes even more central, so we keep using direct Euler loops.
+
+::: {.callout-tip}
+## Before you start
+
+If your 1D solver still feels shaky, revisit the previous session first. The 2D code is much easier once the 1D stencil and Euler update are routine.
+:::
+
+::: {.callout-note}
+Explicit Euler is simple and transparent, but it is only conditionally stable. If a simulation explodes immediately, reduce `dt`, increase `dx`, or test on a smaller grid first.
+:::
