@@ -4,77 +4,82 @@ subtitle: "Reaction-Diffusion PDEs in 1D"
 format: html
 ---
 
-This assignment focuses on the one-dimensional Gierer-Meinhardt model and the Turing-instability analysis behind it [@turing1952chemical; @gierer1972theory]. You will combine a linear stability calculation with a finite-difference simulation on a finite interval.
+This assignment turns the 1D PDE workflow into a complete coding mini-project. You will work with the one-dimensional Gierer-Meinhardt model and build a reproducible workflow that compares prediction and simulation on a finite interval [@turing1952chemical; @gierer1972theory].
 
-The governing equations are
-
-$$
-u_t = D_1 u_{xx} + \gamma f(u, v), \qquad
-v_t = D_2 v_{xx} + \gamma g(u, v),
-$$
-
-with reaction terms
-
-$$
-f(u, v) = a - bu + \frac{u^2}{v}, \qquad g(u, v) = u^2 - v, \qquad a, b > 0.
-$$
-
-Consider the equations on the interval $\Omega = (0, L)$ with Neumann zero-flux boundary conditions. Use the session pages below as a guide:
+You can follow the guide here:
 
 [Gierer-Meinhardt 1D](gierer-meinhardt-1d.qmd){.btn .btn-primary}
 [Turing Instability](turing-instability.qmd){.btn .btn-primary}
 
-## Analytic Approach
+## Summary of Goals
 
-The explicit conditions for Turing instability are
+Your submission should show that you can do three things:
 
-$$
-\operatorname{Tr} J = f_u + g_v < 0
-$$
+1. Implement the 1D Gierer-Meinhardt model and the basic prediction tools from the session.
+2. Build a reproducible computational workflow that compares prediction with simulation.
+3. Interpret when a spatial pattern appears and how it depends on the parameters and discretization.
 
-$$
-\det J \equiv \Delta = f_u g_v - f_v g_u > 0
-$$
+::: {.callout-note}
+## Submission
 
-$$
-D_1 g_v + D_2 f_u > 2 \sqrt{D_1 D_2} \sqrt{\Delta} > 0.
-$$
+Submit two files:
 
-These conditions do not depend on $\gamma$ or on the size of the interval. They are only necessary conditions. To make them sufficient, check explicitly that unstable spatial modes exist, which does depend on the interval length through the Laplacian eigenvalues $\lambda_n$.
+1. One coding deliverable, your choice of a Python script, a notebook, or a small dashboard/app. Students are free to choose the format, but it must reproduce all figures and numerical results end to end.
+2. A short report, 1 to 2 pages in LaTeX and submitted as PDF.
 
-1. In the Gierer-Meinhardt model take $\gamma = 1$, $D_1 = 1$, and $D_2 = d > 0$. Study in which region of parameter space $(a, b, d)$ the conditions above hold. This region is the Turing space. For convenience, take $b = 1$ and plot the 2D section in the $(a, d)$ plane.
-2. Solve the Sturm-Liouville problem on the line segment and identify the spectrum of the Laplacian with Neumann boundary conditions. Study the two temporal eigenvalues associated with each spatial mode, determine the leading spatial mode, and list the unstable spatial modes. Remember that the temporal eigenvalues associated with the spatial eigenvalue $\lambda_n$ are the eigenvalues of
+Your report should include:
 
-$$
-A_n = J + \lambda_n D =
-\begin{pmatrix}
-\gamma f_u + \lambda_n D_1 & \gamma f_v \\
-\gamma g_u & \gamma g_v + \lambda_n D_2
-\end{pmatrix},
-\qquad
-\det(A_n - \sigma^{(n)} I) = 0.
-$$
+- one figure of the Turing space in the $(a,d)$ plane,
+- a short table or concise summary of the unstable modes for the two test cases,
+- at least one figure from the numerical simulations,
+- a brief comparison between the predicted behavior and the observed dynamics.
+:::
 
-3. For Gierer-Meinhardt in 1D on $(0, L)$ with $L = 40$, compare the following two parameter sets and decide which one leads to Turing instability. In the unstable case, determine the leading spatial mode.
+Work with the 1D Gierer-Meinhardt model on the interval $\Omega = (0,L)$ with Neumann zero-flux boundary conditions, using the notation and definitions from the session pages.
+
+## Required
+
+1. Build a computational workflow that can do three things: compute the Turing space in the $(a,d)$ plane, identify unstable spatial modes on a finite interval, and simulate the 1D PDE numerically.
+2. For the parameter study, take $\gamma = 1$, $D_1 = 1$, and $D_2 = d > 0$, with $b = 1$, and produce one figure showing the Turing space in the $(a,d)$ plane.
+3. For the finite-interval analysis, determine the unstable spatial modes and the leading spatial mode for the following two cases on $(0,L)$ with $L = 40$:
    - Case A: $\gamma = 1$, $a = 0.4$, $b = 1$, $d = 30$
    - Case B: $\gamma = 1$, $a = 0.4$, $b = 1$, $d = 20$
-
-## Numerical Approach
-
-Implement a 1D finite-difference scheme for space and an explicit Euler scheme for time. The stability of the numerical scheme depends critically on the choice of `dt` and `dx`.
-
-1. Use the following discretization, for which the numerical scheme is stable:
+4. Implement a 1D finite-difference scheme for space and an explicit Euler scheme for time.
+5. Use the following discretization for the numerical experiments:
    - $N = 40$, the number of spatial points
    - $dx = 1$, so that $L = N dx = 40$
    - $dt = 0.01$
-2. Start from the homogeneous stationary solution plus a 1% additive noise and observe the evolution in both parameter cases. In one case the perturbation should fall back to the homogeneous solution, while in the other the unstable spatial mode should be amplified.
-3. Integrate the problem for $5 \times 10^4$ time steps of size $dt = 0.01$, saving one image every 500 steps. Join the resulting 100 frames into an animation.
-4. Try other parameter values, integration steps, and interval lengths. Compare what you see with the predictions from your analytic work until you have a complete understanding of the Turing instability mechanism.
+6. Start from the homogeneous stationary solution plus a 1% additive noise and run the simulation for both parameter cases.
+7. Integrate the problem for $5 \times 10^4$ time steps of size $dt = 0.01$, saving one image every 500 steps. Join the resulting 100 frames into an animation.
+8. Your chosen script, notebook, or dashboard should reproduce the main outputs clearly. At minimum, include:
+   - one figure of the Turing space,
+   - one summary of the unstable modes for Cases A and B,
+   - one static comparison of the numerical outcomes,
+   - one animation or interactive visualization of the evolving profile.
+9. Try at least one additional experiment of your own, changing either the parameters, the interval length, or the numerical settings, and comment briefly on what changed.
+
+## Short Discussion
+
+Your report should answer questions such as:
+
+1. Which of the two parameter sets produced a visible pattern, and how did that compare with your prediction?
+2. Did the dominant wavelength or number of peaks match the leading unstable mode you computed?
+3. Which numerical or modeling choice had the clearest effect on the observed pattern?
 
 ## Possible Extensions
 
-1. Effect of the interval length. Keep the model parameters fixed and repeat the simulation for several values of $L$. Determine whether there is a minimum size below which no visible pattern forms, and study how the dominant wavelength and number of visible peaks depend on the interval length.
-2. Boundary conditions. Replace Neumann boundary conditions with periodic boundary conditions and compare the early unstable modes and the long-time profiles.
-3. Parameter sweeps. Choose a small grid in the $(a, d)$ plane near the edge of the Turing space, simulate each case numerically, and compare the observed transition with the analytical prediction.
+1. **Effect of the interval length.** Keep the model parameters fixed and repeat the simulation for several values of $L$. Determine whether there is a minimum size below which no visible pattern forms, and study how the dominant wavelength and number of visible peaks depend on the interval length.
+2. **Boundary conditions.** Replace Neumann boundary conditions with periodic boundary conditions and compare the early unstable modes and the long-time profiles.
+3. **Parameter sweeps.** Choose a small grid in the $(a, d)$ plane near the edge of the Turing space, simulate each case numerically, and compare the observed transition with the analytical prediction.
+
+## Tips for Success
+
+- Get the mode scan and the basic simulation working before you run long PDE experiments.
+- Start with a short integration and a static snapshot before you build the full animation.
+- Use fixed random seeds so your figures and report stay reproducible.
+- Keep the code modular so the same solver can be reused for multiple parameter sets.
+- Focus on the comparison between prediction and observation, not only on producing a pretty pattern.
 
 The next session extends the same workflow to two spatial dimensions and then switches to Gray-Scott.
+
+**Good luck and enjoy your coding.**
