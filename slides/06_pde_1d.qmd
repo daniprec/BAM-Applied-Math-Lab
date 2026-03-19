@@ -1,0 +1,337 @@
+---
+title: "Partial Differential Equations in 1D"
+subtitle: "Implementation, Turing Space, and Mode Calculations"
+---
+
+## From State Vectors to Fields {.section-break}
+
+The key change in the PDE session is spatial structure. The state is no longer a short vector of variables. It is a field sampled on a grid.
+
+::: {.grid-3}
+::: {.card}
+### Mathematical object
+<span class="metric">u(x, t)</span>
+
+The unknown is now a field over space, not a short ODE state vector.
+:::
+
+::: {.card}
+### Coupling mechanism
+Diffusion enters through the Laplacian, which links each location to its neighbors.
+:::
+
+::: {.card}
+### Lecture goal
+Turn the theory they already saw into concrete calculations for Gierer-Meinhardt and the later Gray-Scott transition.
+:::
+:::
+
+## Flow for This Session
+
+::: {.grid-2}
+::: {.card}
+### Boundary conditions
+Implement Neumann, Dirichlet, and periodic conditions on Cartesian grids.
+:::
+
+::: {.card}
+### Laplacian
+Write the centered finite-difference stencil with vectorized shifts.
+:::
+
+::: {.card}
+### Explicit Euler
+Advance the full field with a direct time-stepping loop.
+:::
+
+::: {.card}
+### Turing application
+Compute the equilibrium, the Jacobian, the mode matrix, and the unstable-mode list.
+:::
+:::
+
+## Boundary Conditions on Cartesian Grids
+
+The same implementation logic works in 1D and on rectangles.
+
+::: {.grid-3}
+::: {.card}
+### Neumann
+Zero flux means copy the nearest interior value.
+
+`u[0] = u[1]`, `u[-1] = u[-2]`
+:::
+
+::: {.card}
+### Dirichlet
+Fix the value at the boundary after every Euler step.
+
+`u[0] = u_left`, `u[-1] = u_right`
+:::
+
+::: {.card}
+### Periodic
+Wrap one edge onto the other. With `np.roll()`, the stencil already does it.
+:::
+:::
+
+On a rectangle, the zero-flux pattern is
+
+```python
+uv[:, 0, :] = uv[:, 1, :]
+uv[:, -1, :] = uv[:, -2, :]
+uv[:, :, 0] = uv[:, :, 1]
+uv[:, :, -1] = uv[:, :, -2]
+```
+
+## Vectorized Laplacian
+
+::: {.grid-2}
+::: {.formula-card}
+### 1D stencil
+$$
+\Delta u(x) \approx \frac{u(x+\Delta x) - 2u(x) + u(x-\Delta x)}{\Delta x^2}
+$$
+
+```python
+lap_u = np.roll(u, 1) - 2 * u + np.roll(u, -1)
+lap_u = lap_u / dx**2
+```
+:::
+
+::: {.formula-card}
+### 2D preview
+$$
+\Delta u \approx u_{i+1,j} + u_{i-1,j} + u_{i,j+1} + u_{i,j-1} - 4u_{i,j}
+$$
+
+The same `np.roll()` idea extends later to rectangular grids.
+:::
+:::
+
+## Explicit Euler Closes the Solver
+
+Once the right-hand side is available, the PDE update is just
+
+$$
+U^{n+1} = U^n + \Delta t\,G(U^n).
+$$
+
+```python
+du_dt, dv_dt = gierer_meinhardt_pde(0, uv, dx=dx)
+uv[0] = uv[0] + dt * du_dt
+uv[1] = uv[1] + dt * dv_dt
+uv[:, 0] = uv[:, 1]
+uv[:, -1] = uv[:, -2]
+```
+
+The order matters. First apply Euler, then reimpose the boundary data.
+
+## Gierer-Meinhardt Is the Working Example
+
+$$
+\frac{\partial u}{\partial t} = \Delta u + \gamma \left(a - b u + \frac{u^2}{v}\right),
+\qquad
+\frac{\partial v}{\partial t} = d\,\Delta v + \gamma (u^2 - v)
+$$
+
+This is the model we use to turn the Turing theory into concrete calculations.
+
+## Compute the Homogeneous Equilibrium
+
+Set the reaction terms to zero:
+
+$$
+f(u, v) = a - bu + \frac{u^2}{v} = 0,
+\qquad
+g(u, v) = u^2 - v = 0.
+$$
+
+From $g(u_*, v_*) = 0$,
+
+$$
+v_* = u_*^2.
+$$
+
+Substitute into $f = 0$:
+
+$$
+a - bu_* + 1 = 0
+\quad \Longrightarrow \quad
+u_* = \frac{a+1}{b},
+\qquad
+v_* = \left(\frac{a+1}{b}\right)^2.
+$$
+
+For $a = 0.4$ and $b = 1$,
+
+$$
+u_* = 1.4,
+\qquad
+v_* = 1.96.
+$$
+
+## Compute the Jacobian at the Equilibrium
+
+At a general point $(u, v)$,
+
+$$
+J(u, v) =
+\begin{pmatrix}
+-b + 2u/v & -u^2/v^2 \\
+2u & -1
+\end{pmatrix}.
+$$
+
+At $(u_*, v_*)$ this becomes
+
+$$
+J_* =
+\begin{pmatrix}
+2b/(a+1) - b & -\left(b/(a+1)\right)^2 \\
+2(a+1)/b & -1
+\end{pmatrix}.
+$$
+
+For $a = 0.4$ and $b = 1$,
+
+$$
+J_* =
+\begin{pmatrix}
+0.4286 & -0.5102 \\
+2.8 & -1
+\end{pmatrix}.
+$$
+
+## Turing Conditions Define the Parameter Window
+
+$$
+f_u + g_v < 0,
+\qquad
+f_u g_v - f_v g_u > 0,
+\qquad
+g_v + d f_u > 2\sqrt{d(f_u g_v - f_v g_u)}
+$$
+
+::: {.grid-2}
+::: {.card}
+### Interpretation
+The homogeneous equilibrium is stable without spatial variation, but some spatial mode can grow.
+:::
+
+::: {.card}
+### Worked comparison
+At $a = 0.4$, $b = 1$, the point $d = 30$ is inside the Turing window, while $d = 20$ is outside.
+:::
+:::
+
+## Spatial Modes on a Finite Interval
+
+For Neumann boundary conditions on $[0, L]$,
+
+$$
+\phi_n(x) = \cos\left(\frac{n\pi x}{L}\right),
+\qquad
+\lambda_n = -\left(\frac{n\pi}{L}\right)^2,
+\qquad
+n = 0, 1, 2, \dots
+$$
+
+This is the step the professor emphasized. The spatial part is solved by hand, and those $\lambda_n$ are what enter the temporal calculation.
+
+## From $\lambda_n$ to $A_n$ and $\sigma_n$
+
+For each mode $n$,
+
+$$
+A_n = J + \lambda_n D,
+\qquad
+D = \operatorname{diag}(1, d).
+$$
+
+Equivalently,
+
+$$
+A_n = J - k_n^2 D,
+\qquad
+k_n = \frac{n\pi}{L}.
+$$
+
+The temporal eigenvalues of mode $n$ are the roots of
+
+$$
+\det\left(A_n - \sigma^{(n)} I\right) = 0.
+$$
+
+Positive $\sigma^{(n)}$ means that spatial mode is unstable.
+
+## Code Turns the Theory into a Mode List
+
+```python
+unstable_modes = []
+for n in range(1, num_modes):
+    lambda_n = -(n * np.pi / length) ** 2
+    A_n = J + lambda_n * D
+    growth_rate = np.max(np.linalg.eigvals(A_n).real)
+    if growth_rate > 0:
+        unstable_modes.append((n, growth_rate))
+
+unstable_modes.sort(key=lambda item: item[1], reverse=True)
+```
+
+This list does two things.
+
+- It tells you which modes are unstable.
+- Its first entry predicts the dominant early wavelength.
+
+## Worked Example with $L = 40$
+
+Take $\gamma = 1$, $a = 0.4$, $b = 1$.
+
+::: {.grid-2}
+::: {.card}
+### Case A
+$d = 30$
+
+- Turing conditions satisfied
+- Unstable 1D modes: $n = 5, 6$
+- Growth rates: $\sigma^{(5)} \approx 0.0214$, $\sigma^{(6)} \approx 0.0206$
+- Dominant mode: $n = 5$
+:::
+
+::: {.card}
+### Case B
+$d = 20$
+
+- Third Turing condition fails
+- No unstable 1D modes
+- Perturbations decay back to the homogeneous state
+:::
+:::
+
+## Same Checklist for Gray-Scott
+
+The pipeline does not change.
+
+- Compute the homogeneous equilibrium.
+- Compute the Jacobian.
+- Compute the Laplacian eigenvalues.
+- Build $A_n = J + \lambda_n D$.
+- Compute the temporal eigenvalues $\sigma_n$.
+
+The conceptual change is the boundary condition.
+
+- Gierer-Meinhardt usually uses Neumann boundaries.
+- Gray-Scott usually uses periodic boundaries.
+
+At the usual Gray-Scott base state $(u, v) = (1, 0)$, the linearized system is damped, so the classical Turing calculation becomes interesting only at a nontrivial homogeneous equilibrium when one exists.
+
+## Module Pages {.inverse}
+
+::: {.module-links}
+[PDEs in 1D overview](../modules/pde-1d/index.qmd)
+[Gierer-Meinhardt 1D](../modules/pde-1d/gierer-meinhardt-1d.qmd)
+[Turing instability](../modules/pde-1d/turing-instability.qmd)
+[Assignment 1D](../modules/pde-1d/assignment.qmd)
+[PDEs in 2D overview](../modules/pde-2d/index.qmd)
+:::
