@@ -8,6 +8,15 @@ The Gray-Scott model is one of the cleanest examples of reaction-diffusion patte
 
 This is the next step after the 2D Gierer-Meinhardt page. The grid, the Laplacian, and the Euler loop are the same. The new ingredient is the reaction term, which is simple to write and much richer visually.
 
+Conceptually, the jump from Gierer-Meinhardt to Gray-Scott is small.
+
+- The domain is still a rectangular 2D grid.
+- The Laplacian is still the same vectorized 5-point stencil.
+- Time stepping is still explicit Euler.
+- The main numerical change is the boundary condition: here we keep the periodic wrapping built into `np.roll()` instead of overwriting the edges with Neumann data.
+
+That is why this page should feel familiar. Once the Gierer-Meinhardt solver works, you mostly change the reaction terms and the interpretation of the boundary.
+
 The PDE system is
 
 $$
@@ -110,6 +119,8 @@ def laplacian(field):
 ```
 :::
 
+The only reason this already enforces periodic boundary conditions is that `np.roll()` wraps the array. If you wanted zero-flux or fixed-value boundaries here, you would keep the same Laplacian helper and reuse the boundary-update pattern from the 2D Gierer-Meinhardt page after every Euler step.
+
 ## Implement the Gray-Scott PDE
 
 ```python
@@ -148,6 +159,8 @@ def gray_scott_pde(t, uv, d1=0.1, d2=0.05, f=0.040, k=0.060):
 ## Time Step and Animate
 
 Because `np.roll()` wraps around the array, this implementation already uses **periodic boundary conditions**.
+
+This is the main conceptual difference from the previous page. There, we copied the edge values after each Euler step to model zero flux. Here, we let the pattern leave one side of the domain and re-enter on the opposite side.
 
 ```python
 import matplotlib.animation as animation
@@ -189,6 +202,15 @@ Try the following values with $d_1 = 0.1$ and $d_2 = 0.05$:
 - Type E: $f = 0.082$, $k = 0.059$
 
 Which sets create isolated spots? Which ones create stripes or moving fronts?
+
+## Connection Back to Turing Analysis
+
+The same steady-state to Jacobian to mode-matrix pipeline from the Turing page still applies here. The only spectral change is the boundary condition.
+
+- For Neumann boundaries, the admissible wavenumbers use factors of $\pi / L$.
+- For periodic boundaries, the admissible wavenumbers use factors of $2\pi / L$.
+
+For the usual base state $(u, v) = (1, 0)$, the linearized system is damped, so the classical Turing calculation only becomes interesting at a nontrivial homogeneous equilibrium when one exists. In that regime, the mode matrices are built exactly as before, but with the periodic Laplacian eigenvalues. That is the clean conceptual bridge from Gierer-Meinhardt to Gray-Scott.
 
 ## Optional: 9-Point Stencil
 

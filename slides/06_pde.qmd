@@ -139,6 +139,23 @@ Wrap one edge onto the opposite edge, which is especially convenient with `np.ro
 :::
 :::
 
+## Boundary Conditions on a Rectangle
+
+For a field on $[0, L_x] \times [0, L_y]$, the code pattern is always the same.
+
+- Periodic: `np.roll()` already wraps the grid.
+- Neumann: copy the nearest interior row or column after each Euler step.
+- Dirichlet: overwrite the edge with the prescribed value after each Euler step.
+
+```python
+uv[:, 0, :] = uv[:, 1, :]
+uv[:, -1, :] = uv[:, -2, :]
+uv[:, :, 0] = uv[:, :, 1]
+uv[:, :, -1] = uv[:, :, -2]
+```
+
+This is the zero-flux pattern on a rectangle. The Gray-Scott page reuses the same solver but keeps the periodic case.
+
 ## Gierer-Meinhardt as the First Pattern Former
 
 $$
@@ -163,6 +180,44 @@ If these inequalities are satisfied at the homogeneous steady state, spatial mod
 
 ::: {.card}
 The inequalities mark a region where pattern growth is possible, but the simulation still decides which wavelength survives, how fast it grows, and whether the final state looks like spots, stripes, or a transient mixture.
+:::
+
+## From the Jacobian to the Unstable Mode List
+
+For each Laplacian eigenmode,
+
+$$
+\Delta \phi_n = \lambda_n \phi_n, \qquad \lambda_n \le 0.
+$$
+
+The mode amplitude evolves by
+
+$$
+\dot c_n = F_n c_n, \qquad F_n = J + \lambda_n D = J - k_n^2 D.
+$$
+
+- `tr(J) < 0` and `det(J) > 0` keep the homogeneous state stable.
+- A spatial mode is unstable when one eigenvalue of $F_n$ has positive real part.
+- In code, compute `eigvals(F_n)`, keep the positive growth rates, sort them, and the first entry is the dominant mode.
+
+## Same Pipeline for GM and Gray-Scott
+
+::: {.grid-2}
+::: {.card}
+### Gierer-Meinhardt
+Use the homogeneous equilibrium
+
+$$
+u_* = \frac{a+1}{b}, \qquad v_* = u_*^2
+$$
+
+and usually Neumann modes with factors of $\pi / L$.
+:::
+
+::: {.card}
+### Gray-Scott
+Keep the same Jacobian and mode workflow, but swap to periodic modes with factors of $2\pi / L$. At $(u, v) = (1, 0)$, the classical Turing test does not produce unstable modes, so you analyze a nontrivial homogeneous equilibrium when one exists.
+:::
 :::
 
 ## Gray-Scott Turns the Solver into a Lab
@@ -196,6 +251,8 @@ for _ in range(num_steps):
     u += dt * (d1 * lap_u - u * v**2 + f * (1 - u))
     v += dt * (d2 * lap_v + u * v**2 - (f + k) * v)
 ```
+
+With periodic boundaries, this loop is complete. With Neumann or Dirichlet data, the edge values must be overwritten after each Euler step.
 
 ## Full Module Pages {.inverse}
 

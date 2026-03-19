@@ -60,6 +60,24 @@ plt.show()
 plt.close()
 ```
 
+## Rectangular Domains in Cartesian Coordinates
+
+We work on a rectangle $[0, L_x] \times [0, L_y]$. After discretization, each field becomes a matrix.
+
+- The row index stores the $x$ position.
+- The column index stores the $y$ position.
+- The full state has shape `(2, num_x, num_y)` because we track both $u$ and $v$.
+
+With a common grid spacing $dx$, we use
+
+```python
+num_x = int(length_x / dx)
+num_y = int(length_y / dx)
+uv = np.ones((2, num_x, num_y))
+```
+
+The important numerical point is that we still update the whole matrix at once. We do not loop over grid points one by one. We shift the full matrix up, down, left, and right, then combine those shifted copies in a vectorized stencil.
+
 ## Discretize the 2D Laplacian
 
 This is the real jump from the previous page. In 1D, every point had two nearest neighbors. In 2D, every point in the interior has four cardinal neighbors, so the Laplacian becomes a stencil on a grid.
@@ -76,7 +94,7 @@ $$
 \Delta u(x,y) \approx \frac{u(x+dx,y) + u(x-dx,y) + u(x,y+dx) + u(x,y-dx) - 4u(x,y)}{dx^2}.
 $$ {#eq-pde-gm-2d-stencil}
 
-Implement that stencil with `np.roll()`.
+Implement that stencil with `np.roll()`. Each `np.roll()` call shifts the whole matrix by one grid cell along one Cartesian direction.
 
 ```python
 import numpy as np
@@ -102,8 +120,45 @@ def laplacian_2d(field, dx):
 :::
 
 ::: {.callout-note}
-This stencil assumes periodic wrapping through `np.roll()`. If you want Neumann boundaries, you still need to overwrite the edges after every Euler step.
+This stencil uses matrix shifts, so the same helper works for every boundary condition. The difference comes after the Euler step, when you decide whether to wrap, copy, or pin the edges.
 :::
+
+## Boundary Conditions on a Rectangle
+
+On a rectangle, boundary conditions are enforced on the four edges. The implementation pattern is always the same.
+
+- Periodic: leave the array unchanged after the Euler step because `np.roll()` already wraps one side onto the opposite side.
+- Neumann: copy the nearest interior row or column onto the boundary, which sets the normal derivative to zero.
+- Dirichlet: overwrite the boundary with prescribed values after each Euler step.
+
+```python
+def apply_boundary_conditions(uv, bc="neumann", dirichlet_values=(1.0, 1.0)):
+    if bc == "periodic":
+        return uv
+
+    if bc == "neumann":
+        uv[:, 0, :] = uv[:, 1, :]
+        uv[:, -1, :] = uv[:, -2, :]
+        uv[:, :, 0] = uv[:, :, 1]
+        uv[:, :, -1] = uv[:, :, -2]
+        return uv
+
+    if bc == "dirichlet":
+        u_bc, v_bc = dirichlet_values
+        uv[0, 0, :] = u_bc
+        uv[0, -1, :] = u_bc
+        uv[0, :, 0] = u_bc
+        uv[0, :, -1] = u_bc
+        uv[1, 0, :] = v_bc
+        uv[1, -1, :] = v_bc
+        uv[1, :, 0] = v_bc
+        uv[1, :, -1] = v_bc
+        return uv
+
+    raise ValueError("bc must be 'periodic', 'neumann', or 'dirichlet'")
+```
+
+For the Gierer-Meinhardt examples on this page, we keep **Neumann** boundaries. On the Gray-Scott page, we will keep the exact same Laplacian and Euler loop but switch the interpretation to **periodic** boundaries.
 
 ## Initialize the Grid
 
@@ -169,6 +224,25 @@ def gierer_meinhardt_pde_2d(t, uv, gamma=1, a=0.40, b=1.00, d=20, dx=1):
 ```
 :::
 
+## Write the Euler Step Once
+
+Once the right-hand side is available, the full PDE update is just explicit Euler applied to the whole tensor:
+
+$$
+UV^{n+1} = UV^n + dt\,G(UV^n).
+$$
+
+In code, that means one vectorized update followed by one boundary-condition update.
+
+```python
+dudt, dvdt = gierer_meinhardt_pde_2d(0, uv, dx=dx)
+uv[0] = uv[0] + dt * dudt
+uv[1] = uv[1] + dt * dvdt
+uv = apply_boundary_conditions(uv, bc="neumann")
+```
+
+The order matters. First compute the Euler step, then reapply the edge values so the next stencil evaluation sees data consistent with the chosen boundary condition.
+
 ## Time Step with Euler's Method
 
 Before you animate anything, validate the numerical update with a long loop and one static snapshot. That is the same workflow we used in earlier sessions: get the update rule right first, then wrap it in animation logic.
@@ -182,7 +256,7 @@ for _ in range(num_iter):
 
     # TODO: Euler update for u and v
 
-    # TODO: Neumann boundary conditions in x and y
+    # TODO: reapply Neumann boundary conditions on the rectangle
 ```
 
 ::: {.callout-tip collapse="true"}
@@ -193,11 +267,7 @@ for _ in range(num_iter):
     dudt, dvdt = gierer_meinhardt_pde_2d(0, uv, dx=dx)
     uv[0] = uv[0] + dt * dudt
     uv[1] = uv[1] + dt * dvdt
-
-    uv[:, 0, :] = uv[:, 1, :]
-    uv[:, -1, :] = uv[:, -2, :]
-    uv[:, :, 0] = uv[:, :, 1]
-    uv[:, :, -1] = uv[:, :, -2]
+    uv = apply_boundary_conditions(uv, bc="neumann")
 ```
 :::
 
@@ -230,7 +300,7 @@ im = ax.imshow(uv[1], origin="lower", extent=[0, length_y, 0, length_x])
 
 def update_frame(_):
     # TODO: advance uv by one or several Euler steps
-    # TODO: apply Neumann boundary conditions
+    # TODO: reapply Neumann boundary conditions
     im.set_array(uv[1])
     return (im,)
 
@@ -246,10 +316,7 @@ def update_frame(_):
     dudt, dvdt = gierer_meinhardt_pde_2d(0, uv, dx=dx)
     uv[0] = uv[0] + dt * dudt
     uv[1] = uv[1] + dt * dvdt
-    uv[:, 0, :] = uv[:, 1, :]
-    uv[:, -1, :] = uv[:, -2, :]
-    uv[:, :, 0] = uv[:, :, 1]
-    uv[:, :, -1] = uv[:, :, -2]
+    uv = apply_boundary_conditions(uv, bc="neumann")
     im.set_array(uv[1])
     return (im,)
 ```

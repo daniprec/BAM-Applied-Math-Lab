@@ -36,9 +36,21 @@ plt.show()
 plt.close()
 ```
 
-## Write the Jacobian at the Fixed Point
+## The Linear Stability Pipeline
 
-Let
+For a two-species reaction-diffusion system
+
+$$
+\partial_t w = D\,\Delta w + R(w), \qquad D = \operatorname{diag}(d_1, d_2),
+$$
+
+start from a homogeneous steady state $w_*$ with $R(w_*) = 0$. Write $w = w_* + \eta$ and keep only linear terms:
+
+$$
+\partial_t \eta = D\,\Delta \eta + J\eta,
+$$
+
+where
 
 $$
 J =
@@ -48,11 +60,95 @@ g_u & g_v
 \end{pmatrix}
 $$ {#eq-pde-turing-jacobian}
 
-be the Jacobian of the reaction terms at the homogeneous steady state. For the Gierer-Meinhardt model, the fixed point is known analytically, so you can hard-code the partial derivatives.
+is the Jacobian of the reaction terms at the steady state.
+
+Now expand the perturbation in Laplacian eigenmodes,
+
+$$
+\eta(x,t) = c_n(t)\,\phi_n(x), \qquad \Delta \phi_n = \lambda_n \phi_n, \qquad \lambda_n \le 0.
+$$
+
+Each spatial mode evolves independently as
+
+$$
+\dot c_n = F_n c_n, \qquad F_n = J + \lambda_n D.
+$$ {#eq-pde-turing-mode-matrix}
+
+Because $\lambda_n = -k_n^2$, many notes write the same matrix as
+
+$$
+A_n = J - k_n^2 D.
+$$ {#eq-pde-turing-an}
+
+So the workflow is always the same.
+
+- Find the homogeneous equilibrium.
+- Compute the Jacobian at that equilibrium.
+- Compute the Laplacian eigenvalues $\lambda_n$ from the domain and the boundary conditions.
+- Build $F_n$ or $A_n$.
+- Compute the eigenvalues of that $2 \times 2$ matrix.
+- Keep the modes whose largest real part is positive.
+
+For a $2 \times 2$ matrix, the growth rates $\sigma$ satisfy
+
+$$
+\sigma^2 - \operatorname{tr}(F_n)\sigma + \det(F_n) = 0.
+$$
+
+With $D = \operatorname{diag}(1, d)$, the diffusion-shifted matrix has
+
+$$
+\operatorname{tr}(A_n) = (f_u + g_v) - (1 + d)k_n^2,
+$$
+
+$$
+\det(A_n) = (f_u g_v - f_v g_u) - (d f_u + g_v)k_n^2 + d k_n^4.
+$$ {#eq-pde-turing-det-an}
+
+Diffusion makes the trace more negative, so the Turing mechanism is detected through the determinant. The flat state is stable when $\operatorname{tr}(J) < 0$ and $\det(J) > 0$. A Turing instability appears when some nonzero mode makes $\det(A_n) < 0$.
+
+## Compute the Gierer-Meinhardt Equilibrium
+
+For the Gierer-Meinhardt model,
+
+$$
+f(u, v) = a - b u + \frac{u^2}{v}, \qquad g(u, v) = u^2 - v.
+$$
+
+The homogeneous steady state solves $f(u_*, v_*) = 0$ and $g(u_*, v_*) = 0$. From $g(u_*, v_*) = 0$ we get $v_* = u_*^2$. Substituting into $f = 0$ gives
+
+$$
+u_* = \frac{a+1}{b}, \qquad v_* = \left(\frac{a+1}{b}\right)^2.
+$$ {#eq-pde-turing-gm-steady}
+
+```python
+def gierer_meinhardt_equilibrium(a=0.40, b=1.00):
+    u_star = (a + 1) / b
+    v_star = u_star**2
+    return u_star, v_star
+```
+
+## Write the Jacobian at the Fixed Point
+
+At a general point $(u, v)$, the Jacobian is
+
+$$
+J(u, v) =
+\begin{pmatrix}
+-b + 2u/v & -u^2/v^2 \\
+2u & -1
+\end{pmatrix}.
+$$
+
+Evaluating at $(u_*, v_*)$ gives the entries needed for the Turing test.
 
 ```python
 def gierer_meinhardt_jacobian(a=0.40, b=1.00):
-    # TODO: compute fu, fv, gu, gv at the fixed point
+    u_star, v_star = gierer_meinhardt_equilibrium(a, b)
+    fu = -b + 2 * u_star / v_star
+    fv = -(u_star**2) / (v_star**2)
+    gu = 2 * u_star
+    gv = -1.0
     return fu, fv, gu, gv
 ```
 
@@ -71,7 +167,7 @@ def gierer_meinhardt_jacobian(a=0.40, b=1.00):
 
 ## Implement the Turing Test
 
-A common set of conditions for Turing instability is
+From $\operatorname{tr}(J) < 0$, $\det(J) > 0$, and the requirement that $\det(A_n)$ becomes negative for some nonzero mode, we recover the standard three conditions
 
 $$
 \begin{aligned}
@@ -80,6 +176,8 @@ $$
 &g_v + d f_u > 2\sqrt{d\,(f_u g_v - f_v g_u)}.
 \end{aligned}
 $$ {#eq-pde-turing-conditions}
+
+The last inequality is exactly the statement that the quadratic $\det(A_n)$ dips below zero for some $k_n^2 > 0$.
 
 Translate these three inequalities into Python.
 
@@ -138,21 +236,23 @@ plt.show()
 
 Mark the point $(a, d) = (0.40, 20)$ on your plot. Is it inside the instability region?
 
-## Scan Spatial Modes in 1D
+This is the same Turing-space diagram that appears in the left panel of the interactive Gierer-Meinhardt code, so the algebra and the simulation refer to the same parameter plane.
 
-The Turing conditions say that some spatial mode should grow, but they do not tell you which one. For Neumann boundary conditions on $[0, L]$, the admissible wavenumbers are
+## Compute $F_n$ and the Unstable Mode List in 1D
+
+The Turing conditions say that some spatial mode should grow, but they do not tell you which one. For Neumann boundary conditions on $[0, L]$, the Laplacian eigenvalues are
 
 $$
-k_n = \frac{n\pi}{L}, \qquad n = 0, 1, 2, \dots
+\lambda_n = -\left(\frac{n\pi}{L}\right)^2, \qquad n = 0, 1, 2, \dots
 $$ {#eq-pde-turing-1d-modes}
 
-The corresponding diffusion-shifted matrix is
+Equivalently, $k_n = n\pi/L$. The mode matrix is
 
 $$
-A_n = J - k_n^2\,\mathrm{diag}(1, d).
+F_n = J + \lambda_n\,\mathrm{diag}(1, d) = J - k_n^2\,\mathrm{diag}(1, d).
 $$ {#eq-pde-turing-1d-matrix}
 
-Complete the function below and return the indices of the unstable modes.
+Compute the eigenvalues of each $F_n$, keep the modes with positive growth, and sort them from strongest to weakest.
 
 ```python
 import numpy as np
@@ -160,11 +260,12 @@ import numpy as np
 def find_unstable_modes_1d(a=0.40, b=1.00, d=30.0, length=40.0, num_modes=10):
     fu, fv, gu, gv = gierer_meinhardt_jacobian(a, b)
     jac = np.array([[fu, fv], [gu, gv]])
-    max_eigs = np.zeros(num_modes)
+    diffusion = np.diag([1.0, d])
+    unstable_modes = []
 
     for n in range(1, num_modes):
-        # TODO: compute k_n and the matrix A_n
-        # TODO: store the largest real part of the eigenvalues
+        # TODO: compute lambda_n and the matrix F_n
+        # TODO: store modes with positive largest real part
 
     # TODO: return the unstable modes sorted from strongest to weakest
 ```
@@ -176,28 +277,36 @@ def find_unstable_modes_1d(a=0.40, b=1.00, d=30.0, length=40.0, num_modes=10):
 def find_unstable_modes_1d(a=0.40, b=1.00, d=30.0, length=40.0, num_modes=10):
     fu, fv, gu, gv = gierer_meinhardt_jacobian(a, b)
     jac = np.array([[fu, fv], [gu, gv]])
-    max_eigs = np.zeros(num_modes)
+    diffusion = np.diag([1.0, d])
+    unstable_modes = []
 
     for n in range(1, num_modes):
-        k_n = n * np.pi / length
-        a_n = jac - (k_n**2) * np.diag([1, d])
-        eigvals = np.linalg.eigvals(a_n)
-        max_eigs[n] = np.max(eigvals.real)
+        lambda_n = -(n * np.pi / length) ** 2
+        f_n = jac + lambda_n * diffusion
+        growth_rate = np.max(np.linalg.eigvals(f_n).real)
+        if growth_rate > 0:
+            unstable_modes.append((n, growth_rate))
 
-    unstable = np.where(max_eigs > 0)[0]
-    return unstable[np.argsort(max_eigs[unstable])[::-1]]
+    unstable_modes.sort(key=lambda item: item[1], reverse=True)
+    return unstable_modes
 ```
 :::
 
+The first entry in this list is the dominant linear mode, which predicts the earliest visible wavelength in the simulation.
+
 ## Extend the Scan to 2D
 
-In two dimensions, the modes are pairs $(n_x, n_y)$. On a rectangle with side lengths $L_x$ and $L_y$,
+In two dimensions, the modes are pairs $(n_x, n_y)$. On a rectangle with side lengths $L_x$ and $L_y$ and Neumann boundaries,
 
 $$
-k_{n_x,n_y}^2 = \left(\frac{n_x\pi}{L_x}\right)^2 + \left(\frac{n_y\pi}{L_y}\right)^2.
+\lambda_{n_x,n_y} = -\left(\frac{n_x\pi}{L_x}\right)^2 - \left(\frac{n_y\pi}{L_y}\right)^2.
 $$ {#eq-pde-turing-2d-modes}
 
-The only real change is that you now scan a grid of mode pairs.
+The only real change is that you now scan a grid of mode pairs and build
+
+$$
+F_{n_x,n_y} = J + \lambda_{n_x,n_y}\,\mathrm{diag}(1, d).
+$$
 
 ```python
 import numpy as np
@@ -205,6 +314,7 @@ import numpy as np
 def find_unstable_modes_2d(a=0.40, b=1.00, d=30.0, length_x=20.0, length_y=50.0, num_modes=8):
     fu, fv, gu, gv = gierer_meinhardt_jacobian(a, b)
     jac = np.array([[fu, fv], [gu, gv]])
+    diffusion = np.diag([1.0, d])
     unstable_modes = []
 
     for nx in range(num_modes):
@@ -212,7 +322,7 @@ def find_unstable_modes_2d(a=0.40, b=1.00, d=30.0, length_x=20.0, length_y=50.0,
             if nx == 0 and ny == 0:
                 continue
 
-            # TODO: compute k_sq and A_n
+            # TODO: compute lambda_nm and F_nm
             # TODO: store mode pairs with positive growth rate
 
     return unstable_modes
@@ -225,6 +335,7 @@ def find_unstable_modes_2d(a=0.40, b=1.00, d=30.0, length_x=20.0, length_y=50.0,
 def find_unstable_modes_2d(a=0.40, b=1.00, d=30.0, length_x=20.0, length_y=50.0, num_modes=8):
     fu, fv, gu, gv = gierer_meinhardt_jacobian(a, b)
     jac = np.array([[fu, fv], [gu, gv]])
+    diffusion = np.diag([1.0, d])
     unstable_modes = []
 
     for nx in range(num_modes):
@@ -232,14 +343,92 @@ def find_unstable_modes_2d(a=0.40, b=1.00, d=30.0, length_x=20.0, length_y=50.0,
             if nx == 0 and ny == 0:
                 continue
 
-            k_sq = (nx * np.pi / length_x) ** 2 + (ny * np.pi / length_y) ** 2
-            a_n = jac - k_sq * np.diag([1, d])
-            growth_rate = np.max(np.linalg.eigvals(a_n).real)
+            lambda_nm = -((nx * np.pi / length_x) ** 2 + (ny * np.pi / length_y) ** 2)
+            f_nm = jac + lambda_nm * diffusion
+            growth_rate = np.max(np.linalg.eigvals(f_nm).real)
             if growth_rate > 0:
                 unstable_modes.append(((nx, ny), growth_rate))
 
     unstable_modes.sort(key=lambda item: item[1], reverse=True)
     return unstable_modes
+
+For periodic boundaries, the same loop works after replacing each factor of $\pi / L$ by $2\pi / L$.
+
+## Apply the Same Workflow to Gray-Scott
+
+The theory on this page does not depend on the specific reaction law. Gray-Scott uses the same equilibrium to Jacobian to mode-matrix pipeline [@gray1984autocatalytic; @pearson1993complex].
+
+Write the reaction terms as
+
+$$
+R_u(u, v) = -u v^2 + f(1-u), \qquad R_v(u, v) = u v^2 - (f+k)v.
+$$
+
+One homogeneous equilibrium is always
+
+$$
+(u_*, v_*) = (1, 0).
+$$
+
+If $v_* \neq 0$, then $u_* v_* = f + k$ and the nontrivial equilibria satisfy
+
+$$
+u_* = \frac{1}{2}\left(1 \pm \sqrt{1 - \frac{4(f+k)^2}{f}}\right), \qquad v_* = \frac{f+k}{u_*},
+$$ {#eq-pde-turing-gs-steady}
+
+whenever $1 - 4(f+k)^2/f \ge 0$.
+
+The Gray-Scott Jacobian at a homogeneous equilibrium is
+
+$$
+J_{\mathrm{GS}} =
+\begin{pmatrix}
+-v_*^2 - f & -2u_*v_* \\
+v_*^2 & 2u_*v_* - (f+k)
+\end{pmatrix}.
+$$ {#eq-pde-turing-gs-jacobian}
+
+At the trivial state $(1, 0)$, this Jacobian is diagonal and every linear mode decays. So the classical Turing test is only interesting at a nontrivial homogeneous equilibrium when one exists.
+
+For periodic boundaries on a rectangle,
+
+$$
+\lambda_{m,n} = -\left(\frac{2\pi m}{L_x}\right)^2 - \left(\frac{2\pi n}{L_y}\right)^2,
+$$
+
+and the mode matrix is
+
+$$
+F^{\mathrm{GS}}_{m,n} = J_{\mathrm{GS}} + \lambda_{m,n}\,\mathrm{diag}(d_1, d_2).
+$$
+
+```python
+import numpy as np
+
+def gray_scott_equilibria(f=0.040, k=0.060):
+    equilibria = [(1.0, 0.0)]
+    discriminant = 1 - 4 * (f + k) ** 2 / f
+
+    if discriminant >= 0:
+        root = np.sqrt(discriminant)
+        for sign in (+1, -1):
+            u_star = 0.5 * (1 + sign * root)
+            if u_star > 0:
+                equilibria.append((u_star, (f + k) / u_star))
+
+    return equilibria
+
+
+def gray_scott_jacobian(u_star, v_star, f=0.040, k=0.060):
+    return np.array(
+        [
+            [-v_star**2 - f, -2 * u_star * v_star],
+            [v_star**2, 2 * u_star * v_star - (f + k)],
+        ]
+    )
+```
+
+That is the whole bridge from Gierer-Meinhardt to Gray-Scott. Keep the eigenvalue scan, replace the Jacobian, replace the boundary spectrum, then sort the unstable modes and read off the dominant one.
 ```
 :::
 
