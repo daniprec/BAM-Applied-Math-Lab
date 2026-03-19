@@ -556,6 +556,20 @@
 </div>
 </div>
 </section>
+<section id="boundary-conditions-on-a-rectangle" class="slide level2">
+<h2>Boundary Conditions on a Rectangle</h2>
+<p>For a field on <span class="math inline">\([0, L_x] \times [0, L_y]\)</span>, the code pattern is always the same.</p>
+<ul>
+<li>Periodic: <code>np.roll()</code> already wraps the grid.</li>
+<li>Neumann: copy the nearest interior row or column after each Euler step.</li>
+<li>Dirichlet: overwrite the edge with the prescribed value after each Euler step.</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a></a>uv[:, <span class="dv">0</span>, :] <span class="op">=</span> uv[:, <span class="dv">1</span>, :]</span>
+<span id="cb1-2"><a></a>uv[:, <span class="op">-</span><span class="dv">1</span>, :] <span class="op">=</span> uv[:, <span class="op">-</span><span class="dv">2</span>, :]</span>
+<span id="cb1-3"><a></a>uv[:, :, <span class="dv">0</span>] <span class="op">=</span> uv[:, :, <span class="dv">1</span>]</span>
+<span id="cb1-4"><a></a>uv[:, :, <span class="op">-</span><span class="dv">1</span>] <span class="op">=</span> uv[:, :, <span class="op">-</span><span class="dv">2</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This is the zero-flux pattern on a rectangle. The Gray-Scott page reuses the same solver but keeps the periodic case.</p>
+</section>
 <section id="gierer-meinhardt-as-the-first-pattern-former" class="slide level2">
 <h2>Gierer-Meinhardt as the First Pattern Former</h2>
 <p><span class="math display">\[
@@ -577,6 +591,43 @@ g_v + d f_u &gt; 2 \sqrt{d (f_u g_v - f_v g_u)}
 </div>
 <div class="card">
 <p>The inequalities mark a region where pattern growth is possible, but the simulation still decides which wavelength survives, how fast it grows, and whether the final state looks like spots, stripes, or a transient mixture.</p>
+</div>
+</section>
+<section id="from-the-jacobian-to-the-unstable-mode-list" class="slide level2">
+<h2>From the Jacobian to the Unstable Mode List</h2>
+<p>For each Laplacian eigenmode,</p>
+<p><span class="math display">\[
+\Delta \phi_n = \lambda_n \phi_n, \qquad \lambda_n \le 0.
+\]</span></p>
+<p>The mode amplitude evolves by</p>
+<p><span class="math display">\[
+\dot c_n = F_n c_n, \qquad F_n = J + \lambda_n D = J - k_n^2 D.
+\]</span></p>
+<ul>
+<li><code>tr(J) &lt; 0</code> and <code>det(J) &gt; 0</code> keep the homogeneous state stable.</li>
+<li>A spatial mode is unstable when one eigenvalue of <span class="math inline">\(F_n\)</span> has positive real part.</li>
+<li>In code, compute <code>eigvals(F_n)</code>, keep the positive growth rates, sort them, and the first entry is the dominant mode.</li>
+</ul>
+</section>
+<section id="same-pipeline-for-gm-and-gray-scott" class="slide level2">
+<h2>Same Pipeline for GM and Gray-Scott</h2>
+<div class="grid-2">
+<div class="card">
+<div class="panel-title-block">
+<span class="panel-title">Gierer-Meinhardt</span>
+</div>
+<p>Use the homogeneous equilibrium</p>
+<p><span class="math display">\[
+u_* = \frac{a+1}{b}, \qquad v_* = u_*^2
+\]</span></p>
+<p>and usually Neumann modes with factors of <span class="math inline">\(\pi / L\)</span>.</p>
+</div>
+<div class="card">
+<div class="panel-title-block">
+<span class="panel-title">Gray-Scott</span>
+</div>
+<p>Keep the same Jacobian and mode workflow, but swap to periodic modes with factors of <span class="math inline">\(2\pi / L\)</span>. At <span class="math inline">\((u, v) = (1, 0)\)</span>, the classical Turing test does not produce unstable modes, so you analyze a nontrivial homogeneous equilibrium when one exists.</p>
+</div>
 </div>
 </section>
 <section id="gray-scott-turns-the-solver-into-a-lab" class="slide level2">
@@ -603,13 +654,14 @@ g_v + d f_u &gt; 2 \sqrt{d (f_u g_v - f_v g_u)}
 </section>
 <section id="the-core-update-loop" class="slide level2">
 <h2>The Core Update Loop</h2>
-<div class="sourceCode" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a></a><span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(num_steps):</span>
-<span id="cb1-2"><a></a>    lap_u <span class="op">=</span> np.roll(u, <span class="dv">1</span>, axis<span class="op">=</span><span class="dv">0</span>) <span class="op">+</span> np.roll(u, <span class="op">-</span><span class="dv">1</span>, axis<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb1-3"><a></a>    lap_u <span class="op">+=</span> np.roll(u, <span class="dv">1</span>, axis<span class="op">=</span><span class="dv">1</span>) <span class="op">+</span> np.roll(u, <span class="op">-</span><span class="dv">1</span>, axis<span class="op">=</span><span class="dv">1</span>) <span class="op">-</span> <span class="dv">4</span> <span class="op">*</span> u</span>
-<span id="cb1-4"><a></a>    lap_v <span class="op">=</span> np.roll(v, <span class="dv">1</span>, axis<span class="op">=</span><span class="dv">0</span>) <span class="op">+</span> np.roll(v, <span class="op">-</span><span class="dv">1</span>, axis<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb1-5"><a></a>    lap_v <span class="op">+=</span> np.roll(v, <span class="dv">1</span>, axis<span class="op">=</span><span class="dv">1</span>) <span class="op">+</span> np.roll(v, <span class="op">-</span><span class="dv">1</span>, axis<span class="op">=</span><span class="dv">1</span>) <span class="op">-</span> <span class="dv">4</span> <span class="op">*</span> v</span>
-<span id="cb1-6"><a></a>    u <span class="op">+=</span> dt <span class="op">*</span> (d1 <span class="op">*</span> lap_u <span class="op">-</span> u <span class="op">*</span> v<span class="op">**</span><span class="dv">2</span> <span class="op">+</span> f <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> u))</span>
-<span id="cb1-7"><a></a>    v <span class="op">+=</span> dt <span class="op">*</span> (d2 <span class="op">*</span> lap_v <span class="op">+</span> u <span class="op">*</span> v<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> (f <span class="op">+</span> k) <span class="op">*</span> v)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a></a><span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(num_steps):</span>
+<span id="cb2-2"><a></a>    lap_u <span class="op">=</span> np.roll(u, <span class="dv">1</span>, axis<span class="op">=</span><span class="dv">0</span>) <span class="op">+</span> np.roll(u, <span class="op">-</span><span class="dv">1</span>, axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb2-3"><a></a>    lap_u <span class="op">+=</span> np.roll(u, <span class="dv">1</span>, axis<span class="op">=</span><span class="dv">1</span>) <span class="op">+</span> np.roll(u, <span class="op">-</span><span class="dv">1</span>, axis<span class="op">=</span><span class="dv">1</span>) <span class="op">-</span> <span class="dv">4</span> <span class="op">*</span> u</span>
+<span id="cb2-4"><a></a>    lap_v <span class="op">=</span> np.roll(v, <span class="dv">1</span>, axis<span class="op">=</span><span class="dv">0</span>) <span class="op">+</span> np.roll(v, <span class="op">-</span><span class="dv">1</span>, axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb2-5"><a></a>    lap_v <span class="op">+=</span> np.roll(v, <span class="dv">1</span>, axis<span class="op">=</span><span class="dv">1</span>) <span class="op">+</span> np.roll(v, <span class="op">-</span><span class="dv">1</span>, axis<span class="op">=</span><span class="dv">1</span>) <span class="op">-</span> <span class="dv">4</span> <span class="op">*</span> v</span>
+<span id="cb2-6"><a></a>    u <span class="op">+=</span> dt <span class="op">*</span> (d1 <span class="op">*</span> lap_u <span class="op">-</span> u <span class="op">*</span> v<span class="op">**</span><span class="dv">2</span> <span class="op">+</span> f <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> u))</span>
+<span id="cb2-7"><a></a>    v <span class="op">+=</span> dt <span class="op">*</span> (d2 <span class="op">*</span> lap_v <span class="op">+</span> u <span class="op">*</span> v<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> (f <span class="op">+</span> k) <span class="op">*</span> v)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>With periodic boundaries, this loop is complete. With Neumann or Dirichlet data, the edge values must be overwritten after each Euler step.</p>
 </section>
 <section id="full-module-pages" class="slide level2 inverse">
 <h2>Full Module Pages</h2>

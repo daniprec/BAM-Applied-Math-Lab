@@ -600,7 +600,7 @@ div.csl-indent {
 </header>
 
 
-<p>This session builds directly on the 1D PDE workflow. We move from a line to a rectangular grid, keep the same finite-difference and explicit Euler ideas, and then switch to the Gray-Scott model for richer two-dimensional pattern formation <span class="citation" data-cites="gray1984autocatalytic pearson1993complex">(<a href="#ref-gray1984autocatalytic" role="doc-biblioref">Gray and Scott 1984</a>; <a href="#ref-pearson1993complex" role="doc-biblioref">Pearson 1993</a>)</span>.</p>
+<p>This session builds directly on the 1D PDE workflow. We move from a line to a rectangular grid, keep the same vectorized finite-difference and explicit Euler ideas, compare zero-flux, Dirichlet, and periodic boundary conditions, and then switch to the Gray-Scott model for richer two-dimensional pattern formation <span class="citation" data-cites="gray1984autocatalytic pearson1993complex">(<a href="#ref-gray1984autocatalytic" role="doc-biblioref">Gray and Scott 1984</a>; <a href="#ref-pearson1993complex" role="doc-biblioref">Pearson 1993</a>)</span>.</p>
 <section id="from-pdes-in-1d-to-pdes-in-2d" class="level2">
 <h2 class="anchored" data-anchor-id="from-pdes-in-1d-to-pdes-in-2d">From PDEs in 1D to PDEs in 2D</h2>
 <p>In the previous session on <strong>PDEs in 1D</strong>, you built a solver on an interval and used Turing instability to predict which spatial modes should grow.</p>
@@ -618,7 +618,7 @@ div.csl-indent {
 <h2 class="anchored" data-anchor-id="case-studies">Case Studies</h2>
 <p>We continue the Gierer-Meinhardt story by extending the solver to <strong>two spatial dimensions</strong>.</p>
 <p><a href="../../modules/pde-2d/gierer-meinhardt-2d.html" class="btn btn-primary">Gierer-Meinhardt 2D</a></p>
-<p>Then we switch reaction terms and build the <strong>Gray-Scott model</strong>, which is the main simulator for this session.</p>
+<p>Then we switch reaction terms and build the <strong>Gray-Scott model</strong>, which is the main simulator for this session. Numerically, the workflow is almost unchanged. Conceptually, the main difference is that periodic boundaries become the natural default.</p>
 <p><a href="../../modules/pde-2d/gray-scott.html" class="btn btn-primary">Gray-Scott</a></p>
 <p>After that, we turn the simulation into an interactive experiment with drawing, pause-resume, and sliders.</p>
 <p><a href="../../modules/pde-2d/gray-scott-art.html" class="btn btn-primary">Gray-Scott: Interaction</a></p>
@@ -629,6 +629,7 @@ div.csl-indent {
 <h2 class="anchored" data-anchor-id="learning-goals">Learning Goals</h2>
 <ul>
 <li>Implement a 2D Laplacian with <code>np.roll()</code>.</li>
+<li>Implement Neumann, Dirichlet, and periodic boundary conditions on a rectangular grid.</li>
 <li>Connect domain geometry with unstable spatial modes.</li>
 <li>Simulate reaction-diffusion systems on a rectangular grid.</li>
 <li>Build a Gray-Scott simulator with periodic boundary conditions.</li>
@@ -640,7 +641,7 @@ div.csl-indent {
 <ol type="1">
 <li>Extend the 1D workflow to a 2D rectangular grid.</li>
 <li>Compare the predicted unstable modes with 2D Gierer-Meinhardt patterns.</li>
-<li>Build the Gray-Scott model and experiment with feed and kill rates.</li>
+<li>Build the Gray-Scott model, keep the same solver, and switch to periodic boundaries.</li>
 <li>Add interaction so the PDE becomes a live experiment.</li>
 <li>Complete the assignment.</li>
 </ol>
@@ -650,7 +651,7 @@ div.csl-indent {
 <p>Every page in this session follows the same numerical loop:</p>
 <ol type="1">
 <li>Create a spatial grid.</li>
-<li>Approximate the Laplacian with finite differences.</li>
+<li>Approximate the Laplacian with vectorized finite differences.</li>
 <li>Evaluate the reaction terms.</li>
 <li>Update the fields with Euler’s method.</li>
 <li>Enforce or exploit the boundary conditions.</li>
@@ -1180,7 +1181,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>This session builds directly on the 1D PDE workflow. We move from a line to a rectangular grid, keep the same finite-difference and explicit Euler ideas, and then switch to the Gray-Scott model for richer two-dimensional pattern formation <span class="co">[</span><span class="ot">@gray1984autocatalytic; @pearson1993complex</span><span class="co">]</span>.</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>This session builds directly on the 1D PDE workflow. We move from a line to a rectangular grid, keep the same vectorized finite-difference and explicit Euler ideas, compare zero-flux, Dirichlet, and periodic boundary conditions, and then switch to the Gray-Scott model for richer two-dimensional pattern formation <span class="co">[</span><span class="ot">@gray1984autocatalytic; @pearson1993complex</span><span class="co">]</span>.</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## From PDEs in 1D to PDEs in 2D</span></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
@@ -1203,7 +1204,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Gierer-Meinhardt 2D</span><span class="co">](gierer-meinhardt-2d.qmd)</span>{.btn .btn-primary}</span>
 <span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>Then we switch reaction terms and build the **Gray-Scott model**, which is the main simulator for this session.</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>Then we switch reaction terms and build the **Gray-Scott model**, which is the main simulator for this session. Numerically, the workflow is almost unchanged. Conceptually, the main difference is that periodic boundaries become the natural default.</span>
 <span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Gray-Scott</span><span class="co">](gray-scott.qmd)</span>{.btn .btn-primary}</span>
 <span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a></span>
@@ -1218,65 +1219,66 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="fu">## Learning Goals</span></span>
 <span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Implement a 2D Laplacian with <span class="in">`np.roll()`</span>.</span>
-<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Connect domain geometry with unstable spatial modes.</span>
-<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Simulate reaction-diffusion systems on a rectangular grid.</span>
-<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Build a Gray-Scott simulator with periodic boundary conditions.</span>
-<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Add basic interaction with drawing, pause-resume, and sliders.</span>
-<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a><span class="fu">## Flow of This Session</span></span>
-<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Extend the 1D workflow to a 2D rectangular grid.</span>
-<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Compare the predicted unstable modes with 2D Gierer-Meinhardt patterns.</span>
-<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Build the Gray-Scott model and experiment with feed and kill rates.</span>
-<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Add interaction so the PDE becomes a live experiment.</span>
-<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>Complete the assignment.</span>
-<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a><span class="fu">## Numerical Workflow</span></span>
-<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>Every page in this session follows the same numerical loop:</span>
-<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Create a spatial grid.</span>
-<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Approximate the Laplacian with finite differences.</span>
-<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Evaluate the reaction terms.</span>
-<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Update the fields with Euler's method.</span>
-<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>Enforce or exploit the boundary conditions.</span>
-<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a><span class="ss">6. </span>Plot, animate, or interact with the result.</span>
-<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a><span class="fu">## What Do We Need?</span></span>
-<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a><span class="fu">### `numpy`</span></span>
-<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a>We store spatial fields in NumPy arrays and use <span class="in">`np.roll()`</span> to access neighboring grid points.</span>
-<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a><span class="fu">### `matplotlib.pyplot`</span></span>
-<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a>We initialize figures, axes, labels, and static plot elements.</span>
-<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a><span class="fu">### `matplotlib.animation`</span></span>
-<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a>We update images frame by frame to animate the PDE dynamics.</span>
-<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a><span class="fu">### `matplotlib.backend_bases`</span></span>
-<span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a>We handle mouse clicks and key presses for interactive experiments.</span>
-<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a><span class="fu">### `matplotlib.widgets`</span></span>
-<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a>We use sliders on the Gray-Scott interaction page.</span>
-<span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-91"><a href="#cb1-91" aria-hidden="true" tabindex="-1"></a><span class="fu">### Why not use `scipy.solve_ivp` here?</span></span>
-<span id="cb1-92"><a href="#cb1-92" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-93"><a href="#cb1-93" aria-hidden="true" tabindex="-1"></a>The key numerical work is still spatial discretization plus explicit updates at every grid point. In two dimensions, that bookkeeping becomes even more central, so we keep using direct Euler loops.</span>
-<span id="cb1-94"><a href="#cb1-94" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-95"><a href="#cb1-95" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip}</span>
-<span id="cb1-96"><a href="#cb1-96" aria-hidden="true" tabindex="-1"></a><span class="fu">## Before you start</span></span>
-<span id="cb1-97"><a href="#cb1-97" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-98"><a href="#cb1-98" aria-hidden="true" tabindex="-1"></a>If your 1D solver still feels shaky, revisit the previous session first. The 2D code is much easier once the 1D stencil and Euler update are routine.</span>
-<span id="cb1-99"><a href="#cb1-99" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb1-100"><a href="#cb1-100" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-101"><a href="#cb1-101" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
-<span id="cb1-102"><a href="#cb1-102" aria-hidden="true" tabindex="-1"></a>Explicit Euler is simple and transparent, but it is only conditionally stable. If a simulation explodes immediately, reduce <span class="in">`dt`</span>, increase <span class="in">`dx`</span>, or test on a smaller grid first.</span>
-<span id="cb1-103"><a href="#cb1-103" aria-hidden="true" tabindex="-1"></a>:::</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Implement Neumann, Dirichlet, and periodic boundary conditions on a rectangular grid.</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Connect domain geometry with unstable spatial modes.</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Simulate reaction-diffusion systems on a rectangular grid.</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Build a Gray-Scott simulator with periodic boundary conditions.</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Add basic interaction with drawing, pause-resume, and sliders.</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="fu">## Flow of This Session</span></span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Extend the 1D workflow to a 2D rectangular grid.</span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Compare the predicted unstable modes with 2D Gierer-Meinhardt patterns.</span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Build the Gray-Scott model, keep the same solver, and switch to periodic boundaries.</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Add interaction so the PDE becomes a live experiment.</span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>Complete the assignment.</span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a><span class="fu">## Numerical Workflow</span></span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>Every page in this session follows the same numerical loop:</span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Create a spatial grid.</span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Approximate the Laplacian with vectorized finite differences.</span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Evaluate the reaction terms.</span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Update the fields with Euler's method.</span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>Enforce or exploit the boundary conditions.</span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a><span class="ss">6. </span>Plot, animate, or interact with the result.</span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a><span class="fu">## What Do We Need?</span></span>
+<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a><span class="fu">### `numpy`</span></span>
+<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a>We store spatial fields in NumPy arrays and use <span class="in">`np.roll()`</span> to access neighboring grid points.</span>
+<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a><span class="fu">### `matplotlib.pyplot`</span></span>
+<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a>We initialize figures, axes, labels, and static plot elements.</span>
+<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a><span class="fu">### `matplotlib.animation`</span></span>
+<span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a>We update images frame by frame to animate the PDE dynamics.</span>
+<span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a><span class="fu">### `matplotlib.backend_bases`</span></span>
+<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a>We handle mouse clicks and key presses for interactive experiments.</span>
+<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a><span class="fu">### `matplotlib.widgets`</span></span>
+<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a>We use sliders on the Gray-Scott interaction page.</span>
+<span id="cb1-91"><a href="#cb1-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-92"><a href="#cb1-92" aria-hidden="true" tabindex="-1"></a><span class="fu">### Why not use `scipy.solve_ivp` here?</span></span>
+<span id="cb1-93"><a href="#cb1-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-94"><a href="#cb1-94" aria-hidden="true" tabindex="-1"></a>The key numerical work is still spatial discretization plus explicit updates at every grid point. In two dimensions, that bookkeeping becomes even more central, so we keep using direct Euler loops.</span>
+<span id="cb1-95"><a href="#cb1-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-96"><a href="#cb1-96" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip}</span>
+<span id="cb1-97"><a href="#cb1-97" aria-hidden="true" tabindex="-1"></a><span class="fu">## Before you start</span></span>
+<span id="cb1-98"><a href="#cb1-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-99"><a href="#cb1-99" aria-hidden="true" tabindex="-1"></a>If your 1D solver still feels shaky, revisit the previous session first. The 2D code is much easier once the 1D stencil and Euler update are routine.</span>
+<span id="cb1-100"><a href="#cb1-100" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb1-101"><a href="#cb1-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-102"><a href="#cb1-102" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb1-103"><a href="#cb1-103" aria-hidden="true" tabindex="-1"></a>Explicit Euler is simple and transparent, but it is only conditionally stable. If a simulation explodes immediately, reduce <span class="in">`dt`</span>, increase <span class="in">`dx`</span>, or test on a smaller grid first.</span>
+<span id="cb1-104"><a href="#cb1-104" aria-hidden="true" tabindex="-1"></a>:::</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 <footer class="footer">

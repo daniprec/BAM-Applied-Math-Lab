@@ -594,6 +594,7 @@ window.Quarto = {
   <li><a href="#implement-the-gray-scott-pde" id="toc-implement-the-gray-scott-pde" class="nav-link" data-scroll-target="#implement-the-gray-scott-pde">Implement the Gray-Scott PDE</a></li>
   <li><a href="#time-step-and-animate" id="toc-time-step-and-animate" class="nav-link" data-scroll-target="#time-step-and-animate">Time Step and Animate</a></li>
   <li><a href="#parameter-sets" id="toc-parameter-sets" class="nav-link" data-scroll-target="#parameter-sets">Parameter Sets</a></li>
+  <li><a href="#connection-back-to-turing-analysis" id="toc-connection-back-to-turing-analysis" class="nav-link" data-scroll-target="#connection-back-to-turing-analysis">Connection Back to Turing Analysis</a></li>
   <li><a href="#optional-9-point-stencil" id="toc-optional-9-point-stencil" class="nav-link" data-scroll-target="#optional-9-point-stencil">Optional: 9-Point Stencil</a></li>
   <li><a href="#whats-next" id="toc-whats-next" class="nav-link" data-scroll-target="#whats-next">What’s Next?</a></li>
   </ul>
@@ -624,6 +625,14 @@ window.Quarto = {
 
 <p>The Gray-Scott model is one of the cleanest examples of reaction-diffusion pattern formation. It combines diffusion with an autocatalytic reaction and produces spots, stripes, worms, and labyrinths depending on the parameters <span class="citation" data-cites="gray1984autocatalytic pearson1993complex">(<a href="#ref-gray1984autocatalytic" role="doc-biblioref">Gray and Scott 1984</a>; <a href="#ref-pearson1993complex" role="doc-biblioref">Pearson 1993</a>)</span>.</p>
 <p>This is the next step after the 2D Gierer-Meinhardt page. The grid, the Laplacian, and the Euler loop are the same. The new ingredient is the reaction term, which is simple to write and much richer visually.</p>
+<p>Conceptually, the jump from Gierer-Meinhardt to Gray-Scott is small.</p>
+<ul>
+<li>The domain is still a rectangular 2D grid.</li>
+<li>The Laplacian is still the same vectorized 5-point stencil.</li>
+<li>Time stepping is still explicit Euler.</li>
+<li>The main numerical change is the boundary condition: here we keep the periodic wrapping built into <code>np.roll()</code> instead of overwriting the edges with Neumann data.</li>
+</ul>
+<p>That is why this page should feel familiar. Once the Gierer-Meinhardt solver works, you mostly change the reaction terms and the interpretation of the boundary.</p>
 <p>The PDE system is</p>
 <p><span id="eq-gray-scott-model"><span class="math display">\[
 \begin{aligned}
@@ -714,6 +723,7 @@ Hint: 5-point stencil (click to expand)
 </div>
 </div>
 </div>
+<p>The only reason this already enforces periodic boundary conditions is that <code>np.roll()</code> wraps the array. If you wanted zero-flux or fixed-value boundaries here, you would keep the same Laplacian helper and reuse the boundary-update pattern from the 2D Gierer-Meinhardt page after every Euler step.</p>
 </section>
 <section id="implement-the-gray-scott-pde" class="level2">
 <h2 class="anchored" data-anchor-id="implement-the-gray-scott-pde">Implement the Gray-Scott PDE</h2>
@@ -759,6 +769,7 @@ Hint: Gray-Scott PDE (click to expand)
 <section id="time-step-and-animate" class="level2">
 <h2 class="anchored" data-anchor-id="time-step-and-animate">Time Step and Animate</h2>
 <p>Because <code>np.roll()</code> wraps around the array, this implementation already uses <strong>periodic boundary conditions</strong>.</p>
+<p>This is the main conceptual difference from the previous page. There, we copied the edge values after each Euler step to model zero flux. Here, we let the pattern leave one side of the domain and re-enter on the opposite side.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.animation <span class="im">as</span> animation</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -805,6 +816,15 @@ Hint: Gray-Scott animation (click to expand)
 <li>Type E: <span class="math inline">\(f = 0.082\)</span>, <span class="math inline">\(k = 0.059\)</span></li>
 </ul>
 <p>Which sets create isolated spots? Which ones create stripes or moving fronts?</p>
+</section>
+<section id="connection-back-to-turing-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="connection-back-to-turing-analysis">Connection Back to Turing Analysis</h2>
+<p>The same steady-state to Jacobian to mode-matrix pipeline from the Turing page still applies here. The only spectral change is the boundary condition.</p>
+<ul>
+<li>For Neumann boundaries, the admissible wavenumbers use factors of <span class="math inline">\(\pi / L\)</span>.</li>
+<li>For periodic boundaries, the admissible wavenumbers use factors of <span class="math inline">\(2\pi / L\)</span>.</li>
+</ul>
+<p>For the usual base state <span class="math inline">\((u, v) = (1, 0)\)</span>, the linearized system is damped, so the classical Turing calculation only becomes interesting at a nontrivial homogeneous equilibrium when one exists. In that regime, the mode matrices are built exactly as before, but with the periodic Laplacian eigenvalues. That is the clean conceptual bridge from Gierer-Meinhardt to Gray-Scott.</p>
 </section>
 <section id="optional-9-point-stencil" class="level2">
 <h2 class="anchored" data-anchor-id="optional-9-point-stencil">Optional: 9-Point Stencil</h2>
@@ -1302,201 +1322,223 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>This is the next step after the 2D Gierer-Meinhardt page. The grid, the Laplacian, and the Euler loop are the same. The new ingredient is the reaction term, which is simple to write and much richer visually.</span>
 <span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>The PDE system is</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>Conceptually, the jump from Gierer-Meinhardt to Gray-Scott is small.</span>
 <span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>\frac{\partial u}{\partial t} &amp;= d_1 \Delta u - u v^2 + f(1-u), <span class="sc">\\</span></span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>\frac{\partial v}{\partial t} &amp;= d_2 \Delta v + u v^2 - (f+k) v,</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>$$ {#eq-gray-scott-model}</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The domain is still a rectangular 2D grid.</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The Laplacian is still the same vectorized 5-point stencil.</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Time stepping is still explicit Euler.</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The main numerical change is the boundary condition: here we keep the periodic wrapping built into <span class="in">`np.roll()`</span> instead of overwriting the edges with Neumann data.</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>That is why this page should feel familiar. Once the Gierer-Meinhardt solver works, you mostly change the reaction terms and the interpretation of the boundary.</span>
 <span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>where $d_1$ and $d_2$ are the diffusion coefficients, $f$ is the feed rate, and $k$ is the kill rate.</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>The PDE system is</span>
 <span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-gray-scott-merged</span></span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: 'Gray-Scott model. Example snapshot of $v(x, y)$ for $d_1=0.1$, $d_2=0.05$, $f=0.040$, and $k=0.060$.'</span></span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 6</span></span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 6</span></span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>\frac{\partial u}{\partial t} &amp;= d_1 \Delta u - u v^2 + f(1-u), <span class="sc">\\</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>\frac{\partial v}{\partial t} &amp;= d_2 \Delta v + u v^2 - (f+k) v,</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>$$ {#eq-gray-scott-model}</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>where $d_1$ and $d_2$ are the diffusion coefficients, $f$ is the feed rate, and $k$ is the kill rate.</span>
 <span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.pdes.gray_scott <span class="im">import</span> gray_scott_pde</span>
-<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="dv">120</span></span>
-<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>dt <span class="op">=</span> <span class="fl">1.0</span></span>
-<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>uv <span class="op">=</span> np.ones((<span class="dv">2</span>, n, n), dtype<span class="op">=</span>np.float32)</span>
-<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>uv[<span class="dv">1</span>] <span class="op">=</span> <span class="fl">0.0</span></span>
-<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> <span class="dv">10</span></span>
-<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> n <span class="op">//</span> <span class="dv">2</span></span>
-<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>uv[<span class="dv">0</span>, c <span class="op">-</span> r : c <span class="op">+</span> r, c <span class="op">-</span> r : c <span class="op">+</span> r] <span class="op">=</span> <span class="fl">0.5</span></span>
-<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>uv[<span class="dv">1</span>, c <span class="op">-</span> r : c <span class="op">+</span> r, c <span class="op">-</span> r : c <span class="op">+</span> r] <span class="op">=</span> <span class="fl">0.25</span></span>
-<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">400</span>):</span>
-<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>    uv <span class="op">=</span> uv <span class="op">+</span> gray_scott_pde(<span class="dv">0</span>, uv, d1<span class="op">=</span><span class="fl">0.1</span>, d2<span class="op">=</span><span class="fl">0.05</span>, f<span class="op">=</span><span class="fl">0.040</span>, k<span class="op">=</span><span class="fl">0.060</span>) <span class="op">*</span> dt</span>
-<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">6</span>))</span>
-<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>ax.imshow(uv[<span class="dv">1</span>], cmap<span class="op">=</span><span class="st">"jet"</span>, interpolation<span class="op">=</span><span class="st">"bilinear"</span>)</span>
-<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>ax.axis(<span class="st">"off"</span>)</span>
-<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>plt.close()</span>
-<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a><span class="fu">## Start from the Homogeneous State</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-gray-scott-merged</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: 'Gray-Scott model. Example snapshot of $v(x, y)$ for $d_1=0.1$, $d_2=0.05$, $f=0.040$, and $k=0.060$.'</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 6</span></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 6</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.pdes.gray_scott <span class="im">import</span> gray_scott_pde</span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="dv">120</span></span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>dt <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>uv <span class="op">=</span> np.ones((<span class="dv">2</span>, n, n), dtype<span class="op">=</span>np.float32)</span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>uv[<span class="dv">1</span>] <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> <span class="dv">10</span></span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> n <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>uv[<span class="dv">0</span>, c <span class="op">-</span> r : c <span class="op">+</span> r, c <span class="op">-</span> r : c <span class="op">+</span> r] <span class="op">=</span> <span class="fl">0.5</span></span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>uv[<span class="dv">1</span>, c <span class="op">-</span> r : c <span class="op">+</span> r, c <span class="op">-</span> r : c <span class="op">+</span> r] <span class="op">=</span> <span class="fl">0.25</span></span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">400</span>):</span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>    uv <span class="op">=</span> uv <span class="op">+</span> gray_scott_pde(<span class="dv">0</span>, uv, d1<span class="op">=</span><span class="fl">0.1</span>, d2<span class="op">=</span><span class="fl">0.05</span>, f<span class="op">=</span><span class="fl">0.040</span>, k<span class="op">=</span><span class="fl">0.060</span>) <span class="op">*</span> dt</span>
 <span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a>Gray-Scott is usually initialized near the steady state $(u, v) = (1, 0)$, then a small patch is perturbed.</span>
-<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="dv">250</span></span>
-<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a>dt <span class="op">=</span> <span class="fl">2.0</span></span>
-<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a>uv <span class="op">=</span> np.ones((<span class="dv">2</span>, n, n), dtype<span class="op">=</span>np.float32)</span>
-<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a>uv[<span class="dv">1</span>] <span class="op">=</span> <span class="fl">0.0</span></span>
-<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> n <span class="op">//</span> <span class="dv">2</span></span>
-<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> <span class="dv">12</span></span>
-<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">TODO</span><span class="co">: perturb a square patch around the center</span></span>
-<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a><span class="co"># Set u close to 0.5 and v close to 0.25 in that patch</span></span>
-<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">TODO</span><span class="co">: add 10% Gaussian noise inside the same patch</span></span>
-<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">6</span>))</span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a>ax.imshow(uv[<span class="dv">1</span>], cmap<span class="op">=</span><span class="st">"jet"</span>, interpolation<span class="op">=</span><span class="st">"bilinear"</span>)</span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>ax.axis(<span class="st">"off"</span>)</span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a>plt.close()</span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a><span class="fu">## Start from the Homogeneous State</span></span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a>Gray-Scott is usually initialized near the steady state $(u, v) = (1, 0)$, then a small patch is perturbed.</span>
+<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="dv">250</span></span>
+<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a>dt <span class="op">=</span> <span class="fl">2.0</span></span>
+<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a>uv <span class="op">=</span> np.ones((<span class="dv">2</span>, n, n), dtype<span class="op">=</span>np.float32)</span>
+<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a>uv[<span class="dv">1</span>] <span class="op">=</span> <span class="fl">0.0</span></span>
 <span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
-<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hint: Gray-Scott initialization (click to expand)</span></span>
+<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> n <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> <span class="dv">12</span></span>
 <span id="cb9-79"><a href="#cb9-79" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a>uv[<span class="dv">0</span>, c <span class="op">-</span> r : c <span class="op">+</span> r, c <span class="op">-</span> r : c <span class="op">+</span> r] <span class="op">=</span> <span class="fl">0.5</span></span>
-<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a>uv[<span class="dv">1</span>, c <span class="op">-</span> r : c <span class="op">+</span> r, c <span class="op">-</span> r : c <span class="op">+</span> r] <span class="op">=</span> <span class="fl">0.25</span></span>
-<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-84"><a href="#cb9-84" aria-hidden="true" tabindex="-1"></a>noise <span class="op">=</span> <span class="fl">0.1</span> <span class="op">*</span> np.random.randn(<span class="dv">2</span>, <span class="dv">2</span> <span class="op">*</span> r, <span class="dv">2</span> <span class="op">*</span> r)</span>
-<span id="cb9-85"><a href="#cb9-85" aria-hidden="true" tabindex="-1"></a>uv[:, c <span class="op">-</span> r : c <span class="op">+</span> r, c <span class="op">-</span> r : c <span class="op">+</span> r] <span class="op">*=</span> <span class="dv">1</span> <span class="op">+</span> noise</span>
-<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">TODO</span><span class="co">: perturb a square patch around the center</span></span>
+<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a><span class="co"># Set u close to 0.5 and v close to 0.25 in that patch</span></span>
+<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">TODO</span><span class="co">: add 10% Gaussian noise inside the same patch</span></span>
+<span id="cb9-84"><a href="#cb9-84" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-85"><a href="#cb9-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hint: Gray-Scott initialization (click to expand)</span></span>
 <span id="cb9-88"><a href="#cb9-88" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-89"><a href="#cb9-89" aria-hidden="true" tabindex="-1"></a><span class="fu">## Reuse the 2D Laplacian</span></span>
-<span id="cb9-90"><a href="#cb9-90" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-91"><a href="#cb9-91" aria-hidden="true" tabindex="-1"></a>We will start with the 5-point stencil. If you implemented the previous page cleanly, you can reuse that helper almost unchanged.</span>
+<span id="cb9-89"><a href="#cb9-89" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb9-90"><a href="#cb9-90" aria-hidden="true" tabindex="-1"></a>uv[<span class="dv">0</span>, c <span class="op">-</span> r : c <span class="op">+</span> r, c <span class="op">-</span> r : c <span class="op">+</span> r] <span class="op">=</span> <span class="fl">0.5</span></span>
+<span id="cb9-91"><a href="#cb9-91" aria-hidden="true" tabindex="-1"></a>uv[<span class="dv">1</span>, c <span class="op">-</span> r : c <span class="op">+</span> r, c <span class="op">-</span> r : c <span class="op">+</span> r] <span class="op">=</span> <span class="fl">0.25</span></span>
 <span id="cb9-92"><a href="#cb9-92" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-93"><a href="#cb9-93" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb9-94"><a href="#cb9-94" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb9-95"><a href="#cb9-95" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-96"><a href="#cb9-96" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> laplacian(field):</span>
-<span id="cb9-97"><a href="#cb9-97" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: write the 5-point stencil with np.roll</span></span>
-<span id="cb9-98"><a href="#cb9-98" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> lap</span>
-<span id="cb9-99"><a href="#cb9-99" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-100"><a href="#cb9-100" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-101"><a href="#cb9-101" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
-<span id="cb9-102"><a href="#cb9-102" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hint: 5-point stencil (click to expand)</span></span>
-<span id="cb9-103"><a href="#cb9-103" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-104"><a href="#cb9-104" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb9-93"><a href="#cb9-93" aria-hidden="true" tabindex="-1"></a>noise <span class="op">=</span> <span class="fl">0.1</span> <span class="op">*</span> np.random.randn(<span class="dv">2</span>, <span class="dv">2</span> <span class="op">*</span> r, <span class="dv">2</span> <span class="op">*</span> r)</span>
+<span id="cb9-94"><a href="#cb9-94" aria-hidden="true" tabindex="-1"></a>uv[:, c <span class="op">-</span> r : c <span class="op">+</span> r, c <span class="op">-</span> r : c <span class="op">+</span> r] <span class="op">*=</span> <span class="dv">1</span> <span class="op">+</span> noise</span>
+<span id="cb9-95"><a href="#cb9-95" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-96"><a href="#cb9-96" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb9-97"><a href="#cb9-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-98"><a href="#cb9-98" aria-hidden="true" tabindex="-1"></a><span class="fu">## Reuse the 2D Laplacian</span></span>
+<span id="cb9-99"><a href="#cb9-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-100"><a href="#cb9-100" aria-hidden="true" tabindex="-1"></a>We will start with the 5-point stencil. If you implemented the previous page cleanly, you can reuse that helper almost unchanged.</span>
+<span id="cb9-101"><a href="#cb9-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-102"><a href="#cb9-102" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb9-103"><a href="#cb9-103" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb9-104"><a href="#cb9-104" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-105"><a href="#cb9-105" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> laplacian(field):</span>
-<span id="cb9-106"><a href="#cb9-106" aria-hidden="true" tabindex="-1"></a>    lap <span class="op">=</span> <span class="op">-</span><span class="dv">4</span> <span class="op">*</span> field</span>
-<span id="cb9-107"><a href="#cb9-107" aria-hidden="true" tabindex="-1"></a>    lap <span class="op">+=</span> np.roll(field, shift<span class="op">=</span><span class="dv">1</span>, axis<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb9-108"><a href="#cb9-108" aria-hidden="true" tabindex="-1"></a>    lap <span class="op">+=</span> np.roll(field, shift<span class="op">=-</span><span class="dv">1</span>, axis<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb9-109"><a href="#cb9-109" aria-hidden="true" tabindex="-1"></a>    lap <span class="op">+=</span> np.roll(field, shift<span class="op">=</span><span class="dv">1</span>, axis<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb9-110"><a href="#cb9-110" aria-hidden="true" tabindex="-1"></a>    lap <span class="op">+=</span> np.roll(field, shift<span class="op">=-</span><span class="dv">1</span>, axis<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb9-111"><a href="#cb9-111" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> lap</span>
-<span id="cb9-112"><a href="#cb9-112" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-113"><a href="#cb9-113" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb9-114"><a href="#cb9-114" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-115"><a href="#cb9-115" aria-hidden="true" tabindex="-1"></a><span class="fu">## Implement the Gray-Scott PDE</span></span>
-<span id="cb9-116"><a href="#cb9-116" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-117"><a href="#cb9-117" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb9-118"><a href="#cb9-118" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb9-119"><a href="#cb9-119" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-120"><a href="#cb9-120" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gray_scott_pde(t, uv, d1<span class="op">=</span><span class="fl">0.1</span>, d2<span class="op">=</span><span class="fl">0.05</span>, f<span class="op">=</span><span class="fl">0.040</span>, k<span class="op">=</span><span class="fl">0.060</span>):</span>
-<span id="cb9-121"><a href="#cb9-121" aria-hidden="true" tabindex="-1"></a>    u, v <span class="op">=</span> uv</span>
-<span id="cb9-122"><a href="#cb9-122" aria-hidden="true" tabindex="-1"></a>    lu <span class="op">=</span> laplacian(u)</span>
-<span id="cb9-123"><a href="#cb9-123" aria-hidden="true" tabindex="-1"></a>    lv <span class="op">=</span> laplacian(v)</span>
-<span id="cb9-124"><a href="#cb9-124" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-125"><a href="#cb9-125" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: compute the autocatalytic term uv^2</span></span>
-<span id="cb9-126"><a href="#cb9-126" aria-hidden="true" tabindex="-1"></a>    uv2 <span class="op">=</span></span>
+<span id="cb9-106"><a href="#cb9-106" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: write the 5-point stencil with np.roll</span></span>
+<span id="cb9-107"><a href="#cb9-107" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> lap</span>
+<span id="cb9-108"><a href="#cb9-108" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-109"><a href="#cb9-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-110"><a href="#cb9-110" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb9-111"><a href="#cb9-111" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hint: 5-point stencil (click to expand)</span></span>
+<span id="cb9-112"><a href="#cb9-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-113"><a href="#cb9-113" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb9-114"><a href="#cb9-114" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> laplacian(field):</span>
+<span id="cb9-115"><a href="#cb9-115" aria-hidden="true" tabindex="-1"></a>    lap <span class="op">=</span> <span class="op">-</span><span class="dv">4</span> <span class="op">*</span> field</span>
+<span id="cb9-116"><a href="#cb9-116" aria-hidden="true" tabindex="-1"></a>    lap <span class="op">+=</span> np.roll(field, shift<span class="op">=</span><span class="dv">1</span>, axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb9-117"><a href="#cb9-117" aria-hidden="true" tabindex="-1"></a>    lap <span class="op">+=</span> np.roll(field, shift<span class="op">=-</span><span class="dv">1</span>, axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb9-118"><a href="#cb9-118" aria-hidden="true" tabindex="-1"></a>    lap <span class="op">+=</span> np.roll(field, shift<span class="op">=</span><span class="dv">1</span>, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb9-119"><a href="#cb9-119" aria-hidden="true" tabindex="-1"></a>    lap <span class="op">+=</span> np.roll(field, shift<span class="op">=-</span><span class="dv">1</span>, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb9-120"><a href="#cb9-120" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> lap</span>
+<span id="cb9-121"><a href="#cb9-121" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-122"><a href="#cb9-122" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb9-123"><a href="#cb9-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-124"><a href="#cb9-124" aria-hidden="true" tabindex="-1"></a>The only reason this already enforces periodic boundary conditions is that <span class="in">`np.roll()`</span> wraps the array. If you wanted zero-flux or fixed-value boundaries here, you would keep the same Laplacian helper and reuse the boundary-update pattern from the 2D Gierer-Meinhardt page after every Euler step.</span>
+<span id="cb9-125"><a href="#cb9-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-126"><a href="#cb9-126" aria-hidden="true" tabindex="-1"></a><span class="fu">## Implement the Gray-Scott PDE</span></span>
 <span id="cb9-127"><a href="#cb9-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-128"><a href="#cb9-128" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: write du_dt and dv_dt</span></span>
-<span id="cb9-129"><a href="#cb9-129" aria-hidden="true" tabindex="-1"></a>    du_dt <span class="op">=</span></span>
-<span id="cb9-130"><a href="#cb9-130" aria-hidden="true" tabindex="-1"></a>    dv_dt <span class="op">=</span></span>
-<span id="cb9-131"><a href="#cb9-131" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array([du_dt, dv_dt])</span>
-<span id="cb9-132"><a href="#cb9-132" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-133"><a href="#cb9-133" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-134"><a href="#cb9-134" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
-<span id="cb9-135"><a href="#cb9-135" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hint: Gray-Scott PDE (click to expand)</span></span>
-<span id="cb9-136"><a href="#cb9-136" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-137"><a href="#cb9-137" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb9-138"><a href="#cb9-138" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gray_scott_pde(t, uv, d1<span class="op">=</span><span class="fl">0.1</span>, d2<span class="op">=</span><span class="fl">0.05</span>, f<span class="op">=</span><span class="fl">0.040</span>, k<span class="op">=</span><span class="fl">0.060</span>):</span>
-<span id="cb9-139"><a href="#cb9-139" aria-hidden="true" tabindex="-1"></a>    u, v <span class="op">=</span> uv</span>
-<span id="cb9-140"><a href="#cb9-140" aria-hidden="true" tabindex="-1"></a>    lu <span class="op">=</span> laplacian(u)</span>
-<span id="cb9-141"><a href="#cb9-141" aria-hidden="true" tabindex="-1"></a>    lv <span class="op">=</span> laplacian(v)</span>
-<span id="cb9-142"><a href="#cb9-142" aria-hidden="true" tabindex="-1"></a>    uv2 <span class="op">=</span> u <span class="op">*</span> v <span class="op">*</span> v</span>
-<span id="cb9-143"><a href="#cb9-143" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-144"><a href="#cb9-144" aria-hidden="true" tabindex="-1"></a>    du_dt <span class="op">=</span> d1 <span class="op">*</span> lu <span class="op">-</span> uv2 <span class="op">+</span> f <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> u)</span>
-<span id="cb9-145"><a href="#cb9-145" aria-hidden="true" tabindex="-1"></a>    dv_dt <span class="op">=</span> d2 <span class="op">*</span> lv <span class="op">+</span> uv2 <span class="op">-</span> (f <span class="op">+</span> k) <span class="op">*</span> v</span>
-<span id="cb9-146"><a href="#cb9-146" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array([du_dt, dv_dt])</span>
-<span id="cb9-147"><a href="#cb9-147" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-148"><a href="#cb9-148" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb9-149"><a href="#cb9-149" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-150"><a href="#cb9-150" aria-hidden="true" tabindex="-1"></a><span class="fu">## Time Step and Animate</span></span>
-<span id="cb9-151"><a href="#cb9-151" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-152"><a href="#cb9-152" aria-hidden="true" tabindex="-1"></a>Because <span class="in">`np.roll()`</span> wraps around the array, this implementation already uses **periodic boundary conditions**.</span>
-<span id="cb9-153"><a href="#cb9-153" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-154"><a href="#cb9-154" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb9-155"><a href="#cb9-155" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.animation <span class="im">as</span> animation</span>
-<span id="cb9-156"><a href="#cb9-156" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb9-157"><a href="#cb9-157" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-158"><a href="#cb9-158" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">6</span>))</span>
-<span id="cb9-159"><a href="#cb9-159" aria-hidden="true" tabindex="-1"></a>im <span class="op">=</span> ax.imshow(uv[<span class="dv">1</span>], cmap<span class="op">=</span><span class="st">"jet"</span>, interpolation<span class="op">=</span><span class="st">"bilinear"</span>, vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb9-160"><a href="#cb9-160" aria-hidden="true" tabindex="-1"></a>ax.axis(<span class="st">"off"</span>)</span>
-<span id="cb9-161"><a href="#cb9-161" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-162"><a href="#cb9-162" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> update_frame(_):</span>
-<span id="cb9-163"><a href="#cb9-163" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: advance uv by one or more Euler steps</span></span>
-<span id="cb9-164"><a href="#cb9-164" aria-hidden="true" tabindex="-1"></a>    im.set_array(uv[<span class="dv">1</span>])</span>
-<span id="cb9-165"><a href="#cb9-165" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [im]</span>
+<span id="cb9-128"><a href="#cb9-128" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb9-129"><a href="#cb9-129" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb9-130"><a href="#cb9-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-131"><a href="#cb9-131" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gray_scott_pde(t, uv, d1<span class="op">=</span><span class="fl">0.1</span>, d2<span class="op">=</span><span class="fl">0.05</span>, f<span class="op">=</span><span class="fl">0.040</span>, k<span class="op">=</span><span class="fl">0.060</span>):</span>
+<span id="cb9-132"><a href="#cb9-132" aria-hidden="true" tabindex="-1"></a>    u, v <span class="op">=</span> uv</span>
+<span id="cb9-133"><a href="#cb9-133" aria-hidden="true" tabindex="-1"></a>    lu <span class="op">=</span> laplacian(u)</span>
+<span id="cb9-134"><a href="#cb9-134" aria-hidden="true" tabindex="-1"></a>    lv <span class="op">=</span> laplacian(v)</span>
+<span id="cb9-135"><a href="#cb9-135" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-136"><a href="#cb9-136" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: compute the autocatalytic term uv^2</span></span>
+<span id="cb9-137"><a href="#cb9-137" aria-hidden="true" tabindex="-1"></a>    uv2 <span class="op">=</span></span>
+<span id="cb9-138"><a href="#cb9-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-139"><a href="#cb9-139" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: write du_dt and dv_dt</span></span>
+<span id="cb9-140"><a href="#cb9-140" aria-hidden="true" tabindex="-1"></a>    du_dt <span class="op">=</span></span>
+<span id="cb9-141"><a href="#cb9-141" aria-hidden="true" tabindex="-1"></a>    dv_dt <span class="op">=</span></span>
+<span id="cb9-142"><a href="#cb9-142" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array([du_dt, dv_dt])</span>
+<span id="cb9-143"><a href="#cb9-143" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-144"><a href="#cb9-144" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-145"><a href="#cb9-145" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb9-146"><a href="#cb9-146" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hint: Gray-Scott PDE (click to expand)</span></span>
+<span id="cb9-147"><a href="#cb9-147" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-148"><a href="#cb9-148" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb9-149"><a href="#cb9-149" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gray_scott_pde(t, uv, d1<span class="op">=</span><span class="fl">0.1</span>, d2<span class="op">=</span><span class="fl">0.05</span>, f<span class="op">=</span><span class="fl">0.040</span>, k<span class="op">=</span><span class="fl">0.060</span>):</span>
+<span id="cb9-150"><a href="#cb9-150" aria-hidden="true" tabindex="-1"></a>    u, v <span class="op">=</span> uv</span>
+<span id="cb9-151"><a href="#cb9-151" aria-hidden="true" tabindex="-1"></a>    lu <span class="op">=</span> laplacian(u)</span>
+<span id="cb9-152"><a href="#cb9-152" aria-hidden="true" tabindex="-1"></a>    lv <span class="op">=</span> laplacian(v)</span>
+<span id="cb9-153"><a href="#cb9-153" aria-hidden="true" tabindex="-1"></a>    uv2 <span class="op">=</span> u <span class="op">*</span> v <span class="op">*</span> v</span>
+<span id="cb9-154"><a href="#cb9-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-155"><a href="#cb9-155" aria-hidden="true" tabindex="-1"></a>    du_dt <span class="op">=</span> d1 <span class="op">*</span> lu <span class="op">-</span> uv2 <span class="op">+</span> f <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> u)</span>
+<span id="cb9-156"><a href="#cb9-156" aria-hidden="true" tabindex="-1"></a>    dv_dt <span class="op">=</span> d2 <span class="op">*</span> lv <span class="op">+</span> uv2 <span class="op">-</span> (f <span class="op">+</span> k) <span class="op">*</span> v</span>
+<span id="cb9-157"><a href="#cb9-157" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array([du_dt, dv_dt])</span>
+<span id="cb9-158"><a href="#cb9-158" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-159"><a href="#cb9-159" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb9-160"><a href="#cb9-160" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-161"><a href="#cb9-161" aria-hidden="true" tabindex="-1"></a><span class="fu">## Time Step and Animate</span></span>
+<span id="cb9-162"><a href="#cb9-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-163"><a href="#cb9-163" aria-hidden="true" tabindex="-1"></a>Because <span class="in">`np.roll()`</span> wraps around the array, this implementation already uses **periodic boundary conditions**.</span>
+<span id="cb9-164"><a href="#cb9-164" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-165"><a href="#cb9-165" aria-hidden="true" tabindex="-1"></a>This is the main conceptual difference from the previous page. There, we copied the edge values after each Euler step to model zero flux. Here, we let the pattern leave one side of the domain and re-enter on the opposite side.</span>
 <span id="cb9-166"><a href="#cb9-166" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-167"><a href="#cb9-167" aria-hidden="true" tabindex="-1"></a>ani <span class="op">=</span> animation.FuncAnimation(fig, update_frame, interval<span class="op">=</span><span class="dv">1</span>, blit<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb9-168"><a href="#cb9-168" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-169"><a href="#cb9-169" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-170"><a href="#cb9-170" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
-<span id="cb9-171"><a href="#cb9-171" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hint: Gray-Scott animation (click to expand)</span></span>
-<span id="cb9-172"><a href="#cb9-172" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-173"><a href="#cb9-173" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb9-174"><a href="#cb9-174" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> update_frame(_):</span>
-<span id="cb9-175"><a href="#cb9-175" aria-hidden="true" tabindex="-1"></a>    <span class="kw">nonlocal</span> uv</span>
-<span id="cb9-176"><a href="#cb9-176" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">20</span>):</span>
-<span id="cb9-177"><a href="#cb9-177" aria-hidden="true" tabindex="-1"></a>        uv <span class="op">=</span> uv <span class="op">+</span> gray_scott_pde(<span class="dv">0</span>, uv, d1<span class="op">=</span><span class="fl">0.1</span>, d2<span class="op">=</span><span class="fl">0.05</span>, f<span class="op">=</span><span class="fl">0.040</span>, k<span class="op">=</span><span class="fl">0.060</span>) <span class="op">*</span> dt</span>
-<span id="cb9-178"><a href="#cb9-178" aria-hidden="true" tabindex="-1"></a>    im.set_array(uv[<span class="dv">1</span>])</span>
-<span id="cb9-179"><a href="#cb9-179" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [im]</span>
-<span id="cb9-180"><a href="#cb9-180" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-181"><a href="#cb9-181" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb9-167"><a href="#cb9-167" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb9-168"><a href="#cb9-168" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.animation <span class="im">as</span> animation</span>
+<span id="cb9-169"><a href="#cb9-169" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb9-170"><a href="#cb9-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-171"><a href="#cb9-171" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">6</span>))</span>
+<span id="cb9-172"><a href="#cb9-172" aria-hidden="true" tabindex="-1"></a>im <span class="op">=</span> ax.imshow(uv[<span class="dv">1</span>], cmap<span class="op">=</span><span class="st">"jet"</span>, interpolation<span class="op">=</span><span class="st">"bilinear"</span>, vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb9-173"><a href="#cb9-173" aria-hidden="true" tabindex="-1"></a>ax.axis(<span class="st">"off"</span>)</span>
+<span id="cb9-174"><a href="#cb9-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-175"><a href="#cb9-175" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> update_frame(_):</span>
+<span id="cb9-176"><a href="#cb9-176" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: advance uv by one or more Euler steps</span></span>
+<span id="cb9-177"><a href="#cb9-177" aria-hidden="true" tabindex="-1"></a>    im.set_array(uv[<span class="dv">1</span>])</span>
+<span id="cb9-178"><a href="#cb9-178" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [im]</span>
+<span id="cb9-179"><a href="#cb9-179" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-180"><a href="#cb9-180" aria-hidden="true" tabindex="-1"></a>ani <span class="op">=</span> animation.FuncAnimation(fig, update_frame, interval<span class="op">=</span><span class="dv">1</span>, blit<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb9-181"><a href="#cb9-181" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb9-182"><a href="#cb9-182" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-183"><a href="#cb9-183" aria-hidden="true" tabindex="-1"></a><span class="fu">## Parameter Sets</span></span>
-<span id="cb9-184"><a href="#cb9-184" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-185"><a href="#cb9-185" aria-hidden="true" tabindex="-1"></a>Try the following values with $d_1 = 0.1$ and $d_2 = 0.05$:</span>
-<span id="cb9-186"><a href="#cb9-186" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-187"><a href="#cb9-187" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Type A: $f = 0.040$, $k = 0.060$</span>
-<span id="cb9-188"><a href="#cb9-188" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Type B: $f = 0.014$, $k = 0.047$</span>
-<span id="cb9-189"><a href="#cb9-189" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Type C: $f = 0.062$, $k = 0.065$</span>
-<span id="cb9-190"><a href="#cb9-190" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Type D: $f = 0.078$, $k = 0.061$</span>
-<span id="cb9-191"><a href="#cb9-191" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Type E: $f = 0.082$, $k = 0.059$</span>
-<span id="cb9-192"><a href="#cb9-192" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-193"><a href="#cb9-193" aria-hidden="true" tabindex="-1"></a>Which sets create isolated spots? Which ones create stripes or moving fronts?</span>
-<span id="cb9-194"><a href="#cb9-194" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-195"><a href="#cb9-195" aria-hidden="true" tabindex="-1"></a><span class="fu">## Optional: 9-Point Stencil</span></span>
-<span id="cb9-196"><a href="#cb9-196" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-197"><a href="#cb9-197" aria-hidden="true" tabindex="-1"></a>If you want to compare stencils, adapt your Laplacian to include diagonal neighbors and compare the visual effect.</span>
-<span id="cb9-198"><a href="#cb9-198" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-199"><a href="#cb9-199" aria-hidden="true" tabindex="-1"></a><span class="fu">## What's Next?</span></span>
-<span id="cb9-200"><a href="#cb9-200" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-201"><a href="#cb9-201" aria-hidden="true" tabindex="-1"></a>The base solver is done. In the next page, we will keep the same PDE update and wrap it with interaction: drawing perturbations, pausing the simulation, and changing parameters with sliders.</span>
-<span id="cb9-202"><a href="#cb9-202" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-203"><a href="#cb9-203" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Gray-Scott: Interaction</span><span class="co">](gray-scott-art.qmd)</span>{.btn .btn-primary}</span>
-<span id="cb9-204"><a href="#cb9-204" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-205"><a href="#cb9-205" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip}</span>
-<span id="cb9-206"><a href="#cb9-206" aria-hidden="true" tabindex="-1"></a>Reference code is available in <span class="co">[</span><span class="ot">amlab/pdes/gray_scott.py</span><span class="co">](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/pdes/gray_scott.py)</span>.</span>
-<span id="cb9-207"><a href="#cb9-207" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb9-183"><a href="#cb9-183" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb9-184"><a href="#cb9-184" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hint: Gray-Scott animation (click to expand)</span></span>
+<span id="cb9-185"><a href="#cb9-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-186"><a href="#cb9-186" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb9-187"><a href="#cb9-187" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> update_frame(_):</span>
+<span id="cb9-188"><a href="#cb9-188" aria-hidden="true" tabindex="-1"></a>    <span class="kw">nonlocal</span> uv</span>
+<span id="cb9-189"><a href="#cb9-189" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">20</span>):</span>
+<span id="cb9-190"><a href="#cb9-190" aria-hidden="true" tabindex="-1"></a>        uv <span class="op">=</span> uv <span class="op">+</span> gray_scott_pde(<span class="dv">0</span>, uv, d1<span class="op">=</span><span class="fl">0.1</span>, d2<span class="op">=</span><span class="fl">0.05</span>, f<span class="op">=</span><span class="fl">0.040</span>, k<span class="op">=</span><span class="fl">0.060</span>) <span class="op">*</span> dt</span>
+<span id="cb9-191"><a href="#cb9-191" aria-hidden="true" tabindex="-1"></a>    im.set_array(uv[<span class="dv">1</span>])</span>
+<span id="cb9-192"><a href="#cb9-192" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [im]</span>
+<span id="cb9-193"><a href="#cb9-193" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-194"><a href="#cb9-194" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb9-195"><a href="#cb9-195" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-196"><a href="#cb9-196" aria-hidden="true" tabindex="-1"></a><span class="fu">## Parameter Sets</span></span>
+<span id="cb9-197"><a href="#cb9-197" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-198"><a href="#cb9-198" aria-hidden="true" tabindex="-1"></a>Try the following values with $d_1 = 0.1$ and $d_2 = 0.05$:</span>
+<span id="cb9-199"><a href="#cb9-199" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-200"><a href="#cb9-200" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Type A: $f = 0.040$, $k = 0.060$</span>
+<span id="cb9-201"><a href="#cb9-201" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Type B: $f = 0.014$, $k = 0.047$</span>
+<span id="cb9-202"><a href="#cb9-202" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Type C: $f = 0.062$, $k = 0.065$</span>
+<span id="cb9-203"><a href="#cb9-203" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Type D: $f = 0.078$, $k = 0.061$</span>
+<span id="cb9-204"><a href="#cb9-204" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Type E: $f = 0.082$, $k = 0.059$</span>
+<span id="cb9-205"><a href="#cb9-205" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-206"><a href="#cb9-206" aria-hidden="true" tabindex="-1"></a>Which sets create isolated spots? Which ones create stripes or moving fronts?</span>
+<span id="cb9-207"><a href="#cb9-207" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-208"><a href="#cb9-208" aria-hidden="true" tabindex="-1"></a><span class="fu">## Connection Back to Turing Analysis</span></span>
+<span id="cb9-209"><a href="#cb9-209" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-210"><a href="#cb9-210" aria-hidden="true" tabindex="-1"></a>The same steady-state to Jacobian to mode-matrix pipeline from the Turing page still applies here. The only spectral change is the boundary condition.</span>
+<span id="cb9-211"><a href="#cb9-211" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-212"><a href="#cb9-212" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>For Neumann boundaries, the admissible wavenumbers use factors of $\pi / L$.</span>
+<span id="cb9-213"><a href="#cb9-213" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>For periodic boundaries, the admissible wavenumbers use factors of $2\pi / L$.</span>
+<span id="cb9-214"><a href="#cb9-214" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-215"><a href="#cb9-215" aria-hidden="true" tabindex="-1"></a>For the usual base state $(u, v) = (1, 0)$, the linearized system is damped, so the classical Turing calculation only becomes interesting at a nontrivial homogeneous equilibrium when one exists. In that regime, the mode matrices are built exactly as before, but with the periodic Laplacian eigenvalues. That is the clean conceptual bridge from Gierer-Meinhardt to Gray-Scott.</span>
+<span id="cb9-216"><a href="#cb9-216" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-217"><a href="#cb9-217" aria-hidden="true" tabindex="-1"></a><span class="fu">## Optional: 9-Point Stencil</span></span>
+<span id="cb9-218"><a href="#cb9-218" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-219"><a href="#cb9-219" aria-hidden="true" tabindex="-1"></a>If you want to compare stencils, adapt your Laplacian to include diagonal neighbors and compare the visual effect.</span>
+<span id="cb9-220"><a href="#cb9-220" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-221"><a href="#cb9-221" aria-hidden="true" tabindex="-1"></a><span class="fu">## What's Next?</span></span>
+<span id="cb9-222"><a href="#cb9-222" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-223"><a href="#cb9-223" aria-hidden="true" tabindex="-1"></a>The base solver is done. In the next page, we will keep the same PDE update and wrap it with interaction: drawing perturbations, pausing the simulation, and changing parameters with sliders.</span>
+<span id="cb9-224"><a href="#cb9-224" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-225"><a href="#cb9-225" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Gray-Scott: Interaction</span><span class="co">](gray-scott-art.qmd)</span>{.btn .btn-primary}</span>
+<span id="cb9-226"><a href="#cb9-226" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-227"><a href="#cb9-227" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip}</span>
+<span id="cb9-228"><a href="#cb9-228" aria-hidden="true" tabindex="-1"></a>Reference code is available in <span class="co">[</span><span class="ot">amlab/pdes/gray_scott.py</span><span class="co">](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/pdes/gray_scott.py)</span>.</span>
+<span id="cb9-229"><a href="#cb9-229" aria-hidden="true" tabindex="-1"></a>:::</span>
 </code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Applied Math Lab - Turing Instability</title>
+<title>Applied Math Lab – Turing Instability</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -177,7 +177,9 @@ window.Quarto = {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="../../">Applied Math Lab</a> 
+      <a href="../../">
+      Applied Math Lab
+      </a> 
     </div>
       </div>
     <div class="sidebar-menu-container"> 
@@ -589,13 +591,20 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#write-the-jacobian-at-the-fixed-point" id="toc-write-the-jacobian-at-the-fixed-point" class="nav-link active" data-scroll-target="#write-the-jacobian-at-the-fixed-point">Write the Jacobian at the Fixed Point</a></li>
+  <li><a href="#the-linear-stability-pipeline" id="toc-the-linear-stability-pipeline" class="nav-link active" data-scroll-target="#the-linear-stability-pipeline">The Linear Stability Pipeline</a></li>
+  <li><a href="#compute-the-gierer-meinhardt-equilibrium" id="toc-compute-the-gierer-meinhardt-equilibrium" class="nav-link" data-scroll-target="#compute-the-gierer-meinhardt-equilibrium">Compute the Gierer-Meinhardt Equilibrium</a></li>
+  <li><a href="#write-the-jacobian-at-the-fixed-point" id="toc-write-the-jacobian-at-the-fixed-point" class="nav-link" data-scroll-target="#write-the-jacobian-at-the-fixed-point">Write the Jacobian at the Fixed Point</a></li>
   <li><a href="#implement-the-turing-test" id="toc-implement-the-turing-test" class="nav-link" data-scroll-target="#implement-the-turing-test">Implement the Turing Test</a></li>
   <li><a href="#plot-the-turing-space" id="toc-plot-the-turing-space" class="nav-link" data-scroll-target="#plot-the-turing-space">Plot the Turing Space</a></li>
-  <li><a href="#scan-spatial-modes-in-1d" id="toc-scan-spatial-modes-in-1d" class="nav-link" data-scroll-target="#scan-spatial-modes-in-1d">Scan Spatial Modes in 1D</a></li>
+  <li><a href="#compute-f_n-and-the-unstable-mode-list-in-1d" id="toc-compute-f_n-and-the-unstable-mode-list-in-1d" class="nav-link" data-scroll-target="#compute-f_n-and-the-unstable-mode-list-in-1d">Compute <span class="math inline">\(F_n\)</span> and the Unstable Mode List in 1D</a></li>
   <li><a href="#extend-the-scan-to-2d" id="toc-extend-the-scan-to-2d" class="nav-link" data-scroll-target="#extend-the-scan-to-2d">Extend the Scan to 2D</a></li>
-  <li><a href="#compare-two-cases" id="toc-compare-two-cases" class="nav-link" data-scroll-target="#compare-two-cases">Compare Two Cases</a></li>
-  <li><a href="#whats-next" id="toc-whats-next" class="nav-link" data-scroll-target="#whats-next">What’s Next?</a></li>
+  <li><a href="#the-linear-stability-pipeline-1" id="toc-the-linear-stability-pipeline-1" class="nav-link" data-scroll-target="#the-linear-stability-pipeline-1">The Linear Stability Pipeline</a></li>
+  <li><a href="#compute-the-gierer-meinhardt-equilibrium-1" id="toc-compute-the-gierer-meinhardt-equilibrium-1" class="nav-link" data-scroll-target="#compute-the-gierer-meinhardt-equilibrium-1">Compute the Gierer-Meinhardt Equilibrium</a></li>
+  <li><a href="#write-the-jacobian-at-the-fixed-point-1" id="toc-write-the-jacobian-at-the-fixed-point-1" class="nav-link" data-scroll-target="#write-the-jacobian-at-the-fixed-point-1">Write the Jacobian at the Fixed Point</a></li>
+  <li><a href="#implement-the-turing-test-1" id="toc-implement-the-turing-test-1" class="nav-link" data-scroll-target="#implement-the-turing-test-1">Implement the Turing Test</a></li>
+  <li><a href="#plot-the-turing-space-1" id="toc-plot-the-turing-space-1" class="nav-link" data-scroll-target="#plot-the-turing-space-1">Plot the Turing Space</a></li>
+  <li><a href="#compute-f_n-and-the-unstable-mode-list-in-1d-1" id="toc-compute-f_n-and-the-unstable-mode-list-in-1d-1" class="nav-link" data-scroll-target="#compute-f_n-and-the-unstable-mode-list-in-1d-1">Compute <span class="math inline">\(F_n\)</span> and the Unstable Mode List in 1D</a></li>
+  <li><a href="#extend-the-scan-to-2d-1" id="toc-extend-the-scan-to-2d-1" class="nav-link" data-scroll-target="#extend-the-scan-to-2d-1">Extend the Scan to 2D</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/pde-1d/turing-instability.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -639,9 +648,17 @@ Figure&nbsp;1: Turing space for the Gierer-Meinhardt model in the <span class="m
 </div>
 </div>
 </div>
-<section id="write-the-jacobian-at-the-fixed-point" class="level2">
-<h2 class="anchored" data-anchor-id="write-the-jacobian-at-the-fixed-point">Write the Jacobian at the Fixed Point</h2>
-<p>Let</p>
+<section id="the-linear-stability-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="the-linear-stability-pipeline">The Linear Stability Pipeline</h2>
+<p>For a two-species reaction-diffusion system</p>
+<p><span class="math display">\[
+\partial_t w = D\,\Delta w + R(w), \qquad D = \operatorname{diag}(d_1, d_2),
+\]</span></p>
+<p>start from a homogeneous steady state <span class="math inline">\(w_*\)</span> with <span class="math inline">\(R(w_*) = 0\)</span>. Write <span class="math inline">\(w = w_* + \eta\)</span> and keep only linear terms:</p>
+<p><span class="math display">\[
+\partial_t \eta = D\,\Delta \eta + J\eta,
+\]</span></p>
+<p>where</p>
 <p><span id="eq-pde-turing-jacobian"><span class="math display">\[
 J =
 \begin{pmatrix}
@@ -649,10 +666,74 @@ f_u &amp; f_v \\
 g_u &amp; g_v
 \end{pmatrix}
 \tag{1}\]</span></span></p>
-<p>be the Jacobian of the reaction terms at the homogeneous steady state. For the Gierer-Meinhardt model, the fixed point is known analytically, so you can hard-code the partial derivatives.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gierer_meinhardt_jacobian(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>):</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: compute fu, fv, gu, gv at the fixed point</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fu, fv, gu, gv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>is the Jacobian of the reaction terms at the steady state.</p>
+<p>Now expand the perturbation in Laplacian eigenmodes,</p>
+<p><span class="math display">\[
+\eta(x,t) = c_n(t)\,\phi_n(x), \qquad \Delta \phi_n = \lambda_n \phi_n, \qquad \lambda_n \le 0.
+\]</span></p>
+<p>Each spatial mode evolves independently as</p>
+<p><span id="eq-pde-turing-mode-matrix"><span class="math display">\[
+\dot c_n = F_n c_n, \qquad F_n = J + \lambda_n D.
+\tag{2}\]</span></span></p>
+<p>Because <span class="math inline">\(\lambda_n = -k_n^2\)</span>, many notes write the same matrix as</p>
+<p><span id="eq-pde-turing-an"><span class="math display">\[
+A_n = J - k_n^2 D.
+\tag{3}\]</span></span></p>
+<p>So the workflow is always the same.</p>
+<ul>
+<li>Find the homogeneous equilibrium.</li>
+<li>Compute the Jacobian at that equilibrium.</li>
+<li>Compute the Laplacian eigenvalues <span class="math inline">\(\lambda_n\)</span> from the domain and the boundary conditions.</li>
+<li>Build <span class="math inline">\(F_n\)</span> or <span class="math inline">\(A_n\)</span>.</li>
+<li>Compute the eigenvalues of that <span class="math inline">\(2 \times 2\)</span> matrix.</li>
+<li>Keep the modes whose largest real part is positive.</li>
+</ul>
+<p>For a <span class="math inline">\(2 \times 2\)</span> matrix, the growth rates <span class="math inline">\(\sigma\)</span> satisfy</p>
+<p><span class="math display">\[
+\sigma^2 - \operatorname{tr}(F_n)\sigma + \det(F_n) = 0.
+\]</span></p>
+<p>With <span class="math inline">\(D = \operatorname{diag}(1, d)\)</span>, the diffusion-shifted matrix has</p>
+<p><span class="math display">\[
+\operatorname{tr}(A_n) = (f_u + g_v) - (1 + d)k_n^2,
+\]</span></p>
+<p><span id="eq-pde-turing-det-an"><span class="math display">\[
+\det(A_n) = (f_u g_v - f_v g_u) - (d f_u + g_v)k_n^2 + d k_n^4.
+\tag{4}\]</span></span></p>
+<p>Diffusion makes the trace more negative, so the Turing mechanism is detected through the determinant. The flat state is stable when <span class="math inline">\(\operatorname{tr}(J) &lt; 0\)</span> and <span class="math inline">\(\det(J) &gt; 0\)</span>. A Turing instability appears when some nonzero mode makes <span class="math inline">\(\det(A_n) &lt; 0\)</span>.</p>
+</section>
+<section id="compute-the-gierer-meinhardt-equilibrium" class="level2">
+<h2 class="anchored" data-anchor-id="compute-the-gierer-meinhardt-equilibrium">Compute the Gierer-Meinhardt Equilibrium</h2>
+<p>For the Gierer-Meinhardt model,</p>
+<p><span class="math display">\[
+f(u, v) = a - b u + \frac{u^2}{v}, \qquad g(u, v) = u^2 - v.
+\]</span></p>
+<p>The homogeneous steady state solves <span class="math inline">\(f(u_*, v_*) = 0\)</span> and <span class="math inline">\(g(u_*, v_*) = 0\)</span>. From <span class="math inline">\(g(u_*, v_*) = 0\)</span> we get <span class="math inline">\(v_* = u_*^2\)</span>. Substituting into <span class="math inline">\(f = 0\)</span> gives</p>
+<p><span id="eq-pde-turing-gm-steady"><span class="math display">\[
+u_* = \frac{a+1}{b}, \qquad v_* = \left(\frac{a+1}{b}\right)^2.
+\tag{5}\]</span></span></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gierer_meinhardt_equilibrium(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>):</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    u_star <span class="op">=</span> (a <span class="op">+</span> <span class="dv">1</span>) <span class="op">/</span> b</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    v_star <span class="op">=</span> u_star<span class="op">**</span><span class="dv">2</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> u_star, v_star</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="write-the-jacobian-at-the-fixed-point" class="level2">
+<h2 class="anchored" data-anchor-id="write-the-jacobian-at-the-fixed-point">Write the Jacobian at the Fixed Point</h2>
+<p>At a general point <span class="math inline">\((u, v)\)</span>, the Jacobian is</p>
+<p><span class="math display">\[
+J(u, v) =
+\begin{pmatrix}
+-b + 2u/v &amp; -u^2/v^2 \\
+2u &amp; -1
+\end{pmatrix}.
+\]</span></p>
+<p>Evaluating at <span class="math inline">\((u_*, v_*)\)</span> gives the entries needed for the Turing test.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gierer_meinhardt_jacobian(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>):</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    u_star, v_star <span class="op">=</span> gierer_meinhardt_equilibrium(a, b)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    fu <span class="op">=</span> <span class="op">-</span>b <span class="op">+</span> <span class="dv">2</span> <span class="op">*</span> u_star <span class="op">/</span> v_star</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    fv <span class="op">=</span> <span class="op">-</span>(u_star<span class="op">**</span><span class="dv">2</span>) <span class="op">/</span> (v_star<span class="op">**</span><span class="dv">2</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    gu <span class="op">=</span> <span class="dv">2</span> <span class="op">*</span> u_star</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    gv <span class="op">=</span> <span class="op">-</span><span class="fl">1.0</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fu, fv, gu, gv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -665,38 +746,39 @@ Hint: Jacobian entries (click to expand)
 </div>
 <div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gierer_meinhardt_jacobian(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>):</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    fu <span class="op">=</span> <span class="dv">2</span> <span class="op">*</span> b <span class="op">/</span> (a <span class="op">+</span> <span class="dv">1</span>) <span class="op">-</span> b</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    fv <span class="op">=</span> <span class="op">-</span>((b <span class="op">/</span> (a <span class="op">+</span> <span class="dv">1</span>)) <span class="op">**</span> <span class="dv">2</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    gu <span class="op">=</span> <span class="dv">2</span> <span class="op">*</span> (a <span class="op">+</span> <span class="dv">1</span>) <span class="op">/</span> b</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    gv <span class="op">=</span> <span class="op">-</span><span class="fl">1.0</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fu, fv, gu, gv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gierer_meinhardt_jacobian(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    fu <span class="op">=</span> <span class="dv">2</span> <span class="op">*</span> b <span class="op">/</span> (a <span class="op">+</span> <span class="dv">1</span>) <span class="op">-</span> b</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    fv <span class="op">=</span> <span class="op">-</span>((b <span class="op">/</span> (a <span class="op">+</span> <span class="dv">1</span>)) <span class="op">**</span> <span class="dv">2</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    gu <span class="op">=</span> <span class="dv">2</span> <span class="op">*</span> (a <span class="op">+</span> <span class="dv">1</span>) <span class="op">/</span> b</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    gv <span class="op">=</span> <span class="op">-</span><span class="fl">1.0</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fu, fv, gu, gv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
 </section>
 <section id="implement-the-turing-test" class="level2">
 <h2 class="anchored" data-anchor-id="implement-the-turing-test">Implement the Turing Test</h2>
-<p>A common set of conditions for Turing instability is</p>
+<p>From <span class="math inline">\(\operatorname{tr}(J) &lt; 0\)</span>, <span class="math inline">\(\det(J) &gt; 0\)</span>, and the requirement that <span class="math inline">\(\det(A_n)\)</span> becomes negative for some nonzero mode, we recover the standard three conditions</p>
 <p><span id="eq-pde-turing-conditions"><span class="math display">\[
 \begin{aligned}
 &amp;f_u + g_v &lt; 0, \\
 &amp;f_u g_v - f_v g_u &gt; 0, \\
 &amp;g_v + d f_u &gt; 2\sqrt{d\,(f_u g_v - f_v g_u)}.
 \end{aligned}
-\tag{2}\]</span></span></p>
+\tag{6}\]</span></span></p>
+<p>The last inequality is exactly the statement that the quadratic <span class="math inline">\(\det(A_n)\)</span> dips below zero for some <span class="math inline">\(k_n^2 &gt; 0\)</span>.</p>
 <p>Translate these three inequalities into Python.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> is_turing_instability(a, b, d):</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    nabla <span class="op">=</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: write the three conditions</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    cond1 <span class="op">=</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    cond2 <span class="op">=</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    cond3 <span class="op">=</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> cond1 <span class="op">&amp;</span> cond2 <span class="op">&amp;</span> cond3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> is_turing_instability(a, b, d):</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    nabla <span class="op">=</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: write the three conditions</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    cond1 <span class="op">=</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    cond2 <span class="op">=</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    cond3 <span class="op">=</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> cond1 <span class="op">&amp;</span> cond2 <span class="op">&amp;</span> cond3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -709,13 +791,13 @@ Hint: Turing test (click to expand)
 </div>
 <div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> is_turing_instability(a, b, d):</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    nabla <span class="op">=</span> fu <span class="op">*</span> gv <span class="op">-</span> fv <span class="op">*</span> gu</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    cond1 <span class="op">=</span> (fu <span class="op">+</span> gv) <span class="op">&lt;</span> <span class="dv">0</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    cond2 <span class="op">=</span> nabla <span class="op">&gt;</span> <span class="dv">0</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    cond3 <span class="op">=</span> (gv <span class="op">+</span> d <span class="op">*</span> fu) <span class="op">&gt;</span> <span class="dv">2</span> <span class="op">*</span> np.sqrt(d <span class="op">*</span> np.maximum(nabla, <span class="dv">0</span>))</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> cond1 <span class="op">&amp;</span> cond2 <span class="op">&amp;</span> cond3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> is_turing_instability(a, b, d):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    nabla <span class="op">=</span> fu <span class="op">*</span> gv <span class="op">-</span> fv <span class="op">*</span> gu</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    cond1 <span class="op">=</span> (fu <span class="op">+</span> gv) <span class="op">&lt;</span> <span class="dv">0</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    cond2 <span class="op">=</span> nabla <span class="op">&gt;</span> <span class="dv">0</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    cond3 <span class="op">=</span> (gv <span class="op">+</span> d <span class="op">*</span> fu) <span class="op">&gt;</span> <span class="dv">2</span> <span class="op">*</span> np.sqrt(d <span class="op">*</span> np.maximum(nabla, <span class="dv">0</span>))</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> cond1 <span class="op">&amp;</span> cond2 <span class="op">&amp;</span> cond3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
@@ -725,45 +807,47 @@ Hint: Turing test (click to expand)
 <section id="plot-the-turing-space" class="level2">
 <h2 class="anchored" data-anchor-id="plot-the-turing-space">Plot the Turing Space</h2>
 <p>Complete the code below to recreate the diagram.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>arr_a <span class="op">=</span> np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">500</span>)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>arr_d <span class="op">=</span> np.linspace(<span class="dv">0</span>, <span class="dv">100</span>, <span class="dv">500</span>)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>mesh_a, mesh_d <span class="op">=</span> np.meshgrid(arr_a, arr_d)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>mask_turing <span class="op">=</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">4</span>))</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>ax.contourf(mesh_a, mesh_d, mask_turing)</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"a"</span>)</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"d"</span>)</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Turing Space"</span>)</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>arr_a <span class="op">=</span> np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">500</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>arr_d <span class="op">=</span> np.linspace(<span class="dv">0</span>, <span class="dv">100</span>, <span class="dv">500</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>mesh_a, mesh_d <span class="op">=</span> np.meshgrid(arr_a, arr_d)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>mask_turing <span class="op">=</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">4</span>))</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>ax.contourf(mesh_a, mesh_d, mask_turing)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"a"</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"d"</span>)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Turing Space"</span>)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Mark the point <span class="math inline">\((a, d) = (0.40, 20)\)</span> on your plot. Is it inside the instability region?</p>
+<p>This is the same Turing-space diagram that appears in the left panel of the interactive Gierer-Meinhardt code, so the algebra and the simulation refer to the same parameter plane.</p>
 </section>
-<section id="scan-spatial-modes-in-1d" class="level2">
-<h2 class="anchored" data-anchor-id="scan-spatial-modes-in-1d">Scan Spatial Modes in 1D</h2>
-<p>The Turing conditions say that some spatial mode should grow, but they do not tell you which one. For Neumann boundary conditions on <span class="math inline">\([0, L]\)</span>, the admissible wavenumbers are</p>
+<section id="compute-f_n-and-the-unstable-mode-list-in-1d" class="level2">
+<h2 class="anchored" data-anchor-id="compute-f_n-and-the-unstable-mode-list-in-1d">Compute <span class="math inline">\(F_n\)</span> and the Unstable Mode List in 1D</h2>
+<p>The Turing conditions say that some spatial mode should grow, but they do not tell you which one. For Neumann boundary conditions on <span class="math inline">\([0, L]\)</span>, the Laplacian eigenvalues are</p>
 <p><span id="eq-pde-turing-1d-modes"><span class="math display">\[
-k_n = \frac{n\pi}{L}, \qquad n = 0, 1, 2, \dots
-\tag{3}\]</span></span></p>
-<p>The corresponding diffusion-shifted matrix is</p>
+\lambda_n = -\left(\frac{n\pi}{L}\right)^2, \qquad n = 0, 1, 2, \dots
+\tag{7}\]</span></span></p>
+<p>Equivalently, <span class="math inline">\(k_n = n\pi/L\)</span>. The mode matrix is</p>
 <p><span id="eq-pde-turing-1d-matrix"><span class="math display">\[
-A_n = J - k_n^2\,\mathrm{diag}(1, d).
-\tag{4}\]</span></span></p>
-<p>Complete the function below and return the indices of the unstable modes.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_unstable_modes_1d(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>, d<span class="op">=</span><span class="fl">30.0</span>, length<span class="op">=</span><span class="fl">40.0</span>, num_modes<span class="op">=</span><span class="dv">10</span>):</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> np.array([[fu, fv], [gu, gv]])</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    max_eigs <span class="op">=</span> np.zeros(num_modes)</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> n <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, num_modes):</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        <span class="co"># </span><span class="al">TODO</span><span class="co">: compute k_n and the matrix A_n</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        <span class="co"># </span><span class="al">TODO</span><span class="co">: store the largest real part of the eigenvalues</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: return the unstable modes sorted from strongest to weakest</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+F_n = J + \lambda_n\,\mathrm{diag}(1, d) = J - k_n^2\,\mathrm{diag}(1, d).
+\tag{8}\]</span></span></p>
+<p>Compute the eigenvalues of each <span class="math inline">\(F_n\)</span>, keep the modes with positive growth, and sort them from strongest to weakest.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_unstable_modes_1d(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>, d<span class="op">=</span><span class="fl">30.0</span>, length<span class="op">=</span><span class="fl">40.0</span>, num_modes<span class="op">=</span><span class="dv">10</span>):</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> np.array([[fu, fv], [gu, gv]])</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    diffusion <span class="op">=</span> np.diag([<span class="fl">1.0</span>, d])</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    unstable_modes <span class="op">=</span> []</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> n <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, num_modes):</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        <span class="co"># </span><span class="al">TODO</span><span class="co">: compute lambda_n and the matrix F_n</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        <span class="co"># </span><span class="al">TODO</span><span class="co">: store modes with positive largest real part</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: return the unstable modes sorted from strongest to weakest</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -776,48 +860,565 @@ Hint: 1D mode scan (click to expand)
 </div>
 <div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_unstable_modes_1d(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>, d<span class="op">=</span><span class="fl">30.0</span>, length<span class="op">=</span><span class="fl">40.0</span>, num_modes<span class="op">=</span><span class="dv">10</span>):</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> np.array([[fu, fv], [gu, gv]])</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    max_eigs <span class="op">=</span> np.zeros(num_modes)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> n <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, num_modes):</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        k_n <span class="op">=</span> n <span class="op">*</span> np.pi <span class="op">/</span> length</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        a_n <span class="op">=</span> jac <span class="op">-</span> (k_n<span class="op">**</span><span class="dv">2</span>) <span class="op">*</span> np.diag([<span class="dv">1</span>, d])</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        eigvals <span class="op">=</span> np.linalg.eigvals(a_n)</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        max_eigs[n] <span class="op">=</span> np.<span class="bu">max</span>(eigvals.real)</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    unstable <span class="op">=</span> np.where(max_eigs <span class="op">&gt;</span> <span class="dv">0</span>)[<span class="dv">0</span>]</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> unstable[np.argsort(max_eigs[unstable])[::<span class="op">-</span><span class="dv">1</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_unstable_modes_1d(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>, d<span class="op">=</span><span class="fl">30.0</span>, length<span class="op">=</span><span class="fl">40.0</span>, num_modes<span class="op">=</span><span class="dv">10</span>):</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> np.array([[fu, fv], [gu, gv]])</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    diffusion <span class="op">=</span> np.diag([<span class="fl">1.0</span>, d])</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    unstable_modes <span class="op">=</span> []</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> n <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, num_modes):</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>        lambda_n <span class="op">=</span> <span class="op">-</span>(n <span class="op">*</span> np.pi <span class="op">/</span> length) <span class="op">**</span> <span class="dv">2</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        f_n <span class="op">=</span> jac <span class="op">+</span> lambda_n <span class="op">*</span> diffusion</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>        growth_rate <span class="op">=</span> np.<span class="bu">max</span>(np.linalg.eigvals(f_n).real)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> growth_rate <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>            unstable_modes.append((n, growth_rate))</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    unstable_modes.sort(key<span class="op">=</span><span class="kw">lambda</span> item: item[<span class="dv">1</span>], reverse<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> unstable_modes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+<p>The first entry in this list is the dominant linear mode, which predicts the earliest visible wavelength in the simulation.</p>
+</section>
+<section id="extend-the-scan-to-2d" class="level2">
+<h2 class="anchored" data-anchor-id="extend-the-scan-to-2d">Extend the Scan to 2D</h2>
+<p>In two dimensions, the modes are pairs <span class="math inline">\((n_x, n_y)\)</span>. On a rectangle with side lengths <span class="math inline">\(L_x\)</span> and <span class="math inline">\(L_y\)</span> and Neumann boundaries,</p>
+<p><span id="eq-pde-turing-2d-modes"><span class="math display">\[
+\lambda_{n_x,n_y} = -\left(\frac{n_x\pi}{L_x}\right)^2 - \left(\frac{n_y\pi}{L_y}\right)^2.
+\tag{9}\]</span></span></p>
+<p>The only real change is that you now scan a grid of mode pairs and build</p>
+<p><span class="math display">\[
+F_{n_x,n_y} = J + \lambda_{n_x,n_y}\,\mathrm{diag}(1, d).
+\]</span></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_unstable_modes_2d(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>, d<span class="op">=</span><span class="fl">30.0</span>, length_x<span class="op">=</span><span class="fl">20.0</span>, length_y<span class="op">=</span><span class="fl">50.0</span>, num_modes<span class="op">=</span><span class="dv">8</span>):</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> np.array([[fu, fv], [gu, gv]])</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    diffusion <span class="op">=</span> np.diag([<span class="fl">1.0</span>, d])</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    unstable_modes <span class="op">=</span> []</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> nx <span class="kw">in</span> <span class="bu">range</span>(num_modes):</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> ny <span class="kw">in</span> <span class="bu">range</span>(num_modes):</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> nx <span class="op">==</span> <span class="dv">0</span> <span class="kw">and</span> ny <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>                <span class="cf">continue</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>            <span class="co"># </span><span class="al">TODO</span><span class="co">: compute lambda_nm and F_nm</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>            <span class="co"># </span><span class="al">TODO</span><span class="co">: store mode pairs with positive growth rate</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> unstable_modes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>::: {.callout-tip collapse=“true”} ## Hint: 2D mode scan (click to expand)</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_unstable_modes_2d(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>, d<span class="op">=</span><span class="fl">30.0</span>, length_x<span class="op">=</span><span class="fl">20.0</span>, length_y<span class="op">=</span><span class="fl">50.0</span>, num_modes<span class="op">=</span><span class="dv">8</span>):</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> np.array([[fu, fv], [gu, gv]])</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    diffusion <span class="op">=</span> np.diag([<span class="fl">1.0</span>, d])</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    unstable_modes <span class="op">=</span> []</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> nx <span class="kw">in</span> <span class="bu">range</span>(num_modes):</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> ny <span class="kw">in</span> <span class="bu">range</span>(num_modes):</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> nx <span class="op">==</span> <span class="dv">0</span> <span class="kw">and</span> ny <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>                <span class="cf">continue</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>            lambda_nm <span class="op">=</span> <span class="op">-</span>((nx <span class="op">*</span> np.pi <span class="op">/</span> length_x) <span class="op">**</span> <span class="dv">2</span> <span class="op">+</span> (ny <span class="op">*</span> np.pi <span class="op">/</span> length_y) <span class="op">**</span> <span class="dv">2</span>)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>            f_nm <span class="op">=</span> jac <span class="op">+</span> lambda_nm <span class="op">*</span> diffusion</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>            growth_rate <span class="op">=</span> np.<span class="bu">max</span>(np.linalg.eigvals(f_nm).real)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> growth_rate <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>                unstable_modes.append(((nx, ny), growth_rate))</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    unstable_modes.sort(key<span class="op">=</span><span class="kw">lambda</span> item: item[<span class="dv">1</span>], reverse<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> unstable_modes</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>For periodic boundaries, the same loop works after replacing each factor of $\pi <span class="op">/</span> L$ by $<span class="dv">2</span>\pi <span class="op">/</span> L$.</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a><span class="co">## Apply the Same Workflow to Gray-Scott</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>The theory on this page does <span class="kw">not</span> depend on the specific reaction law. Gray<span class="op">-</span>Scott uses the same equilibrium to Jacobian to mode<span class="op">-</span>matrix pipeline [<span class="op">@</span>gray1984autocatalytic<span class="op">;</span> <span class="op">@</span>pearson1993complex].</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>Write the reaction terms <span class="im">as</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>R_u(u, v) <span class="op">=</span> <span class="op">-</span>u v<span class="op">^</span><span class="dv">2</span> <span class="op">+</span> f(<span class="dv">1</span><span class="op">-</span>u), \qquad R_v(u, v) <span class="op">=</span> u v<span class="op">^</span><span class="dv">2</span> <span class="op">-</span> (f<span class="op">+</span>k)v.</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>One homogeneous equilibrium <span class="kw">is</span> always</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>(u_<span class="op">*</span>, v_<span class="op">*</span>) <span class="op">=</span> (<span class="dv">1</span>, <span class="dv">0</span>).</span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>If $v_<span class="op">*</span> \neq <span class="dv">0</span>$, then $u_<span class="op">*</span> v_<span class="op">*</span> <span class="op">=</span> f <span class="op">+</span> k$ <span class="kw">and</span> the nontrivial equilibria satisfy</span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>u_<span class="op">*</span> <span class="op">=</span> \frac{<span class="dv">1</span>}{<span class="dv">2</span>}\left(<span class="dv">1</span> \pm \sqrt{<span class="dv">1</span> <span class="op">-</span> \frac{<span class="dv">4</span>(f<span class="op">+</span>k)<span class="op">^</span><span class="dv">2</span>}{f}}\right), \qquad v_<span class="op">*</span> <span class="op">=</span> \frac{f<span class="op">+</span>k}{u_<span class="op">*</span>},</span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>$$ {<span class="co">#eq-pde-turing-gs-steady}</span></span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>whenever $<span class="dv">1</span> <span class="op">-</span> <span class="dv">4</span>(f<span class="op">+</span>k)<span class="op">^</span><span class="dv">2</span><span class="op">/</span>f \ge <span class="dv">0</span>$.</span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a>The Gray<span class="op">-</span>Scott Jacobian at a homogeneous equilibrium <span class="kw">is</span></span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a>J_{\mathrm{GS}} <span class="op">=</span></span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a>\begin{pmatrix}</span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a><span class="op">-</span>v_<span class="op">*^</span><span class="dv">2</span> <span class="op">-</span> f <span class="op">&amp;</span> <span class="op">-</span><span class="dv">2</span><span class="er">u_</span><span class="op">*</span>v_<span class="op">*</span> \<span class="op">\</span></span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a>v_<span class="op">*^</span><span class="dv">2</span> <span class="op">&amp;</span> <span class="dv">2</span><span class="er">u_</span><span class="op">*</span>v_<span class="op">*</span> <span class="op">-</span> (f<span class="op">+</span>k)</span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a>\end{pmatrix}.</span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a>$$ {<span class="co">#eq-pde-turing-gs-jacobian}</span></span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a>At the trivial state $(<span class="dv">1</span>, <span class="dv">0</span>)$, this Jacobian <span class="kw">is</span> diagonal <span class="kw">and</span> every linear mode decays. So the classical Turing test <span class="kw">is</span> only interesting at a nontrivial homogeneous equilibrium when one exists.</span>
+<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a>For periodic boundaries on a rectangle,</span>
+<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a>\lambda_{m,n} <span class="op">=</span> <span class="op">-</span>\left(\frac{<span class="dv">2</span>\pi m}{L_x}\right)<span class="op">^</span><span class="dv">2</span> <span class="op">-</span> \left(\frac{<span class="dv">2</span>\pi n}{L_y}\right)<span class="op">^</span><span class="dv">2</span>,</span>
+<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a><span class="kw">and</span> the mode matrix <span class="kw">is</span></span>
+<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a>F<span class="op">^</span>{\mathrm{GS}}_{m,n} <span class="op">=</span> J_{\mathrm{GS}} <span class="op">+</span> \lambda_{m,n}\,\mathrm{diag}(d_1, d_2).</span>
+<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a>```python</span>
+<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb10-73"><a href="#cb10-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-74"><a href="#cb10-74" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gray_scott_equilibria(f<span class="op">=</span><span class="fl">0.040</span>, k<span class="op">=</span><span class="fl">0.060</span>):</span>
+<span id="cb10-75"><a href="#cb10-75" aria-hidden="true" tabindex="-1"></a>    equilibria <span class="op">=</span> [(<span class="fl">1.0</span>, <span class="fl">0.0</span>)]</span>
+<span id="cb10-76"><a href="#cb10-76" aria-hidden="true" tabindex="-1"></a>    discriminant <span class="op">=</span> <span class="dv">1</span> <span class="op">-</span> <span class="dv">4</span> <span class="op">*</span> (f <span class="op">+</span> k) <span class="op">**</span> <span class="dv">2</span> <span class="op">/</span> f</span>
+<span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-78"><a href="#cb10-78" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> discriminant <span class="op">&gt;=</span> <span class="dv">0</span>:</span>
+<span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a>        root <span class="op">=</span> np.sqrt(discriminant)</span>
+<span id="cb10-80"><a href="#cb10-80" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> sign <span class="kw">in</span> (<span class="op">+</span><span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>):</span>
+<span id="cb10-81"><a href="#cb10-81" aria-hidden="true" tabindex="-1"></a>            u_star <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">+</span> sign <span class="op">*</span> root)</span>
+<span id="cb10-82"><a href="#cb10-82" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> u_star <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb10-83"><a href="#cb10-83" aria-hidden="true" tabindex="-1"></a>                equilibria.append((u_star, (f <span class="op">+</span> k) <span class="op">/</span> u_star))</span>
+<span id="cb10-84"><a href="#cb10-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-85"><a href="#cb10-85" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> equilibria</span>
+<span id="cb10-86"><a href="#cb10-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-87"><a href="#cb10-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-88"><a href="#cb10-88" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gray_scott_jacobian(u_star, v_star, f<span class="op">=</span><span class="fl">0.040</span>, k<span class="op">=</span><span class="fl">0.060</span>):</span>
+<span id="cb10-89"><a href="#cb10-89" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array(</span>
+<span id="cb10-90"><a href="#cb10-90" aria-hidden="true" tabindex="-1"></a>        [</span>
+<span id="cb10-91"><a href="#cb10-91" aria-hidden="true" tabindex="-1"></a>            [<span class="op">-</span>v_star<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> f, <span class="op">-</span><span class="dv">2</span> <span class="op">*</span> u_star <span class="op">*</span> v_star],</span>
+<span id="cb10-92"><a href="#cb10-92" aria-hidden="true" tabindex="-1"></a>            [v_star<span class="op">**</span><span class="dv">2</span>, <span class="dv">2</span> <span class="op">*</span> u_star <span class="op">*</span> v_star <span class="op">-</span> (f <span class="op">+</span> k)],</span>
+<span id="cb10-93"><a href="#cb10-93" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb10-94"><a href="#cb10-94" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>That is the whole bridge from Gierer-Meinhardt to Gray-Scott. Keep the eigenvalue scan, replace the Jacobian, replace the boundary spectrum, then sort the unstable modes and read off the dominant one.</p>
+<pre><code>:::
+
+## Compare Two Cases
+
+Use your functions to compare $d=20$ and $d=30$ with $a=0.40$ and $b=1.00$.
+
+1. Does each case satisfy the Turing conditions?
+2. How many unstable modes appear in 1D?
+3. What is the leading mode in 2D?
+
+These answers will help you interpret the 1D assignment now and the 2D simulations in the next session.
+
+## What's Next?
+
+Now that you know how to predict pattern-forming parameter regimes, close the 1D loop by completing the assignment. After that, carry the same ideas to a 2D grid in the next session.
+
+[Assignment](assignment.qmd){.btn .btn-secondary}
+[PDEs in 2D](../pde-2d/index.qmd){.btn .btn-primary}
+
+::: {.callout-tip}
+Reference code is available in [amlab/pdes/gierer_meinhardt_1d.py](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/pdes/gierer_meinhardt_1d.py) and [amlab/pdes/gierer_meinhardt_2d.py](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/pdes/gierer_meinhardt_2d.py).
+:::
+
+
+
+
+
+:::{#quarto-navigation-envelope .hidden}
+[Applied Math Lab]{.hidden render-id="quarto-int-sidebar-title"}
+[Applied Math Lab]{.hidden render-id="quarto-int-navbar-title"}
+[Assignment]{.hidden render-id="quarto-int-next"}
+[Gierer-Meinhardt 1D]{.hidden render-id="quarto-int-prev"}
+[Getting Started]{.hidden render-id="quarto-int-sidebar:quarto-sidebar-section-1"}
+[Home]{.hidden render-id="quarto-int-sidebar:/index.htmlHome"}
+[Syllabus]{.hidden render-id="quarto-int-sidebar:/syllabus.htmlSyllabus"}
+[ODEs in 1D]{.hidden render-id="quarto-int-sidebar:quarto-sidebar-section-2"}
+[SIR Epidemic Model]{.hidden render-id="quarto-int-sidebar:/modules/ode-1d/sir.htmlSIR-Epidemic-Model"}
+[Michaelis–Menten Kinetics]{.hidden render-id="quarto-int-sidebar:/modules/ode-1d/michaelis-menten.htmlMichaelis–Menten-Kinetics"}
+[Spruce Budworm Model]{.hidden render-id="quarto-int-sidebar:/modules/ode-1d/spruce-budworm.htmlSpruce-Budworm-Model"}
+[Assignment]{.hidden render-id="quarto-int-sidebar:/modules/ode-1d/assignment.htmlAssignment"}
+[ODEs in 2D]{.hidden render-id="quarto-int-sidebar:quarto-sidebar-section-3"}
+[CDIMA Reaction]{.hidden render-id="quarto-int-sidebar:/modules/ode-2d/cdima.htmlCDIMA-Reaction"}
+[Van der Pol Oscillator]{.hidden render-id="quarto-int-sidebar:/modules/ode-2d/van-der-pol.htmlVan-der-Pol-Oscillator"}
+[FitzHugh–Nagumo Model]{.hidden render-id="quarto-int-sidebar:/modules/ode-2d/fitzhugh-nagumo.htmlFitzHugh–Nagumo-Model"}
+[Animation Template]{.hidden render-id="quarto-int-sidebar:/modules/ode-2d/animation.htmlAnimation-Template"}
+[Assignment]{.hidden render-id="quarto-int-sidebar:/modules/ode-2d/assignment.htmlAssignment"}
+[Coupled ODEs]{.hidden render-id="quarto-int-sidebar:quarto-sidebar-section-4"}
+[Kuramoto Model]{.hidden render-id="quarto-int-sidebar:/modules/ode-coupled/kuramoto.htmlKuramoto-Model"}
+[Kuramoto: Oscillators]{.hidden render-id="quarto-int-sidebar:/modules/ode-coupled/kuramoto-oscillators.htmlKuramoto:-Oscillators"}
+[Kuramoto: Bifurcation Diagram]{.hidden render-id="quarto-int-sidebar:/modules/ode-coupled/kuramoto-diagram.htmlKuramoto:-Bifurcation-Diagram"}
+[Kuramoto: Full Simulation]{.hidden render-id="quarto-int-sidebar:/modules/ode-coupled/kuramoto-full.htmlKuramoto:-Full-Simulation"}
+[Assignment]{.hidden render-id="quarto-int-sidebar:/modules/ode-coupled/assignment.htmlAssignment"}
+[Collective Motion]{.hidden render-id="quarto-int-sidebar:quarto-sidebar-section-5"}
+[Vicsek Model]{.hidden render-id="quarto-int-sidebar:/modules/collective-motion/vicsek.htmlVicsek-Model"}
+[Vicsek Validation]{.hidden render-id="quarto-int-sidebar:/modules/collective-motion/vicsek-validation.htmlVicsek-Validation"}
+[Vicsek Animation]{.hidden render-id="quarto-int-sidebar:/modules/collective-motion/vicsek-animation.htmlVicsek-Animation"}
+[Vicsek Animation (Interactive)]{.hidden render-id="quarto-int-sidebar:/modules/collective-motion/vicsek-animation-interactive.htmlVicsek-Animation-(Interactive)"}
+[Couzin Model]{.hidden render-id="quarto-int-sidebar:/modules/collective-motion/couzin.htmlCouzin-Model"}
+[Vicsek with Predator]{.hidden render-id="quarto-int-sidebar:/modules/collective-motion/vicsek-predator.htmlVicsek-with-Predator"}
+[Assignment]{.hidden render-id="quarto-int-sidebar:/modules/collective-motion/assignment.htmlAssignment"}
+[Networks]{.hidden render-id="quarto-int-sidebar:quarto-sidebar-section-6"}
+[Network Fundamentals]{.hidden render-id="quarto-int-sidebar:/modules/networks/fundamentals.htmlNetwork-Fundamentals"}
+[Network Connectivity]{.hidden render-id="quarto-int-sidebar:/modules/networks/connectivity.htmlNetwork-Connectivity"}
+[Graph Models]{.hidden render-id="quarto-int-sidebar:/modules/networks/models.htmlGraph-Models"}
+[SIS Model]{.hidden render-id="quarto-int-sidebar:/modules/networks/sis.htmlSIS-Model"}
+[SIR Model]{.hidden render-id="quarto-int-sidebar:/modules/networks/sir.htmlSIR-Model"}
+[Assignment]{.hidden render-id="quarto-int-sidebar:/modules/networks/assignment.htmlAssignment"}
+[PDEs in 1D]{.hidden render-id="quarto-int-sidebar:quarto-sidebar-section-7"}
+[Gierer-Meinhardt 1D]{.hidden render-id="quarto-int-sidebar:/modules/pde-1d/gierer-meinhardt-1d.htmlGierer-Meinhardt-1D"}
+[Turing Instability]{.hidden render-id="quarto-int-sidebar:/modules/pde-1d/turing-instability.htmlTuring-Instability"}
+[Assignment]{.hidden render-id="quarto-int-sidebar:/modules/pde-1d/assignment.htmlAssignment"}
+[PDEs in 2D]{.hidden render-id="quarto-int-sidebar:quarto-sidebar-section-8"}
+[Gierer-Meinhardt 2D]{.hidden render-id="quarto-int-sidebar:/modules/pde-2d/gierer-meinhardt-2d.htmlGierer-Meinhardt-2D"}
+[Gray-Scott]{.hidden render-id="quarto-int-sidebar:/modules/pde-2d/gray-scott.htmlGray-Scott"}
+[Gray-Scott: Interaction]{.hidden render-id="quarto-int-sidebar:/modules/pde-2d/gray-scott-art.htmlGray-Scott:-Interaction"}
+[Assignment]{.hidden render-id="quarto-int-sidebar:/modules/pde-2d/assignment.htmlAssignment"}
+[Cellular Automata]{.hidden render-id="quarto-int-sidebar:quarto-sidebar-section-9"}
+[1D Cellular Automata]{.hidden render-id="quarto-int-sidebar:/modules/cellular-automata/cellular-1d.html1D-Cellular-Automata"}
+[Rule Exploration]{.hidden render-id="quarto-int-sidebar:/modules/cellular-automata/rule-exploration.htmlRule-Exploration"}
+[Assignment]{.hidden render-id="quarto-int-sidebar:/modules/cellular-automata/assignment.htmlAssignment"}
+[Agent-Based Modeling]{.hidden render-id="quarto-int-sidebar:quarto-sidebar-section-10"}
+[Traffic Model]{.hidden render-id="quarto-int-sidebar:/modules/agent-based-modeling/traffic.htmlTraffic-Model"}
+[Flow and Congestion]{.hidden render-id="quarto-int-sidebar:/modules/agent-based-modeling/traffic-analysis.htmlFlow-and-Congestion"}
+[Assignment]{.hidden render-id="quarto-int-sidebar:/modules/agent-based-modeling/assignment.htmlAssignment"}
+[Extra: Lorenz Attractor]{.hidden render-id="quarto-int-sidebar:quarto-sidebar-section-11"}
+[Lorenz Attractor]{.hidden render-id="quarto-int-sidebar:/modules/lorenz/lorenz.htmlLorenz-Attractor"}
+[Sensitivity and Chaos]{.hidden render-id="quarto-int-sidebar:/modules/lorenz/sensitivity.htmlSensitivity-and-Chaos"}
+[Assignment]{.hidden render-id="quarto-int-sidebar:/modules/lorenz/assignment.htmlAssignment"}
+[Slide Library]{.hidden render-id="quarto-int-sidebar:/slide-library.htmlSlide-Library"}
+[PDEs in 1D]{.hidden render-id="quarto-breadcrumbs-PDEs-in-1D"}
+[Turing Instability]{.hidden render-id="quarto-breadcrumbs-Turing-Instability"}
+
+:::{.hidden render-id="footer-left"}
+By Daniel Precioso Garcelán. Contact: daniel.precioso@ie.edu
+:::
+
+:::
+
+
+
+:::{#quarto-meta-markdown .hidden}
+[Applied Math Lab - Turing Instability]{.hidden render-id="quarto-metatitle"}
+[Applied Math Lab - Turing Instability]{.hidden render-id="quarto-twittercardtitle"}
+[Applied Math Lab - Turing Instability]{.hidden render-id="quarto-ogcardtitle"}
+[Applied Math Lab]{.hidden render-id="quarto-metasitename"}
+[From Steady States to Spatial Modes]{.hidden render-id="quarto-twittercarddesc"}
+[From Steady States to Spatial Modes]{.hidden render-id="quarto-ogcardddesc"}
+:::
+
+
+
+
+&lt;!-- --&gt;
+
+::: {.quarto-embedded-source-code}
+```````````````````{.markdown shortcodes="false"}
+---
+title: "Turing Instability"
+subtitle: "From Steady States to Spatial Modes"
+format: html
+---
+
+In the previous page, you built a 1D reaction-diffusion solver and saw that small perturbations can grow into visible peaks. This page explains when that should happen.
+
+Patterns do not appear by accident. Turing instability explains when a uniform steady state is stable to homogeneous perturbations but unstable to spatially varying ones [@turing1952chemical]. For the Gierer-Meinhardt model, the same theory will help us interpret both the 1D and 2D simulations.
+
+The previous page gave the intuition: local activation can reinforce a bump, inhibition can suppress nearby growth, and diffusion can either smooth or amplify spatial differences depending on the parameter regime. This page turns that picture into a linear stability test and asks a precise question, which parameter values and which spatial modes make the flat steady state lose stability?
+
+quarto-executable-code-5450563D
+
+```python
+#| label: fig-pde-turing-space
+#| fig-cap: 'Turing space for the Gierer-Meinhardt model in the $(a, d)$ plane.'
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+from amlab.pdes.gierer_meinhardt_1d import is_turing_instability
+
+arr_a = np.linspace(0, 1, 400)
+arr_d = np.linspace(0, 100, 400)
+mesh_a, mesh_d = np.meshgrid(arr_a, arr_d)
+mask_turing = is_turing_instability(mesh_a, 1.00, mesh_d)
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.contourf(mesh_a, mesh_d, mask_turing)
+ax.set_xlabel("a")
+ax.set_ylabel("d")
+ax.set_title("Turing Space")
+plt.show()
+plt.close()</code></pre>
+</section>
+<section id="the-linear-stability-pipeline-1" class="level2">
+<h2 class="anchored" data-anchor-id="the-linear-stability-pipeline-1">The Linear Stability Pipeline</h2>
+<p>For a two-species reaction-diffusion system</p>
+<p><span class="math display">\[
+\partial_t w = D\,\Delta w + R(w), \qquad D = \operatorname{diag}(d_1, d_2),
+\]</span></p>
+<p>start from a homogeneous steady state <span class="math inline">\(w_*\)</span> with <span class="math inline">\(R(w_*) = 0\)</span>. Write <span class="math inline">\(w = w_* + \eta\)</span> and keep only linear terms:</p>
+<p><span class="math display">\[
+\partial_t \eta = D\,\Delta \eta + J\eta,
+\]</span></p>
+<p>where</p>
+<p><span id="eq-pde-turing-jacobian"><span class="math display">\[
+J =
+\begin{pmatrix}
+f_u &amp; f_v \\
+g_u &amp; g_v
+\end{pmatrix}
+\tag{10}\]</span></span></p>
+<p>is the Jacobian of the reaction terms at the steady state.</p>
+<p>Now expand the perturbation in Laplacian eigenmodes,</p>
+<p><span class="math display">\[
+\eta(x,t) = c_n(t)\,\phi_n(x), \qquad \Delta \phi_n = \lambda_n \phi_n, \qquad \lambda_n \le 0.
+\]</span></p>
+<p>Each spatial mode evolves independently as</p>
+<p><span id="eq-pde-turing-mode-matrix"><span class="math display">\[
+\dot c_n = F_n c_n, \qquad F_n = J + \lambda_n D.
+\tag{11}\]</span></span></p>
+<p>Because <span class="math inline">\(\lambda_n = -k_n^2\)</span>, many notes write the same matrix as</p>
+<p><span id="eq-pde-turing-an"><span class="math display">\[
+A_n = J - k_n^2 D.
+\tag{12}\]</span></span></p>
+<p>So the workflow is always the same.</p>
+<ul>
+<li>Find the homogeneous equilibrium.</li>
+<li>Compute the Jacobian at that equilibrium.</li>
+<li>Compute the Laplacian eigenvalues <span class="math inline">\(\lambda_n\)</span> from the domain and the boundary conditions.</li>
+<li>Build <span class="math inline">\(F_n\)</span> or <span class="math inline">\(A_n\)</span>.</li>
+<li>Compute the eigenvalues of that <span class="math inline">\(2 \times 2\)</span> matrix.</li>
+<li>Keep the modes whose largest real part is positive.</li>
+</ul>
+<p>For a <span class="math inline">\(2 \times 2\)</span> matrix, the growth rates <span class="math inline">\(\sigma\)</span> satisfy</p>
+<p><span class="math display">\[
+\sigma^2 - \operatorname{tr}(F_n)\sigma + \det(F_n) = 0.
+\]</span></p>
+<p>With <span class="math inline">\(D = \operatorname{diag}(1, d)\)</span>, the diffusion-shifted matrix has</p>
+<p><span class="math display">\[
+\operatorname{tr}(A_n) = (f_u + g_v) - (1 + d)k_n^2,
+\]</span></p>
+<p><span id="eq-pde-turing-det-an"><span class="math display">\[
+\det(A_n) = (f_u g_v - f_v g_u) - (d f_u + g_v)k_n^2 + d k_n^4.
+\tag{13}\]</span></span></p>
+<p>Diffusion makes the trace more negative, so the Turing mechanism is detected through the determinant. The flat state is stable when <span class="math inline">\(\operatorname{tr}(J) &lt; 0\)</span> and <span class="math inline">\(\det(J) &gt; 0\)</span>. A Turing instability appears when some nonzero mode makes <span class="math inline">\(\det(A_n) &lt; 0\)</span>.</p>
+</section>
+<section id="compute-the-gierer-meinhardt-equilibrium-1" class="level2">
+<h2 class="anchored" data-anchor-id="compute-the-gierer-meinhardt-equilibrium-1">Compute the Gierer-Meinhardt Equilibrium</h2>
+<p>For the Gierer-Meinhardt model,</p>
+<p><span class="math display">\[
+f(u, v) = a - b u + \frac{u^2}{v}, \qquad g(u, v) = u^2 - v.
+\]</span></p>
+<p>The homogeneous steady state solves <span class="math inline">\(f(u_*, v_*) = 0\)</span> and <span class="math inline">\(g(u_*, v_*) = 0\)</span>. From <span class="math inline">\(g(u_*, v_*) = 0\)</span> we get <span class="math inline">\(v_* = u_*^2\)</span>. Substituting into <span class="math inline">\(f = 0\)</span> gives</p>
+<p><span id="eq-pde-turing-gm-steady"><span class="math display">\[
+u_* = \frac{a+1}{b}, \qquad v_* = \left(\frac{a+1}{b}\right)^2.
+\tag{14}\]</span></span></p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gierer_meinhardt_equilibrium(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>):</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    u_star <span class="op">=</span> (a <span class="op">+</span> <span class="dv">1</span>) <span class="op">/</span> b</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    v_star <span class="op">=</span> u_star<span class="op">**</span><span class="dv">2</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> u_star, v_star</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="write-the-jacobian-at-the-fixed-point-1" class="level2">
+<h2 class="anchored" data-anchor-id="write-the-jacobian-at-the-fixed-point-1">Write the Jacobian at the Fixed Point</h2>
+<p>At a general point <span class="math inline">\((u, v)\)</span>, the Jacobian is</p>
+<p><span class="math display">\[
+J(u, v) =
+\begin{pmatrix}
+-b + 2u/v &amp; -u^2/v^2 \\
+2u &amp; -1
+\end{pmatrix}.
+\]</span></p>
+<p>Evaluating at <span class="math inline">\((u_*, v_*)\)</span> gives the entries needed for the Turing test.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gierer_meinhardt_jacobian(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>):</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    u_star, v_star <span class="op">=</span> gierer_meinhardt_equilibrium(a, b)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    fu <span class="op">=</span> <span class="op">-</span>b <span class="op">+</span> <span class="dv">2</span> <span class="op">*</span> u_star <span class="op">/</span> v_star</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    fv <span class="op">=</span> <span class="op">-</span>(u_star<span class="op">**</span><span class="dv">2</span>) <span class="op">/</span> (v_star<span class="op">**</span><span class="dv">2</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    gu <span class="op">=</span> <span class="dv">2</span> <span class="op">*</span> u_star</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    gv <span class="op">=</span> <span class="op">-</span><span class="fl">1.0</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fu, fv, gu, gv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Hint: Jacobian entries (click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gierer_meinhardt_jacobian(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>):</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    fu <span class="op">=</span> <span class="dv">2</span> <span class="op">*</span> b <span class="op">/</span> (a <span class="op">+</span> <span class="dv">1</span>) <span class="op">-</span> b</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    fv <span class="op">=</span> <span class="op">-</span>((b <span class="op">/</span> (a <span class="op">+</span> <span class="dv">1</span>)) <span class="op">**</span> <span class="dv">2</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    gu <span class="op">=</span> <span class="dv">2</span> <span class="op">*</span> (a <span class="op">+</span> <span class="dv">1</span>) <span class="op">/</span> b</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    gv <span class="op">=</span> <span class="op">-</span><span class="fl">1.0</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fu, fv, gu, gv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
 </section>
-<section id="extend-the-scan-to-2d" class="level2">
-<h2 class="anchored" data-anchor-id="extend-the-scan-to-2d">Extend the Scan to 2D</h2>
-<p>In two dimensions, the modes are pairs <span class="math inline">\((n_x, n_y)\)</span>. On a rectangle with side lengths <span class="math inline">\(L_x\)</span> and <span class="math inline">\(L_y\)</span>,</p>
-<p><span id="eq-pde-turing-2d-modes"><span class="math display">\[
-k_{n_x,n_y}^2 = \left(\frac{n_x\pi}{L_x}\right)^2 + \left(\frac{n_y\pi}{L_y}\right)^2.
-\tag{5}\]</span></span></p>
-<p>The only real change is that you now scan a grid of mode pairs.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_unstable_modes_2d(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>, d<span class="op">=</span><span class="fl">30.0</span>, length_x<span class="op">=</span><span class="fl">20.0</span>, length_y<span class="op">=</span><span class="fl">50.0</span>, num_modes<span class="op">=</span><span class="dv">8</span>):</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> np.array([[fu, fv], [gu, gv]])</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    unstable_modes <span class="op">=</span> []</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> nx <span class="kw">in</span> <span class="bu">range</span>(num_modes):</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> ny <span class="kw">in</span> <span class="bu">range</span>(num_modes):</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> nx <span class="op">==</span> <span class="dv">0</span> <span class="kw">and</span> ny <span class="op">==</span> <span class="dv">0</span>:</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>                <span class="cf">continue</span></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>            <span class="co"># </span><span class="al">TODO</span><span class="co">: compute k_sq and A_n</span></span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>            <span class="co"># </span><span class="al">TODO</span><span class="co">: store mode pairs with positive growth rate</span></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> unstable_modes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="implement-the-turing-test-1" class="level2">
+<h2 class="anchored" data-anchor-id="implement-the-turing-test-1">Implement the Turing Test</h2>
+<p>From <span class="math inline">\(\operatorname{tr}(J) &lt; 0\)</span>, <span class="math inline">\(\det(J) &gt; 0\)</span>, and the requirement that <span class="math inline">\(\det(A_n)\)</span> becomes negative for some nonzero mode, we recover the standard three conditions</p>
+<p><span id="eq-pde-turing-conditions"><span class="math display">\[
+\begin{aligned}
+&amp;f_u + g_v &lt; 0, \\
+&amp;f_u g_v - f_v g_u &gt; 0, \\
+&amp;g_v + d f_u &gt; 2\sqrt{d\,(f_u g_v - f_v g_u)}.
+\end{aligned}
+\tag{15}\]</span></span></p>
+<p>The last inequality is exactly the statement that the quadratic <span class="math inline">\(\det(A_n)\)</span> dips below zero for some <span class="math inline">\(k_n^2 &gt; 0\)</span>.</p>
+<p>Translate these three inequalities into Python.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> is_turing_instability(a, b, d):</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    nabla <span class="op">=</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: write the three conditions</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    cond1 <span class="op">=</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    cond2 <span class="op">=</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    cond3 <span class="op">=</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> cond1 <span class="op">&amp;</span> cond2 <span class="op">&amp;</span> cond3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Hint: Turing test (click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> is_turing_instability(a, b, d):</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    nabla <span class="op">=</span> fu <span class="op">*</span> gv <span class="op">-</span> fv <span class="op">*</span> gu</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    cond1 <span class="op">=</span> (fu <span class="op">+</span> gv) <span class="op">&lt;</span> <span class="dv">0</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    cond2 <span class="op">=</span> nabla <span class="op">&gt;</span> <span class="dv">0</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    cond3 <span class="op">=</span> (gv <span class="op">+</span> d <span class="op">*</span> fu) <span class="op">&gt;</span> <span class="dv">2</span> <span class="op">*</span> np.sqrt(d <span class="op">*</span> np.maximum(nabla, <span class="dv">0</span>))</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> cond1 <span class="op">&amp;</span> cond2 <span class="op">&amp;</span> cond3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+<p>If your implementation is vectorized, it should work with scalars and with arrays. That is what lets us plot <a href="#fig-pde-turing-space" class="quarto-xref">Figure&nbsp;1</a>.</p>
+<p>Validate these functions carefully. You will reuse them when you move from 1D to 2D, so this is the theory page that supports the rest of the session.</p>
+</section>
+<section id="plot-the-turing-space-1" class="level2">
+<h2 class="anchored" data-anchor-id="plot-the-turing-space-1">Plot the Turing Space</h2>
+<p>Complete the code below to recreate the diagram.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>arr_a <span class="op">=</span> np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">500</span>)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>arr_d <span class="op">=</span> np.linspace(<span class="dv">0</span>, <span class="dv">100</span>, <span class="dv">500</span>)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>mesh_a, mesh_d <span class="op">=</span> np.meshgrid(arr_a, arr_d)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>mask_turing <span class="op">=</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">4</span>))</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>ax.contourf(mesh_a, mesh_d, mask_turing)</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"a"</span>)</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"d"</span>)</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Turing Space"</span>)</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Mark the point <span class="math inline">\((a, d) = (0.40, 20)\)</span> on your plot. Is it inside the instability region?</p>
+<p>This is the same Turing-space diagram that appears in the left panel of the interactive Gierer-Meinhardt code, so the algebra and the simulation refer to the same parameter plane.</p>
+</section>
+<section id="compute-f_n-and-the-unstable-mode-list-in-1d-1" class="level2">
+<h2 class="anchored" data-anchor-id="compute-f_n-and-the-unstable-mode-list-in-1d-1">Compute <span class="math inline">\(F_n\)</span> and the Unstable Mode List in 1D</h2>
+<p>The Turing conditions say that some spatial mode should grow, but they do not tell you which one. For Neumann boundary conditions on <span class="math inline">\([0, L]\)</span>, the Laplacian eigenvalues are</p>
+<p><span id="eq-pde-turing-1d-modes"><span class="math display">\[
+\lambda_n = -\left(\frac{n\pi}{L}\right)^2, \qquad n = 0, 1, 2, \dots
+\tag{16}\]</span></span></p>
+<p>Equivalently, <span class="math inline">\(k_n = n\pi/L\)</span>. The mode matrix is</p>
+<p><span id="eq-pde-turing-1d-matrix"><span class="math display">\[
+F_n = J + \lambda_n\,\mathrm{diag}(1, d) = J - k_n^2\,\mathrm{diag}(1, d).
+\tag{17}\]</span></span></p>
+<p>Compute the eigenvalues of each <span class="math inline">\(F_n\)</span>, keep the modes with positive growth, and sort them from strongest to weakest.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_unstable_modes_1d(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>, d<span class="op">=</span><span class="fl">30.0</span>, length<span class="op">=</span><span class="fl">40.0</span>, num_modes<span class="op">=</span><span class="dv">10</span>):</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> np.array([[fu, fv], [gu, gv]])</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    diffusion <span class="op">=</span> np.diag([<span class="fl">1.0</span>, d])</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    unstable_modes <span class="op">=</span> []</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> n <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, num_modes):</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>        <span class="co"># </span><span class="al">TODO</span><span class="co">: compute lambda_n and the matrix F_n</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>        <span class="co"># </span><span class="al">TODO</span><span class="co">: store modes with positive largest real part</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: return the unstable modes sorted from strongest to weakest</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Hint: 1D mode scan (click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_unstable_modes_1d(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>, d<span class="op">=</span><span class="fl">30.0</span>, length<span class="op">=</span><span class="fl">40.0</span>, num_modes<span class="op">=</span><span class="dv">10</span>):</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> np.array([[fu, fv], [gu, gv]])</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    diffusion <span class="op">=</span> np.diag([<span class="fl">1.0</span>, d])</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    unstable_modes <span class="op">=</span> []</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> n <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, num_modes):</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>        lambda_n <span class="op">=</span> <span class="op">-</span>(n <span class="op">*</span> np.pi <span class="op">/</span> length) <span class="op">**</span> <span class="dv">2</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>        f_n <span class="op">=</span> jac <span class="op">+</span> lambda_n <span class="op">*</span> diffusion</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>        growth_rate <span class="op">=</span> np.<span class="bu">max</span>(np.linalg.eigvals(f_n).real)</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> growth_rate <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>            unstable_modes.append((n, growth_rate))</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>    unstable_modes.sort(key<span class="op">=</span><span class="kw">lambda</span> item: item[<span class="dv">1</span>], reverse<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> unstable_modes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+<p>The first entry in this list is the dominant linear mode, which predicts the earliest visible wavelength in the simulation.</p>
+</section>
+<section id="extend-the-scan-to-2d-1" class="level2">
+<h2 class="anchored" data-anchor-id="extend-the-scan-to-2d-1">Extend the Scan to 2D</h2>
+<p>In two dimensions, the modes are pairs <span class="math inline">\((n_x, n_y)\)</span>. On a rectangle with side lengths <span class="math inline">\(L_x\)</span> and <span class="math inline">\(L_y\)</span> and Neumann boundaries,</p>
+<p><span id="eq-pde-turing-2d-modes"><span class="math display">\[
+\lambda_{n_x,n_y} = -\left(\frac{n_x\pi}{L_x}\right)^2 - \left(\frac{n_y\pi}{L_y}\right)^2.
+\tag{18}\]</span></span></p>
+<p>The only real change is that you now scan a grid of mode pairs and build</p>
+<p><span class="math display">\[
+F_{n_x,n_y} = J + \lambda_{n_x,n_y}\,\mathrm{diag}(1, d).
+\]</span></p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_unstable_modes_2d(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>, d<span class="op">=</span><span class="fl">30.0</span>, length_x<span class="op">=</span><span class="fl">20.0</span>, length_y<span class="op">=</span><span class="fl">50.0</span>, num_modes<span class="op">=</span><span class="dv">8</span>):</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> np.array([[fu, fv], [gu, gv]])</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    diffusion <span class="op">=</span> np.diag([<span class="fl">1.0</span>, d])</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    unstable_modes <span class="op">=</span> []</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> nx <span class="kw">in</span> <span class="bu">range</span>(num_modes):</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> ny <span class="kw">in</span> <span class="bu">range</span>(num_modes):</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> nx <span class="op">==</span> <span class="dv">0</span> <span class="kw">and</span> ny <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>                <span class="cf">continue</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>            <span class="co"># </span><span class="al">TODO</span><span class="co">: compute lambda_nm and F_nm</span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>            <span class="co"># </span><span class="al">TODO</span><span class="co">: store mode pairs with positive growth rate</span></span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> unstable_modes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -826,61 +1427,128 @@ Hint: 2D mode scan (click to expand)
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_unstable_modes_2d(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>, d<span class="op">=</span><span class="fl">30.0</span>, length_x<span class="op">=</span><span class="fl">20.0</span>, length_y<span class="op">=</span><span class="fl">50.0</span>, num_modes<span class="op">=</span><span class="dv">8</span>):</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> np.array([[fu, fv], [gu, gv]])</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    unstable_modes <span class="op">=</span> []</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> nx <span class="kw">in</span> <span class="bu">range</span>(num_modes):</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> ny <span class="kw">in</span> <span class="bu">range</span>(num_modes):</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> nx <span class="op">==</span> <span class="dv">0</span> <span class="kw">and</span> ny <span class="op">==</span> <span class="dv">0</span>:</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>                <span class="cf">continue</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>            k_sq <span class="op">=</span> (nx <span class="op">*</span> np.pi <span class="op">/</span> length_x) <span class="op">**</span> <span class="dv">2</span> <span class="op">+</span> (ny <span class="op">*</span> np.pi <span class="op">/</span> length_y) <span class="op">**</span> <span class="dv">2</span></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>            a_n <span class="op">=</span> jac <span class="op">-</span> k_sq <span class="op">*</span> np.diag([<span class="dv">1</span>, d])</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>            growth_rate <span class="op">=</span> np.<span class="bu">max</span>(np.linalg.eigvals(a_n).real)</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> growth_rate <span class="op">&gt;</span> <span class="dv">0</span>:</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>                unstable_modes.append(((nx, ny), growth_rate))</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    unstable_modes.sort(key<span class="op">=</span><span class="kw">lambda</span> item: item[<span class="dv">1</span>], reverse<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> unstable_modes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</div>
-</div>
-</section>
-<section id="compare-two-cases" class="level2">
-<h2 class="anchored" data-anchor-id="compare-two-cases">Compare Two Cases</h2>
-<p>Use your functions to compare <span class="math inline">\(d=20\)</span> and <span class="math inline">\(d=30\)</span> with <span class="math inline">\(a=0.40\)</span> and <span class="math inline">\(b=1.00\)</span>.</p>
-<ol type="1">
-<li>Does each case satisfy the Turing conditions?</li>
-<li>How many unstable modes appear in 1D?</li>
-<li>What is the leading mode in 2D?</li>
-</ol>
-<p>These answers will help you interpret the 1D assignment now and the 2D simulations in the next session.</p>
-</section>
-<section id="whats-next" class="level2">
-<h2 class="anchored" data-anchor-id="whats-next">What’s Next?</h2>
-<p>Now that you know how to predict pattern-forming parameter regimes, close the 1D loop by completing the assignment. After that, carry the same ideas to a 2D grid in the next session.</p>
-<p><a href="../../modules/pde-1d/assignment.html" class="btn btn-secondary">Assignment</a> <a href="../../modules/pde-2d/index.html" class="btn btn-primary">PDEs in 2D</a></p>
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Tip
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Reference code is available in <a href="https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/pdes/gierer_meinhardt_1d.py">amlab/pdes/gierer_meinhardt_1d.py</a> and <a href="https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/pdes/gierer_meinhardt_2d.py">amlab/pdes/gierer_meinhardt_2d.py</a>.</p>
-</div>
-</div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_unstable_modes_2d(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>, d<span class="op">=</span><span class="fl">30.0</span>, length_x<span class="op">=</span><span class="fl">20.0</span>, length_y<span class="op">=</span><span class="fl">50.0</span>, num_modes<span class="op">=</span><span class="dv">8</span>):</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> np.array([[fu, fv], [gu, gv]])</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    diffusion <span class="op">=</span> np.diag([<span class="fl">1.0</span>, d])</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    unstable_modes <span class="op">=</span> []</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> nx <span class="kw">in</span> <span class="bu">range</span>(num_modes):</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> ny <span class="kw">in</span> <span class="bu">range</span>(num_modes):</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> nx <span class="op">==</span> <span class="dv">0</span> <span class="kw">and</span> ny <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>                <span class="cf">continue</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>            lambda_nm <span class="op">=</span> <span class="op">-</span>((nx <span class="op">*</span> np.pi <span class="op">/</span> length_x) <span class="op">**</span> <span class="dv">2</span> <span class="op">+</span> (ny <span class="op">*</span> np.pi <span class="op">/</span> length_y) <span class="op">**</span> <span class="dv">2</span>)</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>            f_nm <span class="op">=</span> jac <span class="op">+</span> lambda_nm <span class="op">*</span> diffusion</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>            growth_rate <span class="op">=</span> np.<span class="bu">max</span>(np.linalg.eigvals(f_nm).real)</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> growth_rate <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>                unstable_modes.append(((nx, ny), growth_rate))</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>    unstable_modes.sort(key<span class="op">=</span><span class="kw">lambda</span> item: item[<span class="dv">1</span>], reverse<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> unstable_modes</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>For periodic boundaries, the same loop works after replacing each factor of $\pi <span class="op">/</span> L$ by $<span class="dv">2</span>\pi <span class="op">/</span> L$.</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a><span class="co">## Apply the Same Workflow to Gray-Scott</span></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>The theory on this page does <span class="kw">not</span> depend on the specific reaction law. Gray<span class="op">-</span>Scott uses the same equilibrium to Jacobian to mode<span class="op">-</span>matrix pipeline [<span class="op">@</span>gray1984autocatalytic<span class="op">;</span> <span class="op">@</span>pearson1993complex].</span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>Write the reaction terms <span class="im">as</span></span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a>R_u(u, v) <span class="op">=</span> <span class="op">-</span>u v<span class="op">^</span><span class="dv">2</span> <span class="op">+</span> f(<span class="dv">1</span><span class="op">-</span>u), \qquad R_v(u, v) <span class="op">=</span> u v<span class="op">^</span><span class="dv">2</span> <span class="op">-</span> (f<span class="op">+</span>k)v.</span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a>One homogeneous equilibrium <span class="kw">is</span> always</span>
+<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb21-36"><a href="#cb21-36" aria-hidden="true" tabindex="-1"></a>(u_<span class="op">*</span>, v_<span class="op">*</span>) <span class="op">=</span> (<span class="dv">1</span>, <span class="dv">0</span>).</span>
+<span id="cb21-37"><a href="#cb21-37" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb21-38"><a href="#cb21-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-39"><a href="#cb21-39" aria-hidden="true" tabindex="-1"></a>If $v_<span class="op">*</span> \neq <span class="dv">0</span>$, then $u_<span class="op">*</span> v_<span class="op">*</span> <span class="op">=</span> f <span class="op">+</span> k$ <span class="kw">and</span> the nontrivial equilibria satisfy</span>
+<span id="cb21-40"><a href="#cb21-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-41"><a href="#cb21-41" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb21-42"><a href="#cb21-42" aria-hidden="true" tabindex="-1"></a>u_<span class="op">*</span> <span class="op">=</span> \frac{<span class="dv">1</span>}{<span class="dv">2</span>}\left(<span class="dv">1</span> \pm \sqrt{<span class="dv">1</span> <span class="op">-</span> \frac{<span class="dv">4</span>(f<span class="op">+</span>k)<span class="op">^</span><span class="dv">2</span>}{f}}\right), \qquad v_<span class="op">*</span> <span class="op">=</span> \frac{f<span class="op">+</span>k}{u_<span class="op">*</span>},</span>
+<span id="cb21-43"><a href="#cb21-43" aria-hidden="true" tabindex="-1"></a>$$ {<span class="co">#eq-pde-turing-gs-steady}</span></span>
+<span id="cb21-44"><a href="#cb21-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-45"><a href="#cb21-45" aria-hidden="true" tabindex="-1"></a>whenever $<span class="dv">1</span> <span class="op">-</span> <span class="dv">4</span>(f<span class="op">+</span>k)<span class="op">^</span><span class="dv">2</span><span class="op">/</span>f \ge <span class="dv">0</span>$.</span>
+<span id="cb21-46"><a href="#cb21-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-47"><a href="#cb21-47" aria-hidden="true" tabindex="-1"></a>The Gray<span class="op">-</span>Scott Jacobian at a homogeneous equilibrium <span class="kw">is</span></span>
+<span id="cb21-48"><a href="#cb21-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-49"><a href="#cb21-49" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb21-50"><a href="#cb21-50" aria-hidden="true" tabindex="-1"></a>J_{\mathrm{GS}} <span class="op">=</span></span>
+<span id="cb21-51"><a href="#cb21-51" aria-hidden="true" tabindex="-1"></a>\begin{pmatrix}</span>
+<span id="cb21-52"><a href="#cb21-52" aria-hidden="true" tabindex="-1"></a><span class="op">-</span>v_<span class="op">*^</span><span class="dv">2</span> <span class="op">-</span> f <span class="op">&amp;</span> <span class="op">-</span><span class="dv">2</span><span class="er">u_</span><span class="op">*</span>v_<span class="op">*</span> \<span class="op">\</span></span>
+<span id="cb21-53"><a href="#cb21-53" aria-hidden="true" tabindex="-1"></a>v_<span class="op">*^</span><span class="dv">2</span> <span class="op">&amp;</span> <span class="dv">2</span><span class="er">u_</span><span class="op">*</span>v_<span class="op">*</span> <span class="op">-</span> (f<span class="op">+</span>k)</span>
+<span id="cb21-54"><a href="#cb21-54" aria-hidden="true" tabindex="-1"></a>\end{pmatrix}.</span>
+<span id="cb21-55"><a href="#cb21-55" aria-hidden="true" tabindex="-1"></a>$$ {<span class="co">#eq-pde-turing-gs-jacobian}</span></span>
+<span id="cb21-56"><a href="#cb21-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-57"><a href="#cb21-57" aria-hidden="true" tabindex="-1"></a>At the trivial state $(<span class="dv">1</span>, <span class="dv">0</span>)$, this Jacobian <span class="kw">is</span> diagonal <span class="kw">and</span> every linear mode decays. So the classical Turing test <span class="kw">is</span> only interesting at a nontrivial homogeneous equilibrium when one exists.</span>
+<span id="cb21-58"><a href="#cb21-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-59"><a href="#cb21-59" aria-hidden="true" tabindex="-1"></a>For periodic boundaries on a rectangle,</span>
+<span id="cb21-60"><a href="#cb21-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-61"><a href="#cb21-61" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb21-62"><a href="#cb21-62" aria-hidden="true" tabindex="-1"></a>\lambda_{m,n} <span class="op">=</span> <span class="op">-</span>\left(\frac{<span class="dv">2</span>\pi m}{L_x}\right)<span class="op">^</span><span class="dv">2</span> <span class="op">-</span> \left(\frac{<span class="dv">2</span>\pi n}{L_y}\right)<span class="op">^</span><span class="dv">2</span>,</span>
+<span id="cb21-63"><a href="#cb21-63" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb21-64"><a href="#cb21-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-65"><a href="#cb21-65" aria-hidden="true" tabindex="-1"></a><span class="kw">and</span> the mode matrix <span class="kw">is</span></span>
+<span id="cb21-66"><a href="#cb21-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-67"><a href="#cb21-67" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb21-68"><a href="#cb21-68" aria-hidden="true" tabindex="-1"></a>F<span class="op">^</span>{\mathrm{GS}}_{m,n} <span class="op">=</span> J_{\mathrm{GS}} <span class="op">+</span> \lambda_{m,n}\,\mathrm{diag}(d_1, d_2).</span>
+<span id="cb21-69"><a href="#cb21-69" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb21-70"><a href="#cb21-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-71"><a href="#cb21-71" aria-hidden="true" tabindex="-1"></a>```python</span>
+<span id="cb21-72"><a href="#cb21-72" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb21-73"><a href="#cb21-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-74"><a href="#cb21-74" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gray_scott_equilibria(f<span class="op">=</span><span class="fl">0.040</span>, k<span class="op">=</span><span class="fl">0.060</span>):</span>
+<span id="cb21-75"><a href="#cb21-75" aria-hidden="true" tabindex="-1"></a>    equilibria <span class="op">=</span> [(<span class="fl">1.0</span>, <span class="fl">0.0</span>)]</span>
+<span id="cb21-76"><a href="#cb21-76" aria-hidden="true" tabindex="-1"></a>    discriminant <span class="op">=</span> <span class="dv">1</span> <span class="op">-</span> <span class="dv">4</span> <span class="op">*</span> (f <span class="op">+</span> k) <span class="op">**</span> <span class="dv">2</span> <span class="op">/</span> f</span>
+<span id="cb21-77"><a href="#cb21-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-78"><a href="#cb21-78" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> discriminant <span class="op">&gt;=</span> <span class="dv">0</span>:</span>
+<span id="cb21-79"><a href="#cb21-79" aria-hidden="true" tabindex="-1"></a>        root <span class="op">=</span> np.sqrt(discriminant)</span>
+<span id="cb21-80"><a href="#cb21-80" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> sign <span class="kw">in</span> (<span class="op">+</span><span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>):</span>
+<span id="cb21-81"><a href="#cb21-81" aria-hidden="true" tabindex="-1"></a>            u_star <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">+</span> sign <span class="op">*</span> root)</span>
+<span id="cb21-82"><a href="#cb21-82" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> u_star <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb21-83"><a href="#cb21-83" aria-hidden="true" tabindex="-1"></a>                equilibria.append((u_star, (f <span class="op">+</span> k) <span class="op">/</span> u_star))</span>
+<span id="cb21-84"><a href="#cb21-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-85"><a href="#cb21-85" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> equilibria</span>
+<span id="cb21-86"><a href="#cb21-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-87"><a href="#cb21-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-88"><a href="#cb21-88" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gray_scott_jacobian(u_star, v_star, f<span class="op">=</span><span class="fl">0.040</span>, k<span class="op">=</span><span class="fl">0.060</span>):</span>
+<span id="cb21-89"><a href="#cb21-89" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array(</span>
+<span id="cb21-90"><a href="#cb21-90" aria-hidden="true" tabindex="-1"></a>        [</span>
+<span id="cb21-91"><a href="#cb21-91" aria-hidden="true" tabindex="-1"></a>            [<span class="op">-</span>v_star<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> f, <span class="op">-</span><span class="dv">2</span> <span class="op">*</span> u_star <span class="op">*</span> v_star],</span>
+<span id="cb21-92"><a href="#cb21-92" aria-hidden="true" tabindex="-1"></a>            [v_star<span class="op">**</span><span class="dv">2</span>, <span class="dv">2</span> <span class="op">*</span> u_star <span class="op">*</span> v_star <span class="op">-</span> (f <span class="op">+</span> k)],</span>
+<span id="cb21-93"><a href="#cb21-93" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb21-94"><a href="#cb21-94" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>That is the whole bridge from Gierer-Meinhardt to Gray-Scott. Keep the eigenvalue scan, replace the Jacobian, replace the boundary spectrum, then sort the unstable modes and read off the dominant one.</p>
+<pre><code>:::
 
+## Compare Two Cases
 
-<!-- -->
+Use your functions to compare $d=20$ and $d=30$ with $a=0.40$ and $b=1.00$.
 
+1. Does each case satisfy the Turing conditions?
+2. How many unstable modes appear in 1D?
+3. What is the leading mode in 2D?
+
+These answers will help you interpret the 1D assignment now and the 2D simulations in the next session.
+
+## What's Next?
+
+Now that you know how to predict pattern-forming parameter regimes, close the 1D loop by completing the assignment. After that, carry the same ideas to a 2D grid in the next session.
+
+[Assignment](assignment.qmd){.btn .btn-secondary}
+[PDEs in 2D](../pde-2d/index.qmd){.btn .btn-primary}
+
+::: {.callout-tip}
+Reference code is available in [amlab/pdes/gierer_meinhardt_1d.py](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/pdes/gierer_meinhardt_1d.py) and [amlab/pdes/gierer_meinhardt_2d.py](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/pdes/gierer_meinhardt_2d.py).
+:::</code></pre>
+</div>
+</div>
+</div>
 
 </section>
 
@@ -1338,280 +2006,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         <span class="nav-page-text">Assignment</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
-</nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="sourceCode" id="cb10" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Turing Instability"</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "From Steady States to Spatial Modes"</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>In the previous page, you built a 1D reaction-diffusion solver and saw that small perturbations can grow into visible peaks. This page explains when that should happen.</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>Patterns do not appear by accident. Turing instability explains when a uniform steady state is stable to homogeneous perturbations but unstable to spatially varying ones <span class="co">[</span><span class="ot">@turing1952chemical</span><span class="co">]</span>. For the Gierer-Meinhardt model, the same theory will help us interpret both the 1D and 2D simulations.</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>The previous page gave the intuition: local activation can reinforce a bump, inhibition can suppress nearby growth, and diffusion can either smooth or amplify spatial differences depending on the parameter regime. This page turns that picture into a linear stability test and asks a precise question, which parameter values and which spatial modes make the flat steady state lose stability?</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-pde-turing-space</span></span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: 'Turing space for the Gierer-Meinhardt model in the $(a, d)$ plane.'</span></span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 7</span></span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 4</span></span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.pdes.gierer_meinhardt_1d <span class="im">import</span> is_turing_instability</span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>arr_a <span class="op">=</span> np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">400</span>)</span>
-<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>arr_d <span class="op">=</span> np.linspace(<span class="dv">0</span>, <span class="dv">100</span>, <span class="dv">400</span>)</span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>mesh_a, mesh_d <span class="op">=</span> np.meshgrid(arr_a, arr_d)</span>
-<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>mask_turing <span class="op">=</span> is_turing_instability(mesh_a, <span class="fl">1.00</span>, mesh_d)</span>
-<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">4</span>))</span>
-<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>ax.contourf(mesh_a, mesh_d, mask_turing)</span>
-<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"a"</span>)</span>
-<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"d"</span>)</span>
-<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Turing Space"</span>)</span>
-<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>plt.close()</span>
-<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a><span class="fu">## Write the Jacobian at the Fixed Point</span></span>
-<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>Let</span>
-<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>J =</span>
-<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a>\begin{pmatrix}</span>
-<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>f_u &amp; f_v <span class="sc">\\</span></span>
-<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>g_u &amp; g_v</span>
-<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a>\end{pmatrix}</span>
-<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a>$$ {#eq-pde-turing-jacobian}</span>
-<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a>be the Jacobian of the reaction terms at the homogeneous steady state. For the Gierer-Meinhardt model, the fixed point is known analytically, so you can hard-code the partial derivatives.</span>
-<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gierer_meinhardt_jacobian(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>):</span>
-<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: compute fu, fv, gu, gv at the fixed point</span></span>
-<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fu, fv, gu, gv</span>
-<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
-<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hint: Jacobian entries (click to expand)</span></span>
-<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gierer_meinhardt_jacobian(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>):</span>
-<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a>    fu <span class="op">=</span> <span class="dv">2</span> <span class="op">*</span> b <span class="op">/</span> (a <span class="op">+</span> <span class="dv">1</span>) <span class="op">-</span> b</span>
-<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a>    fv <span class="op">=</span> <span class="op">-</span>((b <span class="op">/</span> (a <span class="op">+</span> <span class="dv">1</span>)) <span class="op">**</span> <span class="dv">2</span>)</span>
-<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a>    gu <span class="op">=</span> <span class="dv">2</span> <span class="op">*</span> (a <span class="op">+</span> <span class="dv">1</span>) <span class="op">/</span> b</span>
-<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a>    gv <span class="op">=</span> <span class="op">-</span><span class="fl">1.0</span></span>
-<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fu, fv, gu, gv</span>
-<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb10-73"><a href="#cb10-73" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-74"><a href="#cb10-74" aria-hidden="true" tabindex="-1"></a><span class="fu">## Implement the Turing Test</span></span>
-<span id="cb10-75"><a href="#cb10-75" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-76"><a href="#cb10-76" aria-hidden="true" tabindex="-1"></a>A common set of conditions for Turing instability is</span>
-<span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-78"><a href="#cb10-78" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
-<span id="cb10-80"><a href="#cb10-80" aria-hidden="true" tabindex="-1"></a>&amp;f_u + g_v &lt; 0, <span class="sc">\\</span></span>
-<span id="cb10-81"><a href="#cb10-81" aria-hidden="true" tabindex="-1"></a>&amp;f_u g_v - f_v g_u &gt; 0, <span class="sc">\\</span></span>
-<span id="cb10-82"><a href="#cb10-82" aria-hidden="true" tabindex="-1"></a>&amp;g_v + d f_u &gt; 2\sqrt{d\,(f_u g_v - f_v g_u)}.</span>
-<span id="cb10-83"><a href="#cb10-83" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
-<span id="cb10-84"><a href="#cb10-84" aria-hidden="true" tabindex="-1"></a>$$ {#eq-pde-turing-conditions}</span>
-<span id="cb10-85"><a href="#cb10-85" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-86"><a href="#cb10-86" aria-hidden="true" tabindex="-1"></a>Translate these three inequalities into Python.</span>
-<span id="cb10-87"><a href="#cb10-87" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-88"><a href="#cb10-88" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-89"><a href="#cb10-89" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb10-90"><a href="#cb10-90" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-91"><a href="#cb10-91" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> is_turing_instability(a, b, d):</span>
-<span id="cb10-92"><a href="#cb10-92" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
-<span id="cb10-93"><a href="#cb10-93" aria-hidden="true" tabindex="-1"></a>    nabla <span class="op">=</span></span>
-<span id="cb10-94"><a href="#cb10-94" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-95"><a href="#cb10-95" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: write the three conditions</span></span>
-<span id="cb10-96"><a href="#cb10-96" aria-hidden="true" tabindex="-1"></a>    cond1 <span class="op">=</span></span>
-<span id="cb10-97"><a href="#cb10-97" aria-hidden="true" tabindex="-1"></a>    cond2 <span class="op">=</span></span>
-<span id="cb10-98"><a href="#cb10-98" aria-hidden="true" tabindex="-1"></a>    cond3 <span class="op">=</span></span>
-<span id="cb10-99"><a href="#cb10-99" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> cond1 <span class="op">&amp;</span> cond2 <span class="op">&amp;</span> cond3</span>
-<span id="cb10-100"><a href="#cb10-100" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-101"><a href="#cb10-101" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-102"><a href="#cb10-102" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
-<span id="cb10-103"><a href="#cb10-103" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hint: Turing test (click to expand)</span></span>
-<span id="cb10-104"><a href="#cb10-104" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-105"><a href="#cb10-105" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-106"><a href="#cb10-106" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> is_turing_instability(a, b, d):</span>
-<span id="cb10-107"><a href="#cb10-107" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
-<span id="cb10-108"><a href="#cb10-108" aria-hidden="true" tabindex="-1"></a>    nabla <span class="op">=</span> fu <span class="op">*</span> gv <span class="op">-</span> fv <span class="op">*</span> gu</span>
-<span id="cb10-109"><a href="#cb10-109" aria-hidden="true" tabindex="-1"></a>    cond1 <span class="op">=</span> (fu <span class="op">+</span> gv) <span class="op">&lt;</span> <span class="dv">0</span></span>
-<span id="cb10-110"><a href="#cb10-110" aria-hidden="true" tabindex="-1"></a>    cond2 <span class="op">=</span> nabla <span class="op">&gt;</span> <span class="dv">0</span></span>
-<span id="cb10-111"><a href="#cb10-111" aria-hidden="true" tabindex="-1"></a>    cond3 <span class="op">=</span> (gv <span class="op">+</span> d <span class="op">*</span> fu) <span class="op">&gt;</span> <span class="dv">2</span> <span class="op">*</span> np.sqrt(d <span class="op">*</span> np.maximum(nabla, <span class="dv">0</span>))</span>
-<span id="cb10-112"><a href="#cb10-112" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> cond1 <span class="op">&amp;</span> cond2 <span class="op">&amp;</span> cond3</span>
-<span id="cb10-113"><a href="#cb10-113" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-114"><a href="#cb10-114" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb10-115"><a href="#cb10-115" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-116"><a href="#cb10-116" aria-hidden="true" tabindex="-1"></a>If your implementation is vectorized, it should work with scalars and with arrays. That is what lets us plot @fig-pde-turing-space.</span>
-<span id="cb10-117"><a href="#cb10-117" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-118"><a href="#cb10-118" aria-hidden="true" tabindex="-1"></a>Validate these functions carefully. You will reuse them when you move from 1D to 2D, so this is the theory page that supports the rest of the session.</span>
-<span id="cb10-119"><a href="#cb10-119" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-120"><a href="#cb10-120" aria-hidden="true" tabindex="-1"></a><span class="fu">## Plot the Turing Space</span></span>
-<span id="cb10-121"><a href="#cb10-121" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-122"><a href="#cb10-122" aria-hidden="true" tabindex="-1"></a>Complete the code below to recreate the diagram.</span>
-<span id="cb10-123"><a href="#cb10-123" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-124"><a href="#cb10-124" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-125"><a href="#cb10-125" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb10-126"><a href="#cb10-126" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb10-127"><a href="#cb10-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-128"><a href="#cb10-128" aria-hidden="true" tabindex="-1"></a>arr_a <span class="op">=</span> np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">500</span>)</span>
-<span id="cb10-129"><a href="#cb10-129" aria-hidden="true" tabindex="-1"></a>arr_d <span class="op">=</span> np.linspace(<span class="dv">0</span>, <span class="dv">100</span>, <span class="dv">500</span>)</span>
-<span id="cb10-130"><a href="#cb10-130" aria-hidden="true" tabindex="-1"></a>mesh_a, mesh_d <span class="op">=</span> np.meshgrid(arr_a, arr_d)</span>
-<span id="cb10-131"><a href="#cb10-131" aria-hidden="true" tabindex="-1"></a>mask_turing <span class="op">=</span></span>
-<span id="cb10-132"><a href="#cb10-132" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-133"><a href="#cb10-133" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">4</span>))</span>
-<span id="cb10-134"><a href="#cb10-134" aria-hidden="true" tabindex="-1"></a>ax.contourf(mesh_a, mesh_d, mask_turing)</span>
-<span id="cb10-135"><a href="#cb10-135" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"a"</span>)</span>
-<span id="cb10-136"><a href="#cb10-136" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"d"</span>)</span>
-<span id="cb10-137"><a href="#cb10-137" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Turing Space"</span>)</span>
-<span id="cb10-138"><a href="#cb10-138" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb10-139"><a href="#cb10-139" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-140"><a href="#cb10-140" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-141"><a href="#cb10-141" aria-hidden="true" tabindex="-1"></a>Mark the point $(a, d) = (0.40, 20)$ on your plot. Is it inside the instability region?</span>
-<span id="cb10-142"><a href="#cb10-142" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-143"><a href="#cb10-143" aria-hidden="true" tabindex="-1"></a><span class="fu">## Scan Spatial Modes in 1D</span></span>
-<span id="cb10-144"><a href="#cb10-144" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-145"><a href="#cb10-145" aria-hidden="true" tabindex="-1"></a>The Turing conditions say that some spatial mode should grow, but they do not tell you which one. For Neumann boundary conditions on $<span class="co">[</span><span class="ot">0, L</span><span class="co">]</span>$, the admissible wavenumbers are</span>
-<span id="cb10-146"><a href="#cb10-146" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-147"><a href="#cb10-147" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb10-148"><a href="#cb10-148" aria-hidden="true" tabindex="-1"></a>k_n = \frac{n\pi}{L}, \qquad n = 0, 1, 2, \dots</span>
-<span id="cb10-149"><a href="#cb10-149" aria-hidden="true" tabindex="-1"></a>$$ {#eq-pde-turing-1d-modes}</span>
-<span id="cb10-150"><a href="#cb10-150" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-151"><a href="#cb10-151" aria-hidden="true" tabindex="-1"></a>The corresponding diffusion-shifted matrix is</span>
-<span id="cb10-152"><a href="#cb10-152" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-153"><a href="#cb10-153" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb10-154"><a href="#cb10-154" aria-hidden="true" tabindex="-1"></a>A_n = J - k_n^2\,\mathrm{diag}(1, d).</span>
-<span id="cb10-155"><a href="#cb10-155" aria-hidden="true" tabindex="-1"></a>$$ {#eq-pde-turing-1d-matrix}</span>
-<span id="cb10-156"><a href="#cb10-156" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-157"><a href="#cb10-157" aria-hidden="true" tabindex="-1"></a>Complete the function below and return the indices of the unstable modes.</span>
-<span id="cb10-158"><a href="#cb10-158" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-159"><a href="#cb10-159" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-160"><a href="#cb10-160" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb10-161"><a href="#cb10-161" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-162"><a href="#cb10-162" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_unstable_modes_1d(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>, d<span class="op">=</span><span class="fl">30.0</span>, length<span class="op">=</span><span class="fl">40.0</span>, num_modes<span class="op">=</span><span class="dv">10</span>):</span>
-<span id="cb10-163"><a href="#cb10-163" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
-<span id="cb10-164"><a href="#cb10-164" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> np.array([[fu, fv], [gu, gv]])</span>
-<span id="cb10-165"><a href="#cb10-165" aria-hidden="true" tabindex="-1"></a>    max_eigs <span class="op">=</span> np.zeros(num_modes)</span>
-<span id="cb10-166"><a href="#cb10-166" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-167"><a href="#cb10-167" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> n <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, num_modes):</span>
-<span id="cb10-168"><a href="#cb10-168" aria-hidden="true" tabindex="-1"></a>        <span class="co"># </span><span class="al">TODO</span><span class="co">: compute k_n and the matrix A_n</span></span>
-<span id="cb10-169"><a href="#cb10-169" aria-hidden="true" tabindex="-1"></a>        <span class="co"># </span><span class="al">TODO</span><span class="co">: store the largest real part of the eigenvalues</span></span>
-<span id="cb10-170"><a href="#cb10-170" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-171"><a href="#cb10-171" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: return the unstable modes sorted from strongest to weakest</span></span>
-<span id="cb10-172"><a href="#cb10-172" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-173"><a href="#cb10-173" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-174"><a href="#cb10-174" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
-<span id="cb10-175"><a href="#cb10-175" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hint: 1D mode scan (click to expand)</span></span>
-<span id="cb10-176"><a href="#cb10-176" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-177"><a href="#cb10-177" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-178"><a href="#cb10-178" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_unstable_modes_1d(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>, d<span class="op">=</span><span class="fl">30.0</span>, length<span class="op">=</span><span class="fl">40.0</span>, num_modes<span class="op">=</span><span class="dv">10</span>):</span>
-<span id="cb10-179"><a href="#cb10-179" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
-<span id="cb10-180"><a href="#cb10-180" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> np.array([[fu, fv], [gu, gv]])</span>
-<span id="cb10-181"><a href="#cb10-181" aria-hidden="true" tabindex="-1"></a>    max_eigs <span class="op">=</span> np.zeros(num_modes)</span>
-<span id="cb10-182"><a href="#cb10-182" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-183"><a href="#cb10-183" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> n <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, num_modes):</span>
-<span id="cb10-184"><a href="#cb10-184" aria-hidden="true" tabindex="-1"></a>        k_n <span class="op">=</span> n <span class="op">*</span> np.pi <span class="op">/</span> length</span>
-<span id="cb10-185"><a href="#cb10-185" aria-hidden="true" tabindex="-1"></a>        a_n <span class="op">=</span> jac <span class="op">-</span> (k_n<span class="op">**</span><span class="dv">2</span>) <span class="op">*</span> np.diag([<span class="dv">1</span>, d])</span>
-<span id="cb10-186"><a href="#cb10-186" aria-hidden="true" tabindex="-1"></a>        eigvals <span class="op">=</span> np.linalg.eigvals(a_n)</span>
-<span id="cb10-187"><a href="#cb10-187" aria-hidden="true" tabindex="-1"></a>        max_eigs[n] <span class="op">=</span> np.<span class="bu">max</span>(eigvals.real)</span>
-<span id="cb10-188"><a href="#cb10-188" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-189"><a href="#cb10-189" aria-hidden="true" tabindex="-1"></a>    unstable <span class="op">=</span> np.where(max_eigs <span class="op">&gt;</span> <span class="dv">0</span>)[<span class="dv">0</span>]</span>
-<span id="cb10-190"><a href="#cb10-190" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> unstable[np.argsort(max_eigs[unstable])[::<span class="op">-</span><span class="dv">1</span>]]</span>
-<span id="cb10-191"><a href="#cb10-191" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-192"><a href="#cb10-192" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb10-193"><a href="#cb10-193" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-194"><a href="#cb10-194" aria-hidden="true" tabindex="-1"></a><span class="fu">## Extend the Scan to 2D</span></span>
-<span id="cb10-195"><a href="#cb10-195" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-196"><a href="#cb10-196" aria-hidden="true" tabindex="-1"></a>In two dimensions, the modes are pairs $(n_x, n_y)$. On a rectangle with side lengths $L_x$ and $L_y$,</span>
-<span id="cb10-197"><a href="#cb10-197" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-198"><a href="#cb10-198" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb10-199"><a href="#cb10-199" aria-hidden="true" tabindex="-1"></a>k_{n_x,n_y}^2 = \left(\frac{n_x\pi}{L_x}\right)^2 + \left(\frac{n_y\pi}{L_y}\right)^2.</span>
-<span id="cb10-200"><a href="#cb10-200" aria-hidden="true" tabindex="-1"></a>$$ {#eq-pde-turing-2d-modes}</span>
-<span id="cb10-201"><a href="#cb10-201" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-202"><a href="#cb10-202" aria-hidden="true" tabindex="-1"></a>The only real change is that you now scan a grid of mode pairs.</span>
-<span id="cb10-203"><a href="#cb10-203" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-204"><a href="#cb10-204" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-205"><a href="#cb10-205" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb10-206"><a href="#cb10-206" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-207"><a href="#cb10-207" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_unstable_modes_2d(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>, d<span class="op">=</span><span class="fl">30.0</span>, length_x<span class="op">=</span><span class="fl">20.0</span>, length_y<span class="op">=</span><span class="fl">50.0</span>, num_modes<span class="op">=</span><span class="dv">8</span>):</span>
-<span id="cb10-208"><a href="#cb10-208" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
-<span id="cb10-209"><a href="#cb10-209" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> np.array([[fu, fv], [gu, gv]])</span>
-<span id="cb10-210"><a href="#cb10-210" aria-hidden="true" tabindex="-1"></a>    unstable_modes <span class="op">=</span> []</span>
-<span id="cb10-211"><a href="#cb10-211" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-212"><a href="#cb10-212" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> nx <span class="kw">in</span> <span class="bu">range</span>(num_modes):</span>
-<span id="cb10-213"><a href="#cb10-213" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> ny <span class="kw">in</span> <span class="bu">range</span>(num_modes):</span>
-<span id="cb10-214"><a href="#cb10-214" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> nx <span class="op">==</span> <span class="dv">0</span> <span class="kw">and</span> ny <span class="op">==</span> <span class="dv">0</span>:</span>
-<span id="cb10-215"><a href="#cb10-215" aria-hidden="true" tabindex="-1"></a>                <span class="cf">continue</span></span>
-<span id="cb10-216"><a href="#cb10-216" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-217"><a href="#cb10-217" aria-hidden="true" tabindex="-1"></a>            <span class="co"># </span><span class="al">TODO</span><span class="co">: compute k_sq and A_n</span></span>
-<span id="cb10-218"><a href="#cb10-218" aria-hidden="true" tabindex="-1"></a>            <span class="co"># </span><span class="al">TODO</span><span class="co">: store mode pairs with positive growth rate</span></span>
-<span id="cb10-219"><a href="#cb10-219" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-220"><a href="#cb10-220" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> unstable_modes</span>
-<span id="cb10-221"><a href="#cb10-221" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-222"><a href="#cb10-222" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-223"><a href="#cb10-223" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
-<span id="cb10-224"><a href="#cb10-224" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hint: 2D mode scan (click to expand)</span></span>
-<span id="cb10-225"><a href="#cb10-225" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-226"><a href="#cb10-226" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb10-227"><a href="#cb10-227" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_unstable_modes_2d(a<span class="op">=</span><span class="fl">0.40</span>, b<span class="op">=</span><span class="fl">1.00</span>, d<span class="op">=</span><span class="fl">30.0</span>, length_x<span class="op">=</span><span class="fl">20.0</span>, length_y<span class="op">=</span><span class="fl">50.0</span>, num_modes<span class="op">=</span><span class="dv">8</span>):</span>
-<span id="cb10-228"><a href="#cb10-228" aria-hidden="true" tabindex="-1"></a>    fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
-<span id="cb10-229"><a href="#cb10-229" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> np.array([[fu, fv], [gu, gv]])</span>
-<span id="cb10-230"><a href="#cb10-230" aria-hidden="true" tabindex="-1"></a>    unstable_modes <span class="op">=</span> []</span>
-<span id="cb10-231"><a href="#cb10-231" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-232"><a href="#cb10-232" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> nx <span class="kw">in</span> <span class="bu">range</span>(num_modes):</span>
-<span id="cb10-233"><a href="#cb10-233" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> ny <span class="kw">in</span> <span class="bu">range</span>(num_modes):</span>
-<span id="cb10-234"><a href="#cb10-234" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> nx <span class="op">==</span> <span class="dv">0</span> <span class="kw">and</span> ny <span class="op">==</span> <span class="dv">0</span>:</span>
-<span id="cb10-235"><a href="#cb10-235" aria-hidden="true" tabindex="-1"></a>                <span class="cf">continue</span></span>
-<span id="cb10-236"><a href="#cb10-236" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-237"><a href="#cb10-237" aria-hidden="true" tabindex="-1"></a>            k_sq <span class="op">=</span> (nx <span class="op">*</span> np.pi <span class="op">/</span> length_x) <span class="op">**</span> <span class="dv">2</span> <span class="op">+</span> (ny <span class="op">*</span> np.pi <span class="op">/</span> length_y) <span class="op">**</span> <span class="dv">2</span></span>
-<span id="cb10-238"><a href="#cb10-238" aria-hidden="true" tabindex="-1"></a>            a_n <span class="op">=</span> jac <span class="op">-</span> k_sq <span class="op">*</span> np.diag([<span class="dv">1</span>, d])</span>
-<span id="cb10-239"><a href="#cb10-239" aria-hidden="true" tabindex="-1"></a>            growth_rate <span class="op">=</span> np.<span class="bu">max</span>(np.linalg.eigvals(a_n).real)</span>
-<span id="cb10-240"><a href="#cb10-240" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> growth_rate <span class="op">&gt;</span> <span class="dv">0</span>:</span>
-<span id="cb10-241"><a href="#cb10-241" aria-hidden="true" tabindex="-1"></a>                unstable_modes.append(((nx, ny), growth_rate))</span>
-<span id="cb10-242"><a href="#cb10-242" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-243"><a href="#cb10-243" aria-hidden="true" tabindex="-1"></a>    unstable_modes.sort(key<span class="op">=</span><span class="kw">lambda</span> item: item[<span class="dv">1</span>], reverse<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb10-244"><a href="#cb10-244" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> unstable_modes</span>
-<span id="cb10-245"><a href="#cb10-245" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-246"><a href="#cb10-246" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb10-247"><a href="#cb10-247" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-248"><a href="#cb10-248" aria-hidden="true" tabindex="-1"></a><span class="fu">## Compare Two Cases</span></span>
-<span id="cb10-249"><a href="#cb10-249" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-250"><a href="#cb10-250" aria-hidden="true" tabindex="-1"></a>Use your functions to compare $d=20$ and $d=30$ with $a=0.40$ and $b=1.00$.</span>
-<span id="cb10-251"><a href="#cb10-251" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-252"><a href="#cb10-252" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Does each case satisfy the Turing conditions?</span>
-<span id="cb10-253"><a href="#cb10-253" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>How many unstable modes appear in 1D?</span>
-<span id="cb10-254"><a href="#cb10-254" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>What is the leading mode in 2D?</span>
-<span id="cb10-255"><a href="#cb10-255" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-256"><a href="#cb10-256" aria-hidden="true" tabindex="-1"></a>These answers will help you interpret the 1D assignment now and the 2D simulations in the next session.</span>
-<span id="cb10-257"><a href="#cb10-257" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-258"><a href="#cb10-258" aria-hidden="true" tabindex="-1"></a><span class="fu">## What's Next?</span></span>
-<span id="cb10-259"><a href="#cb10-259" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-260"><a href="#cb10-260" aria-hidden="true" tabindex="-1"></a>Now that you know how to predict pattern-forming parameter regimes, close the 1D loop by completing the assignment. After that, carry the same ideas to a 2D grid in the next session.</span>
-<span id="cb10-261"><a href="#cb10-261" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-262"><a href="#cb10-262" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Assignment</span><span class="co">](assignment.qmd)</span>{.btn .btn-secondary}</span>
-<span id="cb10-263"><a href="#cb10-263" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">PDEs in 2D</span><span class="co">](../pde-2d/index.qmd)</span>{.btn .btn-primary}</span>
-<span id="cb10-264"><a href="#cb10-264" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-265"><a href="#cb10-265" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip}</span>
-<span id="cb10-266"><a href="#cb10-266" aria-hidden="true" tabindex="-1"></a>Reference code is available in <span class="co">[</span><span class="ot">amlab/pdes/gierer_meinhardt_1d.py</span><span class="co">](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/pdes/gierer_meinhardt_1d.py)</span> and <span class="co">[</span><span class="ot">amlab/pdes/gierer_meinhardt_2d.py</span><span class="co">](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/pdes/gierer_meinhardt_2d.py)</span>.</span>
-<span id="cb10-267"><a href="#cb10-267" aria-hidden="true" tabindex="-1"></a>:::</span>
-</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div></div></div></div></div>
+</nav>
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">
     <div class="nav-footer-left">
-<p>By Daniel Precioso Garcelán. Contact: daniel.precioso@ie.edu</p>
-</div>   
+      <div class="footer-contents">By Daniel Precioso Garcelán. Contact: daniel.precioso@ie.edu</div>  
+    </div>   
     <div class="nav-footer-center">
       &nbsp;
     <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/pde-1d/turing-instability.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>

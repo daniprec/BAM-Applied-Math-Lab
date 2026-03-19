@@ -627,7 +627,7 @@ window.Quarto = {
 </header>
 
 
-<p>This session introduces reaction-diffusion PDEs on a line. We will discretize space with finite differences, advance in time with explicit Euler, and use Turing instability to predict when spatial patterns should appear <span class="citation" data-cites="turing1952chemical gierer1972theory">(<a href="#ref-turing1952chemical" role="doc-biblioref">Turing 1952</a>; <a href="#ref-gierer1972theory" role="doc-biblioref">Gierer and Meinhardt 1972</a>)</span>.</p>
+<p>This session introduces reaction-diffusion PDEs on a line. We will discretize space with vectorized finite differences, advance in time with explicit Euler, and use Turing instability, steady states, Jacobians, and spatial modes to predict when spatial patterns should appear <span class="citation" data-cites="turing1952chemical gierer1972theory">(<a href="#ref-turing1952chemical" role="doc-biblioref">Turing 1952</a>; <a href="#ref-gierer1972theory" role="doc-biblioref">Gierer and Meinhardt 1972</a>)</span>.</p>
 <section id="from-networks-to-pdes" class="level2">
 <h2 class="anchored" data-anchor-id="from-networks-to-pdes">From Networks to PDEs</h2>
 <p>In the previous session on <strong>networks</strong>, you studied how local rules acting on nodes and edges can create large-scale spreading patterns.</p>
@@ -645,7 +645,7 @@ window.Quarto = {
 <p>We will build this session in layers.</p>
 <p>First, we start with the <strong>Gierer-Meinhardt model in 1D</strong>. This is the cleanest place to learn the PDE workflow: grid, Laplacian, Euler update, boundary conditions, and animation.</p>
 <p><a href="../../modules/pde-1d/gierer-meinhardt-1d.html" class="btn btn-primary">Gierer-Meinhardt 1D</a></p>
-<p>Then we ask the theoretical question: <strong>when should patterns appear at all?</strong> That is where Turing instability enters.</p>
+<p>Then we ask the theoretical question: <strong>when should patterns appear at all?</strong> That is where Turing instability enters, through steady states, Jacobians, spatial modes, and the mode matrices that define Turing space.</p>
 <p><a href="../../modules/pde-1d/turing-instability.html" class="btn btn-primary">Turing Instability</a></p>
 <p>Once the numerical and theoretical pieces are in place, package them in the assignment.</p>
 <p><a href="../../modules/pde-1d/assignment.html" class="btn btn-secondary">Assignment</a></p>
@@ -657,7 +657,7 @@ window.Quarto = {
 <li>Explain how boundary conditions affect a PDE solver.</li>
 <li>Simulate a reaction-diffusion system on an interval.</li>
 <li>Connect observed patterns with Turing instability.</li>
-<li>Predict unstable spatial modes on a finite domain.</li>
+<li>Use steady states, Jacobians, and Laplacian eigenmodes to predict unstable spatial modes on a finite domain.</li>
 </ul>
 </section>
 <section id="flow-of-this-session" class="level2">
@@ -665,7 +665,7 @@ window.Quarto = {
 <ol type="1">
 <li>Start in 1D and implement the Laplacian with centered differences.</li>
 <li>Add explicit Euler time stepping and boundary conditions.</li>
-<li>Study Turing instability and connect the theory to the patterns you see.</li>
+<li>Study Turing instability from the equilibrium, the Jacobian, and the mode matrices.</li>
 <li>Use the theory to predict unstable modes on a finite interval.</li>
 <li>Complete the 1D assignment.</li>
 </ol>
@@ -675,7 +675,7 @@ window.Quarto = {
 <p>Every page in this session follows the same numerical loop:</p>
 <ol type="1">
 <li>Create a spatial grid.</li>
-<li>Approximate the Laplacian with finite differences.</li>
+<li>Approximate the Laplacian with vectorized finite differences.</li>
 <li>Evaluate the reaction terms.</li>
 <li>Update the fields with Euler’s method.</li>
 <li>Enforce the boundary conditions.</li>
@@ -1204,7 +1204,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>This session introduces reaction-diffusion PDEs on a line. We will discretize space with finite differences, advance in time with explicit Euler, and use Turing instability to predict when spatial patterns should appear <span class="co">[</span><span class="ot">@turing1952chemical; @gierer1972theory</span><span class="co">]</span>.</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>This session introduces reaction-diffusion PDEs on a line. We will discretize space with vectorized finite differences, advance in time with explicit Euler, and use Turing instability, steady states, Jacobians, and spatial modes to predict when spatial patterns should appear <span class="co">[</span><span class="ot">@turing1952chemical; @gierer1972theory</span><span class="co">]</span>.</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## From Networks to PDEs</span></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
@@ -1228,7 +1228,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Gierer-Meinhardt 1D</span><span class="co">](gierer-meinhardt-1d.qmd)</span>{.btn .btn-primary}</span>
 <span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>Then we ask the theoretical question: **when should patterns appear at all?** That is where Turing instability enters.</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>Then we ask the theoretical question: **when should patterns appear at all?** That is where Turing instability enters, through steady states, Jacobians, spatial modes, and the mode matrices that define Turing space.</span>
 <span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Turing Instability</span><span class="co">](turing-instability.qmd)</span>{.btn .btn-primary}</span>
 <span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a></span>
@@ -1242,13 +1242,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Explain how boundary conditions affect a PDE solver.</span>
 <span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Simulate a reaction-diffusion system on an interval.</span>
 <span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Connect observed patterns with Turing instability.</span>
-<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Predict unstable spatial modes on a finite domain.</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Use steady states, Jacobians, and Laplacian eigenmodes to predict unstable spatial modes on a finite domain.</span>
 <span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a><span class="fu">## Flow of This Session</span></span>
 <span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Start in 1D and implement the Laplacian with centered differences.</span>
 <span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Add explicit Euler time stepping and boundary conditions.</span>
-<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Study Turing instability and connect the theory to the patterns you see.</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Study Turing instability from the equilibrium, the Jacobian, and the mode matrices.</span>
 <span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Use the theory to predict unstable modes on a finite interval.</span>
 <span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>Complete the 1D assignment.</span>
 <span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a></span>
@@ -1257,7 +1257,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>Every page in this session follows the same numerical loop:</span>
 <span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Create a spatial grid.</span>
-<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Approximate the Laplacian with finite differences.</span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Approximate the Laplacian with vectorized finite differences.</span>
 <span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Evaluate the reaction terms.</span>
 <span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Update the fields with Euler's method.</span>
 <span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>Enforce the boundary conditions.</span>
