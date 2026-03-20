@@ -62,6 +62,19 @@ def format_noise_equation(terms: tuple[tuple[str, int], ...]) -> str:
     return rf"\eta(x) = \frac{{1}}{{{len(pieces)}}}\left({joined}\right)"
 
 
+def format_initial_conditions_latex(terms: tuple[tuple[str, int], ...]) -> str:
+    """Return the perturbation and initial conditions as one LaTeX block."""
+    noise_equation = format_noise_equation(terms)
+    return rf"""
+\begin{{aligned}}
+{noise_equation} \\
+u(x, 0) &= u_* \left(1 + \varepsilon \eta(x)\right) \\
+v(x, 0) &= v_* \left(1 + \varepsilon \eta(x)\right) \\
+\varepsilon &= {PERTURBATION_AMPLITUDE:.2f}
+\end{{aligned}}
+"""
+
+
 def initialize_state(
     x: np.ndarray,
     a: float,
@@ -129,10 +142,28 @@ def simulate_gierer_meinhardt(
     return x, times, v_history
 
 
-def plot_profile(x: np.ndarray, values: np.ndarray, time_value: float) -> plt.Figure:
+def simulation_ylim(v_history: np.ndarray) -> tuple[float, float]:
+    """Return fixed y-limits based on the full stored simulation."""
+    y_min = float(np.min(v_history))
+    y_max = float(np.max(v_history))
+    span = y_max - y_min
+    if np.isclose(span, 0.0):
+        margin = max(0.05 * max(abs(y_max), 1.0), 1e-3)
+    else:
+        margin = 0.05 * span
+    return y_min - margin, y_max + margin
+
+
+def plot_profile(
+    x: np.ndarray,
+    values: np.ndarray,
+    time_value: float,
+    y_limits: tuple[float, float],
+) -> plt.Figure:
     """Plot the inhibitor profile at one stored time."""
     fig, ax = plt.subplots(figsize=(9, 4))
     ax.plot(x, values, color="#1f77b4", linewidth=2)
+    ax.set_ylim(*y_limits)
     ax.set_xlabel("x")
     ax.set_ylabel("v(x, t)")
     ax.set_title(f"Gierer-Meinhardt 1D, t = {time_value:.2f}")
@@ -237,11 +268,7 @@ def render_page() -> None:
     st.caption("The parameters b = 1 and gamma = 1 are fixed.")
     st.markdown("### Custom Perturbation")
     terms = render_term_controls()
-    st.latex(format_noise_equation(terms))
-    st.caption(
-        "The initial condition is u(x, 0) = u_* [1 + epsilon eta(x)] and "
-        "v(x, 0) = v_* [1 + epsilon eta(x)] with epsilon = 0.01."
-    )
+    st.latex(format_initial_conditions_latex(terms))
 
     if st.button("Start", type="primary"):
         with st.spinner("Running 1000 stored time steps..."):
@@ -276,6 +303,7 @@ def render_page() -> None:
             simulation["x"],
             simulation["v_history"][time_index],
             float(simulation["times"][time_index]),
+            simulation_ylim(simulation["v_history"]),
         )
         st.pyplot(figure)
         plt.close(figure)
