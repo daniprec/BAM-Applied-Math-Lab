@@ -4,6 +4,8 @@ Welcome to the Applied Math Lab! This repository contains the materials for the 
 
 You can see the [online version of the course materials here](https://daniprec.github.io/BAM-Applied-Math-Lab/).
 
+You can explore the hosted Streamlit app here: [bam-applied-math-lab.streamlit.app](https://bam-applied-math-lab.streamlit.app/).
+
 ## Repository Structure
 
 At a high level:
@@ -37,6 +39,7 @@ Brief explanation:
 - **modules/**: Guided learning modules written in Quarto (notes, explanations, exercises).
 - **references/**: External reference materials (e.g., NetworkX tutorial notebooks, datasets).
 - **streamlit/**: Streamlit app(s) used for interactive demonstrations and student exploration.
+- **Hosted Streamlit app**: [bam-applied-math-lab.streamlit.app](https://bam-applied-math-lab.streamlit.app/).
 - **tex/**: LaTeX assets and builds (style files, bibliography, generated PDFs/aux files).
 
 ## How to Use This Repository
@@ -92,6 +95,8 @@ quarto render modules/cellular-automata/cellular-1d.qmd
 ```
 
 ## Running Streamlit
+
+If you only want to explore the live app, use the hosted version: [bam-applied-math-lab.streamlit.app](https://bam-applied-math-lab.streamlit.app/).
 
 Some scripts in this repository use Streamlit, a library included in the `requirements.txt` file. When you run a script with Streamlit, you might see the following warning:
 
