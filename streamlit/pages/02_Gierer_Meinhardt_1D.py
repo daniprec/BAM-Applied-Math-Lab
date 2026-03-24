@@ -20,42 +20,36 @@ FINAL_TIME = 50.0
 BOUNDARY_CONDITION_DETAILS: dict[str, dict[str, Any]] = {
     "neumann": {
         "label": "Neumann",
-        "family": "cos",
         "formula": (
             r"\partial_x u(0,t)=\partial_x u(L,t)=0, "
             r"\quad \partial_x v(0,t)=\partial_x v(L,t)=0"
         ),
-        "mode_text": r"\cos\left(n\pi x / L\right), \quad n=0,1,2,\ldots",
         "summary": (
             "Zero-flux boundaries mirror the field at the endpoints, so peaks can sit "
-            "against the walls. The admissible spatial basis is purely cosine."
+            "against the walls. The perturbation builder below lets you test sine, cosine, "
+            "or random components even though the classical eigenmodes are cosine-based."
         ),
     },
     "dirichlet": {
         "label": "Dirichlet",
-        "family": "sin",
         "formula": r"u(0,t)=u(L,t)=u_*, \quad v(0,t)=v(L,t)=v_*",
-        "mode_text": r"\sin\left(n\pi x / L\right), \quad n=1,2,3,\ldots",
         "summary": (
             "Fixed boundaries pin both fields to the homogeneous steady state at x = 0 "
-            "and x = L. The admissible spatial basis is purely sine."
+            "and x = L. The perturbation builder below still lets you test sine, cosine, "
+            "or random components before the boundary values are imposed."
         ),
     },
     "periodic": {
         "label": "Periodic",
-        "family": None,
         "formula": (
             r"u(0,t)=u(L,t), \quad v(0,t)=v(L,t), "
             r"\quad \partial_x u(0,t)=\partial_x u(L,t), "
             r"\quad \partial_x v(0,t)=\partial_x v(L,t)"
         ),
-        "mode_text": (
-            r"\sin\left(2n\pi x / L\right), \ \cos\left(2n\pi x / L\right), "
-            r"\quad n=1,2,3,\ldots"
-        ),
         "summary": (
             "Periodic boundaries wrap the left and right endpoints together. Each unstable "
-            "mode number can appear as either a sine or a cosine profile."
+            "mode number can appear as either a sine or a cosine profile, and you can also "
+            "probe the dynamics with random perturbation components."
         ),
     },
 }
@@ -86,21 +80,20 @@ def boundary_label(boundary_condition: str) -> str:
 
 def default_term(boundary_condition: str) -> tuple[str, int]:
     """Return the default perturbation term for the selected boundary condition."""
-    forced_family = BOUNDARY_CONDITION_DETAILS[boundary_condition]["family"]
-    if forced_family is None:
-        return "cos", 1
-    return str(forced_family), 1
+    return "cos", 1
 
 
 def sanitize_terms(
     terms: tuple[tuple[str, int], ...], boundary_condition: str
 ) -> tuple[tuple[str, int], ...]:
-    """Coerce user-selected terms to the families allowed by the boundary condition."""
-    forced_family = BOUNDARY_CONDITION_DETAILS[boundary_condition]["family"]
+    """Coerce user-selected terms to supported perturbation families."""
     sanitized_terms: list[tuple[str, int]] = []
+    valid_families = {"sin", "cos", "random"}
 
     for family, mode in terms:
-        clean_family = str(forced_family) if forced_family is not None else str(family)
+        clean_family = str(family)
+        if clean_family not in valid_families:
+            clean_family = "cos"
         clean_mode = min(MAX_MODE_NUMBER, max(1, int(mode)))
         sanitized_terms.append((clean_family, clean_mode))
 
@@ -124,14 +117,34 @@ def evaluate_term(
     mode: int,
     boundary_condition: str,
 ) -> np.ndarray:
-    """Evaluate an admissible sine or cosine mode on the spatial grid."""
+    """Evaluate one perturbation component on the spatial grid."""
     multiplier = mode_multiplier(boundary_condition)
     argument = multiplier * mode * np.pi * x / length
     if family == "sin":
         return np.sin(argument)
     if family == "cos":
         return np.cos(argument)
-    raise ValueError("family must be either 'sin' or 'cos'.")
+    if family == "random":
+        boundary_offset = {"neumann": 1, "dirichlet": 2, "periodic": 3}[
+            boundary_condition
+        ]
+        seed = (
+            int(mode) * 7919
+            + boundary_offset * 104729
+            + x.size * 17
+            + int(round(length * 1000.0))
+        ) % (2**32)
+        generator = np.random.default_rng(seed)
+        profile = generator.standard_normal(x.size)
+        if boundary_condition == "periodic":
+            profile = profile - float(np.mean(profile))
+        else:
+            kernel_radius = max(1, int(mode))
+            kernel = np.ones(2 * kernel_radius + 1, dtype=float)
+            kernel /= np.sum(kernel)
+            profile = np.convolve(profile, kernel, mode="same")
+        return profile
+    raise ValueError("family must be one of 'sin', 'cos', or 'random'.")
 
 
 def build_noise_profile(
@@ -163,6 +176,8 @@ def build_noise_profile(
 
 def format_term_latex(family: str, mode: int, boundary_condition: str) -> str:
     """Return the LaTeX string for one trigonometric term."""
+    if family == "random":
+        return rf"\xi_{{{mode}}}(x)"
     multiplier = mode_multiplier(boundary_condition)
     if multiplier == 1:
         return rf"\{family}\left({mode}\pi x / L\right)"
@@ -497,27 +512,24 @@ def render_term_controls(boundary_condition: str) -> tuple[tuple[str, int], ...]
                 st.rerun()
 
     updated_terms: list[tuple[str, int]] = []
-    forced_family = BOUNDARY_CONDITION_DETAILS[boundary_condition]["family"]
     for index, (family_default, mode_default) in enumerate(terms):
         family_col, mode_col = st.columns([3, 2])
-        if forced_family is None:
-            with family_col:
-                family = st.selectbox(
-                    f"Function {index + 1}",
-                    options=["sin", "cos"],
-                    index=0 if family_default == "sin" else 1,
-                    key=f"gm_family_{index}",
-                )
-        else:
-            family = str(forced_family)
-            with family_col:
-                st.markdown(
-                    f"Function {index + 1}: {family} is enforced by the selected boundary condition."
-                )
+        with family_col:
+            family = st.selectbox(
+                f"Function {index + 1}",
+                options=["sin", "cos", "random"],
+                index=["sin", "cos", "random"].index(family_default),
+                key=f"gm_family_{index}",
+            )
         with mode_col:
+            mode_label = (
+                f"Random index n {index + 1}"
+                if family == "random"
+                else f"Mode number n {index + 1}"
+            )
             mode = int(
                 st.number_input(
-                    f"Mode number n {index + 1}",
+                    mode_label,
                     min_value=1,
                     max_value=MAX_MODE_NUMBER,
                     value=int(mode_default),
@@ -538,8 +550,22 @@ def render_boundary_condition_help(boundary_condition: str) -> None:
     st.markdown(f"### {details['label']} boundary condition")
     st.markdown(str(details["summary"]))
     st.latex(str(details["formula"]))
-    st.markdown("Expected basis functions:")
-    st.latex(str(details["mode_text"]))
+    if boundary_condition == "neumann":
+        st.markdown("Classical eigenmodes:")
+        st.latex(r"\cos\left(n\pi x / L\right), \quad n=0,1,2,3,\ldots")
+    elif boundary_condition == "dirichlet":
+        st.markdown("Classical eigenmodes:")
+        st.latex(r"\sin\left(n\pi x / L\right), \quad n=1,2,3,\ldots")
+    else:
+        st.markdown("Classical eigenmodes:")
+        st.latex(
+            r"\sin\left(2n\pi x / L\right), \ \cos\left(2n\pi x / L\right), "
+            r"\quad n=1,2,3,\ldots"
+        )
+    st.caption(
+        "The perturbation builder is intentionally more flexible than the linear eigenbasis, "
+        "so you can test off-basis or random initial data."
+    )
 
 
 def render_expected_modes(
@@ -559,8 +585,8 @@ def render_expected_modes(
             "Each mode number can appear as either a sine or a cosine profile."
         )
     else:
-        family = str(BOUNDARY_CONDITION_DETAILS[boundary_condition]["family"])
-        family_text = f"The expected shapes lie in the {family} family."
+        family = "cosine" if boundary_condition == "neumann" else "sine"
+        family_text = f"The classical unstable eigenmodes lie in the {family} family."
     st.success(
         f"Linear stability predicts the following dominant {boundary_label(boundary_condition)} "
         f"modes: n = {modes_text}. {family_text}"
@@ -619,9 +645,12 @@ def render_page() -> None:
     )
     st.markdown("### Custom Perturbation")
     st.markdown(
-        "The selected basis sum is recentered to zero mean and rescaled so its maximum absolute "
-        "value is 1 before the amplitude epsilon is applied. This keeps the perturbation size "
-        "consistent when you add more modes."
+        "Each summand can be sine, cosine, or random noise. The combined profile is recentered "
+        "to zero mean and rescaled so its maximum absolute value is 1 before the amplitude "
+        "epsilon is applied. This keeps the perturbation size consistent when you add more modes."
+    )
+    st.caption(
+        "For random terms, the value n selects a reproducible random profile and sets its smoothing scale."
     )
     terms = render_term_controls(boundary_condition)
     st.latex(format_initial_conditions_latex(terms, boundary_condition))
