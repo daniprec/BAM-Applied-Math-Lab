@@ -210,7 +210,76 @@ The same steady-state to Jacobian to mode-matrix pipeline from the Turing page s
 - For Neumann boundaries, the admissible wavenumbers use factors of $\pi / L$.
 - For periodic boundaries, the admissible wavenumbers use factors of $2\pi / L$.
 
-For the usual base state $(u, v) = (1, 0)$, the linearized system is damped, so the classical Turing calculation only becomes interesting at a nontrivial homogeneous equilibrium when one exists. In that regime, the mode matrices are built exactly as before, but with the periodic Laplacian eigenvalues. That is the clean conceptual bridge from Gierer-Meinhardt to Gray-Scott.
+For the usual base state $(u, v) = (1, 0)$, the linearized system is damped, so the classical Turing calculation only becomes interesting at a nontrivial homogeneous equilibrium when one exists.
+
+The nontrivial homogeneous equilibria satisfy $u_* v_* = f + k$, and one can show that
+
+$$
+u_* = \frac{1}{2}\left(1 \pm \sqrt{1 - \frac{4(f+k)^2}{f}}\right), \qquad v_* = \frac{f+k}{u_*},
+$$ {#eq-pde-gs-steady}
+
+whenever $1 - 4(f+k)^2/f \ge 0$. The Gray-Scott Jacobian at any homogeneous equilibrium is
+
+$$
+J_{\mathrm{GS}} =
+\begin{pmatrix}
+-v_*^2 - f & -2u_*v_* \\
+v_*^2 & 2u_*v_* - (f+k)
+\end{pmatrix}.
+$$ {#eq-pde-gs-jacobian}
+
+Implement both helpers and run the mode-matrix eigenvalue scan with the periodic spectrum to find unstable modes for a given $(f, k, d_1, d_2)$.
+
+```python
+import numpy as np
+
+def gray_scott_equilibria(f=0.040, k=0.060):
+    equilibria = [(1.0, 0.0)]
+    discriminant = 1 - 4 * (f + k) ** 2 / f
+
+    if discriminant >= 0:
+        root = np.sqrt(discriminant)
+        for sign in (+1, -1):
+            u_star = 0.5 * (1 + sign * root)
+            # TODO: append the nontrivial equilibrium if u_star > 0
+
+    return equilibria
+
+
+def gray_scott_jacobian(u_star, v_star, f=0.040, k=0.060):
+    # TODO: return the 2x2 Jacobian array
+    pass
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: Gray-Scott equilibria and Jacobian (click to expand)
+
+```python
+def gray_scott_equilibria(f=0.040, k=0.060):
+    equilibria = [(1.0, 0.0)]
+    discriminant = 1 - 4 * (f + k) ** 2 / f
+
+    if discriminant >= 0:
+        root = np.sqrt(discriminant)
+        for sign in (+1, -1):
+            u_star = 0.5 * (1 + sign * root)
+            if u_star > 0:
+                equilibria.append((u_star, (f + k) / u_star))
+
+    return equilibria
+
+
+def gray_scott_jacobian(u_star, v_star, f=0.040, k=0.060):
+    return np.array(
+        [
+            [-v_star**2 - f, -2 * u_star * v_star],
+            [v_star**2, 2 * u_star * v_star - (f + k)],
+        ]
+    )
+```
+:::
+
+Once both helpers work, reuse `find_unstable_modes_2d` from the Gierer-Meinhardt 2D page, swap in `gray_scott_jacobian`, and replace $\pi / L$ with $2\pi / L$ to get the periodic mode spectrum. That is the direct conceptual bridge from Gierer-Meinhardt to Gray-Scott [@gray1984autocatalytic; @pearson1993complex].
 
 ## Optional: 9-Point Stencil
 
