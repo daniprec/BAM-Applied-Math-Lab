@@ -91,7 +91,7 @@ quarto render
 or
 
 ```bash
-quarto render modules/cellular-automata/cellular-1d.qmd
+quarto render modules/discrete-models/cellular-1d.qmd
 ```
 
 ## Running Streamlit
