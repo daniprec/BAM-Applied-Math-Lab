@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.549">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Applied Math Lab - Gray-Scott Parameters</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../assets/styles.css">
+</head>
+
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">
+      Applied Math Lab
+      </li></ol></nav>
+        <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">Applied Math Lab</a> 
+    </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="false">
+ <span class="menu-text">Getting Started</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../syllabus.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Syllabus</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/low-dimensional-dynamics/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Module 1: Low-Dimensional Dynamics</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/what-is-a-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">What Is a Mathematical Model?</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/modeling-workflow.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Modelling Workflow</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/budworm-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Spruce Budworm Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/michaelis-menten.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Michaelis-Menten Kinetics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/compartmental-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Compartmental Models: SIR and SIS</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/cdima-phase-plane.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">CDIMA: Phase Plane</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/van-der-pol.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Van der Pol Oscillator</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/fitzhugh-nagumo.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FitzHugh-Nagumo Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/lorenz.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Lorenz Attractor</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/collective-behaviour/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Module 2: Synchronization and Collective Behaviour</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/synchronization-examples.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Synchronization in Nature</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/kuramoto-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Kuramoto Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/order-parameter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Order Parameter</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/millennium-bridge.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Millennium Bridge</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/vicsek-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Vicsek Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/couzin-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Couzin Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/practice-collective-motion.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Practice: Collective Motion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/randomness/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Module 3: Modelling with Randomness</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/random-walk.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Random Walk</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/diffusion-equation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Diffusion Equation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/central-limit-theorem.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Central Limit Theorem</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/power-laws.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Power Laws</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/efficient-markets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Returns and Efficient Markets</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/returns-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Loading Prices and Computing Returns</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/pattern-formation/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Module 4: Space and Pattern Formation</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/reaction-diffusion.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reaction-Diffusion Equations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/turing-conditions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Turing Conditions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/gierer-meinhardt-1d-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gierer-Meinhardt Model in 1D</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/gierer-meinhardt-2d-solver.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gierer-Meinhardt Solver in 2D</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/gray-scott.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gray-Scott Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/assignment-patterns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Assignment: Pattern Formation</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/networks/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Module 5: Complex Networks</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/network-concepts.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Network Concepts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/networkx-basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">NetworkX Basics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/iberian-blackout.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Iberian Blackout</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/erdos-renyi.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Erdos-Renyi Random Graphs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/sis-network-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SIS Model on Networks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/sir-network.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SIR on Networks</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/discrete-models/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Module 6: Explorables and Discrete Models</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/explorables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Explorables Presentations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/cellular-automata.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cellular Automata</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/cellular-1d.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1D Cellular Automata</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/game-of-life.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Game of Life</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/nagel-schreckenberg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Nagel-Schreckenberg Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/traffic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Traffic Model</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../slide-library.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Slide Library</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#five-parameter-sets" id="toc-five-parameter-sets" class="nav-link active" data-scroll-target="#five-parameter-sets">Five Parameter Sets</a></li>
+  <li><a href="#connection-back-to-turing-analysis" id="toc-connection-back-to-turing-analysis" class="nav-link" data-scroll-target="#connection-back-to-turing-analysis">Connection Back to Turing Analysis</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/pattern-formation/gray-scott-parameters.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">Gray-Scott Parameters</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+<p class="subtitle lead">Module 4: Space and Pattern Formation</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>The feed rate <span class="math inline">\(f\)</span> and kill rate <span class="math inline">\(k\)</span> decide what the Gray-Scott solver produces. <span class="citation" data-cites="pearson1993complex">Pearson (<a href="#ref-pearson1993complex" role="doc-biblioref">1993</a>)</span> mapped this <span class="math inline">\((f, k)\)</span> plane with forward Euler on a periodic <span class="math inline">\(256 \times 256\)</span> grid of physical size <span class="math inline">\(2.5 \times 2.5\)</span>, time step <span class="math inline">\(1\)</span>, and diffusion coefficients <span class="math inline">\(d_1 = 2 \times 10^{-5}\)</span>, <span class="math inline">\(d_2 = 10^{-5}\)</span>. He started from <span class="math inline">\((1, 0)\)</span> with a central <span class="math inline">\(20 \times 20\)</span> square set to <span class="math inline">\((1/2, 1/4)\)</span> plus 1% noise. The course values <span class="math inline">\(d_1 = 0.1\)</span>, <span class="math inline">\(d_2 = 0.05\)</span> in grid units (<span class="math inline">\(dx = 1\)</span>) keep his ratio <span class="math inline">\(d_1/d_2 = 2\)</span> but are not the same scaling, so compare patterns qualitatively.</p>
+<p><span class="citation" data-cites="pearson1993complex">Pearson (<a href="#ref-pearson1993complex" role="doc-biblioref">1993</a>)</span> also reports three facts about the kinetics that you should keep in mind:</p>
+<ul>
+<li>The trivial state <span class="math inline">\((1, 0)\)</span> is linearly stable for all positive <span class="math inline">\(f\)</span> and <span class="math inline">\(k\)</span>.</li>
+<li>The patterns arise from finite-amplitude perturbations, not from a small-amplitude instability.</li>
+<li>With <span class="math inline">\(d_1/d_2 = 2\)</span>, Turing patterns occur only in a narrow region near <span class="math inline">\(f = k = 0.0625\)</span>.</li>
+</ul>
+<section id="five-parameter-sets" class="level2">
+<h2 class="anchored" data-anchor-id="five-parameter-sets">Five Parameter Sets</h2>
+<p>Use <span class="math inline">\(d_1 = 0.1\)</span> and <span class="math inline">\(d_2 = 0.05\)</span>:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Type</th>
+<th><span class="math inline">\(f\)</span></th>
+<th><span class="math inline">\(k\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>A</td>
+<td>0.040</td>
+<td>0.060</td>
+</tr>
+<tr class="even">
+<td>B</td>
+<td>0.014</td>
+<td>0.047</td>
+</tr>
+<tr class="odd">
+<td>C</td>
+<td>0.062</td>
+<td>0.065</td>
+</tr>
+<tr class="even">
+<td>D</td>
+<td>0.078</td>
+<td>0.061</td>
+</tr>
+<tr class="odd">
+<td>E</td>
+<td>0.082</td>
+<td>0.059</td>
+</tr>
+</tbody>
+</table>
+<div id="cell-fig-gsp-types" class="cell" data-fig-height="2.4" data-fig-width="10" data-execution_count="1">
+<div class="cell-output cell-output-display">
+<div id="fig-gsp-types" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-gsp-types-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="gray-scott-parameters_files/figure-html/fig-gsp-types-output-1.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-gsp-types-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: <span class="math inline">\(v(x, y)\)</span> at <span class="math inline">\(t = 6000\)</span> for the five types, on a periodic <span class="math inline">\(96 \times 96\)</span> grid, <span class="math inline">\(dx = 1\)</span>, <span class="math inline">\(dt = 2\)</span>, starting from one noisy square. On this small grid and time window, Type B decays back to <span class="math inline">\((1, 0)\)</span>.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Run each set longer and on the full <span class="math inline">\(250 \times 250\)</span> grid of the assignment. Which sets give isolated spots, which give stripes or labyrinths, and which fill the domain with a moving front?</p>
+</section>
+<section id="connection-back-to-turing-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="connection-back-to-turing-analysis">Connection Back to Turing Analysis</h2>
+<p>The steady-state, Jacobian, and mode-matrix pipeline from <a href="../../modules/pattern-formation/turing-numerics.html">Turing Numerics</a> still applies. Only the spectrum changes: with periodic boundaries the wavenumbers are <span class="math inline">\(2\pi n/L\)</span>.</p>
+<p>The trivial state <span class="math inline">\((u, v) = (1, 0)\)</span> has Jacobian <span class="math inline">\(\operatorname{diag}(-f, -(f+k))\)</span>, so it is linearly stable for every mode. The patterns in <a href="#fig-gsp-types" class="quarto-xref">Figure&nbsp;1</a> therefore start from the finite-amplitude square, not from a Turing instability of <span class="math inline">\((1, 0)\)</span> <span class="citation" data-cites="pearson1993complex">(<a href="#ref-pearson1993complex" role="doc-biblioref">Pearson 1993</a>)</span>. Most of Pearson’s patterns occur where no nontrivial uniform state exists at all.</p>
+<p>The nontrivial homogeneous equilibria satisfy <span class="math inline">\(u_* v_* = f + k\)</span>. Substituting into <span class="math inline">\(u_* v_*^2 = f(1 - u_*)\)</span> gives</p>
+<p><span id="eq-gsp-steady"><span class="math display">\[
+u_* = \frac{1}{2}\left(1 \pm \sqrt{1 - \frac{4(f+k)^2}{f}}\right), \qquad v_* = \frac{f+k}{u_*},
+\tag{1}\]</span></span></p>
+<p>which exist when <span class="math inline">\(4(f+k)^2 \le f\)</span>. The Jacobian at any homogeneous equilibrium is</p>
+<p><span id="eq-gsp-jacobian"><span class="math display">\[
+J_{\mathrm{GS}} =
+\begin{pmatrix}
+-v_*^2 - f &amp; -2u_*v_* \\
+v_*^2 &amp; 2u_*v_* - (f+k)
+\end{pmatrix}.
+\tag{2}\]</span></span></p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Exercise
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Implement both helpers. Keep only equilibria with <span class="math inline">\(u_* &gt; 0\)</span>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gray_scott_equilibria(f<span class="op">=</span><span class="fl">0.040</span>, k<span class="op">=</span><span class="fl">0.060</span>):</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    equilibria <span class="op">=</span> [(<span class="fl">1.0</span>, <span class="fl">0.0</span>)]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    discriminant <span class="op">=</span> <span class="dv">1</span> <span class="op">-</span> <span class="dv">4</span> <span class="op">*</span> (f <span class="op">+</span> k) <span class="op">**</span> <span class="dv">2</span> <span class="op">/</span> f</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> discriminant <span class="op">&gt;=</span> <span class="dv">0</span>:</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        root <span class="op">=</span> np.sqrt(discriminant)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> sign <span class="kw">in</span> (<span class="op">+</span><span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>):</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>            u_star <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">+</span> sign <span class="op">*</span> root)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>            <span class="co"># </span><span class="al">TODO</span><span class="co">: append the nontrivial equilibrium (u_star, v_star)</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> equilibria</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gray_scott_jacobian(u_star, v_star, f<span class="op">=</span><span class="fl">0.040</span>, k<span class="op">=</span><span class="fl">0.060</span>):</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: return the 2x2 Jacobian array</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">pass</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gray_scott_equilibria(f<span class="op">=</span><span class="fl">0.040</span>, k<span class="op">=</span><span class="fl">0.060</span>):</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    equilibria <span class="op">=</span> [(<span class="fl">1.0</span>, <span class="fl">0.0</span>)]</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    discriminant <span class="op">=</span> <span class="dv">1</span> <span class="op">-</span> <span class="dv">4</span> <span class="op">*</span> (f <span class="op">+</span> k) <span class="op">**</span> <span class="dv">2</span> <span class="op">/</span> f</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> discriminant <span class="op">&gt;=</span> <span class="dv">0</span>:</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>        root <span class="op">=</span> np.sqrt(discriminant)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> sign <span class="kw">in</span> (<span class="op">+</span><span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>):</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>            u_star <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">+</span> sign <span class="op">*</span> root)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> u_star <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                equilibria.append((u_star, (f <span class="op">+</span> k) <span class="op">/</span> u_star))</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> equilibria</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gray_scott_jacobian(u_star, v_star, f<span class="op">=</span><span class="fl">0.040</span>, k<span class="op">=</span><span class="fl">0.060</span>):</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array(</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>        [</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>            [<span class="op">-</span>v_star<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> f, <span class="op">-</span><span class="dv">2</span> <span class="op">*</span> u_star <span class="op">*</span> v_star],</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>            [v_star<span class="op">**</span><span class="dv">2</span>, <span class="dv">2</span> <span class="op">*</span> u_star <span class="op">*</span> v_star <span class="op">-</span> (f <span class="op">+</span> k)],</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Exercise
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For Type A (<span class="math inline">\(f = 0.040\)</span>, <span class="math inline">\(k = 0.060\)</span>), do nontrivial equilibria exist? What about Type C?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Type A: <span class="math inline">\(4(f+k)^2/f = 4 \cdot 0.01 / 0.04 = 1\)</span>, so the discriminant is <span class="math inline">\(0\)</span> and the two nontrivial equilibria merge at <span class="math inline">\(u_* = 0.5\)</span>, <span class="math inline">\(v_* = 0.2\)</span>, a saddle-node point. In floating point the discriminant comes out as about <span class="math inline">\(-2 \times 10^{-16}\)</span>, so the code above returns only <span class="math inline">\((1, 0)\)</span>. Type C: <span class="math inline">\(4 \cdot 0.127^2 / 0.062 \approx 1.04 &gt; 1\)</span>, so only <span class="math inline">\((1, 0)\)</span> exists. In both cases the pattern cannot come from a Turing instability of a nontrivial uniform state that is stable without diffusion.</p>
+</div>
+</div>
+</div>
+<p>Once both helpers work, reuse <code>find_unstable_modes_2d</code> from <a href="../../modules/pattern-formation/gierer-meinhardt-2d-modes.html">Unstable Modes in 2D</a>. Swap in <code>gray_scott_jacobian</code>, use <span class="math inline">\(D = \operatorname{diag}(d_1, d_2)\)</span> with no <span class="math inline">\(\gamma\)</span>, and replace <span class="math inline">\(\pi/L\)</span> by <span class="math inline">\(2\pi/L\)</span> for the periodic spectrum.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Exercise
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Type D (<span class="math inline">\(f = 0.078\)</span>, <span class="math inline">\(k = 0.061\)</span>) has nontrivial equilibria. List them, compute <span class="math inline">\(\operatorname{tr} J\)</span> and <span class="math inline">\(\det J\)</span> at each one, and scan the periodic modes on <span class="math inline">\(L = 250\)</span> with <span class="math inline">\(d_1 = 0.1\)</span>, <span class="math inline">\(d_2 = 0.05\)</span>. Is any of them Turing unstable?</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_unstable_modes_gs(u_star, v_star, f, k, d1<span class="op">=</span><span class="fl">0.1</span>, d2<span class="op">=</span><span class="fl">0.05</span>, length<span class="op">=</span><span class="fl">250.0</span>, num_modes<span class="op">=</span><span class="dv">60</span>):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> gray_scott_jacobian(u_star, v_star, f, k)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    diffusion <span class="op">=</span> np.diag([d1, d2])</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    unstable_modes <span class="op">=</span> []</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: loop over (n, m), including (0, 0), with k2 = (2 pi / L)**2 (n**2 + m**2)</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: store ((n, m), growth_rate) when the growth rate is positive</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> unstable_modes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>There are three equilibria. <span class="math inline">\((1, 0)\)</span> is stable, with <span class="math inline">\(\det J &gt; 0\)</span> and <span class="math inline">\(\operatorname{tr} J &lt; 0\)</span>, and no mode grows. The upper state <span class="math inline">\(u_* \approx 0.548\)</span>, <span class="math inline">\(v_* \approx 0.254\)</span> has <span class="math inline">\(\det J &lt; 0\)</span>: it is a saddle, unstable already without diffusion, so the flat mode <span class="math inline">\((0, 0)\)</span> grows too. The lower state <span class="math inline">\(u_* \approx 0.452\)</span>, <span class="math inline">\(v_* \approx 0.307\)</span> is stable without diffusion and no mode grows for <span class="math inline">\(d_1/d_2 = 2\)</span>. So none of them shows a Turing instability, in line with <span class="citation" data-cites="pearson1993complex">Pearson (<a href="#ref-pearson1993complex" role="doc-biblioref">1993</a>)</span>.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_unstable_modes_gs(u_star, v_star, f, k, d1<span class="op">=</span><span class="fl">0.1</span>, d2<span class="op">=</span><span class="fl">0.05</span>, length<span class="op">=</span><span class="fl">250.0</span>, num_modes<span class="op">=</span><span class="dv">60</span>):</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> gray_scott_jacobian(u_star, v_star, f, k)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    diffusion <span class="op">=</span> np.diag([d1, d2])</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    unstable_modes <span class="op">=</span> []</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> n <span class="kw">in</span> <span class="bu">range</span>(num_modes):</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> m <span class="kw">in</span> <span class="bu">range</span>(num_modes):</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>            k2 <span class="op">=</span> (<span class="dv">2</span> <span class="op">*</span> np.pi <span class="op">/</span> length) <span class="op">**</span> <span class="dv">2</span> <span class="op">*</span> (n<span class="op">**</span><span class="dv">2</span> <span class="op">+</span> m<span class="op">**</span><span class="dv">2</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>            growth_rate <span class="op">=</span> np.<span class="bu">max</span>(np.linalg.eigvals(jac <span class="op">-</span> k2 <span class="op">*</span> diffusion).real)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> growth_rate <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>                unstable_modes.append(((n, m), growth_rate))</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    unstable_modes.sort(key<span class="op">=</span><span class="kw">lambda</span> item: item[<span class="dv">1</span>], reverse<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> unstable_modes</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>f, k <span class="op">=</span> <span class="fl">0.078</span>, <span class="fl">0.061</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> u_star, v_star <span class="kw">in</span> gray_scott_equilibria(f, k):</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> gray_scott_jacobian(u_star, v_star, f, k)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    modes <span class="op">=</span> find_unstable_modes_gs(u_star, v_star, f, k)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"(</span><span class="sc">{</span>u_star<span class="sc">:.3f}</span><span class="ss">, </span><span class="sc">{</span>v_star<span class="sc">:.3f}</span><span class="ss">)  tr = </span><span class="sc">{</span>np<span class="sc">.</span>trace(jac)<span class="sc">:.4f}</span><span class="ss">  det = </span><span class="sc">{</span>np<span class="sc">.</span>linalg<span class="sc">.</span>det(jac)<span class="sc">:.5f}</span><span class="ss">  unstable modes: </span><span class="sc">{</span><span class="bu">len</span>(modes)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+<p>Next: <a href="../../modules/pattern-formation/gray-scott-art.html">Gray-Scott: Interaction</a>.</p>
+
+
+<!-- -->
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-pearson1993complex" class="csl-entry" role="listitem">
+Pearson, John E. 1993. <span>“Complex Patterns in a Simple System.”</span> <em>Science</em> 261 (5118): 189–92. <a href="https://doi.org/10.1126/science.261.5118.189">https://doi.org/10.1126/science.261.5118.189</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb5" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Gray-Scott Parameters"</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Module 4: Space and Pattern Formation"</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>The feed rate $f$ and kill rate $k$ decide what the Gray-Scott solver produces. @pearson1993complex mapped this $(f, k)$ plane with forward Euler on a periodic $256 \times 256$ grid of physical size $2.5 \times 2.5$, time step $1$, and diffusion coefficients $d_1 = 2 \times 10^{-5}$, $d_2 = 10^{-5}$. He started from $(1, 0)$ with a central $20 \times 20$ square set to $(1/2, 1/4)$ plus 1% noise. The course values $d_1 = 0.1$, $d_2 = 0.05$ in grid units ($dx = 1$) keep his ratio $d_1/d_2 = 2$ but are not the same scaling, so compare patterns qualitatively.</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>@pearson1993complex also reports three facts about the kinetics that you should keep in mind:</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The trivial state $(1, 0)$ is linearly stable for all positive $f$ and $k$.</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The patterns arise from finite-amplitude perturbations, not from a small-amplitude instability.</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>With $d_1/d_2 = 2$, Turing patterns occur only in a narrow region near $f = k = 0.0625$.</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="fu">## Five Parameter Sets</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>Use $d_1 = 0.1$ and $d_2 = 0.05$:</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>| Type | $f$ | $k$ |</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>|---|---|---|</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>| A | 0.040 | 0.060 |</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>| B | 0.014 | 0.047 |</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>| C | 0.062 | 0.065 |</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>| D | 0.078 | 0.061 |</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>| E | 0.082 | 0.059 |</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-gsp-types</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: '$v(x, y)$ at $t = 6000$ for the five types, on a periodic $96 \times 96$ grid, $dx = 1$, $dt = 2$, starting from one noisy square. On this small grid and time window, Type B decays back to $(1, 0)$.'</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 10</span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 2.4</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.pdes_2d.gray_scott <span class="im">import</span> gray_scott_pde</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>sets <span class="op">=</span> {<span class="st">"A"</span>: (<span class="fl">0.040</span>, <span class="fl">0.060</span>), <span class="st">"B"</span>: (<span class="fl">0.014</span>, <span class="fl">0.047</span>), <span class="st">"C"</span>: (<span class="fl">0.062</span>, <span class="fl">0.065</span>), <span class="st">"D"</span>: (<span class="fl">0.078</span>, <span class="fl">0.061</span>), <span class="st">"E"</span>: (<span class="fl">0.082</span>, <span class="fl">0.059</span>)}</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">5</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="fl">2.4</span>))</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, (label, (f, k)) <span class="kw">in</span> <span class="bu">zip</span>(axs, sets.items()):</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>    n, r <span class="op">=</span> <span class="dv">96</span>, <span class="dv">8</span></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.default_rng(<span class="dv">0</span>)</span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>    uv <span class="op">=</span> np.ones((<span class="dv">2</span>, n, n))</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>    uv[<span class="dv">1</span>] <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>    c <span class="op">=</span> n <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>    uv[:, c <span class="op">-</span> r : c <span class="op">+</span> r, c <span class="op">-</span> r : c <span class="op">+</span> r] <span class="op">=</span> <span class="fl">0.5</span></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>    uv[:, c <span class="op">-</span> r : c <span class="op">+</span> r, c <span class="op">-</span> r : c <span class="op">+</span> r] <span class="op">*=</span> <span class="dv">1</span> <span class="op">+</span> <span class="fl">0.1</span> <span class="op">*</span> rng.standard_normal((<span class="dv">2</span>, <span class="dv">2</span> <span class="op">*</span> r, <span class="dv">2</span> <span class="op">*</span> r))</span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3000</span>):</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>        uv <span class="op">=</span> uv <span class="op">+</span> <span class="fl">2.0</span> <span class="op">*</span> gray_scott_pde(<span class="dv">0</span>, uv, d1<span class="op">=</span><span class="fl">0.1</span>, d2<span class="op">=</span><span class="fl">0.05</span>, f<span class="op">=</span>f, k<span class="op">=</span>k)</span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>    ax.imshow(uv[<span class="dv">1</span>], cmap<span class="op">=</span><span class="st">"viridis"</span>, vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="ss">f"</span><span class="sc">{</span>label<span class="sc">}</span><span class="ss">: f=</span><span class="sc">{</span>f<span class="sc">}</span><span class="ss">, k=</span><span class="sc">{</span>k<span class="sc">}</span><span class="ss">"</span>, fontsize<span class="op">=</span><span class="dv">8</span>)</span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>    ax.axis(<span class="st">"off"</span>)</span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>plt.close()</span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>Run each set longer and on the full $250 \times 250$ grid of the assignment. Which sets give isolated spots, which give stripes or labyrinths, and which fill the domain with a moving front?</span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a><span class="fu">## Connection Back to Turing Analysis</span></span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a>The steady-state, Jacobian, and mode-matrix pipeline from <span class="co">[</span><span class="ot">Turing Numerics</span><span class="co">](turing-numerics.qmd)</span> still applies. Only the spectrum changes: with periodic boundaries the wavenumbers are $2\pi n/L$.</span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a>The trivial state $(u, v) = (1, 0)$ has Jacobian $\operatorname{diag}(-f, -(f+k))$, so it is linearly stable for every mode. The patterns in @fig-gsp-types therefore start from the finite-amplitude square, not from a Turing instability of $(1, 0)$ <span class="co">[</span><span class="ot">@pearson1993complex</span><span class="co">]</span>. Most of Pearson's patterns occur where no nontrivial uniform state exists at all.</span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>The nontrivial homogeneous equilibria satisfy $u_* v_* = f + k$. Substituting into $u_* v_*^2 = f(1 - u_*)$ gives</span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a>u_* = \frac{1}{2}\left(1 \pm \sqrt{1 - \frac{4(f+k)^2}{f}}\right), \qquad v_* = \frac{f+k}{u_*},</span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a>$$ {#eq-gsp-steady}</span>
+<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a>which exist when $4(f+k)^2 \le f$. The Jacobian at any homogeneous equilibrium is</span>
+<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a>J_{\mathrm{GS}} =</span>
+<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a>\begin{pmatrix}</span>
+<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a>-v_*^2 - f &amp; -2u_*v_* <span class="sc">\\</span></span>
+<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a>v_*^2 &amp; 2u_*v_* - (f+k)</span>
+<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a>\end{pmatrix}.</span>
+<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a>$$ {#eq-gsp-jacobian}</span>
+<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercise</span></span>
+<span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a>Implement both helpers. Keep only equilibria with $u_* &gt; 0$.</span>
+<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-90"><a href="#cb5-90" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb5-91"><a href="#cb5-91" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb5-92"><a href="#cb5-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-93"><a href="#cb5-93" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gray_scott_equilibria(f<span class="op">=</span><span class="fl">0.040</span>, k<span class="op">=</span><span class="fl">0.060</span>):</span>
+<span id="cb5-94"><a href="#cb5-94" aria-hidden="true" tabindex="-1"></a>    equilibria <span class="op">=</span> [(<span class="fl">1.0</span>, <span class="fl">0.0</span>)]</span>
+<span id="cb5-95"><a href="#cb5-95" aria-hidden="true" tabindex="-1"></a>    discriminant <span class="op">=</span> <span class="dv">1</span> <span class="op">-</span> <span class="dv">4</span> <span class="op">*</span> (f <span class="op">+</span> k) <span class="op">**</span> <span class="dv">2</span> <span class="op">/</span> f</span>
+<span id="cb5-96"><a href="#cb5-96" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> discriminant <span class="op">&gt;=</span> <span class="dv">0</span>:</span>
+<span id="cb5-97"><a href="#cb5-97" aria-hidden="true" tabindex="-1"></a>        root <span class="op">=</span> np.sqrt(discriminant)</span>
+<span id="cb5-98"><a href="#cb5-98" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> sign <span class="kw">in</span> (<span class="op">+</span><span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>):</span>
+<span id="cb5-99"><a href="#cb5-99" aria-hidden="true" tabindex="-1"></a>            u_star <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">+</span> sign <span class="op">*</span> root)</span>
+<span id="cb5-100"><a href="#cb5-100" aria-hidden="true" tabindex="-1"></a>            <span class="co"># </span><span class="al">TODO</span><span class="co">: append the nontrivial equilibrium (u_star, v_star)</span></span>
+<span id="cb5-101"><a href="#cb5-101" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> equilibria</span>
+<span id="cb5-102"><a href="#cb5-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-103"><a href="#cb5-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-104"><a href="#cb5-104" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gray_scott_jacobian(u_star, v_star, f<span class="op">=</span><span class="fl">0.040</span>, k<span class="op">=</span><span class="fl">0.060</span>):</span>
+<span id="cb5-105"><a href="#cb5-105" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: return the 2x2 Jacobian array</span></span>
+<span id="cb5-106"><a href="#cb5-106" aria-hidden="true" tabindex="-1"></a>    <span class="cf">pass</span></span>
+<span id="cb5-107"><a href="#cb5-107" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-108"><a href="#cb5-108" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb5-109"><a href="#cb5-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-110"><a href="#cb5-110" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb5-111"><a href="#cb5-111" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solution</span></span>
+<span id="cb5-112"><a href="#cb5-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-113"><a href="#cb5-113" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb5-114"><a href="#cb5-114" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gray_scott_equilibria(f<span class="op">=</span><span class="fl">0.040</span>, k<span class="op">=</span><span class="fl">0.060</span>):</span>
+<span id="cb5-115"><a href="#cb5-115" aria-hidden="true" tabindex="-1"></a>    equilibria <span class="op">=</span> [(<span class="fl">1.0</span>, <span class="fl">0.0</span>)]</span>
+<span id="cb5-116"><a href="#cb5-116" aria-hidden="true" tabindex="-1"></a>    discriminant <span class="op">=</span> <span class="dv">1</span> <span class="op">-</span> <span class="dv">4</span> <span class="op">*</span> (f <span class="op">+</span> k) <span class="op">**</span> <span class="dv">2</span> <span class="op">/</span> f</span>
+<span id="cb5-117"><a href="#cb5-117" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> discriminant <span class="op">&gt;=</span> <span class="dv">0</span>:</span>
+<span id="cb5-118"><a href="#cb5-118" aria-hidden="true" tabindex="-1"></a>        root <span class="op">=</span> np.sqrt(discriminant)</span>
+<span id="cb5-119"><a href="#cb5-119" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> sign <span class="kw">in</span> (<span class="op">+</span><span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>):</span>
+<span id="cb5-120"><a href="#cb5-120" aria-hidden="true" tabindex="-1"></a>            u_star <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> (<span class="dv">1</span> <span class="op">+</span> sign <span class="op">*</span> root)</span>
+<span id="cb5-121"><a href="#cb5-121" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> u_star <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb5-122"><a href="#cb5-122" aria-hidden="true" tabindex="-1"></a>                equilibria.append((u_star, (f <span class="op">+</span> k) <span class="op">/</span> u_star))</span>
+<span id="cb5-123"><a href="#cb5-123" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> equilibria</span>
+<span id="cb5-124"><a href="#cb5-124" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-125"><a href="#cb5-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-126"><a href="#cb5-126" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gray_scott_jacobian(u_star, v_star, f<span class="op">=</span><span class="fl">0.040</span>, k<span class="op">=</span><span class="fl">0.060</span>):</span>
+<span id="cb5-127"><a href="#cb5-127" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array(</span>
+<span id="cb5-128"><a href="#cb5-128" aria-hidden="true" tabindex="-1"></a>        [</span>
+<span id="cb5-129"><a href="#cb5-129" aria-hidden="true" tabindex="-1"></a>            [<span class="op">-</span>v_star<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> f, <span class="op">-</span><span class="dv">2</span> <span class="op">*</span> u_star <span class="op">*</span> v_star],</span>
+<span id="cb5-130"><a href="#cb5-130" aria-hidden="true" tabindex="-1"></a>            [v_star<span class="op">**</span><span class="dv">2</span>, <span class="dv">2</span> <span class="op">*</span> u_star <span class="op">*</span> v_star <span class="op">-</span> (f <span class="op">+</span> k)],</span>
+<span id="cb5-131"><a href="#cb5-131" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb5-132"><a href="#cb5-132" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-133"><a href="#cb5-133" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-134"><a href="#cb5-134" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb5-135"><a href="#cb5-135" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-136"><a href="#cb5-136" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb5-137"><a href="#cb5-137" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercise</span></span>
+<span id="cb5-138"><a href="#cb5-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-139"><a href="#cb5-139" aria-hidden="true" tabindex="-1"></a>For Type A ($f = 0.040$, $k = 0.060$), do nontrivial equilibria exist? What about Type C?</span>
+<span id="cb5-140"><a href="#cb5-140" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb5-141"><a href="#cb5-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-142"><a href="#cb5-142" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb5-143"><a href="#cb5-143" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solution</span></span>
+<span id="cb5-144"><a href="#cb5-144" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-145"><a href="#cb5-145" aria-hidden="true" tabindex="-1"></a>Type A: $4(f+k)^2/f = 4 \cdot 0.01 / 0.04 = 1$, so the discriminant is $0$ and the two nontrivial equilibria merge at $u_* = 0.5$, $v_* = 0.2$, a saddle-node point. In floating point the discriminant comes out as about $-2 \times 10^{-16}$, so the code above returns only $(1, 0)$. Type C: $4 \cdot 0.127^2 / 0.062 \approx 1.04 &gt; 1$, so only $(1, 0)$ exists. In both cases the pattern cannot come from a Turing instability of a nontrivial uniform state that is stable without diffusion.</span>
+<span id="cb5-146"><a href="#cb5-146" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb5-147"><a href="#cb5-147" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-148"><a href="#cb5-148" aria-hidden="true" tabindex="-1"></a>Once both helpers work, reuse <span class="in">`find_unstable_modes_2d`</span> from <span class="co">[</span><span class="ot">Unstable Modes in 2D</span><span class="co">](gierer-meinhardt-2d-modes.qmd)</span>. Swap in <span class="in">`gray_scott_jacobian`</span>, use $D = \operatorname{diag}(d_1, d_2)$ with no $\gamma$, and replace $\pi/L$ by $2\pi/L$ for the periodic spectrum.</span>
+<span id="cb5-149"><a href="#cb5-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-150"><a href="#cb5-150" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb5-151"><a href="#cb5-151" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercise</span></span>
+<span id="cb5-152"><a href="#cb5-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-153"><a href="#cb5-153" aria-hidden="true" tabindex="-1"></a>Type D ($f = 0.078$, $k = 0.061$) has nontrivial equilibria. List them, compute $\operatorname{tr} J$ and $\det J$ at each one, and scan the periodic modes on $L = 250$ with $d_1 = 0.1$, $d_2 = 0.05$. Is any of them Turing unstable?</span>
+<span id="cb5-154"><a href="#cb5-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-155"><a href="#cb5-155" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb5-156"><a href="#cb5-156" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_unstable_modes_gs(u_star, v_star, f, k, d1<span class="op">=</span><span class="fl">0.1</span>, d2<span class="op">=</span><span class="fl">0.05</span>, length<span class="op">=</span><span class="fl">250.0</span>, num_modes<span class="op">=</span><span class="dv">60</span>):</span>
+<span id="cb5-157"><a href="#cb5-157" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> gray_scott_jacobian(u_star, v_star, f, k)</span>
+<span id="cb5-158"><a href="#cb5-158" aria-hidden="true" tabindex="-1"></a>    diffusion <span class="op">=</span> np.diag([d1, d2])</span>
+<span id="cb5-159"><a href="#cb5-159" aria-hidden="true" tabindex="-1"></a>    unstable_modes <span class="op">=</span> []</span>
+<span id="cb5-160"><a href="#cb5-160" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: loop over (n, m), including (0, 0), with k2 = (2 pi / L)**2 (n**2 + m**2)</span></span>
+<span id="cb5-161"><a href="#cb5-161" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">TODO</span><span class="co">: store ((n, m), growth_rate) when the growth rate is positive</span></span>
+<span id="cb5-162"><a href="#cb5-162" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> unstable_modes</span>
+<span id="cb5-163"><a href="#cb5-163" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-164"><a href="#cb5-164" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb5-165"><a href="#cb5-165" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-166"><a href="#cb5-166" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb5-167"><a href="#cb5-167" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solution</span></span>
+<span id="cb5-168"><a href="#cb5-168" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-169"><a href="#cb5-169" aria-hidden="true" tabindex="-1"></a>There are three equilibria. $(1, 0)$ is stable, with $\det J &gt; 0$ and $\operatorname{tr} J &lt; 0$, and no mode grows. The upper state $u_* \approx 0.548$, $v_* \approx 0.254$ has $\det J &lt; 0$: it is a saddle, unstable already without diffusion, so the flat mode $(0, 0)$ grows too. The lower state $u_* \approx 0.452$, $v_* \approx 0.307$ is stable without diffusion and no mode grows for $d_1/d_2 = 2$. So none of them shows a Turing instability, in line with @pearson1993complex.</span>
+<span id="cb5-170"><a href="#cb5-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-171"><a href="#cb5-171" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb5-172"><a href="#cb5-172" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_unstable_modes_gs(u_star, v_star, f, k, d1<span class="op">=</span><span class="fl">0.1</span>, d2<span class="op">=</span><span class="fl">0.05</span>, length<span class="op">=</span><span class="fl">250.0</span>, num_modes<span class="op">=</span><span class="dv">60</span>):</span>
+<span id="cb5-173"><a href="#cb5-173" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> gray_scott_jacobian(u_star, v_star, f, k)</span>
+<span id="cb5-174"><a href="#cb5-174" aria-hidden="true" tabindex="-1"></a>    diffusion <span class="op">=</span> np.diag([d1, d2])</span>
+<span id="cb5-175"><a href="#cb5-175" aria-hidden="true" tabindex="-1"></a>    unstable_modes <span class="op">=</span> []</span>
+<span id="cb5-176"><a href="#cb5-176" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> n <span class="kw">in</span> <span class="bu">range</span>(num_modes):</span>
+<span id="cb5-177"><a href="#cb5-177" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> m <span class="kw">in</span> <span class="bu">range</span>(num_modes):</span>
+<span id="cb5-178"><a href="#cb5-178" aria-hidden="true" tabindex="-1"></a>            k2 <span class="op">=</span> (<span class="dv">2</span> <span class="op">*</span> np.pi <span class="op">/</span> length) <span class="op">**</span> <span class="dv">2</span> <span class="op">*</span> (n<span class="op">**</span><span class="dv">2</span> <span class="op">+</span> m<span class="op">**</span><span class="dv">2</span>)</span>
+<span id="cb5-179"><a href="#cb5-179" aria-hidden="true" tabindex="-1"></a>            growth_rate <span class="op">=</span> np.<span class="bu">max</span>(np.linalg.eigvals(jac <span class="op">-</span> k2 <span class="op">*</span> diffusion).real)</span>
+<span id="cb5-180"><a href="#cb5-180" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> growth_rate <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb5-181"><a href="#cb5-181" aria-hidden="true" tabindex="-1"></a>                unstable_modes.append(((n, m), growth_rate))</span>
+<span id="cb5-182"><a href="#cb5-182" aria-hidden="true" tabindex="-1"></a>    unstable_modes.sort(key<span class="op">=</span><span class="kw">lambda</span> item: item[<span class="dv">1</span>], reverse<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb5-183"><a href="#cb5-183" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> unstable_modes</span>
+<span id="cb5-184"><a href="#cb5-184" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-185"><a href="#cb5-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-186"><a href="#cb5-186" aria-hidden="true" tabindex="-1"></a>f, k <span class="op">=</span> <span class="fl">0.078</span>, <span class="fl">0.061</span></span>
+<span id="cb5-187"><a href="#cb5-187" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> u_star, v_star <span class="kw">in</span> gray_scott_equilibria(f, k):</span>
+<span id="cb5-188"><a href="#cb5-188" aria-hidden="true" tabindex="-1"></a>    jac <span class="op">=</span> gray_scott_jacobian(u_star, v_star, f, k)</span>
+<span id="cb5-189"><a href="#cb5-189" aria-hidden="true" tabindex="-1"></a>    modes <span class="op">=</span> find_unstable_modes_gs(u_star, v_star, f, k)</span>
+<span id="cb5-190"><a href="#cb5-190" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"(</span><span class="sc">{</span>u_star<span class="sc">:.3f}</span><span class="ss">, </span><span class="sc">{</span>v_star<span class="sc">:.3f}</span><span class="ss">)  tr = </span><span class="sc">{</span>np<span class="sc">.</span>trace(jac)<span class="sc">:.4f}</span><span class="ss">  det = </span><span class="sc">{</span>np<span class="sc">.</span>linalg<span class="sc">.</span>det(jac)<span class="sc">:.5f}</span><span class="ss">  unstable modes: </span><span class="sc">{</span><span class="bu">len</span>(modes)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb5-191"><a href="#cb5-191" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-192"><a href="#cb5-192" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb5-193"><a href="#cb5-193" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-194"><a href="#cb5-194" aria-hidden="true" tabindex="-1"></a>Next: <span class="co">[</span><span class="ot">Gray-Scott: Interaction</span><span class="co">](gray-scott-art.qmd)</span>.</span>
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>By Daniel Precioso Garcelán. Contact: daniel.precioso@ie.edu</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/pattern-formation/gray-scott-parameters.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/daniprec/BAM-Applied-Math-Lab">
+      <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
