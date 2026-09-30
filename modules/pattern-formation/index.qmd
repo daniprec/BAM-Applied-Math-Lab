@@ -24,6 +24,7 @@ This module adds space to the dynamics of Modules 1 to 3. You study reaction-dif
 
 [Gierer-Meinhardt Model in 1D](gierer-meinhardt-1d-model.qmd){.btn .btn-primary}
 [Turing Numerics](turing-numerics.qmd){.btn .btn-primary}
+[Unstable Modes in 1D](unstable-modes-1d.qmd){.btn .btn-primary}
 [Laplacian in 1D](laplacian-1d.qmd){.btn .btn-primary}
 [Boundary Conditions](boundary-conditions.qmd){.btn .btn-primary}
 [Gierer-Meinhardt Solver in 1D](gierer-meinhardt-1d-solver.qmd){.btn .btn-primary}
@@ -36,10 +37,13 @@ This module adds space to the dynamics of Modules 1 to 3. You study reaction-dif
 
 [Laplacian in 2D](laplacian-2d.qmd){.btn .btn-primary}
 [Gierer-Meinhardt Solver in 2D](gierer-meinhardt-2d-solver.qmd){.btn .btn-primary}
+[Animation in 2D](gierer-meinhardt-2d-animation.qmd){.btn .btn-primary}
 [Unstable Modes in 2D](gierer-meinhardt-2d-modes.qmd){.btn .btn-primary}
 [Gray-Scott Model](gray-scott.qmd){.btn .btn-primary}
+[Gray-Scott Animation](gray-scott-animation.qmd){.btn .btn-primary}
 [Gray-Scott Parameters](gray-scott-parameters.qmd){.btn .btn-primary}
 [Gray-Scott: Interaction](gray-scott-art.qmd){.btn .btn-primary}
+[Gray-Scott: Sliders](gray-scott-sliders.qmd){.btn .btn-primary}
 [Assignment: Pattern Formation (graded)](assignment-patterns.qmd){.btn .btn-secondary}
 
 The graded assignment is released in Session 21 and extended in Session 22. An interactive 1D simulator runs at [bam-applied-math-lab.streamlit.app](https://bam-applied-math-lab.streamlit.app/).
@@ -52,3 +56,36 @@ The graded assignment is released in Session 21 and extended in Session 22. An i
 - Implement the 1D and 2D Laplacian with `np.roll()` and enforce boundary conditions after each explicit Euler step.
 - State the explicit Euler stability bound, recognise the artefact that appears when it is violated, and run a convergence check.
 - Compare predicted unstable modes with simulated patterns, and explain where linear theory stops being informative.
+
+# Numerical Workflow
+
+Every laboratory page follows the same loop:
+
+- Create a spatial grid.
+- Approximate the Laplacian with vectorized finite differences.
+- Evaluate the reaction terms.
+- Update the fields with explicit Euler.
+- Enforce the boundary conditions, or exploit the periodic wrapping of `np.roll()`.
+- Plot, animate, or interact with the result.
+
+# What You Need
+
+- `numpy` stores the spatial fields as arrays. `np.roll()` gives the neighbouring grid points.
+- `matplotlib.pyplot` sets up figures, axes, labels, and static plots.
+- `matplotlib.animation` updates lines and images frame by frame.
+- `matplotlib.backend_bases` handles mouse clicks and key presses on the Gray-Scott interaction page.
+- `matplotlib.widgets` provides the sliders on the same page.
+
+## Why Not `scipy.integrate.solve_ivp`?
+
+In Modules 1 and 2, `solve_ivp()` handled the time integration because the state was a short ODE vector. Here the main numerical work is different. You discretize space first, update every grid point at every step, and enforce the boundary conditions yourself after each step. That is why this module uses explicit Euler loops.
+
+::: {.callout-tip}
+## Scripts or notebooks?
+
+Use notebooks to test stencils, plot snapshots, or inspect intermediate arrays. Use Python scripts for smooth animations. If your 1D solver still feels shaky, fix it before you start the 2D pages: the 2D code is much easier once the 1D stencil and Euler update are routine.
+:::
+
+::: {.callout-note}
+Explicit Euler is simple and transparent, but it is only conditionally stable. If a simulation explodes immediately, reduce `dt`, increase `dx`, or test on a smaller grid first ([Time-Step Stability](time-step-stability.qmd)).
+:::

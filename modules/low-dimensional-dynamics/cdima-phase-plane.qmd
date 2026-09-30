@@ -25,7 +25,17 @@ where $x$ and $y$ are the dimensionless concentrations of I$^-$ and ClO$_2^-$. T
 
 ## Prediction
 
+::: {.callout-note}
+## Exercise
+
 From [Hopf Bifurcation](hopf-bifurcation.qmd): for $a = 10$ the Hopf point is $b_c = 3.5$. With $b = 4$, do you expect trajectories to converge to the fixed point $(2, 5)$ or to a limit cycle?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+The fixed point is stable for $b > b_c = 3a/5 - 25/a = 3.5$. With $b = 4$ you are on the stable side, so trajectories should spiral into $(2, 5)$. The validation at the end of this page confirms it.
+:::
 
 ## Implementation
 
@@ -65,7 +75,10 @@ Generating this phase plane in Python is simple. We will follow the same approac
 
 ### Define the ODE Function
 
-First, define the `cdima()` function. Remember that any ODE (in any dimension), can be written as:
+::: {.callout-note}
+## Exercise
+
+Define the `cdima()` function for @eq-ode-2d-cdima-1. Remember that any ODE (in any dimension) can be written as:
 
 ```python
 def ode(t, state, *params):
@@ -77,10 +90,11 @@ def ode(t, state, *params):
     return dstate_dt  # this should be a sequence of the same length as `state`
 ```
 
-Can you write the `cdima()` function in this format? If you need an extra hint, uncollapse the code block below.
+Write the `cdima()` function in this format.
+:::
 
 ::: {.callout-tip collapse="true"}
-## Hint: CDIMA right-hand side (click to expand)
+## Hint
 
 ```python
 def cdima(t: float, state: tuple[float, float], a: int, b: int) -> tuple[float, float]:
@@ -93,7 +107,8 @@ def cdima(t: float, state: tuple[float, float], a: int, b: int) -> tuple[float, 
 :::
 
 ::: {.callout-tip collapse="true"}
-## Solution: CDIMA right-hand side
+## Solution
+
 ```python
 def cdima(t, state, a, b):
     """CDIMA (Lengyel-Epstein) model, Strogatz Section 8.3."""
@@ -110,12 +125,14 @@ The reference version is `cdima` in `amlab/odes_2d/cdima.py`.
 Next, we need to solve the initial value problem (IVP) for a given initial condition and parameters.
 The workflow is similar to 1D, but now we have a vector of state variables instead of a single variable. The `solve_ivp()` function will return the trajectories for both $x(t)$ and $y(t)$, which we can then plot in the phase plane.
 
-Using `scipy.integrate.solve_ivp()` and your previously defined `cdima()` function, can you write the code to solve the IVP for a specific initial condition and parameters? The output should be the trajectories of $x(t)$ and $y(t)$, i.e. two arrays of the same length.
+::: {.callout-note}
+## Exercise
 
-If you need a hint, uncollapse the code block below.
+Use `scipy.integrate.solve_ivp()` and your `cdima()` function to solve the IVP for $a=10$, $b=4$ and $(x_0,y_0) = (0,3)$. The output should be the trajectories of $x(t)$ and $y(t)$, two arrays of the same length. You can see this trajectory in @fig-phase-plane. What is the state of the system at $t=5$?
+:::
 
 ::: {.callout-tip collapse="true"}
-## Hint: Solving the IVP (click to expand)
+## Hint
 ```python
 from scipy.integrate import solve_ivp
 import numpy as np
@@ -133,10 +150,11 @@ sol = solve_ivp(cdima, t_span, [x0, y0], args=(a, b), t_eval=t_eval)
 ```
 :::
 
-Do you have it? Great! Try the following initial conditions: $a=10$, $b=4$, and $(x_0,y_0) = (0,3)$. You can see this trajectory in @fig-phase-plane. What is the state of the system at $t=5$?
-
 ::: {.callout-tip collapse="true"}
-## Solution: State at t=5 (click to expand)
+## Solution
+
+Integrate up to $t = 5$ and read the last column of `sol.y`.
+
 ```{python}
 from scipy.integrate import solve_ivp
 import numpy as np
@@ -156,10 +174,17 @@ print(f"State at t=5: x={final_state[0]:.2f}, y={final_state[1]:.2f}")
 
 ### Plotting the Phase Plane
 
-Finally, we can plot the trajectories in the phase plane using `matplotlib.pyplot`. Try to reproduce the plot in @fig-phase-plane by plotting $y(t)$ vs. $x(t)$ for different initial conditions. You can also mark the initial conditions on the plot to see where the trajectories start.
+Finally, you plot the trajectories in the phase plane using `matplotlib.pyplot`.
+
+::: {.callout-note}
+## Exercise
+
+Reproduce @fig-phase-plane by plotting $y(t)$ against $x(t)$ for the initial conditions $(0, 3)$, $(0, 1.5)$ and $(2, 0)$. Mark the initial conditions to see where the trajectories start.
+:::
 
 ::: {.callout-tip collapse="true"}
-## Hint: Plotting the Phase Plane (click to expand)
+## Solution
+
 ```python
 import matplotlib.pyplot as plt 
 

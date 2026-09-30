@@ -9,30 +9,37 @@ In this lab you implement the Vicsek model [@vicsek1995novel], validate it, and 
 ::: {.callout-important}
 ## Core activity
 
-The core of this lab is five pages: this one, [Update Rule](vicsek-update.qmd), [Order Parameter](vicsek-order-parameter.qmd), [Validation](vicsek-validation.qmd) and [Animation](vicsek-animation.qmd). [Interactive Animation](vicsek-animation-interactive.qmd) and [Predator Avoidance](vicsek-predator.qmd) are optional extensions. [Practice: Collective Motion](practice-collective-motion.qmd) closes the session.
+The core of this lab is five pages: this one, [Update Rule](vicsek-update.qmd), [Order Parameter](vicsek-order-parameter.qmd), [Validation](vicsek-validation.qmd) and [Animation](vicsek-animation.qmd). [Vectorized Update](vicsek-vectorized.qmd), [Interactive Animation](vicsek-animation-interactive.qmd) and [Predator Avoidance](vicsek-predator.qmd) are optional extensions. [Practice: Collective Motion](practice-collective-motion.qmd) closes the session.
 :::
 
 ## Why not `solve_ivp`?
 
-The Vicsek model is a discrete-time, agent-based model. At each step all particles update their heading and position from their neighbours and some noise. There is no differential equation to integrate, so you implement it with a loop over time steps.
+In Module 1 you used ODE solvers like `scipy.integrate.solve_ivp()` for continuous-time systems. The Vicsek model is a discrete-time, agent-based model. At each step all particles update their heading and position from their neighbours and some noise. There is no differential equation to integrate, so you implement it with a loop over time steps.
 
 ## Prediction
+
+::: {.callout-note}
+## Exercise
 
 Before you code, write down your expectations.
 
 - With noise $\eta = 0$ and a large interaction radius, what is the order parameter after many steps?
 - With $\eta = 2\pi$, what is it for $N = 100$?
 - At fixed noise, does increasing the density help or hurt alignment?
+:::
 
 ::: {.callout-tip collapse="true"}
-## Answers
+## Solution
 
 With no noise and every particle seeing every other, all headings converge to one direction and $v_a \to 1$. With $\eta = 2\pi$ every heading is random at every step, so $v_a$ is of order $1/\sqrt{N} = 0.1$. Higher density means more neighbours inside the radius, which averages out the noise and helps alignment [@vicsek1995novel].
 :::
 
 ## Initial State
 
-Create the initial positions and headings. Positions are uniform on the box and headings are uniform on $[0, 2\pi]$.
+::: {.callout-note}
+## Exercise
+
+Create the initial positions and headings. Positions are uniform on the box $[0, L]^2$ and headings are uniform on $[0, 2\pi)$.
 
 ```python
 def initialize_particles(num_boids, box_size):
@@ -43,9 +50,16 @@ def initialize_particles(num_boids, box_size):
     xy = # TODO
     return xy, theta
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solved: Initialization (click to expand)
+## Hint
+
+`np.random.uniform(low, high, size)` accepts a tuple as `size`. Use `size=(2, num_boids)` for the positions, so that `xy[0]` holds the x-coordinates and `xy[1]` the y-coordinates.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
 
 ```python
 def initialize_particles(num_boids, box_size):
@@ -55,7 +69,7 @@ def initialize_particles(num_boids, box_size):
 ```
 :::
 
-Try out your function now. @vicsek1995novel used between $N = 40$ and $N = 10000$ particles. The more particles you have, the slower the simulation will be, so start with a small number like $N=100$ and a box size of $L=10$.
+Try out your function now. @vicsek1995novel used between $N = 40$ and $N = 10000$ particles and box sizes between $L = 3$ and $L = 50$. The more particles you have, the slower the simulation will be, so start with a small number like $N=100$ and a box size of $L=10$.
 
 
 @fig-vicsek shows what you are building: after a few steps, nearby particles already point in similar directions.

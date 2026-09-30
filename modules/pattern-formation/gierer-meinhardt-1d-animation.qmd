@@ -10,6 +10,11 @@ Run this code as a Python script, not in a notebook, so the animation window upd
 
 ## Animate the Profile
 
+::: {.callout-note}
+## Exercise
+
+Move the Euler loop into the animation callback. Advance `steps_per_frame` steps per frame, then update the line.
+
 ```python
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
@@ -37,9 +42,10 @@ def update_frame(_):
 ani = animation.FuncAnimation(fig, update_frame, interval=1, blit=True)
 plt.show()
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solution: 1D animation update (click to expand)
+## Solution
 
 ```python
 def update_frame(_):
@@ -73,9 +79,40 @@ for step in range(50000):
 
 ## Explore
 
+::: {.callout-note}
+## Exercise
+
+Predict first, then run the animation to check.
+
 - Run Case A ($d = 30$) and Case B ($d = 20$). Which one keeps its peaks?
-- In Case A, count the half-wavelengths at $t = 100$ and at $t = 500$. Does the count match the leading mode $n = 5$ from [Turing Numerics](turing-numerics.qmd), or does mode $6$ win for some seeds?
-- Change the seed. The peak positions move, but the spacing should not.
+- In Case A, count the half-wavelengths at $t = 100$ and at $t = 500$. Does the count match the leading mode $n = 5$ from [Unstable Modes in 1D](unstable-modes-1d.qmd), or does mode $6$ win for some seeds?
+- Change the seed. Do the peak positions move? Does the spacing change?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Case A keeps its peaks and Case B returns to the flat state, with $\max v - \min v$ at rounding level by $t = 500$. With $dx = 1$, $dt = 0.01$ and seeds $0$ to $9$, every Case A run shows five half-wavelengths at $t = 500$, the leading mode $n = 5$. At $t = 100$ the amplitude is still small (about $0.04$) and a few seeds still show six, because modes $5$ and $6$ grow at almost the same rate. Changing the seed moves the peaks, and for this domain the final profile is one of two mirror images, but the spacing stays the same.
+
+```python
+import numpy as np
+from amlab.turing import simulate_gm_1d
+
+
+def count_half_waves(v):
+    slope = np.sign(np.diff(v[1:-1]))
+    slope = slope[slope != 0]
+    return 1 + np.sum(slope[1:] != slope[:-1])
+
+
+for seed in range(10):
+    counts = [
+        count_half_waves(simulate_gm_1d(d=30.0, t_end=t, bc="neumann", seed=seed)[1][1])
+        for t in (100, 500)
+    ]
+    print(seed, counts)
+```
+:::
 
 ::: {.callout-tip}
 ## Optional extension

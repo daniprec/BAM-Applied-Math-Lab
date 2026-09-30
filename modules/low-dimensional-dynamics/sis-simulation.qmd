@@ -12,18 +12,37 @@ $$ {#eq-sis-lab}
 
 ## Prediction
 
-From [The Reproduction Number](reproduction-number.qmd): for $R_0 = \beta/\gamma > 1$ the solution should approach the endemic level $I^* = 1 - 1/R_0$; for $R_0 < 1$ it should decay to 0. Sketch $\dot I$ against $I$ for $R_0 = 2$ and mark the fixed points, as you did for the budworm.
+From [The Reproduction Number](reproduction-number.qmd): for $R_0 = \beta/\gamma > 1$ the solution should approach the endemic level $I^* = 1 - 1/R_0$; for $R_0 < 1$ it should decay to 0.
+
+::: {.callout-note}
+## Exercise
+
+Sketch $\dot I$ against $I$ for $R_0 = 2$ and mark the fixed points, as you did for the budworm.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+$\dot I = I\bigl(\beta(1 - I) - \gamma\bigr)$ is a downward parabola with zeros at $I = 0$ and $I^* = 1 - \gamma/\beta = 0.5$. It is positive between them and negative for $I > 0.5$. So $I = 0$ is unstable (slope $\beta - \gamma > 0$) and $I^* = 0.5$ is stable (slope $-(\beta - \gamma) < 0$).
+:::
 
 ## Implementation
+
+::: {.callout-note}
+## Exercise
+
+Write the right-hand side of @eq-sis-lab in the form `solve_ivp` expects. The state `i` arrives as an array with one element.
 
 ```python
 def sis_model(t, i, beta, gamma):
     didt = # TODO: right-hand side of the SIS equation
     return [didt]
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
 ## Solution
+
 ```python
 def sis_model(t, i, beta, gamma):
     return [beta * i[0] * (1 - i[0]) - gamma * i[0]]
@@ -62,11 +81,16 @@ plt.show()
 
 ## Experiment
 
+::: {.callout-note}
+## Exercise
+
 - Start from $I(0) = 0.9$ with $R_0 = 1.5$. Does the solution approach the same level from above?
 - Take $R_0$ close to 1, for example 1.05. How long does it take to get close to $I^*$? Relate the time scale to the linearization $f'(I^*) = -(\beta - \gamma)$.
+:::
 
 ::: {.callout-tip collapse="true"}
-## Answer
+## Solution
+
 The endemic equilibrium attracts every $I(0) > 0$, from above or below. Near it, perturbations decay like $e^{-(\beta - \gamma)t}$. For $R_0 = 1.05$ and $\gamma = 0.1$, $\beta - \gamma = 0.005$ per day, so the relaxation time is about 200 days.
 :::
 

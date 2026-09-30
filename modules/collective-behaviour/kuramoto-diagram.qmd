@@ -111,14 +111,82 @@ $$ {#eq-normal-second-derivative}
 
 ## Experiment
 
-In a new script, draw the theoretical bifurcation diagram for $0 < K < 5$.
+::: {.callout-note}
+## Exercise
 
-On top of it, draw the empirical curve. Use $N = 1000$ oscillators, integrate up to $t = 100$, and average $r(t)$ over the window $90 \le t \le 100$. Use the final phases for one value of $K$ as the initial condition for the next. (The figures on this page use $N = 500$ to render quickly.)
+In a new script, draw the theoretical bifurcation diagram @eq-r-cauchy for $0 < K < 5$, with $\gamma = 1$. On top of it, draw the empirical curve. Use $N = 1000$ oscillators with normal frequencies, $\sigma = 1$, integrate up to $t = 100$, and average $r(t)$ over the window $90 \le t \le 100$. Use the final phases for one value of $K$ as the initial condition for the next. (The figures on this page use $N = 500$ to render quickly.)
 
-Do your two curves match? The example in @fig-kuramoto-bifurcation-bad shows a mismatch. Can you explain why? Can you fix it? If you are stuck, check the solution below.
+```python
+k_values = np.linspace(0.0, 5.0, 20)
+
+# TODO: theoretical curve from the Cauchy formula, with K_c = 2 gamma
+r_theory =
+
+theta, omega = initialize_oscillators(1000, sigma=1.0, seed=1)
+r_inf = np.zeros_like(k_values)
+for idx, k in enumerate(k_values):
+    # TODO: integrate kuramoto_ode up to t = 100, evaluating 90 <= t <= 100
+    # TODO: compute r(t) in that window and store its mean in r_inf[idx]
+    # TODO: continue from the last state
+    pass
+
+# TODO: plot r_theory as a line and r_inf as points
+```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Why is there a mismatch?
+## Hint
+
+Pass `t_eval=np.arange(90, 100, 0.1)` to `solve_ivp()` so that `sol.y` only holds the times you average over. Then `np.abs(np.mean(np.exp(1j * sol.y), axis=0))` gives $r(t)$ at each of those times.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+
+k_values = np.linspace(0.0, 5.0, 20)
+
+# Theoretical curve for a Cauchy density with gamma = 1
+kc = 2.0
+r_theory = np.zeros_like(k_values)
+above = k_values > kc
+r_theory[above] = np.sqrt(1 - kc / k_values[above])
+
+theta, omega = initialize_oscillators(1000, sigma=1.0, seed=1)
+r_inf = np.zeros_like(k_values)
+for idx, k in enumerate(k_values):
+    sol = solve_ivp(
+        kuramoto_ode, (0, 100), theta,
+        t_eval=np.arange(90, 100, 0.1), args=(omega, k),
+    )
+    r_t = np.abs(np.mean(np.exp(1j * sol.y), axis=0))
+    r_inf[idx] = r_t.mean()
+    theta = sol.y[:, -1]  # continue from the last state
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.plot(k_values, r_theory, color="blue", label="Theoretical (Cauchy)")
+ax.plot(k_values, r_inf, "o", color="red", label="Empirical (normal frequencies)")
+ax.set_xlabel("Coupling strength (K)")
+ax.set_ylabel("Order parameter (r)")
+ax.legend()
+plt.show()
+```
+
+Your plot should look like @fig-kuramoto-bifurcation-bad.
+:::
+
+::: {.callout-note}
+## Exercise
+
+Do your two curves match? @fig-kuramoto-bifurcation-bad shows a mismatch. Explain why, and fix it.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
 
 The mismatch occurs because the closed-form theoretical curve @eq-r-cauchy is derived for a **Cauchy** frequency distribution, while the empirical data in @fig-kuramoto-bifurcation-bad is generated from a **normal** distribution.
 
@@ -148,51 +216,4 @@ draw_diagram(theory="cauchy", data="cauchy")
 ```
 :::
 
-## Interpretation
-
-Find the critical coupling $K_c$ from the theoretical formula and check if it matches the empirical transition point in your simulations. You can estimate the empirical $K_c$ by looking for the value of $K$ where $r$ starts to deviate significantly from zero. Or use the near-onset scaling @eq-r-near-onset to fit the empirical data and extract an estimate of $K_c$.
-
-In your animation script from the previous page, try setting the coupling strength just below and just above the critical value to see the difference in the dynamics. You should see that below $K_c$, the oscillators remain incoherent, while above $K_c$, they start to synchronize and form a cluster on the unit circle.
-
-```{python}
-#| label: fig-kuramoto-bifurcation-validate
-#| fig-cap: 'Comparison between the theoretical critical coupling $K_c$ and the empirical transition point observed in simulations. Individual oscillators are blue dots and the order parameter is the red vector.'
-#| fig-width: 7
-#| fig-height: 4
-#| echo: false
-theta0, omega = initialize_oscillators(
-    100, distribution="normal", scale_omega=0.5, scale_phase=1.0, seed=1
-)
-fig, axs = plt.subplots(1, 2, figsize=(7, 4))
-for ax, k, title in zip(axs, [0.1, 10.0], ["K < Kc", "K > Kc"]):
-    sol = solve_ivp(kuramoto_ode_meanfield, (0, 100), theta0, args=(omega, k))
-    theta_end = sol.y[:, -1]
-    _, _, rc, rs = kuramoto_order_parameter(theta_end)
-    ax.add_artist(plt.Circle((0, 0), 1, color="lightgray", fill=False))
-    ax.scatter(np.cos(theta_end), np.sin(theta_end), s=50, color="blue", alpha=0.5)
-    ax.plot([0, rc], [0, rs], color="red", linewidth=2)
-    ax.plot([rc], [rs], "ro", markersize=6)
-    ax.set_title(title)
-    ax.set_xlabel("Cos(theta)")
-    ax.set_xlim(-1.1, 1.1)
-    ax.set_ylim(-1.1, 1.1)
-    ax.set_aspect("equal")
-    ax.grid(True)
-axs[0].set_ylabel("Sin(theta)")
-plt.tight_layout()
-plt.show()
-```
-
-::: {.callout-note}
-## Exercise
-
-The empirical points in the normal case lie close to zero for $K < K_c$ but not exactly at zero. Give two reasons.
-:::
-
-::: {.callout-tip collapse="true"}
-## Solution
-
-First, a finite population has $r$ of order $N^{-1/2}$ even when incoherent (about $0.045$ for $N = 500$). Second, the time window may be too short for $r(t)$ to settle near $K_c$, where the approach to the steady state is slow. [Finite-Size Effects](kuramoto-finite-size.qmd) studies the first effect.
-:::
-
-Next: [Full Simulation](kuramoto-full.qmd) (optional extension) or [Finite-Size Effects](kuramoto-finite-size.qmd).
+Next: [Locating the Threshold](kuramoto-threshold.qmd).

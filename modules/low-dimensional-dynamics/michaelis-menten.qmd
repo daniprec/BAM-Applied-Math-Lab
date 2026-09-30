@@ -39,14 +39,21 @@ So the system is approximately linear at small $s$ and nearly constant-rate at l
 
 ## Implement the Saturating Rate Law
 
+::: {.callout-note}
+## Exercise
+
+Complete the right-hand side of the teaching ODE @eq-ode-1d-michaelis-menten-1.
+
 ```python
 def michaelis_menten(t, s, vmax=1.0, km=0.5):
     dsdt = # TODO: saturating rate law
     return dsdt
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
 ## Solution
+
 ```python
 def michaelis_menten(t, s, vmax=1.0, km=0.5):
     """Saturating teaching ODE ds/dt = vmax * s / (km + s)."""
@@ -90,8 +97,30 @@ plt.close()
 
 ## Exploration {#sec-exploration}
 
+::: {.callout-note}
+## Exercise
+
+Use `plot_michaelis_menten` to answer both questions.
+
 1. Increase $V_{\max}$ and observe how the rate curve changes.
 2. Increase $K_m$ (lower affinity). How does the saturation point shift?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Doubling $V_{\max}$ doubles $v(s)$ at every $s$: the plateau rises and the half-saturation level $V_{\max}/2$ rises with it, but it is still reached at $s = K_m$. Increasing $K_m$ moves the half-saturation point to the right, so you need a larger $s$ before the rate is close to $V_{\max}$. The initial slope $V_{\max}/K_m$ falls.
+
+```{python}
+import numpy as np
+
+from amlab.odes_1d.michaelis_menten import michaelis_menten
+
+s = np.array([0.5, 1.0, 5.0])
+for vmax, km in [(1.0, 0.5), (2.0, 0.5), (1.0, 2.0)]:
+    print(f"vmax={vmax}, km={km}: v(s) = {np.round(michaelis_menten(0, s, vmax, km), 3)}")
+```
+:::
 
 ## Run Locally {#sec-run-locally}
 

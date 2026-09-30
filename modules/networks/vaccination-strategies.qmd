@@ -21,9 +21,24 @@ Implement acquaintance immunization, then compare the final SIR epidemic size un
 
 ## Prediction
 
+::: {.callout-note}
+## Exercise
+
 Rank the three strategies by the final epidemic size you expect at $g = 0.1$. Where do you expect acquaintance immunization to fall?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Targeted immunization should give the smallest epidemic and random immunization the largest. Acquaintance immunization should fall in between: it reaches hubs more often than random selection, but less reliably than a list of the highest degrees. @fig-vaccination below confirms this ranking.
+:::
 
 ## Implementation
+
+::: {.callout-note}
+## Exercise
+
+Complete `acquaintance_immunization`: pick a random node, then vaccinate one of its random neighbours, until `fraction * N` distinct nodes are chosen.
 
 ```python
 def acquaintance_immunization(G, fraction, rng):
@@ -38,9 +53,12 @@ def acquaintance_immunization(G, fraction, rng):
             # TODO: add one random neighbour of v to chosen
     return list(chosen)
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solved: `acquaintance_immunization()`
+## Solution
+
+Using a set makes the chosen nodes distinct: a hub that is named twice counts once.
 
 ```python
 def acquaintance_immunization(G, fraction, rng):
@@ -113,9 +131,23 @@ plt.show()
 
 ## Interpretation
 
+::: {.callout-note}
+## Exercise
+
+Read @fig-vaccination and answer:
+
 - How large must $g$ be for each strategy to reduce the final size below 5%?
 - Acquaintance immunization uses only local information. How close does it get to the targeted strategy?
 - Is random vaccination useless on this network? Compare with the asymptotic statement $g_c \to 1$ and remember that this graph is finite.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+- Targeted immunization needs $g = 0.1$ (final size about 3%). Acquaintance immunization needs between $g = 0.25$ and $g = 0.3$. Random immunization never gets below 5% in the plotted range: at $g = 0.3$ the final size is still about 40%.
+- It needs about two and a half to three times as many doses as the targeted strategy for the same effect, but it is far better than random selection at every coverage.
+- No. The final size falls steadily with $g$, from about 73% to about 40% at $g = 0.3$. On a finite graph $\langle k^2 \rangle$ is finite, so $g_c$ is below 1. It is still large, so random vaccination is the most expensive way to stop the epidemic.
+:::
 
 ## Limitations
 
@@ -124,18 +156,60 @@ plt.show()
 - Targeted immunization assumes you know every degree exactly.
 - 20 runs per point leave visible noise, especially near the threshold.
 
-::: {.callout-tip}
 ## Optional extension
+
+::: {.callout-note}
+## Exercise
+
 - Repeat the experiment on an Erdős-Rényi graph with the same mean degree. Does the choice of strategy still matter?
 - Target by betweenness instead of degree. Compare with the Motter-Lai trigger choice in [Cascade Simulation](cascade-simulation.qmd).
 :::
 
+::: {.callout-tip collapse="true"}
+## Solution
+
+Reuse `G`, `rng`, `gs` and `strategies` from the page. Swap the graph for an ER graph with $p = 6/(N-1)$, and add a betweenness strategy.
+
+```python
+G_er = nx.erdos_renyi_graph(1000, 6 / 999, seed=SEED)
+
+
+def betweenness_ranking(G):
+    """Nodes sorted by decreasing betweenness (approximate, 200 sources)."""
+    bc = nx.betweenness_centrality(G, k=200, seed=SEED)
+    return sorted(bc, key=bc.get, reverse=True)
+
+
+for graph, label in [(G, "BA"), (G_er, "ER")]:
+    ranking = betweenness_ranking(graph)
+    selectors = {
+        "random": lambda g: random_immunization(graph, g, rng),
+        "acquaintance": lambda g: acquaintance_immunization(graph, g, rng),
+        "targeted": lambda g: targeted_immunization(graph, g),
+        "betweenness": lambda g: ranking[: int(round(g * graph.number_of_nodes()))],
+    }
+    for name, select in selectors.items():
+        sizes = [
+            np.mean([run_sir_fast(graph, 0.05, 0.1, initial_infected=5, immune=select(g), rng=rng) for _ in range(20)])
+            for g in gs
+        ]
+        print(label, name, np.round(sizes, 2))
+```
+
+- On the ER graph the strategies are much closer. The degrees are nearly all similar, so there are no hubs to target. Targeted immunization still wins, but it needs $g \approx 0.25$ to push the final size to about 5%, against $g = 0.1$ on the BA graph. Acquaintance immunization is barely better than random selection.
+- On the BA graph the betweenness ranking performs almost as well as the degree ranking, because the hubs are also the nodes with the largest betweenness. The same overlap explains why the highest-load and highest-degree triggers give the same cascade on the BA graph of [Cascade Simulation](cascade-simulation.qmd). On the ER graph degree and betweenness rankings differ more, and the degree ranking is the better choice here.
+:::
+
 ## Exit question
 
+::: {.callout-note}
+## Exercise
+
 A health agency cannot map the contact network but can ask people to name one contact. Which strategy from this page can it implement, and why does it work better than vaccinating the people it first reaches?
+:::
 
 ::: {.callout-tip collapse="true"}
-## Answer
+## Solution
 
 Acquaintance immunization. It vaccinates the named contacts, not the people first reached. A named contact is a random neighbour, and random neighbours have degree $k$ with probability proportional to $k p_k$, so they are more often hubs [@cohen2003efficient]. Vaccinating hubs lowers $\langle k^2 \rangle$ and raises the epidemic threshold.
 :::

@@ -18,11 +18,23 @@ In this laboratory you test the random walk model of [Returns and Efficient Mark
 
 ## Prediction
 
+::: {.callout-note}
+## Exercise
+
 Before you run any code, write down your answers:
 
 - What order of magnitude do you expect for the standard deviation of daily log returns of a stock index: 0.01 %, 1 % or 10 %?
 - If the market is weak-form efficient, what should the autocorrelation of $r_t$ at lag 1 be?
 - Should the autocorrelation of $|r_t|$ at lag 1 be zero too?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+- About 1 %. A typical stock index moves by roughly one percent on an ordinary day.
+- Close to zero. A clear linear correlation would let you forecast tomorrow's return from today's.
+- No. Efficiency says nothing about the size of the moves. Large moves tend to follow large moves (volatility clustering), so the autocorrelation of $|r_t|$ is positive [@cont2001empirical]. You check both answers below.
+:::
 
 ## Core activity: load the data and compute log returns
 
@@ -37,6 +49,9 @@ print(df.head())
 print("source:", df.attrs["source"])
 ```
 
+::: {.callout-note}
+## Exercise
+
 Write a function that returns the log returns $r_t = \ln(P_t / P_{t-1})$ of a price array.
 
 ```python
@@ -45,9 +60,10 @@ def log_returns(prices):
     # TODO: take the logarithm of the prices and difference it
     return ...
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solution: log returns
+## Solution
 
 ```{python}
 def log_returns(prices):
@@ -95,7 +111,12 @@ plt.show()
 
 ## Experiment: autocorrelation of returns and absolute returns
 
-Compute the sample autocorrelation of $r_t$ and of $|r_t|$ for lags 1 to 50. Under the null hypothesis of i.i.d. returns, sample autocorrelations are approximately normal with standard deviation $1/\sqrt{n}$, so values outside $\pm 2/\sqrt{n}$ are unusual.
+Under the null hypothesis of i.i.d. returns, sample autocorrelations are approximately normal with standard deviation $1/\sqrt{n}$, so values outside $\pm 2/\sqrt{n}$ are unusual.
+
+::: {.callout-note}
+## Exercise
+
+Complete the function below. Then compute the sample autocorrelation of $r_t$ and of $|r_t|$ for lags 1 to 50 and plot both with the $\pm 2/\sqrt{n}$ band.
 
 ```python
 def autocorrelation(x, max_lag):
@@ -104,9 +125,21 @@ def autocorrelation(x, max_lag):
     # TODO: for each lag k, compute sum(x[:-k] * x[k:]) / sum(x * x)
     return ...
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solution: autocorrelation
+## Solution
+
+Lag 0 needs care, because `x[:-0]` is empty. Slice with `x[: x.size - k]` instead.
+
+```python
+def autocorrelation(x, max_lag):
+    """Sample autocorrelation at lags 0..max_lag."""
+    x = x - x.mean()
+    return np.array([np.sum(x[: x.size - k] * x[k:]) / np.sum(x * x) for k in range(max_lag + 1)])
+```
+
+The same function is available as `amlab.finance.autocorrelation`, which the plot below uses.
 
 ```{python}
 #| label: fig-lab-acf
@@ -142,7 +175,33 @@ Compare with your predictions. For market data @cont2001empirical reports insign
 - Closing prices that are not adjusted for dividends and splits create artificial jumps. Check the source of the frozen file.
 - Weekends and holidays are skipped, so a "daily" return sometimes covers three or more calendar days.
 
-::: {.callout-tip}
 ## Optional extension
+
+::: {.callout-note}
+## Exercise
+
 Compute a 60-day rolling standard deviation of $r_t$ with `pandas.Series(r).rolling(60).std()` and plot it. Mark the periods with the highest volatility. Do large returns cluster in those periods?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Shade the days where the rolling volatility is in its top 10 % and overlay the largest 1 % of absolute returns. If most of the large returns fall inside the shaded periods, they cluster.
+
+```python
+import pandas as pd
+
+vol = pd.Series(r).rolling(60).std().to_numpy()
+high = vol > np.nanquantile(vol, 0.9)
+big = np.abs(r) > np.quantile(np.abs(r), 0.99)
+
+fig, ax = plt.subplots(figsize=(8, 3))
+ax.plot(dates[1:], vol, lw=0.8)
+ax.fill_between(dates[1:], 0, np.nanmax(vol), where=high, color="grey", alpha=0.3)
+ax.plot(dates[1:][big], vol[big], "r.", ms=4)
+ax.set_ylabel("60-day rolling std")
+plt.tight_layout()
+plt.show()
+print(f"share of the largest returns in high-volatility periods: {np.mean(high[big]):.2f} (about 0.10 without clustering)")
+```
 :::

@@ -116,10 +116,35 @@ You should see an animation of the oscillators moving around the unit circle. Yo
 
 ![Kuramoto oscillators animation on the unit circle.](../../img/kuramoto-animation.gif){#fig-kuramoto-animation}
 
-**Is your order parameter not moving?** If you followed the guide, you might notice that the order parameter does not update in the animation. You will need to compute the order parameter inside the `update_function()` and update the `centroid_line` and `centroid_point` accordingly.
+**Is your order parameter not moving?** If you followed the guide, the red line and dot stay empty. The update function never touches `centroid_line` and `centroid_point`.
+
+::: {.callout-note}
+## Exercise
+
+Compute the order parameter inside `update_function()` and update `centroid_line` and `centroid_point`, so the red vector follows the centroid of the phases.
+
+```python
+def update_function(frame: int):
+    global theta
+    sol = solve_ivp(kuramoto_ode, (0, dt), theta, args=(omega, coupling_strength))
+    theta = np.mod(sol.y[:, -1], 2 * np.pi)
+    scatter.set_offsets(np.column_stack((np.cos(theta), np.sin(theta))))
+
+    # TODO: compute the order parameter r exp(i psi)
+
+    # TODO: update centroid_line (from the origin) and centroid_point
+    return [scatter, centroid_line, centroid_point]
+```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solution: update the order parameter in the animation
+## Hint
+
+`z = np.mean(np.exp(1j * theta))` is a complex number. Its real and imaginary parts, `z.real` and `z.imag`, are the coordinates of the red dot. Use `set_data()` on both artists; it expects sequences, so wrap single values in a list.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
 
 ```python
 def update_function(frame: int):

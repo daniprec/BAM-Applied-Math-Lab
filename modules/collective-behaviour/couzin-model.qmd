@@ -18,7 +18,7 @@ Neighbours in a blind region behind the individual, of angle $360^\circ - \alpha
 
 ## Rules
 
-**Repulsion has priority.** If $n_r > 0$ neighbours are in the zor, the desired direction is
+**Repulsion has priority.** Individuals try to keep a minimum distance from others at all times, a behaviour often observed in animals. You can read the zone of repulsion as personal space, or as collision avoidance. If $n_r > 0$ neighbours are in the zor, the desired direction is
 
 $$
 \mathbf{d}_i(t+\tau) = -\sum_{j \ne i}^{n_r} \mathbf{r}_{ij}(t).
@@ -34,9 +34,9 @@ $$ {#eq-couzin-oa}
 
 If only the zoo has neighbours, $\mathbf{d}_i = \mathbf{d}_o$. If only the zoa has neighbours, $\mathbf{d}_i = \mathbf{d}_a$. If both do, $\mathbf{d}_i = \tfrac12(\mathbf{d}_o + \mathbf{d}_a)$. If the result is the zero vector, or no neighbour is detected, the individual keeps its direction, $\mathbf{d}_i = \mathbf{v}_i$.
 
-**Noise.** The desired direction is rotated by a random angle from a wrapped Gaussian with standard deviation $\sigma$.
+**Noise.** Decisions in animals are affected by sensory and movement errors. To model this, the desired direction is rotated by a random angle from a wrapped Gaussian with standard deviation $\sigma$.
 
-**Limited turning.** Individuals turn toward $\mathbf{d}_i$ at most by an angle $\theta\tau$ per step, where $\theta$ is the turning rate. They move at constant speed $s$.
+**Limited turning.** After every individual has computed $\mathbf{d}_i$, all of them turn toward it with turning rate $\theta$. If the angle between $\mathbf{v}_i(t)$ and $\mathbf{d}_i(t+\tau)$ is less than the maximum turning angle $\theta\tau$, then $\mathbf{v}_i(t+\tau) = \mathbf{d}_i(t+\tau)$. Otherwise the individual rotates by $\theta\tau$ toward the desired direction. They move at constant speed $s$.
 
 ## Collective states
 
@@ -72,3 +72,5 @@ With no zone of orientation there is no alignment, only repulsion and attraction
 :::
 
 The code for this model is in [amlab/collective_motion/couzin.py](../../amlab/collective_motion/couzin.py) and the animation in [amlab/collective_motion/couzin_animation.py](../../amlab/collective_motion/couzin_animation.py). Implementing it is Option A of [Practice: Collective Motion](practice-collective-motion.qmd).
+
+To explore the model before you code it, try the interactive [Flock'n Roll](https://www.complexity-explorables.org/explorables/flockn-roll/) explorable, which is based on @couzin2002collective.

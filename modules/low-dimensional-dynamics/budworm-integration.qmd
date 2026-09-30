@@ -8,12 +8,17 @@ You now integrate the budworm model from [Budworm: the Model in Code](budworm-im
 
 ## Implementation: numerical integration {#sec-numerical-integration}
 
-Create a function that evolves the system forward in time and appends the result to existing arrays. The app on the next page calls it repeatedly, each time continuing from the last state.
+The app on the next page calls this function repeatedly, each time continuing from the last state.
+
+::: {.callout-note}
+## Exercise
+
+Create a function that evolves the system forward in time and appends the result to existing arrays.
 
 - Function name: `evolve_spruce_budworm`
 - Inputs: `t` (time array), `x` (population array), `r`, `k`, `t_eval` (duration to evolve).
-- Use `solve_ivp` with `method="RK45"`, starting from the last values of the arrays.
-- Concatenate the new results and clip negative values with `np.clip`.
+- Use `solve_ivp` with `method="RK45"`, the adaptive step size Runge-Kutta method, starting from the last values of the arrays.
+- Concatenate the new results with `np.concatenate` and clip negative values with `np.clip`.
 - Return the updated `t` and `x`.
 
 ```python
@@ -37,9 +42,11 @@ def evolve_spruce_budworm(t: np.ndarray, x: np.ndarray, r=0.5, k=10, t_eval=50):
 
 - `args` passes `r` and `k` to your ODE function.
 - The initial condition is `[x[-1]]`, the last population value, as a list.
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solution: integration
+## Solution
+
 ```python
 def evolve_spruce_budworm(t, x, r=0.5, k=10, t_eval=50):
     """Evolve the budworm ODE for t_eval time units and append the result."""
@@ -55,7 +62,30 @@ def evolve_spruce_budworm(t, x, r=0.5, k=10, t_eval=50):
 
 ## Implementation: time series plot {#sec-time-series-visualization}
 
-Create `plot_spruce_budworm(t, x)` that plots population against time in green, with the y axis starting at 0, a grid, labels and a title. Return the figure and axes. @fig-time-series shows an example.
+This plot shows how the population evolves from the initial condition.
+
+::: {.callout-note}
+## Exercise
+
+Create `plot_spruce_budworm(t, x)` that plots population against time in green, with the y axis starting at 0 (populations cannot be negative), a grid, labels and a title. Return the figure and axes. @fig-time-series shows an example.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+```python
+def plot_spruce_budworm(t, x):
+    """Plot the budworm population against time."""
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.plot(t, x, color="green")
+    ax.set_ylim(bottom=0)
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Budworm population")
+    ax.set_title("Spruce budworm population dynamics")
+    ax.grid()
+    return fig, ax
+```
+:::
 
 ```{python}
 #| label: fig-time-series
@@ -88,12 +118,44 @@ print(f"x at t = {t[-1]:.0f}: {x[-1]:.3f}")
 
 ## Experiment {#sec-exploration-questions}
 
+::: {.callout-note}
+## Exercise
+
 Once your functions work, explore these questions.
 
 - **Multiple equilibria.** For $r = 0.5$ and $k = 10$, how many equilibria exist? Which are stable?
 - **Bistability.** Start from $x_0 = 1$ and $x_0 = 8$. Do they converge to the same equilibrium?
-- **Critical slowing down.** Start at $x_0 = 2.01$. How long does the population take to leave the neighbourhood of $x = 2$? Compare with the time scale $1/|f'(2)| \approx 7$.
-- **Hysteresis.** Increase $k$ slowly from 5 to 15 and back to 5 with $r = 0.56$. Does the population return along the same path? [Hysteresis](hysteresis.qmd) gives the answer.
+- **Outbreak dynamics.** Start from a small population, $x_0 < 2$, with a large carrying capacity, $k > 10$. Does an outbreak happen?
+- **Critical slowing down.** Start at $x_0 = 2.01$. How long does the population take to leave the neighbourhood of $x = 2$? Compare with the time scale $1/|f'(2)| \approx 7$ and with the rate of change far from equilibrium.
+- **Hysteresis.** Increase $k$ slowly from 5 to 15 and back to 5 with $r = 0.56$. Does the population return along the same path?
+- **Parameter space.** Draw a diagram of the number of equilibria as a function of $r$ and $k$. Where do the bifurcations occur?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+- There are four equilibria: $x = 0$ (unstable), $x_a \approx 0.68$ (stable), $x_b = 2$ (unstable) and $x_c \approx 7.32$ (stable).
+- No. $x_0 = 1$ goes to the refuge $x_a$ and $x_0 = 8$ goes to the outbreak level $x_c$. The unstable point $x_b = 2$ separates the two basins.
+- It depends on how small. For $r = 0.5$ the threshold $x_b$ moves down as $k$ grows: $x_b \approx 1.79$ for $k = 12$ and $x_b \approx 1.63$ for $k = 15$. So $x_0 = 1.7$ stays at the refuge for $k = 12$ but triggers an outbreak for $k = 15$. A very small population, such as $x_0 = 1$, still stays at the refuge.
+- The population needs about 27 time units to move from 2.01 to 2.5, roughly four times $1/f'(2) \approx 7$, because it must grow by a factor of 50 at rate $f'(2) = 0.14$: $\ln(50)/0.14 \approx 28$. Far from equilibrium, $|dx/dt|$ is much larger and the population moves in a few time units.
+- No. The population jumps up near $k \approx 9.94$ and only jumps down near $k \approx 6.45$. [Hysteresis](hysteresis.qmd) shows the loop.
+- The number of positive equilibria is three inside a cusp-shaped region of the $(k, r)$ plane and one outside. The two boundary curves are saddle-node bifurcations; [Hysteresis](hysteresis.qmd) plots them with `bifurcation_curves` from `amlab/odes_1d/budworm_analysis.py`.
+
+```{python}
+from scipy.integrate import solve_ivp
+
+from amlab.odes_1d.spruce_budworm import spruce_budworm
+
+sol = solve_ivp(spruce_budworm, (0, 100), [2.01], args=(0.5, 10.0),
+                dense_output=True, rtol=1e-9, atol=1e-12)
+t_fine = np.linspace(0, 100, 10001)
+t_leave = t_fine[np.argmax(sol.sol(t_fine)[0] > 2.5)]
+print(f"time to reach x = 2.5 from x = 2.01: {t_leave:.1f}")
+for x0, k in [(1.0, 15.0), (1.7, 12.0), (1.7, 15.0)]:
+    end = solve_ivp(spruce_budworm, (0, 300), [x0], args=(0.5, k), rtol=1e-9).y[0, -1]
+    print(f"x0 = {x0}, k = {k}: x(300) = {end:.2f}")
+```
+:::
 
 ## Interpretation and limitations
 

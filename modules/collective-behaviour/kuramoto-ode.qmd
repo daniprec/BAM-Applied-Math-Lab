@@ -10,7 +10,12 @@ This page covers the implementation and validation steps. You write the right-ha
 
 Choose between the pairwise form of the Kuramoto model and the mean-field form. They are mathematically identical ([The Order Parameter](order-parameter.qmd)). The mean field approximation is often more efficient for large populations, as it avoids computing pairwise interactions.
 
-Follow the template below to define the ODE function for the Kuramoto model. Call it `kuramoto_ode()`. The function should compute the derivatives of the phases $\dot\theta_i$ based on the current phases $\theta_i$, natural frequencies $\omega_i$, and coupling strength $K$.
+The right-hand side only uses $\sin$ and $e^{i\theta}$, which are $2\pi$-periodic, so the dynamics do not need the phases to stay in $[0, 2\pi)$. Wrapping with `np.mod(theta, 2 * np.pi)` is still useful before plotting.
+
+::: {.callout-note}
+## Exercise
+
+Define the ODE function for the Kuramoto model and call it `kuramoto_ode()`. It computes the derivatives $\dot\theta_i$ from the current phases $\theta_i$, the natural frequencies $\omega_i$ and the coupling strength $K$. Follow the general template that `solve_ivp()` expects:
 
 ```python
 def ode(t, state, *params):
@@ -21,18 +26,26 @@ def ode(t, state, *params):
 
     return dstate_dt  # this should be a sequence of the same length as `state`
 ```
+
 Remember: `solve_ivp()` requires the time argument even if it is not used.
-
-The right-hand side only uses $\sin$ and $e^{i\theta}$, which are $2\pi$-periodic, so the dynamics do not need the phases to stay in $[0, 2\pi)$. Wrapping with `np.mod(theta, 2 * np.pi)` is still useful before plotting.
-
-::: {.callout-tip collapse="true"}
-## See the full ODE function (click to expand)
-
-The function below is for the mean-field approximation of the Kuramoto model, which is more efficient than computing pairwise interactions. It computes the order parameter at each time step and uses it to calculate the derivatives.
 
 ```python
 def kuramoto_ode(t, theta, omega, coupling_strength=1.0):
-    # Make sure theta stays within [0, 2*pi] to avoid numerical issues
+    # TODO: compute the order parameter r * exp(i * psi)
+
+    # TODO: compute dtheta_dt with the mean-field form
+    return dtheta_dt
+```
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+The function below uses the mean-field form, which is cheaper than computing pairwise interactions. It computes the order parameter at each call and uses it to calculate the derivatives.
+
+```python
+def kuramoto_ode(t, theta, omega, coupling_strength=1.0):
+    # Wrapping is optional: sin and exp are 2 pi-periodic
     theta = np.mod(theta, 2 * np.pi)
     order_param = np.mean(np.exp(1j * theta))
     r = np.abs(order_param)
@@ -44,13 +57,7 @@ def kuramoto_ode(t, theta, omega, coupling_strength=1.0):
 
 ## Validation: two known regimes
 
-To validate that your function works, try running it with the following parameters:
-
-- Coupling strength $K=10.0$ (this is a strong coupling regime where synchronization should occur)
-- Number of oscillators $N=100$
-- Standard deviation of natural frequencies $\sigma=1.0$
-
-Run the simulation for $t \in [0, 10]$ and visualize the last state on the unit circle. You should see some degree of synchronization, with the oscillators clustering together. See @fig-kuramoto-k-high for a sample output.
+You know the answer in two regimes. For strong coupling, $K = 10 \gg K_c$, the oscillators should cluster. For weak coupling, $K = 0.1 \ll K_c$, they should stay spread around the circle. @fig-kuramoto-k-high and @fig-kuramoto-k-low show sample outputs for $N = 100$ and $\sigma = 1$ at $t = 10$.
 
 ```{python}
 #| label: fig-kuramoto-k-high
@@ -104,41 +111,6 @@ plt.show()
 plt.close()
 ```
 
-::: {.callout-tip collapse="true"}
-## How to run the simulation (click to expand)
-
-You can use `scipy.integrate.solve_ivp()` to run the simulation. Here's a simple example of how to do this:
-
-```python
-from scipy.integrate import solve_ivp
-
-# Parameters
-coupling_strength = 10.0
-num_oscillators = 100
-sigma = 1.0
-t_span = (0, 10)
-
-# Initialize oscillators
-theta, omega = initialize_oscillators(num_oscillators, sigma=sigma)
-# Run the simulation
-sol = solve_ivp(
-    kuramoto_ode,
-    t_span,
-    theta,
-    args=(omega, coupling_strength)
-    )
-# The solution `sol.y` contains the phases of the oscillators at each time step.
-# sol.y is a 2D array of shape (num_oscillators, num_time_points)
-# You can visualize the last state using the same plotting code as before.
-theta_end = sol.y[:, -1] # Get the final state of the phases
-x = np.cos(theta_end)
-y = np.sin(theta_end)
-# Plotting code as before to visualize the final state
-```
-:::
-
-Then, try reducing the coupling strength to $K=0.1$ and observe how the oscillators become more scattered, indicating a more incoherent state. See @fig-kuramoto-k-low for a sample output.
-
 ```{python}
 #| label: fig-kuramoto-k-low
 #| fig-cap: 'Visualization of oscillators after running the Kuramoto ODE for K=0.1. The scattering of the blue dots indicates incoherence.'
@@ -178,43 +150,59 @@ plt.show()
 plt.close()
 ```
 
-::: {.callout-tip}
-## Optional extension: compare the two ODEs
-
-You can compare the original pairwise form of the ODE with the mean field approximation. Try implementing both versions and see how they differ in terms of computational efficiency and the resulting dynamics. You should find that the mean field approximation is much faster for large populations, while still capturing the essential behavior of synchronization.
-
-::: {.callout-tip collapse="true"}
-## How do I implement the other ODE?
-
-You just have to create a new `kuramoto_ode()` function. Name them differently, for instance `kuramoto_ode_pairwise()` and `kuramoto_ode_meanfield()`, so that you can easily switch between them in the animation loop. Follow the equations in [The Kuramoto Model](kuramoto-model.qmd) and [The Order Parameter](order-parameter.qmd).
-
-If you have reached this far by implementing one of them, it should be as simple as changing the ODE function in the `solve_ivp()` call inside the `update_function()`. For example, if you have implemented the pairwise version, you can switch to the mean field version by changing this line:
-
-```python
-sol = solve_ivp(
-    kuramoto_ode_pairwise, # Change this to the other ODE function
-    (0, dt),
-    theta,
-    args=(omega, coupling_strength),
-    )
-```
-
-This is why **modularity** matters. By keeping your code organized and modular, you can easily swap out different components (like the ODE function) without having to rewrite the entire animation code. This allows you to experiment with different models and see how they compare in terms of dynamics and computational efficiency.
-
-A modular structure also saves work in the [Kuramoto Assignment](assignment-kuramoto.qmd), where you implement a different model of coupled oscillators, the Millennium Bridge.
-:::
-:::
-
 ::: {.callout-note}
 ## Exercise
 
-Time both ODE functions with `%timeit` (or `time.perf_counter()`) for $N = 100$, $1000$ and $5000$. How does the cost grow with $N$ in each case?
+Validate your function. Use coupling strength $K = 10$, $N = 100$ oscillators and $\sigma = 1$. Integrate for $t \in [0, 10]$ and plot the last state on the unit circle. You should see the oscillators clustering, as in @fig-kuramoto-k-high. Then reduce the coupling to $K = 0.1$ and check that the phases stay scattered, as in @fig-kuramoto-k-low.
+
+```python
+from scipy.integrate import solve_ivp
+
+coupling_strength = 10.0
+theta, omega = initialize_oscillators(100, sigma=1.0, seed=1)
+
+# TODO: integrate kuramoto_ode from t = 0 to t = 10 with solve_ivp
+sol =
+
+# TODO: take the final phases and plot them on the unit circle
+theta_end =
+```
 :::
 
 ::: {.callout-tip collapse="true"}
 ## Solution
 
-The pairwise version builds an $N \times N$ matrix of phase differences, so one evaluation costs $O(N^2)$ time and memory. The mean-field version computes one complex mean, which costs $O(N)$. Going from $N = 1000$ to $N = 5000$ should multiply the pairwise time by roughly 25 and the mean-field time by roughly 5. Both give the same trajectories up to round-off.
+Use `scipy.integrate.solve_ivp()` and take the last column of `sol.y`.
+
+```python
+from scipy.integrate import solve_ivp
+
+# Parameters
+coupling_strength = 10.0
+num_oscillators = 100
+sigma = 1.0
+t_span = (0, 10)
+
+# Initialize oscillators
+theta, omega = initialize_oscillators(num_oscillators, sigma=sigma, seed=1)
+# Run the simulation
+sol = solve_ivp(
+    kuramoto_ode,
+    t_span,
+    theta,
+    args=(omega, coupling_strength)
+    )
+# The solution `sol.y` contains the phases of the oscillators at each time step.
+# sol.y is a 2D array of shape (num_oscillators, num_time_points)
+theta_end = sol.y[:, -1] # Get the final state of the phases
+x = np.cos(theta_end)
+y = np.sin(theta_end)
+# Plotting code as in Initialization to visualize the final state
+```
+
+For the weak-coupling check, set `coupling_strength = 0.1` and run the same code.
 :::
+
+The optional page [Pairwise vs Mean Field](kuramoto-pairwise.qmd) compares your function with the pairwise form.
 
 Next: [Animation](kuramoto-animation.qmd).

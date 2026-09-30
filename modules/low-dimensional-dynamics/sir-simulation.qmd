@@ -21,11 +21,35 @@ $$
 \dot S = -\beta SI, \qquad \dot I = \beta SI - \gamma I, \qquad \dot R = \gamma I .
 $$
 
+The state has three components, but $S + I + R = 1$ is conserved, so only two are independent.
+
 ## Prediction
 
-For $\beta = 0.3$, $\gamma = 0.1$, $S(0) = 0.99$, $I(0) = 0.01$, use the formulas from the lecture to predict the peak prevalence $I_{\max}$ and the final size before you simulate.
+::: {.callout-note}
+## Exercise
+
+For $\beta = 0.3$, $\gamma = 0.1$, $S(0) = 0.99$, $I(0) = 0.01$, use the formulas from [The Reproduction Number](reproduction-number.qmd) and [The Final Size of an Epidemic](final-size.qmd) to predict the peak prevalence $I_{\max}$ and the final size before you simulate.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Here $R_0 = 3$. The peak prevalence is $I_{\max} = I_0 + S_0 - \frac{1}{R_0}\bigl(1 + \ln(R_0 S_0)\bigr) \approx 0.304$, reached when $S = 1/R_0 \approx 0.333$. The final size relation $\ln(S_0/S_\infty) = R_0 (1 - S_\infty)$ gives $S_\infty \approx 0.059$, so about 93% of the susceptibles are infected and $R_\infty \approx 0.94$.
+
+```{python}
+from amlab.epidemics import final_size, peak_prevalence
+
+print(f"I_max = {peak_prevalence(3.0, 0.99, 0.01):.3f}")
+print(f"final size = {final_size(3.0, 0.99):.3f}")
+```
+:::
 
 ## Implementation
+
+::: {.callout-note}
+## Exercise
+
+Complete the right-hand side of the SIR model. The solver only needs one function that returns the three derivatives.
 
 ```python
 def sir_model(t, y, beta, gamma):
@@ -35,9 +59,11 @@ def sir_model(t, y, beta, gamma):
     drdt = # TODO
     return [dsdt, didt, drdt]
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
 ## Solution
+
 ```python
 def sir_model(t, y, beta, gamma):
     s, i, r = y
@@ -96,11 +122,40 @@ print(f"I_max simulated = {i.max():.4f}, formula = {peak_prevalence(3.0, 0.99, 0
 print(f"S at the peak = {s[i.argmax()]:.4f}, 1/R0 = {1 / 3:.4f}")
 ```
 
+## What to look for
+
+- The susceptible fraction decreases monotonically.
+- The infected fraction rises, peaks and then falls.
+- The recovered fraction grows monotonically.
+- Changing $\beta$ mostly affects how fast the outbreak grows.
+- Changing $\gamma$ mostly affects how quickly the outbreak resolves.
+
 ## Experiment
+
+::: {.callout-note}
+## Exercise
+
+Start from $\beta = 0.3$, $\gamma = 0.1$, $I(0) = 0.01$ and change one thing at a time.
 
 - Increase $\beta$ with $\gamma$ fixed. What happens to the height and the time of the peak?
 - Increase $\gamma$ with $\beta$ fixed. Does the epidemic end sooner? Is it smaller?
 - Change $I(0)$ from $10^{-2}$ to $10^{-5}$. Which quantities change: peak height, peak time, final size?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+With $\beta = 0.45$ ($R_0 = 4.5$) the peak rises from 0.30 to 0.45 and comes earlier, near day 17 instead of day 27. With $\gamma = 0.15$ ($R_0 = 2$) the peak drops to 0.16 and the final size to 0.80; the epidemic is smaller, and it dies out a little sooner. With $I(0) = 10^{-5}$ the peak height (0.30) and the final size (0.94) barely change, but the peak moves from day 27 to about day 61.
+
+```{python}
+for beta, gamma, i0 in [(0.3, 0.1, 1e-2), (0.45, 0.1, 1e-2), (0.3, 0.15, 1e-2), (0.3, 0.1, 1e-5)]:
+    run = solve_ivp(sir_model, (0, 300), [1 - i0, i0, 0.0], args=(beta, gamma),
+                    t_eval=np.linspace(0, 300, 30001), rtol=1e-9, atol=1e-12)
+    i_run = run.y[1]
+    print(f"beta={beta}, gamma={gamma}, I0={i0:.0e}: peak {i_run.max():.2f} "
+          f"on day {run.t[i_run.argmax()]:.0f}, final R {run.y[2, -1]:.2f}")
+```
+:::
 
 ## Interpretation
 
@@ -110,6 +165,14 @@ $\beta$ and $\gamma$ enter the shape of the outbreak mainly through $R_0 = \beta
 ## Optional extension
 Add Streamlit sliders for $\beta$, $\gamma$ and $I(0)$, following [Budworm: a Streamlit App](budworm-streamlit.qmd). Show the peak prevalence formula next to the plot.
 :::
+
+## Run locally
+
+To run the standalone script and show the plot:
+
+```bash
+python amlab/odes_1d/sir_model.py
+```
 
 ## Next
 

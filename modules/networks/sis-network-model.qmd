@@ -14,7 +14,7 @@ In [Module 1](../low-dimensional-dynamics/compartmental-models.qmd) you wrote th
 
 ::: {.callout-important}
 ## Core activity
-Implement the discrete-time SIS model on a network, validate it, and compare the mean infected fraction on random, small-world and scale-free graphs. This page sets up the model and the initial state; [SIS Simulation](sis-network-simulation.qmd) runs it.
+Implement the discrete-time SIS model on a network, validate it, and compare the mean infected fraction on random, small-world and scale-free graphs. This page sets up the model and the graphs. [SIS Initial State](sis-network-states.qmd) stores the node states, [SIS Simulation](sis-network-simulation.qmd) implements the update and [Comparing Networks under SIS](sis-network-comparison.qmd) runs the comparison.
 :::
 
 ## What is the SIS Model?
@@ -50,12 +50,23 @@ $$
 
 ## Prediction
 
-Before you write any code, answer these questions:
+You will compare **random** (Erdős-Rényi), **small-world** (Watts-Strogatz) and **scale-free** (Barabási-Albert) graphs. Try sizes such as $N \in \{50, 100, 300\}$, run 10 to 30 repetitions for each case and plot the **average infected fraction** over time.
+
+::: {.callout-note}
+## Exercise
+
+Answer these questions before you write any code:
 
 - Take a random graph and a scale-free graph with the same $N$ and the same mean degree. With the same $(\beta, \mu)$, which one do you expect to sustain more infection?
 - What should happen to the infected fraction when $\beta = 0$?
+:::
 
-You will compare **random** (Erdős-Rényi), **small-world** (Watts-Strogatz) and **scale-free** (Barabási-Albert) graphs, running 10 to 30 repetitions for each case and plotting the **average infected fraction** over time.
+::: {.callout-tip collapse="true"}
+## Solution
+
+- The scale-free graph. Its hubs have many neighbours, so they are infected early and often, and each infected hub exposes many susceptible nodes. In the language of [Epidemic Threshold](epidemic-threshold.qmd), its larger $\langle k^2 \rangle$ lowers the threshold.
+- Nobody can be infected, so the infected nodes only recover. Each one stays infected with probability $1 - \mu$ per step, and the expected number of infected nodes decays as $I(0)(1-\mu)^t$. You will use this case to validate your code.
+:::
 
 ## Imports and Parameters
 
@@ -99,7 +110,6 @@ When you run many repetitions, you use `SEED + r` so repetition `r` is a **diffe
 
 You will compare several models. Start by picking one. The three models are described in [Erdős-Rényi Random Graphs](erdos-renyi.qmd), [Small-World Networks](small-world.qmd) and [Preferential Attachment](preferential-attachment.qmd).
 
-
 ::: {.callout-tip collapse="true"}
 ## Example of Baseline Graph
 
@@ -109,7 +119,12 @@ G = nx.erdos_renyi_graph(n=N, p=0.08, seed=SEED)
 ```
 :::
 
-To make the comparison fair, all three graphs should have about the same mean degree, here $\langle k \rangle \approx 6$. Implement a small helper function `make_graph(<model>, <n>)`, where `<model>` is a string specifying the type of graph ("random", "small-world", or "scale-free") and `<n>` is the number of nodes.
+To make the comparison fair, all three graphs should have about the same mean degree, here $\langle k \rangle \approx 6$.
+
+::: {.callout-note}
+## Exercise
+
+Implement a helper function `make_graph(<model>, <n>)`, where `<model>` is a string specifying the type of graph ("random", "small-world" or "scale-free") and `<n>` is the number of nodes. Choose the parameters so that the mean degree is close to 6.
 
 ```python
 def make_graph(model: str, n: int, seed: int = SEED):
@@ -117,9 +132,12 @@ def make_graph(model: str, n: int, seed: int = SEED):
     # TODO
     return G
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solved: `make_graph()`
+## Solution
+
+The mean degree is $(n-1)p$ for $G(n, p)$, $k$ for Watts-Strogatz and about $2m$ for Barabási-Albert.
 
 ```{python}
 #| echo: true
@@ -152,84 +170,6 @@ plt.title("Baseline network")
 plt.show()
 ```
 
-## Initialize States
-
-Store the state of each individual directly on the graph as a **node attribute** called `state`.
-
-For example, start with everyone susceptible: create the attribute "state" and set it to "S" for all nodes:
-
-```{python}
-nx.set_node_attributes(G, "S", "state")
-
-print("Node 0:", G.nodes[0])  # node attributes are stored in a dictionary
-```
-
-To infect node 20:
-
-```{python}
-node_20 = G.nodes[20]
-node_20["state"] = "I"
-
-print("Node 20:", G.nodes[20])  # now node 20 has state "I"
-```
-
-Alternatively, use a dictionary to set the states of multiple nodes at once:
-
-```{python}
-# Infect nodes 20, 35, and 50
-# The rest will be susceptible by default
-state_dict = {node: "I" if node in [20, 35, 50] else "S" for node in G.nodes()}
-nx.set_node_attributes(G, state_dict, "state")
-
-print("Node 20:", G.nodes[20])  # node 20 is infected
-print("Node 21:", G.nodes[21])  # node 21 is susceptible
-```
-
-With that information in mind, you can create a function `initialize_state(<graph>)` that sets all nodes to "S" and then randomly picks a few nodes to set to "I" (the initial infected).
-
-```python
-def initialize_state(G, initial_infected=5, seed=SEED):
-    # TODO: start everyone as 'S' using node attributes
-    # TODO: randomly pick initial_infected nodes and set their node attribute to 'I'
-    # Optional: return G (mutated) for convenience
-    return G
-```
-
-Remember that you can use a seeded random number generator (via `np.random.default_rng(seed)`) to pick random nodes from the graph.
-
-::: {.callout-tip collapse="true"}
-## Solved: `initialize_state()`
-
-```{python}
-#| echo: true
-#| message: false
-#| warning: false
-def initialize_state(G, initial_infected=5, seed=SEED, rng=None):
-    if rng is None:
-        rng = np.random.default_rng(seed)
-
-    # Start everyone susceptible
-    nx.set_node_attributes(G, "S", "state")
-
-    # Infect a random subset
-    infected = rng.choice(list(G.nodes()), size=initial_infected, replace=False)
-    for node in infected:
-        G.nodes[node]["state"] = "I"
-
-    return G
-```
-:::
-
-Always validate your functions. Here, check that the number of infected nodes is correct:
-
-```{python}
-initialize_state(G, initial_infected=initial_infected, seed=SEED)
-print(
-    "Initially infected:",
-    sum(G.nodes[node]["state"] == "I" for node in G.nodes()),
-)
-```
-
 ## What's Next?
 
-[SIS Simulation](sis-network-simulation.qmd){.btn .btn-primary}
+[SIS Initial State](sis-network-states.qmd){.btn .btn-primary}

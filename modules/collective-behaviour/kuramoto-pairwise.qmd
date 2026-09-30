@@ -1,0 +1,91 @@
+---
+title: "Kuramoto Lab: Pairwise vs Mean Field"
+subtitle: "Module 2: Synchronization and Collective Behaviour"
+format: html
+---
+
+::: {.callout-tip}
+## Optional extension
+
+This page is optional. You can compare the pairwise form of the ODE with the mean-field form. Implement both versions and see how they differ in computational cost and in the resulting dynamics. The mean-field form is much faster for large populations and gives the same trajectories.
+:::
+
+## Pairwise form
+
+You can write the right-hand side in two ways ([The Kuramoto Model](kuramoto-model.qmd) and [The Order Parameter](order-parameter.qmd)):
+
+$$
+\dot\theta_i = \omega_i + \frac{K}{N}\sum_{j=1}^N \sin(\theta_j - \theta_i)
+\qquad\text{or}\qquad
+\dot\theta_i = \omega_i + K r \sin(\psi - \theta_i).
+$$
+
+The pairwise form is straightforward but expensive for large $N$. The mean-field form is cheaper and shows how each oscillator responds to the whole population.
+
+::: {.callout-note}
+## Exercise
+
+Write `kuramoto_ode_pairwise()`, which follows the pairwise form of the model in [The Kuramoto Model](kuramoto-model.qmd) directly. Rename your first function `kuramoto_ode_meanfield()`. Check that both return the same derivatives for the same input.
+
+```python
+def kuramoto_ode_pairwise(t, theta, omega, coupling_strength=1.0):
+    # TODO: build the matrix of phase differences theta_j - theta_i
+
+    # TODO: sum sin(theta_j - theta_i) over j and scale by K / N
+    return dtheta_dt
+```
+:::
+
+::: {.callout-tip collapse="true"}
+## Hint
+
+Broadcasting builds the full matrix of differences in one line: `theta[None, :] - theta[:, None]` has entry $\theta_j - \theta_i$ in row $i$, column $j$.
+
+Once both functions exist, switching between them is as simple as changing the ODE function in the `solve_ivp()` call inside the `update_function()` of [Animation](kuramoto-animation.qmd):
+
+```python
+sol = solve_ivp(
+    kuramoto_ode_pairwise, # Change this to the other ODE function
+    (0, dt),
+    theta,
+    args=(omega, coupling_strength),
+    )
+```
+
+This is why **modularity** matters. By keeping your code organized and modular, you can swap out one component (like the ODE function) without rewriting the animation code. A modular structure also saves work in the [Kuramoto Assignment](assignment-kuramoto.qmd), where you implement a different model of coupled oscillators, the Millennium Bridge.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+```python
+def kuramoto_ode_pairwise(t, theta, omega, coupling_strength=1.0):
+    # Row i, column j holds theta_j - theta_i
+    diff = theta[None, :] - theta[:, None]
+    dtheta_dt = omega + coupling_strength / len(theta) * np.sin(diff).sum(axis=1)
+    return dtheta_dt
+
+
+theta, omega = initialize_oscillators(100, seed=1)
+print(np.allclose(
+    kuramoto_ode_pairwise(0, theta, omega, 2.0),
+    kuramoto_ode_meanfield(0, theta, omega, 2.0),
+))  # True
+```
+:::
+
+## Computational cost
+
+::: {.callout-note}
+## Exercise
+
+Time both ODE functions with `%timeit` (or `time.perf_counter()`) for $N = 100$, $1000$ and $5000$. How does the cost grow with $N$ in each case?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+The pairwise version builds an $N \times N$ matrix of phase differences, so one evaluation costs $O(N^2)$ time and memory. The mean-field version computes one complex mean, which costs $O(N)$. Going from $N = 1000$ to $N = 5000$ should multiply the pairwise time by roughly 25 and the mean-field time by roughly 5. Both give the same trajectories up to round-off.
+:::
+
+Next: [Animation](kuramoto-animation.qmd).

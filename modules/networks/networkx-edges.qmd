@@ -1,0 +1,132 @@
+---
+title: "Edges and Weights"
+subtitle: "Module 5: Complex Networks"
+format: html
+---
+
+::: {.callout-note}
+## Toolkit page
+This page is self-study material for Session 23. It continues [NetworkX Basics](networkx-basics.qmd).
+:::
+
+The first chunk rebuilds the country graph of the previous page, with four nodes and a population attribute.
+
+```{python}
+import networkx as nx
+
+G = nx.Graph()
+G.add_node("Spain", population=47_000_000)
+G.add_node("Portugal", population=10_000_000)
+G.add_node("France", population=67_000_000)
+G.add_node("Italy", population=60_000_000)
+```
+
+## Edges (Links)
+
+Edges represent the connections between nodes in a graph. To add edges to the graph, you can use the `add_edge(<node1>, <node2>)` method. This will create an undirected edge between `node1` and `node2` (you refer to nodes by their IDs). You can see the list of edges in the graph using the `edges()` method.
+
+```{python}
+#| echo: true
+#| message: true
+# Add edges between the nodes (neighboring countries)
+G.add_edge("Spain", "Portugal")
+G.add_edge("Spain", "France")
+# Show the edges in the graph
+print(G.edges())
+```
+
+Because you are working on an **undirected** graph, the connection between two nodes does not have a direction. However, you can also create directed graphs where the edges have a direction (from one node to another) using `DiGraph()` instead of `Graph()`. In a directed graph, you use `add_edge(<source>, <target>)` to specify the direction of the edge.
+
+### Edge Attributes
+
+Just like nodes, edges can also have attributes, such as weight, which might represent the strength of the connection. For example, in a social network, an edge might represent a friendship between two people, and the weight could represent how close they are.
+
+You can add attributes to an edge by accessing it through `G.edges[<node1>, <node2>]` and assigning values to the attributes. For example, add a "distance" (between capitals) attribute to represent the distance between the countries:
+
+```{python}
+#| echo: true
+#| message: true
+# Add distance attribute to the edges
+G.edges["Spain", "Portugal"]["distance"] = 600  # distance in kilometers
+G.edges["Spain", "France"]["distance"] = 1000  # distance in kilometers
+
+# Show the edges with their attributes
+distance = nx.get_edge_attributes(G, 'distance')
+for edge, dist in distance.items():
+    print(f"{edge}: {dist} km")
+```
+
+Using `get_edge_attributes(<graph>, <attribute>)`, you can retrieve the distance attribute for all edges in the graph as a dictionary.
+
+Again, you can also add attributes to an edge at the same time as you create it using the `add_edge()` method with keyword arguments. For example:
+
+```{python}
+#| echo: true
+#| message: true
+# Add a new edge with attributes
+G.add_edge("France", "Italy", distance=800)
+
+# Show the edges with their attributes
+distance = nx.get_edge_attributes(G, 'distance')
+for edge, dist in distance.items():
+    print(f"{edge}: {dist} km")
+```
+
+### Adding Nodes and Edges Together
+
+You can also add nodes and edges together using the `add_edge()` method. If you add an edge between two nodes that do not exist in the graph, `networkx` will automatically create those nodes. For example:
+
+```{python}
+#| echo: true
+#| message: true
+# Add an edge between two nodes that do not exist
+G.add_edge("USA", "Canada", distance=3000)
+G.add_edge("Netherlands", "Germany", distance=500)
+G.add_edge("Germany", "France", distance=900)
+
+# Add the population attribute for the new nodes separately
+G.nodes["USA"]["population"] = 331_000_000
+G.nodes["Canada"]["population"] = 38_000_000
+G.nodes["Netherlands"]["population"] = 17_000_000
+G.nodes["Germany"]["population"] = 83_000_000
+
+# Show the nodes and edges in the graph
+print("Nodes:", G.nodes())
+print("Edges:", G.edges())
+```
+
+### Weighted Edges
+
+The most common edge attribute is weight, which represents the strength of the connection between two nodes. For example, in a social network, the weight of an edge could represent how close two people are. In a transportation network, the weight could represent the distance or travel time between two locations.
+
+Weight is so common that `networkx` has a special method to add weighted edges: `add_weighted_edges_from()`. This method takes a list of tuples, where each tuple contains the source node, target node, and weight of the edge. For example:
+
+```{python}
+#| echo: true
+#| message: true
+
+# Initialize a directed graph
+D_contracts = nx.DiGraph()
+
+# Add weighted edges (contracts between companies with the amount of money as weight)
+# Disclaimer: weights are made up
+weighted_edges = [
+    ("OpenAI", "Microsoft", 100_000_000),
+    ("OpenAI", "Oracle", 50_000_000),
+    ("Microsoft", "Nvidia", 20_000_000),
+    ("Oracle", "Nvidia", 10_000_000),
+    ("Nvidia", "OpenAI", 5_000_000),
+]
+D_contracts.add_weighted_edges_from(weighted_edges)
+
+# Show the edges with their weights
+weights = nx.get_edge_attributes(D_contracts, 'weight')
+for edge, weight in weights.items():
+    print(f"{edge}: ${weight}")
+```
+
+## What's Next?
+
+The next page draws these graphs.
+
+[Drawing Graphs](networkx-drawing.qmd){.btn .btn-primary}

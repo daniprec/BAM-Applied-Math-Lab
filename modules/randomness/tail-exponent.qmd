@@ -18,7 +18,17 @@ a = np.abs(r - r.mean())
 
 ## Prediction
 
+::: {.callout-note}
+## Exercise
+
 Mandelbrot's stable model predicts $\alpha < 2$ [@mandelbrot1963variation]. A Gaussian has no power-law tail at all. Which value do you expect for your series? Write it down before you estimate it.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+For market returns expect a value between 2 and 5, often close to 3 [@cont2001empirical; @gopikrishnan1998inverse]. That is heavier than a Gaussian but lighter than a stable law. Compare your estimate with this range in the Interpretation section.
+:::
 
 ## The Hill estimator
 
@@ -34,6 +44,11 @@ The choice of $k$ is a trade-off. Small $k$ uses few points and gives a noisy es
 
 ## Core activity: implement and apply the estimator
 
+::: {.callout-note}
+## Exercise
+
+Implement @eq-hill. Then apply it to the absolute returns `a` with $k = 100$.
+
 ```python
 def hill(x, k):
     """Hill estimate of the tail index from the k largest values of x > 0."""
@@ -41,9 +56,10 @@ def hill(x, k):
     # TODO: return 1 / mean(log(xs[:k] / xs[k]))
     return ...
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solution: Hill estimator
+## Solution
 
 ```{python}
 def hill(x, k):
@@ -109,7 +125,25 @@ For market returns @cont2001empirical reports tail indices between 2 and 5, and 
 - A power law holds only asymptotically. A slowly varying correction, such as a logarithm, changes the estimate at every finite $k$ [@cont2001empirical].
 - There is no automatic rule for $k$ in this lab. Report the range of $k$ you used and show the Hill plot.
 
-::: {.callout-tip}
 ## Optional extension
+
+::: {.callout-note}
+## Exercise
+
 Estimate the tail index separately for losses ($r < 0$) and gains ($r > 0$). Is there evidence for the gain/loss asymmetry listed by @cont2001empirical? Use the standard errors to judge whether the difference is larger than the noise.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Use the same $k$ for both tails. The standard error of the difference of two independent estimates is $\sqrt{s_1^2 + s_2^2}$. A smaller $\alpha$ for losses means a heavier loss tail. Call the asymmetry real only if the difference is about two standard errors or more, and check that it holds over a range of $k$.
+
+```python
+rc = r - r.mean()
+losses, gains = -rc[rc < 0], rc[rc > 0]
+k = 100
+a_loss, a_gain = hill_estimator(losses, k), hill_estimator(gains, k)
+se = np.hypot(a_loss / np.sqrt(k), a_gain / np.sqrt(k))
+print(f"losses {a_loss:.2f}, gains {a_gain:.2f}, difference {a_loss - a_gain:.2f} +/- {se:.2f}")
+```
 :::

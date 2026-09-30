@@ -32,11 +32,32 @@ the number of people who left the susceptible class during that day. `sir_incide
 
 ## Prediction
 
+::: {.callout-note}
+## Exercise
+
 Before fitting, estimate the growth rate from the early data by eye: on a log scale, the rising part of the curve is roughly a straight line with slope $\beta - \gamma$. What slope do you expect for the synthetic data?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+The synthetic data use $\beta = 0.3$ and $\gamma = 0.1$, so the slope of $\ln c_d$ is $\beta - \gamma = 0.2$ per day: cases double about every $\ln 2 / 0.2 \approx 3.5$ days. A straight-line fit to the first weeks gives a value close to this.
+
+```{python}
+early = (days >= 5) & (days <= 30) & (cases > 0)
+slope = np.polyfit(days[early], np.log(cases[early]), 1)[0]
+print(f"slope of log(cases) for days 5 to 30: {slope:.3f} per day")
+```
+:::
 
 ## Implementation
 
 Least squares chooses the parameters that minimize $\sum_d (\sqrt{\mu_d} - \sqrt{c_d})^2$, where $c_d$ are the observed counts. The square root reduces the weight of the large counts near the peak, since count noise grows with the mean.
+
+::: {.callout-note}
+## Exercise
+
+Complete the residual function for a population of $N = 10^6$. Here `i0` is the initial infected fraction.
 
 ```python
 from scipy.optimize import least_squares
@@ -48,10 +69,30 @@ def residuals(log_params):
 
 result = least_squares(residuals, np.log([0.25, 0.12, 1e-5]))
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
 ## Solution
+
 `amlab.epidemics.fit_sir_incidence` implements exactly this, with bounds on each parameter. It takes the initial number of infected people in the guess instead of the fraction.
+
+```{python}
+from scipy.optimize import least_squares
+
+from amlab.epidemics import sir_incidence
+
+
+def residuals(log_params):
+    beta, gamma, i0 = np.exp(log_params)
+    model = sir_incidence(days, beta, gamma, i0, 1e6)
+    # clip tiny negative values produced by the ODE solver
+    return np.sqrt(np.clip(model, 0, None)) - np.sqrt(cases)
+
+
+result = least_squares(residuals, np.log([0.25, 0.12, 1e-5]))
+beta_hat, gamma_hat, i0_hat = np.exp(result.x)
+print(f"beta = {beta_hat:.3f}, gamma = {gamma_hat:.3f}, i0 = {i0_hat:.1e}")
+```
 :::
 
 ```{python}

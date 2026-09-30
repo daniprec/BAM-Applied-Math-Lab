@@ -20,15 +20,34 @@ horizons = np.array([1, 2, 5, 10, 20, 50, 100])
 
 ## Prediction
 
+::: {.callout-note}
+## Exercise
+
 For each model below, predict how the standard deviation of $r(\Delta t)$ and its excess kurtosis change with $\Delta t$:
 
 - i.i.d. Gaussian returns;
 - i.i.d. returns with finite variance but fat tails;
 - returns that are uncorrelated but show volatility clustering.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+In all three cases the standard deviation grows as $\sqrt{\Delta t}$, because the variances of uncorrelated terms add. The kurtosis tells the models apart:
+
+- i.i.d. Gaussian: the excess kurtosis is 0 at every horizon.
+- i.i.d. with fat tails (finite fourth moment): it starts positive and falls as $K_1 / \Delta t$.
+- Volatility clustering: it starts positive and falls more slowly than $K_1 / \Delta t$, because days in a calm or a turbulent period are not independent.
+:::
 
 ## Core activity: aggregate the returns
 
 The log return over $\Delta t$ days is the sum of $\Delta t$ daily log returns. Use non-overlapping blocks, so that different aggregated returns do not share days.
+
+::: {.callout-note}
+## Exercise
+
+Complete `aggregate_returns`. Then compute the standard deviation, the excess kurtosis and the density at zero of $r(\Delta t)$ for every horizon in `horizons`.
 
 ```python
 def aggregate_returns(r, horizon):
@@ -37,9 +56,10 @@ def aggregate_returns(r, horizon):
     # TODO: reshape r[: m * horizon] to (m, horizon) and sum along axis 1
     return ...
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solution: aggregation
+## Solution
 
 ```{python}
 def aggregate_returns(r, horizon):
@@ -122,16 +142,45 @@ print(f"p(0) slope, original data: {slope_p0:.3f}  ->  effective alpha = {-1 / s
 - The sample kurtosis is unreliable for heavy tails [@cont2001empirical]. Use it to compare series, not as a precise value.
 - The $p(0)$ estimate depends on the window width. Try a few widths and check that your conclusion does not change.
 
-::: {.callout-tip}
 ## Optional extension
+
+::: {.callout-note}
+## Exercise
+
 Plot the histograms of $r(\Delta t)/\Delta t^{1/2}$ for $\Delta t = 1, 5, 20$ on one log-density axis. If the returns scaled like a Gaussian random walk, the curves would collapse onto one. Repeat with $\Delta t^{1/1.4}$ and compare which rescaling collapses the centre better, as in @mantegna1995scaling.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Loop over the two exponents and draw one panel for each. Judge the collapse near zero, not in the tails, where the long horizons have few points.
+
+```python
+fig, axes = plt.subplots(1, 2, figsize=(9, 3.5), sharey=True)
+for ax, alpha in zip(axes, [2.0, 1.4]):
+    for h in [1, 5, 20]:
+        x = aggregate_returns(r, h) / h ** (1 / alpha)
+        dens, edges = np.histogram(x, bins=40, density=True)
+        ax.semilogy(0.5 * (edges[1:] + edges[:-1]), dens, ".-", label=f"dt = {h}")
+    ax.set_title(f"rescaled by dt^(1/{alpha})")
+    ax.set_xlabel("rescaled return")
+axes[0].set_ylabel("density")
+axes[0].legend()
+plt.tight_layout()
+plt.show()
+```
 :::
 
 ## Exit question
 
+::: {.callout-note}
+## Exercise
+
 Suppose that on the same daily series the $p_{\Delta t}(0)$ method gives an effective $\alpha$ below 2 while the Hill estimator of [Tail Exponent](tail-exponent.qmd) gives about 3. Is that a contradiction?
+:::
 
 ::: {.callout-tip collapse="true"}
-## Answer
+## Solution
+
 No. The two methods look at different parts of the distribution. The Hill estimator measures the far tail of one-day returns. The $p_{\Delta t}(0)$ method measures how the height of the centre changes under aggregation, which depends on the whole distribution and on the dependence between days. @mantegna1995scaling found exactly this combination for the S&P 500: a Lévy-like centre with $\alpha \approx 1.4$ and tails that fall off faster than a Lévy law, so the variance is finite. The truncated Lévy flight of @mantegna1994stochastic is one model with both properties.
 :::

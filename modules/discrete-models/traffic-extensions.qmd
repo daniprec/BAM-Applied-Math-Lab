@@ -15,9 +15,15 @@ Reproduce the slow-to-start experiment below and explain why two initial conditi
 ## Prediction
 
 ::: {.callout-note}
-## Before you run the code
+## Exercise
 
-For each extension, write down whether you expect a new feature in $q(\rho)$ (a new branch, a jump, a change of slope) or only a lower or higher curve.
+Before you run the code, write down for each extension whether you expect a new feature in $q(\rho)$ (a new branch, a jump, a change of slope) or only a lower or higher curve.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Slow-to-start adds a new feature: a second, metastable high-flow branch and hysteresis. Slow vehicles on one lane change the slope of the free-flow branch to roughly the speed of the slowest cars. Two lanes with identical cars only give a curve close to the single-lane one, per lane. The table under Interpretation summarizes the results, and the figures below show them.
 :::
 
 ## Slow-to-start rule
@@ -124,10 +130,51 @@ With identical cars, the flow per lane on two lanes stays close to the single-la
 - Each point is one run with one seed. Near the edges of the hysteresis range, the result depends on the seed and on the run length, because metastable states decay at random times.
 - The lane-changing rule here is a simplified symmetric rule. Rickert et al. show that the details of lane changing affect the shape of the diagram [@rickert1996two].
 
-::: {.callout-tip}
-## Optional extension
+## Optional extension: an open road
 
-Replace the ring by an open road: cars enter at the left with probability $\alpha$ per step and leave at the right. Plot the flow as a function of $\alpha$.
+::: {.callout-note}
+## Exercise
+
+Optional. Replace the ring by an open road of 200 cells: when cell 0 is empty, a car enters there with probability $\alpha$ per step, and cars that pass the last cell leave. Measure the flow as the number of cars that leave per step, and plot it as a function of $\alpha$ for $v_{\max} = 5$ and $p = 0.3$.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Store the positions in increasing order, so that the last entry is the front car. The front car sees a free road ahead.
+
+```{python}
+def open_road_flow(alpha, length=200, steps=2000, burn_in=500, vmax=5, p=0.3, seed=0):
+    rng = np.random.default_rng(seed)
+    x = np.array([], dtype=int)    # positions, increasing
+    v = np.array([], dtype=int)
+    exits = 0
+    for t in range(steps):
+        if (x.size == 0 or x[0] > 0) and rng.random() < alpha:
+            x = np.concatenate(([0], x))      # a new car enters at cell 0
+            v = np.concatenate(([vmax], v))
+        gaps = np.append(np.diff(x) - 1, vmax)  # the front car sees a free road
+        v = np.minimum(np.minimum(v + 1, vmax), gaps)
+        slow = rng.random(x.size) < p
+        v = np.where(slow, np.maximum(v - 1, 0), v)
+        x = x + v
+        out = x >= length                     # cars that pass the last cell leave
+        if t >= burn_in:
+            exits += out.sum()
+        x, v = x[~out], v[~out]
+    return exits / (steps - burn_in)
+
+
+alphas = np.linspace(0.05, 1.0, 12)
+fig, ax = plt.subplots(figsize=(6, 3))
+ax.plot(alphas, [open_road_flow(a) for a in alphas], marker="o")
+ax.set_xlabel(r"Entry probability $\alpha$")
+ax.set_ylabel("Cars leaving per step")
+plt.tight_layout()
+plt.show()
+```
+
+At small $\alpha$ almost every car that enters also leaves, so the flow is close to $\alpha$. The flow levels off at about 0.45 near $\alpha \approx 0.5$ to $0.7$ and drops slightly, to about 0.40, at $\alpha = 1$. In that limit a new car enters as soon as cell 0 is free, right behind the previous car, so a dense queue forms near the entrance, and the flow is limited by the rate at which cars leave that queue. Both values stay below the maximum flow of about 0.5 on a ring with the same $p$. Check the numbers with several seeds.
 :::
 
 ## Next

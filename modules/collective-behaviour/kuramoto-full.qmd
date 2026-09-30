@@ -18,7 +18,10 @@ Alternatively, you can build the full simulation from scratch by following the s
 
 ## Order Parameter
 
-Complete the function that computes the order parameter:
+::: {.callout-note}
+## Exercise
+
+Complete the function that computes the order parameter. It returns $r$, $\psi$ and the two coordinates $r\cos\psi$ and $r\sin\psi$ of the red dot.
 
 ```python
 def kuramoto_order_parameter(theta: np.ndarray) -> tuple:
@@ -30,9 +33,12 @@ def kuramoto_order_parameter(theta: np.ndarray) -> tuple:
     rsinphi = np.imag(order_param)
     return r, phi, rcosphi, rsinphi
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Hint: Order parameter (click to expand)
+## Solution
+
+`axis=0` averages over oscillators, so the same function also works on the 2D array `sol.y` and returns $r(t)$.
 
 ```python
 def kuramoto_order_parameter(theta: np.ndarray) -> tuple:
@@ -47,10 +53,33 @@ def kuramoto_order_parameter(theta: np.ndarray) -> tuple:
 
 ## Sliders
 
-Use sliders to update the coupling strength, number of oscillators, and the distribution scale. The template shows how to restart the animation when values change.
+Use sliders to update the coupling strength, number of oscillators, and the distribution scale. The template creates the three sliders, `slider_coupling`, `slider_num_oscillators` and `slider_sigma`, inside `run_simulation()`.
+
+::: {.callout-note}
+## Exercise
+
+Write the callback `update_sliders()` that reads the slider values, updates the parameters and reinitializes the oscillators. Then attach it to the three sliders.
+
+```python
+def update_sliders(_):
+    # TODO: declare the outer variables you change as nonlocal
+
+    # TODO: read the new values from the sliders
+
+    # TODO: reinitialize theta and omega
+
+# TODO: attach update_sliders to each slider with on_changed()
+```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Hint: Slider update (click to expand)
+## Hint
+
+The callback is defined inside `run_simulation()`, so you need `nonlocal` (not `global`) to change its variables. The number of oscillators must be an integer: use `int(slider_num_oscillators.val)`.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
 
 ```python
 def update_sliders(_):
@@ -59,7 +88,13 @@ def update_sliders(_):
     num_oscillators = int(slider_num_oscillators.val)
     sigma = slider_sigma.val
     theta, omega = initialize_oscillators(num_oscillators, sigma=sigma)
+
+slider_coupling.on_changed(update_sliders)
+slider_num_oscillators.on_changed(update_sliders)
+slider_sigma.on_changed(update_sliders)
 ```
+
+A complete version, which also pauses the animation while the parameters change and restarts the simulation when you press a key, is in [amlab/odes_coupled/kuramoto.py](../../amlab/odes_coupled/kuramoto.py). Run it with `python amlab/odes_coupled/kuramoto.py`.
 :::
 
 When you finish, run the full simulation and explore how synchronization changes as you vary $K$. A good test: set $K$ just below and just above $K_c$ and watch how long $r(t)$ takes to settle.

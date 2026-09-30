@@ -14,14 +14,22 @@ $$ {#eq-vicsek-order-parameter}
 
 You can compute this at each time step to see how the system evolves. In the disordered phase, $\varphi \approx 0$ because the headings are random and cancel out. In the ordered phase, $\varphi \approx 1$ because all particles align in the same direction.
 
+::: {.callout-note}
+## Exercise
+
+Implement @eq-vicsek-order-parameter.
+
 ```python
 def vicsek_order_parameter(theta: np.ndarray, v0: float = 0.03) -> float:
     # TODO: Compute the order parameter phi based on the headings theta
     return phi
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solved: Order parameter (click to expand)
+## Solution
+
+The speed $v_0$ cancels, so `np.abs(np.mean(np.exp(1j * theta)))` gives the same value.
 ```python
 def vicsek_order_parameter(theta: np.ndarray, v0: float = 0.03) -> float:
     """
@@ -37,7 +45,7 @@ def vicsek_order_parameter(theta: np.ndarray, v0: float = 0.03) -> float:
 
 ## Experiment: reproduce Figure 2
 
-Try to reproduce Figure 2 of the original paper [@vicsek1995novel], which shows the order parameter $\varphi$ as a function of noise $\eta$ for different densities $\rho = N / L^2$. Run simulations for different values of $N$, $L$, and $\eta$, compute the order parameter at each time step, and then average it over time to get a single value for each combination of parameters.
+Try to reproduce Figure 2 of the original paper [@vicsek1995novel], which shows the order parameter $\varphi$ as a function of noise $\eta$ and of the density $\rho = N / L^2$. Run simulations for different values of $N$, $L$, and $\eta$, compute the order parameter at each time step, and then average it over time to get a single value for each combination of parameters.
 
 For reference, here are the parameters used in the original paper for Figure 2(a):
 
@@ -112,6 +120,76 @@ plt.show()
 plt.close()
 ```
 
+
+::: {.callout-note}
+## Exercise
+
+Write a function that runs the model and returns the time-averaged order parameter. Use it to draw your versions of @fig-vicsek-order-parameter and @fig-vicsek-order-parameter-density with the parameters above.
+
+```python
+def time_averaged_order(num_boids, box_size, noise, steps=5000, avg_steps=1000):
+    xy, theta = initialize_particles(num_boids, box_size)
+    ls_phi = []
+    for step in range(steps):
+        # TODO: advance one step with vicsek_equations
+
+        # TODO: in the last avg_steps steps, store the order parameter
+        pass
+    # TODO: return the mean of the stored values
+```
+:::
+
+::: {.callout-tip collapse="true"}
+## Hint
+
+Start short. With `steps=1000` and `avg_steps=200` each run of $N = 100$ takes well under a second with the vectorized update. Increase the number of steps once the curves look right, and check that the result does not change much.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def time_averaged_order(num_boids, box_size, noise, steps=5000, avg_steps=1000):
+    xy, theta = initialize_particles(num_boids, box_size)
+    ls_phi = []
+    for step in range(steps):
+        xy, theta = vicsek_equations(xy, theta, noise=noise, box_size=box_size)
+        if step >= steps - avg_steps:
+            ls_phi.append(vicsek_order_parameter(theta))
+    return np.mean(ls_phi)
+
+
+# Figure 2(a): phi against noise at fixed density
+density = 4.0
+noises = np.linspace(0.0, 5.0, 10)
+for num_boids in [40, 100]:
+    box_size = np.sqrt(num_boids / density)
+    phi = [time_averaged_order(num_boids, box_size, eta) for eta in noises]
+    plt.plot(noises, phi, "o", label=f"N = {num_boids}")
+plt.xlabel(r"Noise $\eta$")
+plt.ylabel(r"Order parameter $\varphi$")
+plt.legend()
+plt.show()
+
+# Figure 2(b): phi against density at fixed noise and box size
+box_size = 20
+densities = np.logspace(-1, np.log10(4.0), 6)
+phi = [
+    time_averaged_order(int(rho * box_size**2), box_size, noise=2.0)
+    for rho in densities
+]
+plt.plot(densities, phi, "o")
+plt.xlabel(r"Density $\rho$")
+plt.ylabel(r"Order parameter $\varphi$")
+plt.show()
+```
+
+The second part is slow for $\rho = 4$ ($N = 1600$). Lower the number of steps, or use a smaller box as in @fig-vicsek-order-parameter-density, while you test your code.
+:::
 
 ## Interpretation
 

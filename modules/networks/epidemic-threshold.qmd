@@ -92,7 +92,45 @@ A BA network with $m = 3$ has $N = 10^9$ nodes. Estimate $\lambda_c$ from the he
 $\lambda_c \approx 2/\big((m+1)\ln N\big) = 2/(4 \times 20.7) \approx 0.024$. The ER graph gives $\lambda_c = 1/(\langle k \rangle + 1) = 1/7 \approx 0.14$ at any size. Even for a network the size of a large country the BA threshold is small but clearly positive.
 :::
 
-::: {.callout-tip}
 ## Optional extension
+
+::: {.callout-note}
+## Exercise
+
 Use `amlab.networks_spreading.run_sis_fast` on a BA graph with $N = 2000$. Fix $\mu = 0.05$, vary $\beta$, and plot the long-time prevalence against $\lambda = \beta/\mu$. Locate the value of $\lambda$ where the prevalence leaves zero and compare it with both predictions.
 :::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Start from 50 infected nodes, run 1000 steps and average the last 200 steps over 3 runs.
+
+```python
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
+from amlab.networks_spreading import run_sis_fast
+
+rng = np.random.default_rng(7)
+G = nx.barabasi_albert_graph(2000, 3, seed=7)
+mu = 0.05
+lams = np.linspace(0.02, 0.2, 10)
+prevalence = [
+    np.mean([run_sis_fast(G, lam * mu, mu, steps=1000, initial_infected=50, rng=rng)[-200:].mean() for _ in range(3)])
+    for lam in lams
+]
+k = np.array([d for _, d in G.degree()], dtype=float)
+plt.plot(lams, prevalence, "o-")
+plt.axvline(k.mean() / (k**2).mean(), color="grey", ls=":", label="<k>/<k²>")
+plt.xlabel(r"$\lambda = \beta/\mu$")
+plt.ylabel("long-time prevalence")
+plt.legend()
+plt.show()
+```
+
+For this graph both predictions give $\lambda_c \approx 0.059$. The simulated prevalence is still zero at $\lambda = 0.08$ and becomes positive between $0.08$ and $0.10$. The mean-field theories ignore dynamical correlations: a newly infected node cannot pass the infection back to the neighbour that infected it while that neighbour is still infected, so part of the infection attempts are wasted and the true threshold is higher. On a finite graph, fluctuations also end outbreaks that are just above threshold within the simulated time.
+:::
+
+## What's Next?
+
+[Vaccination Strategies](vaccination-strategies.qmd){.btn .btn-primary}

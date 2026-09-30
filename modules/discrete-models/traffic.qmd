@@ -12,10 +12,29 @@ Traffic flow is a natural agent-based model. Each car moves according to simple 
 Implement `step()` for the Nagel-Schreckenberg model on a periodic road, validate it, and produce space-time diagrams for a free-flow and a congested density.
 :::
 
-::: {.callout-note}
 ## Prediction
 
+::: {.callout-note}
+## Exercise
+
 With $v_{\max} = 5$ and $p = 0$, below which density should every car end up moving at $v_{\max}$? What changes in the space-time diagram when you switch on $p = 0.3$?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+A car at $v_{\max} = 5$ needs 5 empty cells ahead, so each car uses 6 cells. Below $\rho = 1/(v_{\max}+1) = 1/6 \approx 0.17$ there is room for every car, and with $p = 0$ all cars reach $v_{\max}$ after a transient. With $p = 0.3$ random slowdowns start jams even below that density. In the diagram they appear as dense, nearly horizontal bands that drift to the left, against the traffic.
+:::
+
+## What you need
+
+- `numpy` stores the occupancy pattern, the speed of each car and the experimental results.
+- `matplotlib.pyplot` plots space-time diagrams and flow-density curves.
+
+::: {.callout-tip}
+## Scripts or notebooks?
+
+Use a notebook for density sweeps, repeated trials and parameter scans. Use a script if you want a faster interactive visualization or plan to add widgets later.
 :::
 
 ```{python}
@@ -73,6 +92,11 @@ At each time step, every car follows the same four rules:
 
 The key point is that all cars update synchronously.
 
+::: {.callout-note}
+## Exercise
+
+Complete `step()`. It returns the new occupancy and speed arrays after one synchronous update of all cars on a periodic road.
+
 ```python
 def step(occupied, speeds, vmax=5, p_slow=0.3, rng=None):
     if rng is None:
@@ -84,9 +108,16 @@ def step(occupied, speeds, vmax=5, p_slow=0.3, rng=None):
     # TODO: move cars
     return new_occupied, new_speeds
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Hint: Update step (click to expand)
+## Hint
+
+Work with the car positions `positions = np.where(occupied)[0]`, which are sorted along the road. The gap of a car is the number of empty cells up to the next car, `(next_pos - pos - 1) % length`. The next car of the last car in the list is the first car, because the road is a ring. Write all new speeds first and move the cars only at the end, so that every car sees the old configuration.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
 
 ```python
 def step(occupied, speeds, vmax=5, p_slow=0.3, rng=None):

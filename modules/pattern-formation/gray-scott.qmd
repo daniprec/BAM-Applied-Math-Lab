@@ -6,9 +6,13 @@ format: html
 
 The Gray-Scott model combines diffusion with an autocatalytic reaction and produces spots, stripes, worms, and labyrinths depending on the parameters [@gray1984autocatalytic; @pearson1993complex].
 
-This page follows the 2D Gierer-Meinhardt solver. The grid, the Laplacian, and the Euler loop are the same. The new ingredient is the reaction term.
+This page follows the 2D Gierer-Meinhardt solver, and the jump is small.
 
-The main numerical change is the boundary condition: here you keep the periodic wrapping built into `np.roll()` instead of overwriting the edges with Neumann data.
+- The domain is still a rectangular 2D grid.
+- The Laplacian is still the vectorized 5-point stencil.
+- Time stepping is still explicit Euler.
+- The new ingredient is the reaction term, which is short to write and produces richer patterns.
+- The main numerical change is the boundary condition: you keep the periodic wrapping built into `np.roll()` instead of overwriting the edges with Neumann data.
 
 The PDE system is
 
@@ -57,6 +61,11 @@ plt.close()
 
 Gray-Scott is usually initialized near the steady state $(u, v) = (1, 0)$, then a small patch is perturbed.
 
+::: {.callout-note}
+## Exercise
+
+Set $u = 0.5$, $v = 0.25$ on a central square and add 10% noise there.
+
 ```python
 import numpy as np
 
@@ -73,9 +82,10 @@ r = 12
 
 # TODO: add 10% Gaussian noise inside the same patch
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solution: Gray-Scott initialization (click to expand)
+## Solution
 
 ```python
 uv[0, c - r : c + r, c - r : c + r] = 0.5
@@ -88,6 +98,9 @@ uv[:, c - r : c + r, c - r : c + r] *= 1 + noise
 
 ## Reuse the 2D Laplacian
 
+::: {.callout-note}
+## Exercise
+
 We will start with the 5-point stencil. If you implemented the previous page cleanly, you can reuse that helper almost unchanged.
 
 ```python
@@ -97,9 +110,10 @@ def laplacian(field):
     # TODO: write the 5-point stencil with np.roll
     return lap
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solution: 5-point stencil (click to expand)
+## Solution
 
 ```python
 def laplacian(field):
@@ -115,6 +129,11 @@ def laplacian(field):
 The only reason this already enforces periodic boundary conditions is that `np.roll()` wraps the array. If you wanted zero-flux or fixed-value boundaries here, you would keep the same Laplacian helper and reuse the boundary-update pattern from the 2D Gierer-Meinhardt page after every Euler step.
 
 ## Implement the Gray-Scott PDE
+
+::: {.callout-note}
+## Exercise
+
+Write the Gray-Scott right-hand side from @eq-gray-scott-model.
 
 ```python
 import numpy as np
@@ -132,9 +151,10 @@ def gray_scott_pde(t, uv, d1=0.1, d2=0.05, f=0.040, k=0.060):
     dv_dt =
     return np.array([du_dt, dv_dt])
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solution: Gray-Scott PDE (click to expand)
+## Solution
 
 ```python
 def gray_scott_pde(t, uv, d1=0.1, d2=0.05, f=0.040, k=0.060):
@@ -149,55 +169,7 @@ def gray_scott_pde(t, uv, d1=0.1, d2=0.05, f=0.040, k=0.060):
 ```
 :::
 
-## Time Step and Animate
-
-Because `np.roll()` wraps around the array, this implementation already uses **periodic boundary conditions**.
-
-This is the main conceptual difference from the previous page. There, we copied the edge values after each Euler step to model zero flux. Here, we let the pattern leave one side of the domain and re-enter on the opposite side.
-
-```python
-import matplotlib.animation as animation
-import matplotlib.pyplot as plt
-
-fig, ax = plt.subplots(figsize=(6, 6))
-im = ax.imshow(uv[1], cmap="jet", interpolation="bilinear", vmin=0, vmax=1)
-ax.axis("off")
-
-def update_frame(_):
-    # TODO: advance uv by one or more Euler steps
-    im.set_array(uv[1])
-    return [im]
-
-ani = animation.FuncAnimation(fig, update_frame, interval=1, blit=True)
-```
-
-::: {.callout-tip collapse="true"}
-## Solution: Gray-Scott animation (click to expand)
-
-```python
-def update_frame(_):
-    global uv
-    for _ in range(20):
-        uv = uv + gray_scott_pde(0, uv, d1=0.1, d2=0.05, f=0.040, k=0.060) * dt
-    im.set_array(uv[1])
-    return [im]
-```
-:::
-
-## Validation
-
-- **Time step.** With $d_1 = 0.1$, $dx = 1$ and the 5-point stencil, the bound is $dt \le dx^2/(4 d_1) = 2.5$. The course uses $dt = 1$ or $dt = 2$. Try $dt = 3$ and look for a checkerboard ([Time-Step Stability](time-step-stability.qmd)).
-- **Grid units.** `amlab.pdes_2d.gray_scott.laplacian` does not divide by $dx^2$, so it assumes $dx = 1$. If you change $dx$, divide the Laplacian by $dx^2$ and recompute the bound.
-- **Symmetry.** A single centred square with no noise keeps the four-fold symmetry of the initial condition. Noise is what breaks it.
-
-```{python}
-from amlab.turing import euler_dt_max
-
-for dt in (1.0, 2.0, 3.0):
-    print(f"dt = {dt}: stable? {dt <= euler_dt_max(dx=1.0, diffusion=0.1, ndim=2)}")
-```
-
-Next: [Gray-Scott Parameters](gray-scott-parameters.qmd).
+Next: [Gray-Scott Animation](gray-scott-animation.qmd).
 
 ::: {.callout-tip}
 Reference code is available in [amlab/pdes_2d/gray_scott.py](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/pdes_2d/gray_scott.py).

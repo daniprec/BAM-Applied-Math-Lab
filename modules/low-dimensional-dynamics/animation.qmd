@@ -8,6 +8,15 @@ This page summarizes the core Matplotlib pattern we use to animate trajectories 
 
 If you get stuck, compare with the complete [CDIMA animation](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/odes_2d/cdima.py) in the repository.
 
+## What you need
+
+- `scipy.integrate.solve_ivp` computes the trajectory; the state now has two components.
+- `matplotlib.pyplot` plots trajectories, nullclines, fixed points and time traces.
+- `matplotlib.animation` updates the plot frame by frame, in the phase plane and in time.
+- `matplotlib.backend_bases` gives you the event system, so a click in the phase plane can set a new initial condition and restart the simulation.
+
+Why scripts instead of Streamlit here? The most direct interactive behaviour comes from Matplotlib animations and click events, and those are simpler to prototype in standalone scripts than in a Streamlit app.
+
 ## Minimal Animation Template
 
 ```python
@@ -116,6 +125,11 @@ This is the mechanism used in the interactive scripts: recompute `solve_ivp(...)
 
 Matplotlib figures can react to user input via the event system. A common pattern is to capture clicks in a specific axis and use the click position as a new initial condition.
 
+::: {.callout-note}
+## Exercise
+
+Complete `mouse_click` so that a click in the phase plane `ax1` restarts the animation from the clicked point. You will need to stop the current animation, clear it, update the initial condition, and start over (see the previous section).
+
 ```python
 from matplotlib.backend_bases import MouseEvent
 
@@ -142,8 +156,30 @@ def mouse_click(event: MouseEvent):
 # Whenever the user clicks, we run the function "mouse_click".
 fig.canvas.mpl_connect("button_press_event", mouse_click)
 ```
+:::
 
-You will need to stop the current animation, clear it, update the parameters/initial conditions, and start over (see the previous section).
+::: {.callout-tip collapse="true"}
+## Solution
+
+This assumes `fig`, `ax1`, `ani`, the model `cdima`, the parameters `a, b`, `t_span` and `t_eval` are defined as in the template above. `update_simulation` in [amlab/odes_2d/cdima.py](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/odes_2d/cdima.py) is the full version, which also updates nullclines and the fixed point.
+
+```python
+def mouse_click(event: MouseEvent):
+    if event.inaxes != ax1:
+        return
+    x0, y0 = event.xdata, event.ydata
+
+    sol = solve_ivp(cdima, t_span, [x0, y0], args=(a, b), t_eval=t_eval)
+
+    ani.event_source.stop()
+    ani.frame_seq = ani.new_frame_seq()
+    ani._args = (sol.y,)
+    ani.event_source.start()
+
+
+fig.canvas.mpl_connect("button_press_event", mouse_click)
+```
+:::
 
 ## Validation
 

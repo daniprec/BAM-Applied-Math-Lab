@@ -1,0 +1,121 @@
+---
+title: "SIS Initial State"
+subtitle: "Module 5: Complex Networks"
+format: html
+---
+
+This page continues [SIS Model on Networks](sis-network-model.qmd). The first chunk repeats the parameters and the `make_graph` helper you wrote there.
+
+```{python}
+#| code-fold: true
+#| code-summary: "Setup from the previous page"
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
+
+SEED = 7
+beta = 0.20  # infection probability per infected neighbour (per step)
+mu = 0.10    # recovery probability (per step)
+steps = 120
+initial_infected = 5
+N = 100
+
+
+def make_graph(model: str, n: int, seed: int = SEED):
+    if model == "random":
+        return nx.erdos_renyi_graph(n=n, p=6 / (n - 1), seed=seed)
+    if model == "small-world":
+        return nx.watts_strogatz_graph(n=n, k=6, p=0.08, seed=seed)
+    if model == "scale-free":
+        return nx.barabasi_albert_graph(n=n, m=3, seed=seed)
+    raise ValueError("model must be one of: 'random', 'small-world', 'scale-free'")
+
+
+G = make_graph("random", n=N)
+```
+
+## Initialize States
+
+Store the state of each individual directly on the graph as a **node attribute** called `state`.
+
+For example, start with everyone susceptible: create the attribute "state" and set it to "S" for all nodes:
+
+```{python}
+nx.set_node_attributes(G, "S", "state")
+
+print("Node 0:", G.nodes[0])  # node attributes are stored in a dictionary
+```
+
+To infect node 20:
+
+```{python}
+node_20 = G.nodes[20]
+node_20["state"] = "I"
+
+print("Node 20:", G.nodes[20])  # now node 20 has state "I"
+```
+
+Alternatively, use a dictionary to set the states of multiple nodes at once:
+
+```{python}
+# Infect nodes 20, 35, and 50
+# The rest will be susceptible by default
+state_dict = {node: "I" if node in [20, 35, 50] else "S" for node in G.nodes()}
+nx.set_node_attributes(G, state_dict, "state")
+
+print("Node 20:", G.nodes[20])  # node 20 is infected
+print("Node 21:", G.nodes[21])  # node 21 is susceptible
+```
+
+::: {.callout-note}
+## Exercise
+
+Create a function `initialize_state(<graph>)` that sets all nodes to "S" and then randomly picks a few nodes to set to "I" (the initial infected). Use a seeded random number generator (`np.random.default_rng(seed)`) to pick the nodes.
+
+```python
+def initialize_state(G, initial_infected=5, seed=SEED):
+    # TODO: start everyone as 'S' using node attributes
+    # TODO: randomly pick initial_infected nodes and set their node attribute to 'I'
+    # Optional: return G (mutated) for convenience
+    return G
+```
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+The optional `rng` argument lets a whole simulation share one generator; you will need it on the next page.
+
+```{python}
+#| echo: true
+#| message: false
+#| warning: false
+def initialize_state(G, initial_infected=5, seed=SEED, rng=None):
+    if rng is None:
+        rng = np.random.default_rng(seed)
+
+    # Start everyone susceptible
+    nx.set_node_attributes(G, "S", "state")
+
+    # Infect a random subset
+    infected = rng.choice(list(G.nodes()), size=initial_infected, replace=False)
+    for node in infected:
+        G.nodes[node]["state"] = "I"
+
+    return G
+```
+:::
+
+Always validate your functions. Here, check that the number of infected nodes is correct:
+
+```{python}
+initialize_state(G, initial_infected=initial_infected, seed=SEED)
+print(
+    "Initially infected:",
+    sum(G.nodes[node]["state"] == "I" for node in G.nodes()),
+)
+```
+
+## What's Next?
+
+[SIS Simulation](sis-network-simulation.qmd){.btn .btn-primary}

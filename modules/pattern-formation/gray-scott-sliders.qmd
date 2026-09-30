@@ -1,0 +1,91 @@
+---
+title: "Gray-Scott: Sliders"
+subtitle: "Module 4: Space and Pattern Formation"
+format: html
+---
+
+This page finishes the interactive simulator of [Gray-Scott: Interaction](gray-scott-art.qmd). You add sliders for $d_1$, $d_2$, $f$, and $k$, and make the animation respect the `pause` flag. As before, the handlers use `nonlocal`, so they live inside one function that owns `uv`, `pause`, and the parameters. This page is an optional extension.
+
+## Add Sliders for the Parameters
+
+::: {.callout-note}
+## Exercise
+
+Read the slider values into the model parameters and pause the simulation.
+
+```python
+from matplotlib.widgets import Slider
+
+ax_d1 = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])
+ax_d2 = ax_sliders.inset_axes([0.0, 0.6, 0.8, 0.1])
+ax_f = ax_sliders.inset_axes([0.0, 0.4, 0.8, 0.1])
+ax_k = ax_sliders.inset_axes([0.0, 0.2, 0.8, 0.1])
+
+slider_d1 = Slider(ax_d1, "D1", 0.01, 0.2, valinit=d1, valstep=0.01)
+slider_d2 = Slider(ax_d2, "D2", 0.01, 0.2, valinit=d2, valstep=0.01)
+slider_f = Slider(ax_f, "F", 0.01, 0.09, valinit=f, valstep=0.001)
+slider_k = Slider(ax_k, "k", 0.04, 0.07, valinit=k, valstep=0.001)
+
+def update_sliders(_):
+    # TODO: read the slider values into d1, d2, f, and k
+    # TODO: pause the simulation so the new pattern is easier to inspect
+
+slider_d1.on_changed(update_sliders)
+slider_d2.on_changed(update_sliders)
+slider_f.on_changed(update_sliders)
+slider_k.on_changed(update_sliders)
+```
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+```python
+def update_sliders(_):
+    nonlocal d1, d2, f, k, pause
+    d1 = slider_d1.val
+    d2 = slider_d2.val
+    f = slider_f.val
+    k = slider_k.val
+    pause = True
+```
+:::
+
+## Put It Together
+
+Inside your animation callback, respect the `pause` flag before advancing the PDE.
+
+```python
+def update_frame(_):
+    nonlocal uv
+    if pause:
+        return [im]
+
+    for _ in range(anim_speed):
+        uv = uv + gray_scott_pde(0, uv, d1=d1, d2=d2, f=f, k=k) * dt
+
+    im.set_array(uv[1])
+    return [im]
+```
+
+This setup is enough to create your own Gray-Scott experiments. Try drawing thin lines, large blobs, or repeated point sources and see which parameter sets erase the perturbation and which ones amplify it.
+
+::: {.callout-tip}
+Reference code is available in [amlab/pdes_2d/gray_scott.py](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/pdes_2d/gray_scott.py). Run it with `python -m amlab.pdes_2d.gray_scott`.
+:::
+
+Return to the [assignment](assignment-patterns.qmd) to complete Parts 3 and 4.
+
+## Exit question
+
+::: {.callout-note}
+## Exercise
+
+You move the slider for $d_1$ from $0.1$ to $0.2$ while keeping $dx = 1$ and $dt = 2$. What happens to the simulation, and why?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+It blows up. The 2D explicit Euler bound is $dt \le dx^2/(4 d_1)$, which drops from $2.5$ to $1.25$, so $dt = 2$ is now unstable and a grid-scale checkerboard grows. Reduce $dt$ below $1.25$ when you increase $d_1$ ([Time-Step Stability](time-step-stability.qmd)).
+:::

@@ -1,0 +1,80 @@
+---
+title: "Animation in 2D"
+subtitle: "Module 4: Space and Pattern Formation"
+format: html
+---
+
+Once the 2D Euler loop on [Gierer-Meinhardt Solver in 2D](gierer-meinhardt-2d-solver.qmd) passes the time-step check, you can look at the field. Plot one static snapshot first. Animate only after the snapshot looks right, as in [Animation in 1D](gierer-meinhardt-1d-animation.qmd).
+
+## Plot a Snapshot
+
+`imshow` draws the matrix `uv[1]`. Rows are $x$ and columns are $y$, so the horizontal axis of the image is $y$.
+
+```python
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(7, 4))
+im = ax.imshow(
+    uv[1],
+    interpolation="bilinear",
+    origin="lower",
+    extent=[0, length_y, 0, length_x],
+)
+ax.set_xlabel("y")
+ax.set_ylabel("x")
+plt.colorbar(im, ax=ax, label="v(x, y)")
+plt.show()
+```
+
+## Animate the Simulation
+
+Run this code as a Python script, not in a notebook, so the animation window updates smoothly.
+
+::: {.callout-note}
+## Exercise
+
+Move the 2D Euler loop into the animation callback. Advance several steps per frame, reapply the Neumann boundaries, and update the image.
+
+```python
+import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+
+steps_per_frame = 200
+
+fig, ax = plt.subplots(figsize=(7, 4))
+im = ax.imshow(uv[1], origin="lower", extent=[0, length_y, 0, length_x], vmin=1, vmax=3.5)
+
+
+def update_frame(_):
+    # TODO: advance uv by steps_per_frame Euler steps
+    # TODO: reapply Neumann boundary conditions after each step
+    im.set_array(uv[1])
+    return (im,)
+
+
+ani = animation.FuncAnimation(fig, update_frame, interval=1, blit=True)
+plt.show()
+```
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+`global` is needed because the callback reassigns `uv`. Inside a wrapping function, use `nonlocal` instead.
+
+```python
+def update_frame(_):
+    global uv
+    for _ in range(steps_per_frame):
+        uv = uv + dt * gierer_meinhardt_pde_2d(0, uv, d=30, dx=dx)
+        uv = apply_boundary_conditions(uv, bc="neumann")
+    im.set_array(uv[1])
+    return (im,)
+```
+:::
+
+Next: [Unstable Modes in 2D](gierer-meinhardt-2d-modes.qmd).
+
+::: {.callout-tip}
+Reference code is available in [amlab/pdes_2d/gierer_meinhardt_2d.py](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/pdes_2d/gierer_meinhardt_2d.py).
+:::

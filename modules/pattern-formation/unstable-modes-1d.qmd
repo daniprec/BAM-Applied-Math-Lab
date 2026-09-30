@@ -1,0 +1,96 @@
+---
+title: "Unstable Modes in 1D"
+subtitle: "Module 4: Space and Pattern Formation"
+format: html
+---
+
+The Turing test on [Turing Numerics](turing-numerics.qmd) says that some spatial mode should grow. It does not tell you which one. On a finite interval only discrete wavenumbers exist, so you scan them one by one [@murray2003mathematical, Section 2.5].
+
+## Scan the Neumann Modes
+
+For Neumann conditions on $(0, L)$ the admissible wavenumbers are $k_n = n\pi/L$. Each mode has the matrix
+
+$$
+A_n = \gamma J - k_n^2\,\mathrm{diag}(1, d).
+$$
+
+::: {.callout-note}
+## Exercise
+
+Compute the largest real part of the eigenvalues of each $A_n$, keep the positive ones, and sort them from fastest to slowest.
+
+```python
+import numpy as np
+
+def find_unstable_modes_1d(a=0.40, b=1.00, d=30.0, gamma=1.0, length=40.0, num_modes=20):
+    jac = np.array(gierer_meinhardt_jacobian(a, b)).reshape(2, 2)
+    diffusion = np.diag([1.0, d])
+    unstable_modes = []
+
+    for n in range(num_modes):
+        # TODO: compute k_n**2 and A_n
+        # TODO: store (n, growth_rate) if the growth rate is positive
+        pass
+
+    # TODO: sort from fastest to slowest
+    return unstable_modes
+```
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+```python
+def find_unstable_modes_1d(a=0.40, b=1.00, d=30.0, gamma=1.0, length=40.0, num_modes=20):
+    jac = np.array(gierer_meinhardt_jacobian(a, b)).reshape(2, 2)
+    diffusion = np.diag([1.0, d])
+    unstable_modes = []
+
+    for n in range(num_modes):
+        k2 = (n * np.pi / length) ** 2
+        a_n = gamma * jac - k2 * diffusion
+        growth_rate = np.max(np.linalg.eigvals(a_n).real)
+        if growth_rate > 0:
+            unstable_modes.append((n, growth_rate))
+
+    unstable_modes.sort(key=lambda item: item[1], reverse=True)
+    return unstable_modes
+```
+:::
+
+The first entry of the list is the dominant linear mode. It predicts the earliest visible wavelength in the simulation.
+
+## Validate Against the Reference Code
+
+Compare your results with the course package. `amlab.turing.unstable_modes_1d` includes $\gamma$ and several boundary conditions. `amlab.pdes_1d.find_unstable_spatial_modes` is the version used by the interactive app and assumes $\gamma = 1$.
+
+```{python}
+from amlab.pdes_1d import find_unstable_spatial_modes
+from amlab.turing import unstable_modes_1d
+
+for label, d in (("Case A", 30.0), ("Case B", 20.0)):
+    modes = unstable_modes_1d(a=0.40, b=1.00, d=d, gamma=1.0, length=40.0)
+    print(label, [(n, round(rate, 4)) for n, rate in modes])
+    print("  pdes_1d:", find_unstable_spatial_modes(a=0.40, b=1.00, d=d, length=40.0))
+```
+
+Case A has two unstable modes, $n = 5$ and $n = 6$, with nearly equal growth rates. Case B has none. This is your prediction: expect about five half-wavelengths on $(0, 40)$ in Case A and a return to the flat state in Case B.
+
+::: {.callout-note}
+## Exercise
+
+Double $\gamma$ to $2$ in Case A. Which modes are unstable now? Explain the change with the band formula on the [Dispersion Relation](dispersion-relation.qmd) page.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+The band in $k^2$ scales with $\gamma$, so $k$ scales with $\sqrt{\gamma}$. With $\gamma = 2$ the band is $0.494 < k < 0.739$, and the unstable Neumann modes are $n = 7, 8, 9$, with $n = 8$ fastest. Since $\gamma J - k^2 D = \gamma\,(J - (k^2/\gamma) D)$, the whole dispersion curve is rescaled: $\sigma_\gamma(k^2) = \gamma\,\sigma_1(k^2/\gamma)$. This matches the statement that increasing $\gamma$ acts like enlarging the domain.
+
+```python
+from amlab.turing import unstable_modes_1d
+print(unstable_modes_1d(d=30.0, gamma=2.0, length=40.0))
+```
+:::
+
+Next: [Laplacian in 1D](laplacian-1d.qmd).

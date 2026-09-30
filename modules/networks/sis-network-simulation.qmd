@@ -4,7 +4,7 @@ subtitle: "Module 5: Complex Networks"
 format: html
 ---
 
-This page continues [SIS Model on Networks](sis-network-model.qmd). The first chunk repeats the parameters and the helper functions you wrote there.
+This page continues [SIS Initial State](sis-network-states.qmd). The first chunk repeats the parameters and the helper functions you wrote on the previous two pages.
 
 ```{python}
 #| code-fold: true
@@ -48,6 +48,9 @@ G = make_graph("random", n=N)
 
 The update is **synchronous**: compute all changes from the old state, then apply them.
 
+::: {.callout-note}
+## Exercise
+
 Create a function `step_sis(<graph>, beta, mu)` that performs one step of the SIS update. Remember that `beta` is the infection probability and `mu` is the recovery probability.
 
 ```python
@@ -57,11 +60,16 @@ def step_sis(G, beta, mu):
     # TODO: write new_state back to node attributes
     return G
 ```
-
-Remember that you can loop through all nodes and their neighbors using `G.nodes()` and `G.neighbors(node)`. Use `np.random.random()` for the probabilistic transitions.
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solved: `step_sis()`
+## Hint
+
+Loop through all nodes and their neighbours with `G.nodes()` and `G.neighbors(node)`. Use a random number generator such as `np.random.default_rng()` for the probabilistic transitions.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
 
 ```{python}
 #| echo: true
@@ -93,16 +101,23 @@ def step_sis(G, beta, mu, rng=None):
 
 :::
 
-Now wrap it into a simulator that records the number of infected nodes over time. The function `run_sis()` should take a graph and the parameters, run the simulation for a given number of steps, and return a list of the number of infected nodes at each time step.
+::: {.callout-note}
+## Exercise
+
+Wrap `step_sis` into a simulator that records the number of infected nodes over time. The function `run_sis()` should take a graph and the parameters, run the simulation for a given number of steps, and return a list of the number of infected nodes at each time step.
 
 ```python
 def run_sis(G, beta, mu, steps=100, initial_infected=5, seed=SEED):
     # TODO
     return infected_counts
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solved: `run_sis()`
+## Solution
+
+Copy the graph so that the original stays untouched, and let one seeded generator control all the randomness of a run.
+
 
 ```{python}
 #| echo: true
@@ -147,7 +162,11 @@ for t in [0, 10, 20, 30]:
 
 ## Run and Visualize
 
-Use `matplotlib` to plot the fraction of infected nodes over time. Try to get a graph similar to @fig-sis-plot below.
+::: {.callout-note}
+## Exercise
+
+Use `matplotlib` to plot the fraction of infected nodes over time for one run of `run_sis` on `G`. Try to get a graph similar to @fig-sis-plot below.
+:::
 
 ```{python}
 #| label: fig-sis-plot
@@ -166,79 +185,23 @@ plt.title('SIS: infected fraction over time')
 plt.show()
 ```
 
-## Compare Network Types
+::: {.callout-tip collapse="true"}
+## Solution
 
-Finally, run multiple simulations for each graph type and plot the average infected fraction over time on the same axes. With $\beta = 0.2$ and $\langle k \rangle \approx 6$ every network ends up with most nodes infected, so the structure hardly matters. The differences show up closer to the epidemic threshold, so @fig-sis-compare uses $\beta = 0.02$.
+Divide the counts by the number of nodes to get a fraction.
 
-```{python}
-#| label: fig-sis-compare
-#| fig-cap: "Mean infected fraction over time for three network models with N = 150 and mean degree close to 6 (beta = 0.02, mu = 0.1, 12 runs each)."
-#| fig-alt: 'Average infected fraction over time for different network models (random, small-world, scale-free).'
-#| fig-width: 6
-#| fig-height: 4
-#| echo: false
-#| message: false
-#| warning: false
-models = ["random", "small-world", "scale-free"]
-N = 150
-runs = 12
-beta_compare = 0.02
-
-plt.figure(figsize=(6, 4))
-
-for model in models:
-    trajectories = []
-    for r in range(runs):
-        seed_run = SEED + r
-        Gm = make_graph(model, n=N, seed=seed_run)
-        counts = run_sis(
-            Gm,
-            beta=beta_compare,
-            mu=mu,
-            steps=steps,
-            initial_infected=initial_infected,
-            seed=seed_run,
-        )
-        trajectories.append(np.array(counts) / N)
-
-    mean_traj = np.mean(trajectories, axis=0)
-    plt.plot(mean_traj, label=model)
-
+```python
+counts = run_sis(G, beta=beta, mu=mu, steps=steps, initial_infected=initial_infected, seed=SEED)
+plt.plot(np.array(counts) / G.number_of_nodes())
 plt.xlabel("Time step")
-plt.ylabel("Mean infected fraction")
-plt.title(f"SIS on different network models (N={N})")
-plt.legend()
-plt.tight_layout()
+plt.ylabel("Infected fraction")
+plt.title("SIS: infected fraction over time")
 plt.show()
 ```
-
-## Interpretation
-
-::: {.callout-note}
-## Discuss
-
-Compare the figure with your prediction on [SIS Model on Networks](sis-network-model.qmd):
-
-- Which network type sustains infection longer at the same $(\beta, \mu)$?
-- Do hubs (scale-free) make persistence easier? Why?
-- How does clustering (small-world) change local outbreaks vs global spread?
-- If you increase $N$ but keep average degree similar, what do you expect to happen?
-:::
-
-## Limitations
-
-- Time is discrete and all nodes update at once. The continuous-time SIS model used in the theory of [Epidemic Threshold](epidemic-threshold.qmd) has rates instead of probabilities; for small $\beta$ and $\mu$ the two are close.
-- The contact network is static. Real contacts change over time.
-- Every node has the same $\beta$ and $\mu$.
-- With $N = 150$ and 12 runs the curves are noisy, and on a finite network SIS always dies out eventually, although this can take extremely long above the threshold.
-
-::: {.callout-tip}
-## Optional extension
-Replace your loop-based simulator by `amlab.networks_spreading.run_sis_fast`, which uses a sparse adjacency matrix. Use it to plot the long-time prevalence against $\beta$ for the three models with $N = 1000$.
 :::
 
 ## What's Next?
 
-Try the SIR model and compare how **permanent immunity** changes the outcome.
+The next page compares the three network types.
 
-[SIR on Networks](sir-network.qmd){.btn .btn-primary}
+[Comparing Networks under SIS](sis-network-comparison.qmd){.btn .btn-primary}

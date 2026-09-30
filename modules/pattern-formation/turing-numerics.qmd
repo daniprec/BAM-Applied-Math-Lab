@@ -4,9 +4,19 @@ subtitle: "Module 4: Space and Pattern Formation"
 format: html
 ---
 
-This is the prediction step of the laboratory. You turn the theory of [Turing Conditions](turing-conditions.qmd) and [Dispersion Relation](dispersion-relation.qmd) into four small functions: equilibrium, Jacobian, Turing test, and mode scan [@turing1952chemical; @murray2003mathematical, Section 2.3]. You will reuse them in 2D and in the assignment.
+This is the prediction step of the laboratory. You turn the theory of [Turing Conditions](turing-conditions.qmd) and [Dispersion Relation](dispersion-relation.qmd) into three small functions: equilibrium, Jacobian, and Turing test [@turing1952chemical; @murray2003mathematical, Section 2.3]. The fourth, the mode scan, follows on [Unstable Modes in 1D](unstable-modes-1d.qmd). You will reuse all four in 2D and in the assignment.
+
+The workflow is always the same:
+
+- Find the homogeneous equilibrium.
+- Compute the Jacobian at that equilibrium.
+- Compute the Laplacian eigenvalues from the domain and the boundary conditions.
+- Build the mode matrix $A_n = \gamma J - k_n^2 D$ for each mode.
+- Compute the eigenvalues of each $2 \times 2$ matrix and keep the modes whose largest real part is positive.
 
 ## Compute the Equilibrium
+
+The steady state from [Linearization](linearization.qmd) is one line of code each.
 
 ```python
 def gierer_meinhardt_equilibrium(a=0.40, b=1.00):
@@ -17,6 +27,9 @@ def gierer_meinhardt_equilibrium(a=0.40, b=1.00):
 
 ## Write the Jacobian at the Fixed Point
 
+::: {.callout-note}
+## Exercise
+
 Use the general Jacobian from [Linearization](linearization.qmd) and evaluate it at $(u_*, v_*)$.
 
 ```python
@@ -24,9 +37,10 @@ def gierer_meinhardt_jacobian(a=0.40, b=1.00):
     u_star, v_star = gierer_meinhardt_equilibrium(a, b)
     # TODO: return fu, fv, gu, gv
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solution: Jacobian entries (click to expand)
+## Solution
 
 ```python
 def gierer_meinhardt_jacobian(a=0.40, b=1.00):
@@ -38,10 +52,22 @@ def gierer_meinhardt_jacobian(a=0.40, b=1.00):
     return fu, fv, gu, gv
 ```
 
-Simplified, this is $f_u = b(1-a)/(1+a)$, $f_v = -b^2/(1+a)^2$, $g_u = 2(1+a)/b$, $g_v = -1$.
+Simplified, this is $f_u = b(1-a)/(1+a)$, $f_v = -b^2/(1+a)^2$, $g_u = 2(1+a)/b$, $g_v = -1$. You can also write the entries directly in $a$ and $b$:
+
+```python
+def gierer_meinhardt_jacobian(a=0.40, b=1.00):
+    fu = 2 * b / (a + 1) - b
+    fv = -((b / (a + 1)) ** 2)
+    gu = 2 * (a + 1) / b
+    gv = -1.0
+    return fu, fv, gu, gv
+```
 :::
 
 ## Implement the Turing Test
+
+::: {.callout-note}
+## Exercise
 
 Translate the four inequalities of @murray2003mathematical [Section 2.3] into Python. Use `&` instead of `and` so the function works on arrays.
 
@@ -59,9 +85,10 @@ def is_turing_instability(a, b, d):
     cond4 =
     return cond1 & cond2 & cond3 & cond4
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solution: Turing test (click to expand)
+## Solution
 
 ```python
 def is_turing_instability(a, b, d):
@@ -77,85 +104,54 @@ def is_turing_instability(a, b, d):
 The course package writes the last two conditions as the single inequality $d f_u + g_v > 2\sqrt{d \det J}$, which is equivalent.
 :::
 
-Because the function is vectorized, `is_turing_instability(mesh_a, 1.0, mesh_d)` on a `np.meshgrid` reproduces the diagram on [Turing Space](turing-space.qmd). Mark the points $(0.4, 20)$ and $(0.4, 30)$ on your plot.
+If your implementation is vectorized, it works with scalars and with arrays. Validate it carefully: you reuse it in 2D and in the assignment.
 
-## Scan the Unstable Modes
-
-For Neumann conditions on $(0, L)$ the admissible wavenumbers are $k_n = n\pi/L$. Each mode has the matrix
-
-$$
-A_n = \gamma J - k_n^2\,\mathrm{diag}(1, d).
-$$
-
-Compute the largest real part of the eigenvalues of each $A_n$, keep the positive ones, and sort them.
-
-```python
-import numpy as np
-
-def find_unstable_modes_1d(a=0.40, b=1.00, d=30.0, gamma=1.0, length=40.0, num_modes=20):
-    jac = np.array(gierer_meinhardt_jacobian(a, b)).reshape(2, 2)
-    diffusion = np.diag([1.0, d])
-    unstable_modes = []
-
-    for n in range(num_modes):
-        # TODO: compute k_n**2 and A_n
-        # TODO: store (n, growth_rate) if the growth rate is positive
-        pass
-
-    # TODO: sort from fastest to slowest
-    return unstable_modes
-```
-
-::: {.callout-tip collapse="true"}
-## Solution: 1D mode scan (click to expand)
-
-```python
-def find_unstable_modes_1d(a=0.40, b=1.00, d=30.0, gamma=1.0, length=40.0, num_modes=20):
-    jac = np.array(gierer_meinhardt_jacobian(a, b)).reshape(2, 2)
-    diffusion = np.diag([1.0, d])
-    unstable_modes = []
-
-    for n in range(num_modes):
-        k2 = (n * np.pi / length) ** 2
-        a_n = gamma * jac - k2 * diffusion
-        growth_rate = np.max(np.linalg.eigvals(a_n).real)
-        if growth_rate > 0:
-            unstable_modes.append((n, growth_rate))
-
-    unstable_modes.sort(key=lambda item: item[1], reverse=True)
-    return unstable_modes
-```
-:::
-
-## Validate Against the Reference Code
-
-Compare your results with the course package. `amlab.turing.unstable_modes_1d` includes $\gamma$ and several boundary conditions. `amlab.pdes_1d.find_unstable_spatial_modes` is the version used by the interactive app and assumes $\gamma = 1$.
-
-```{python}
-from amlab.pdes_1d import find_unstable_spatial_modes
-from amlab.turing import unstable_modes_1d
-
-for label, d in (("Case A", 30.0), ("Case B", 20.0)):
-    modes = unstable_modes_1d(a=0.40, b=1.00, d=d, gamma=1.0, length=40.0)
-    print(label, [(n, round(rate, 4)) for n, rate in modes])
-    print("  pdes_1d:", find_unstable_spatial_modes(a=0.40, b=1.00, d=d, length=40.0))
-```
-
-Case A has two unstable modes, $n = 5$ and $n = 6$, with nearly equal growth rates. Case B has none. This is your prediction: expect about five half-wavelengths on $(0, 40)$ in Case A and a return to the flat state in Case B.
+## Plot the Turing Space
 
 ::: {.callout-note}
 ## Exercise
-Double $\gamma$ to $2$ in Case A. Which modes are unstable now? Explain the change with the band formula on the [Dispersion Relation](dispersion-relation.qmd) page.
+
+Complete the code to recreate the diagram on [Turing Space](turing-space.qmd). Mark the points $(a, d) = (0.4, 20)$ and $(0.4, 30)$. Which one lies inside the instability region?
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+arr_a = np.linspace(0, 1, 500)
+arr_d = np.linspace(0, 100, 500)
+mesh_a, mesh_d = np.meshgrid(arr_a, arr_d)
+mask_turing =  # TODO: evaluate the Turing test on the mesh, with b = 1
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.contourf(mesh_a, mesh_d, mask_turing)
+# TODO: mark the two test points
+ax.set_xlabel("a")
+ax.set_ylabel("d")
+ax.set_title("Turing Space")
+plt.show()
+```
 :::
 
 ::: {.callout-tip collapse="true"}
 ## Solution
-The band in $k^2$ scales with $\gamma$, so $k$ scales with $\sqrt{\gamma}$. With $\gamma = 2$ the band is $0.494 < k < 0.739$, and the unstable Neumann modes are $n = 7, 8, 9$, with $n = 8$ fastest. Since $\gamma J - k^2 D = \gamma\,(J - (k^2/\gamma) D)$, the whole dispersion curve is rescaled: $\sigma_\gamma(k^2) = \gamma\,\sigma_1(k^2/\gamma)$. This matches the statement that increasing $\gamma$ acts like enlarging the domain.
+
+Pass the whole mesh to the vectorized test. The point $(0.4, 30)$ lies inside the region and $(0.4, 20)$ lies outside, because the boundary at $a = 0.4$ sits at $d_c \approx 26.24$.
 
 ```python
-from amlab.turing import unstable_modes_1d
-print(unstable_modes_1d(d=30.0, gamma=2.0, length=40.0))
+mask_turing = is_turing_instability(mesh_a, 1.0, mesh_d)
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.contourf(mesh_a, mesh_d, mask_turing)
+ax.plot([0.4], [30], "o", color="tab:red", label="Case A: d = 30")
+ax.plot([0.4], [20], "s", color="tab:gray", label="Case B: d = 20")
+ax.set_xlabel("a")
+ax.set_ylabel("d")
+ax.set_title("Turing Space")
+ax.legend()
+plt.show()
 ```
 :::
 
-Next: [Laplacian in 1D](laplacian-1d.qmd).
+The same diagram appears in the [interactive 1D Gierer-Meinhardt simulator](https://bam-applied-math-lab.streamlit.app/Gierer_Meinhardt_1D), so the algebra and the simulation refer to the same parameter plane.
+
+Next: [Unstable Modes in 1D](unstable-modes-1d.qmd).

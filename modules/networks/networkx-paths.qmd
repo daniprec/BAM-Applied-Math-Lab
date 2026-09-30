@@ -9,9 +9,9 @@ format: html
 This page is self-study material for Session 23. It uses the definitions of [Network Concepts](network-concepts.qmd).
 :::
 
-This page measures **density**, **paths**, **connected components** and **distances** with `networkx` [@newman2018networks]. See [NetworkX Basics](networkx-basics.qmd) if you need a refresher on building graphs.
+This page measures **density**, **paths**, **connected components** and **distances** in undirected graphs with `networkx` [@newman2018networks]. See [NetworkX Basics](networkx-basics.qmd) if you need a refresher on building graphs.
 
-Start by importing the libraries and creating two small graphs, one undirected and one directed.
+Start by importing the libraries and creating a small undirected graph.
 
 ```{python}
 import networkx as nx
@@ -34,25 +34,6 @@ G_foods = nx.from_edgelist([
 # Visualize the graph
 pos = nx.circular_layout(G_foods)
 nx.draw(G_foods, node_color="lightblue", with_labels=True, pos=pos)
-plt.show()
-```
-
-```{python}
-# Create a directed graph
-D_food_chain = nx.DiGraph()  # food chain (prey -> predator)
-D_food_chain.add_edges_from([
-    ("grass", "antelope"),
-    ("grass", "zebra"),
-    ("antelope", "lion"),
-    ("antelope", "hyena"),
-    ("zebra", "lion"),
-    ("zebra", "hyena"),
-    ("hyena", "lion"),
-])
-
-# Visualize the graph
-pos = nx.spring_layout(D_food_chain)
-nx.draw(D_food_chain, node_color="lightgreen", with_labels=True, pos=pos)
 plt.show()
 ```
 
@@ -131,12 +112,17 @@ print("All paths from 'bread' to 'watermelon':", ls_paths)
 
 A **connected component** is a subgraph in which any two nodes are connected by a path. A graph is **connected** if it has only one connected component.
 
+::: {.callout-note}
+## Exercise
+
+How many connected components does `G_foods` have? Answer from the drawing, then check with `nx.connected_components`.
+:::
+
 ::: {.callout-tip collapse="true"}
-## How many connected components does `G_foods` have?
+## Solution
 
 `G_foods` has one connected component, since all nodes are connected to each other through some path.
 
-As usual, you can verify this with NetworkX:
 ```{python}
 print("Connected components:", list(nx.connected_components(G_foods)))
 ```
@@ -156,91 +142,8 @@ The **average path length (APL)** is the average of the shortest paths between a
 print("Average shortest path length:", nx.average_shortest_path_length(G_foods))
 ```
 
-## Connectivity in Directed Graphs
-
-Connectivity in directed graphs is more complex than in undirected graphs, because you have to consider the direction of the edges. In a directed graph, you can have **strongly connected components** and **weakly connected components**.
-
-### Paths in Directed Graphs
-
-In a directed graph, a path must follow the direction of the edges. For example, in the directed food chain graph `D`, is there a path from "grass" to "lion"?
-
-```{python}
-# Draw the graph
-pos = nx.spring_layout(D_food_chain)
-nx.draw(D_food_chain, node_color="lightgreen", with_labels=True, pos=pos)
-plt.show()
-```
-
-You can check for the existence of a path in a directed graph using the same `has_path(<graph>, <node1>, <node2>)` function:
-
-```{python}
-print("Is there a path from 'grass' to 'lion'?", nx.has_path(D_food_chain, "grass", "lion"))   
-print("Is there a path from 'lion' to 'grass'?", nx.has_path(D_food_chain, "lion", "grass"))
-```
-
-### Strongly Connected Components
-
-A strongly connected component is a subgraph in which there is a directed path from any node to any other node. A directed graph is strongly connected if it has only one strongly connected component.
-
-```{python}
-print("Is strongly connected:", nx.is_strongly_connected(D_food_chain))
-print("Strongly connected components:", list(nx.strongly_connected_components(D_food_chain)))
-```
-
-
-### Weakly Connected Components
-
-A weakly connected component is a subgraph in which there is an undirected path from any node to any other node. A directed graph is weakly connected if it has only one weakly connected component.
-
-```{python}
-print("Is weakly connected:", nx.is_weakly_connected(D_food_chain))
-print("Weakly connected components:", list(nx.weakly_connected_components(D_food_chain)))
-```
-
-::: {.callout-note}
-## Exercise
-
-How can you turn `D_food_chain` into a strongly connected graph? Add as few edges as possible.
-:::
-
-::: {.callout-tip collapse="true"}
-## Solution
-
-To make `D_food_chain` strongly connected, you need to ensure that there is a directed path from every node to every other node. One way to achieve this is to add edges that create cycles between the nodes. This example is a tough one, as food chains are typically acyclic. Still, you can take note from "The Lion King":
-
-> "When we die, our bodies become the grass, and the antelope eat the grass. And so, we are all connected in the great Circle of Life." - Mufasa (lion)
-
-```{python}
-# When a predator dies, it returns to the food chain as prey for the grass
-D_food_chain.add_edges_from([
-    ("lion", "grass"),
-])
-
-# Visualize the new graph
-pos = nx.spring_layout(D_food_chain)
-nx.draw(D_food_chain, node_color="lightgreen", with_labels=True, pos=pos)
-plt.show()
-```
-
-```{python}
-print("Is strongly connected:", nx.is_strongly_connected(D_food_chain))
-print("Strongly connected components:", list(nx.strongly_connected_components(D_food_chain)))
-```
-:::
-
-### Diameter and Average Path Length in Directed Graphs
-
-The diameter and average path length in directed graphs are calculated based on the shortest paths that follow the direction of the edges. If the graph is not strongly connected, you can only calculate these metrics for the largest strongly connected component.
-
-```{python}
-# Get the largest strongly connected component
-largest_scc = max(nx.strongly_connected_components(D_food_chain), key=len)
-subgraph = D_food_chain.subgraph(largest_scc)
-print("Diameter of the largest strongly connected component:", nx.diameter(subgraph))
-print("Average shortest path length of the largest strongly connected component:", nx.average_shortest_path_length(subgraph))
-```
 ## What's Next?
 
-The next page ranks nodes by degree, clustering and centrality.
+The next page repeats these measurements on a directed graph, where paths must follow the direction of the edges.
 
-[Centrality in NetworkX](networkx-centrality.qmd){.btn .btn-primary}
+[Paths in Directed Graphs](networkx-directed-paths.qmd){.btn .btn-primary}

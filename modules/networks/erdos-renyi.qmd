@@ -53,6 +53,31 @@ print(f"components = {nx.number_connected_components(G_random)}")
 
 With $N = 80$ a single realization fluctuates around the expected values. Increase $N$ and watch the measured values approach the predictions.
 
+::: {.callout-tip collapse="true"}
+## $G(N, p)$ vs $G(N, E)$
+
+In $G(N, E)$ you fix the number of edges instead of an edge probability. In NetworkX:
+
+- `nx.gnm_random_graph(n, m)` implements $G(N, E)$ with $E = m$;
+- `nx.erdos_renyi_graph(n, p)` (alias `nx.gnp_random_graph`) implements $G(N, p)$.
+:::
+
+With $N = 80$ and $E = 180$ the mean degree is $2E/N = 4.5$, close to the $4.74$ of $G(80, 0.06)$. The degree histogram has the same binomial shape.
+
+```{python}
+G_gnm = nx.gnm_random_graph(n=80, m=180, seed=SEED)
+k_gnm = [d for _, d in G_gnm.degree()]
+print(f"E = {G_gnm.number_of_edges()}, <k> = {2 * 180 / 80:.2f}")
+
+plt.figure(figsize=(5, 3))
+plt.hist(k_gnm, bins=range(min(k_gnm), max(k_gnm) + 2), align="left", rwidth=0.9)
+plt.xlabel("Degree k")
+plt.ylabel("Count")
+plt.title("G(N, E): degree distribution")
+plt.tight_layout()
+plt.show()
+```
+
 ## The giant component
 
 @fig-er-giant compares simulated graphs with the self-consistency equation $S = 1 - e^{-cS}$.

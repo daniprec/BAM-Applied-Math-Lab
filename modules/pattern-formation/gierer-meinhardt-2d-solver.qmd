@@ -22,6 +22,11 @@ Simulate Case A ($a = 0.4$, $b = 1$, $d = 30$, $\gamma = 1$) and Case B ($d = 20
 
 ## Initialize the Grid
 
+::: {.callout-note}
+## Exercise
+
+Create the perturbed steady state on the rectangle.
+
 ```python
 import numpy as np
 
@@ -38,9 +43,10 @@ uv =
 # TODO: add 1% multiplicative noise
 uv =
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solution: 2D initialization (click to expand)
+## Solution
 
 ```python
 uv = np.array([u_star, u_star**2])[:, None, None] * np.ones((2, num_x, num_y))
@@ -49,6 +55,11 @@ uv = uv * (1 + 0.01 * rng.standard_normal((2, num_x, num_y)))
 :::
 
 ## Build the PDE Right-Hand Side
+
+::: {.callout-note}
+## Exercise
+
+Reuse `laplacian_2d` for both species and add the reaction terms.
 
 ```python
 def gierer_meinhardt_pde_2d(t, uv, gamma=1, a=0.40, b=1.00, d=30, dx=1.0):
@@ -61,9 +72,10 @@ def gierer_meinhardt_pde_2d(t, uv, gamma=1, a=0.40, b=1.00, d=30, dx=1.0):
     dv_dt =
     return np.array([du_dt, dv_dt])
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solution: Gierer-Meinhardt PDE in 2D (click to expand)
+## Solution
 
 ```python
 def gierer_meinhardt_pde_2d(t, uv, gamma=1, a=0.40, b=1.00, d=30, dx=1.0):
@@ -81,7 +93,18 @@ def gierer_meinhardt_pde_2d(t, uv, gamma=1, a=0.40, b=1.00, d=30, dx=1.0):
 
 ## Time Step with Euler's Method
 
-First compute the Euler step, then reapply the edge values, so the next stencil evaluation sees data consistent with the boundary condition. Validate with a long loop and one snapshot before you animate.
+Once the right-hand side is available, the full update is explicit Euler applied to the whole array,
+
+$$
+UV^{n+1} = UV^n + dt\,G(UV^n),
+$$
+
+followed by one boundary update. The order matters. First compute the Euler step, then reapply the edge values, so the next stencil evaluation sees data consistent with the boundary condition. Validate with a long loop and one snapshot before you animate.
+
+::: {.callout-note}
+## Exercise
+
+Complete the loop: one vectorized Euler update, then one boundary update.
 
 ```python
 dt = 0.005          # below the 2D bound dx**2 / (4 d) = 0.0083
@@ -92,9 +115,10 @@ for _ in range(num_iter):
     # TODO: reapply Neumann boundary conditions
     pass
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solution: 2D Euler loop (click to expand)
+## Solution
 
 ```python
 for _ in range(num_iter):
@@ -141,34 +165,9 @@ plt.show()
 plt.close()
 ```
 
-Case A forms spots. The next page compares this with the list of unstable modes.
+Case A forms spots. [Unstable Modes in 2D](gierer-meinhardt-2d-modes.qmd) compares this with the list of unstable modes.
 
-## Animate the Simulation
-
-Run this as a script.
-
-```python
-import matplotlib.animation as animation
-import matplotlib.pyplot as plt
-
-fig, ax = plt.subplots(figsize=(7, 4))
-im = ax.imshow(uv[1], origin="lower", extent=[0, length_y, 0, length_x], vmin=1, vmax=3.5)
-
-
-def update_frame(_):
-    global uv
-    for _ in range(200):
-        uv = uv + dt * gierer_meinhardt_pde_2d(0, uv, d=30, dx=dx)
-        uv = apply_boundary_conditions(uv, bc="neumann")
-    im.set_array(uv[1])
-    return (im,)
-
-
-ani = animation.FuncAnimation(fig, update_frame, interval=1, blit=True)
-plt.show()
-```
-
-Next: [Unstable Modes in 2D](gierer-meinhardt-2d-modes.qmd).
+Next: [Animation in 2D](gierer-meinhardt-2d-animation.qmd).
 
 ::: {.callout-tip}
 Reference code is available in [amlab/pdes_2d/gierer_meinhardt_2d.py](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/pdes_2d/gierer_meinhardt_2d.py).

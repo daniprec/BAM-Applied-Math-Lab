@@ -56,9 +56,28 @@ plt.show()
 plt.close()
 ```
 
+## From ODEs to chaos
+
+The earlier sessions studied phase portraits, fixed points and oscillations. The Lorenz system keeps the same ingredients, a deterministic vector field and a time-stepping scheme, but adds a new phenomenon:
+
+- trajectories remain bounded;
+- the system is fully deterministic;
+- long-term prediction still becomes difficult because nearby initial conditions diverge.
+
+This is the core idea behind deterministic chaos.
+
+::: {.callout-note}
+The Lorenz attractor is bounded but not periodic. A trajectory keeps moving forever without settling into a fixed point or a simple closed orbit.
+:::
+
 ## Implement the vector field
 
 The right-hand side takes one point $(x,y,z)$ and returns the instantaneous velocity in phase space.
+
+::: {.callout-note}
+## Exercise
+
+Complete the Lorenz vector field @eq-lorenz-lorenz-1.
 
 ```python
 def lorenz(xyz, s=10.0, r=28.0, b=8.0 / 3.0):
@@ -68,9 +87,11 @@ def lorenz(xyz, s=10.0, r=28.0, b=8.0 / 3.0):
     z_dot = # TODO
     return np.array([x_dot, y_dot, z_dot])
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
 ## Solution
+
 ```python
 def lorenz(xyz, s=10.0, r=28.0, b=8.0 / 3.0):
     x, y, z = xyz
@@ -105,7 +126,7 @@ $$
 \mathbf{x}_{n+1} = \mathbf{x}_n + \Delta t\, f(\mathbf{x}_n).
 $$
 
-In code, that becomes a simple loop over time steps. Euler is only first-order accurate; it is used here because every step is visible. Use `solve_ivp` for quantitative work.
+In code, that becomes a simple loop over time steps. Euler is only first-order accurate. It is used here because it is simple enough that you see how time stepping turns a continuous ODE into a computable trajectory. Use `solve_ivp` for quantitative work.
 
 ```python
 def simulate_lorenz(initial_state=(0.0, 1.0, 1.05), dt=0.01, num_steps=10000):
@@ -124,7 +145,32 @@ def simulate_lorenz(initial_state=(0.0, 1.0, 1.05), dt=0.01, num_steps=10000):
 - It alternates between two lobes instead of converging to one point.
 - The geometry looks structured, but the switching times are hard to predict over long intervals.
 
-Try changing $r$ or the initial condition and observe how the trajectory changes.
+::: {.callout-note}
+## Exercise
+
+Change $r$ to 0.5, 10, 20 and 28, keeping $s = 10$, $b = 8/3$ and the initial condition $(0, 1, 1.05)$. Where does the trajectory end up? Then change the initial condition at $r = 28$.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+For $r = 0.5 < 1$ the origin is the only fixed point and the trajectory decays to it. For $r = 10$ and $r = 20$ it settles on one of the two nonzero fixed points $\bigl(\pm\sqrt{b(r-1)}, \pm\sqrt{b(r-1)}, r-1\bigr)$. For $r = 28$ it never settles and keeps switching between the lobes. A new initial condition at $r = 28$ gives a different path on the same attractor.
+
+```{python}
+from scipy.integrate import solve_ivp
+
+
+def lorenz_rhs(t, u, r, s=10.0, b=8.0 / 3.0):
+    x, y, z = u
+    return [s * (y - x), r * x - y - x * z, x * y - b * z]
+
+
+for r in [0.5, 10, 20, 28]:
+    end = solve_ivp(lorenz_rhs, (0, 200), [0.0, 1.0, 1.05], args=(r,), rtol=1e-9, atol=1e-12).y[:, -1]
+    c = np.sqrt(8 / 3 * (r - 1)) if r > 1 else 0.0
+    print(f"r = {r}: state at t = 200 = {np.round(end, 2)}, sqrt(b(r-1)) = {c:.2f}")
+```
+:::
 
 Reference code: [amlab/extra/lorenz_attractor.py](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/extra/lorenz_attractor.py).
 

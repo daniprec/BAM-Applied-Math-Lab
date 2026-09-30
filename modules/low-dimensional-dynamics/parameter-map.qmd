@@ -8,11 +8,26 @@ You now build a clickable map of the $(a, b)$ parameter plane of the CDIMA model
 
 ## Prediction
 
+::: {.callout-note}
+## Exercise
+
 Sketch the curve $b = 3a/5 - 25/a$ for $2 \le a \le 20$. In which part of the plane do you expect oscillations?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+The curve is negative for $a < \sqrt{125/3} \approx 6.45$, crosses $b = 0$ there and then rises, reaching $b = 3.5$ at $a = 10$ and $b = 10.75$ at $a = 20$. The fixed point is unstable below the curve, so you expect oscillations in the region $0 < b < 3a/5 - 25/a$, which only exists for $a > 6.45$.
+:::
 
 ## Implementation: the clickable map
 
-The map has two panels. The left one shows the $(a, b)$ plane with the theoretical Hopf curve. A click there sets the parameters and redraws the right panel: nullclines, the fixed point and a few trajectories. The core of the code is the click callback:
+The map has two panels. The left one shows the $(a, b)$ plane with the theoretical Hopf curve. A click there sets the parameters and redraws the right panel: nullclines, the fixed point and a few trajectories. The core of the code is the click callback.
+
+::: {.callout-note}
+## Exercise
+
+Complete the click callback. Assume `fig`, `ax_map`, `ax_phase`, `cdima` and `solve_ivp` are already defined.
 
 ```python
 def on_click(event):
@@ -26,9 +41,34 @@ def on_click(event):
 
 fig.canvas.mpl_connect("button_press_event", on_click)
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
 ## Solution
+
+```python
+def on_click(event):
+    if event.inaxes == ax_map and event.xdata > 0 and event.ydata > 0:
+        a, b = event.xdata, event.ydata
+        ax_phase.clear()
+        x_star, y_star = a / 5, 1 + (a / 5) ** 2
+        xmax, ymax = 1.6 * x_star + 1, 1.6 * y_star + 1
+        xg = np.linspace(0.01, xmax, 300)
+        ax_phase.plot(xg, (a - xg) * (1 + xg**2) / (4 * xg), "b", lw=1)
+        ax_phase.plot(xg, 1 + xg**2, "r", lw=1)
+        for x0, y0 in [(0.1, 0.1), (0.9 * xmax, 0.1), (x_star + 0.05, y_star)]:
+            sol = solve_ivp(cdima, (0, 60), [x0, y0], args=(a, b),
+                            t_eval=np.linspace(0, 60, 3000))
+            ax_phase.plot(sol.y[0], sol.y[1], lw=1)
+        ax_phase.plot(x_star, y_star, "ko")
+        ax_phase.set_xlim(0, xmax)
+        ax_phase.set_ylim(0, ymax)
+        ax_phase.set_title(f"a = {a:.2f}, b = {b:.2f}")
+        fig.canvas.draw_idle()
+
+fig.canvas.mpl_connect("button_press_event", on_click)
+```
+
 `run_parameter_map` in `amlab/odes_2d/cdima_analysis.py` is a complete version. Run it locally (it needs an interactive Matplotlib window):
 
 ```python
@@ -120,22 +160,37 @@ The simulated boundary lies slightly below the theoretical one. Near $b_c$ the a
 
 ## Experiment and interpretation
 
+::: {.callout-note}
+## Exercise
+
 - Click points close to the Hopf curve. How does the size of the limit cycle change?
 - For $a < \sqrt{125/3} \approx 6.45$ the curve is below $b = 0$. Can you find oscillations there?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+The limit cycle shrinks to the fixed point as you approach the curve from below; its amplitude grows like $\sqrt{b_c - b}$, as noted in the validation above. For $a < 6.45$ you find no sustained oscillations: $b_c < 0$, so every $b > 0$ lies above the curve and the fixed point is stable.
+:::
 
 The map turns the formula into a picture: one inequality between two parameters decides whether the reaction oscillates.
+
+## Exit question
+
+::: {.callout-note}
+## Exercise
+
+A student finds a limit cycle in a simulation at $a = 10$, $b = 3.6$. The theory says the fixed point is stable for $b > 3.5$. Which is wrong?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Probably neither is wrong yet, but the claim needs checking. For $b = 3.6$ the eigenvalues have real part $-0.02$, so the decay is slow: a trajectory can look like a limit cycle for a long time. Integrate longer and measure the amplitude at late times. If a cycle truly persisted above $b_c$, the bifurcation would be subcritical, which the amplitude measurements in [Hopf Bifurcation](hopf-bifurcation.qmd) do not support.
+:::
 
 ## Next
 
 Session 9 studies excitable systems.
 
 [Excitability](excitability.qmd){.btn .btn-primary}
-
-## Exit question
-
-A student finds a limit cycle in a simulation at $a = 10$, $b = 3.6$. The theory says the fixed point is stable for $b > 3.5$. Which is wrong?
-
-::: {.callout-tip collapse="true"}
-## Answer
-Probably neither is wrong yet, but the claim needs checking. For $b = 3.6$ the eigenvalues have real part $-0.02$, so the decay is slow: a trajectory can look like a limit cycle for a long time. Integrate longer and measure the amplitude at late times. If a cycle truly persisted above $b_c$, the bifurcation would be subcritical, which the amplitude measurements in [Hopf Bifurcation](hopf-bifurcation.qmd) do not support.
-:::

@@ -12,10 +12,29 @@ Once one simulator works, the interesting question is what changes when only the
 Compare Rules 30, 90, 110 and 184 from a single seed and from a random row, and assign each to a Wolfram class ([Wolfram Classes](wolfram-classes.qmd)).
 :::
 
-::: {.callout-note}
 ## Prediction
 
+::: {.callout-note}
+## Exercise
+
 Before you run the code, use the rule tables to predict: which of the four rules conserve the number of occupied cells? Which rule gives a pattern that is symmetric about the seed?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Only Rule 184 conserves the number of 1s on a ring: each 1 either stays or moves one cell to the right into an empty cell. Only Rule 90 gives a symmetric pattern, because it equals its own reflection. The Validation section below checks the first claim. The chunk here checks both on a ring of 121 cells.
+
+```{python}
+from amlab.cellular_automata.elementary import random_row, simulate_eca, single_seed
+
+for rule in (30, 90, 110, 184):
+    g = simulate_eca(random_row(121, 0.5, seed=7), rule, 80, boundary="periodic")
+    s = simulate_eca(single_seed(121), rule, 40)
+    conserved = bool((g.sum(axis=1) == g[0].sum()).all())
+    symmetric = bool((s == s[:, ::-1]).all())
+    print(f"Rule {rule:3d}: conserves 1s {conserved}, symmetric {symmetric}")
+```
 :::
 
 ```{python}
@@ -125,8 +144,6 @@ This lets you separate two effects:
 Rule 184 moves each occupied cell one step to the right when the cell ahead is empty, so it conserves the number of 1s on a ring. Check it with the vectorized reference code, which uses periodic boundaries:
 
 ```{python}
-from amlab.cellular_automata.elementary import random_row, simulate_eca
-
 g184 = simulate_eca(random_row(121, 0.4, seed=7), 184, 80, boundary="periodic")
 print("Occupied cells over time (first 5 steps):", g184.sum(axis=1)[:5])
 print("Conserved on the whole run:", bool((g184.sum(axis=1) == g184[0].sum()).all()))
@@ -134,10 +151,9 @@ print("Conserved on the whole run:", bool((g184.sum(axis=1) == g184[0].sum()).al
 
 With the fixed-zero edges of `apply_rule()`, occupied cells leave at the right edge, so the count drops. That is a property of the boundary, not of the rule.
 
-::: {.callout-tip}
 ## Optional extension: stochastic flips
 
-Add noise after each update. For example, flip each cell with a small probability `p_flip`.
+You can add noise after each update. For example, flip each cell with a small probability `p_flip`.
 
 ```python
 def noisy_update(state, rule_bin, p_flip=0.01, rng=None):
@@ -150,7 +166,39 @@ def noisy_update(state, rule_bin, p_flip=0.01, rng=None):
     return new_state
 ```
 
-That changes the model from a deterministic rule system into a stochastic one. Compare the density of occupied cells over time with and without noise.
+That changes the model from a deterministic rule system into a stochastic one.
+
+::: {.callout-note}
+## Exercise
+
+Optional. Run Rule 184 on a ring of 200 cells from a random row with density 0.2, for 500 steps, with `p_flip = 0` and with `p_flip = 0.01`. Plot the density of occupied cells over time. Use `step_eca(state, 184, boundary="periodic")` from `amlab.cellular_automata.elementary` in place of `apply_rule()`, so that the edges do not remove cells.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Without noise the density stays at its initial value, because Rule 184 conserves the 1s. With noise it drifts to about 1/2: a flip turns a 1 into a 0 at rate `p_flip` times the density and a 0 into a 1 at rate `p_flip` times one minus the density, and the two rates balance at density 1/2.
+
+```{python}
+from amlab.cellular_automata.elementary import step_eca
+
+rng = np.random.default_rng(0)
+fig, ax = plt.subplots(figsize=(6, 3))
+for p_flip in (0.0, 0.01):
+    state = random_row(200, 0.2, seed=1)
+    density = []
+    for t in range(500):
+        state = step_eca(state, 184, boundary="periodic")
+        flips = rng.random(state.size) < p_flip
+        state[flips] = 1 - state[flips]
+        density.append(state.mean())
+    ax.plot(density, label=f"p_flip = {p_flip}")
+ax.set_xlabel("Time")
+ax.set_ylabel("Density")
+ax.legend()
+plt.tight_layout()
+plt.show()
+```
 :::
 
 ## Interpretation

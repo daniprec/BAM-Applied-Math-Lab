@@ -15,14 +15,25 @@ Add a `boundary` argument to your simulator, compare periodic and fixed-zero edg
 ## Prediction
 
 ::: {.callout-note}
-## Before you code
+## Exercise
 
-On a ring of $N$ cells there are $2^N$ possible rows. What does this imply for the long-run behaviour of *any* rule? Which rule, 90 or 184, will be affected more by fixed-zero edges?
+Before you code, answer two questions. On a ring of $N$ cells there are $2^N$ possible rows. What does this imply for the long-run behaviour of *any* rule? Which rule, 90 or 184, will be affected more by fixed-zero edges?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+After at most $2^N$ steps some row must repeat, and from then on the evolution cycles. So every orbit on a ring is eventually periodic, whatever the rule. Both rules change once the pattern reaches the edges, but Rule 184 changes qualitatively: it conserves the number of 1s on a ring, and fixed-zero edges let the 1s leave at the right end, so the road empties. The experiments below show both effects.
 :::
 
 ## Implementation
 
 With periodic boundaries the left neighbour of cell 0 is cell $N-1$. `np.roll` gives both neighbours of every cell in one line, and the three bits give the index into the rule table.
+
+::: {.callout-note}
+## Exercise
+
+Complete `step()` so that it supports periodic and fixed-zero boundaries.
 
 ```python
 def step(state, rule, boundary="periodic"):
@@ -34,9 +45,10 @@ def step(state, rule, boundary="periodic"):
         left, right = padded[:-2], padded[2:]
     return table[4 * left + 2 * state + right]
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solved: `step()`
+## Solution
 
 ```python
 def step(state, rule, boundary="periodic"):
@@ -140,10 +152,42 @@ plt.show()
 - The period depends on the initial row, not only on the rule and $N$. The figure uses a single seed.
 - Storing every row limits `transient_and_period()` to rings of about 20 cells.
 
-::: {.callout-tip}
 ## Optional extension
 
-Replace the ghost value 0 by 1, or use reflecting edges (the ghost copies the edge cell). Which rules change their long-run behaviour?
+::: {.callout-note}
+## Exercise
+
+Optional. Replace the ghost value 0 by 1, or use reflecting edges (the ghost copies the edge cell). Track the number of occupied cells for Rules 184, 90 and 30. Which rules change their long-run behaviour?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Rule 184 is the rule that changes most. With ghost value 1 the left ghost feeds new 1s into the lattice, the right ghost blocks the exit, and the row fills up completely. With reflecting edges no 1 can leave or enter, so the count is conserved and all 1s pile up at the right end as one jam. Rules 90 and 30 keep an irregular pattern whose number of occupied cells fluctuates from step to step, for every boundary choice. The single values printed below are snapshots of these fluctuations, not steady states.
+
+```{python}
+from amlab.cellular_automata.elementary import rule_table, step_eca
+
+
+def step_reflect(state, rule):
+    table = rule_table(rule)
+    padded = np.concatenate((state[:1], state, state[-1:]))
+    return table[4 * padded[:-2] + 2 * state + padded[2:]]
+
+
+updates = {
+    "ghost 0": lambda s, r: step_eca(s, r, boundary="fixed", fixed_value=0),
+    "ghost 1": lambda s, r: step_eca(s, r, boundary="fixed", fixed_value=1),
+    "reflecting": step_reflect,
+}
+row = random_row(100, 0.4, seed=2)
+for rule in (184, 90, 30):
+    for name, update in updates.items():
+        state = row.copy()
+        for t in range(300):
+            state = update(state, rule)
+        print(f"Rule {rule:3d}, {name:10s}: {int(state.sum()):3d} occupied cells after 300 steps")
+```
 :::
 
 ## Next

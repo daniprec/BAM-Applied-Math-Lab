@@ -64,18 +64,64 @@ plt.show()
 - Close to $K_c$, $r(t)$ settles slowly. A fixed time window can stop too early.
 - The mean-field model has all-to-all coupling. Real oscillators often interact through a network, which changes the threshold. Module 5 returns to this with the [swing equation](../networks/swing-equation.qmd) for power grids.
 
-::: {.callout-tip}
-## Optional extension
+## Averaging over samples
 
-Repeat the figure with 10 seeds for each $N$ and plot the mean of $r_\infty$ over seeds. Then plot $r_\infty\sqrt{N}$ against $K$. Below $K_c$ the curves for different $N$ should collapse onto a single curve.
+This part is optional.
+
+::: {.callout-note}
+## Exercise
+
+Repeat @fig-finite-size with 10 seeds for each $N$ and plot the mean of $r_\infty$ over seeds. Then plot $r_\infty\sqrt{N}$ against $K$. Below $K_c$ the curves for different $N$ should collapse onto a single curve. Where does the collapse fail?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+At $K = 0$ all three curves start at $r_\infty\sqrt{N} \approx 0.89$, the mean of $\sqrt{N}\,r$ for independent uniform phases ($\sqrt{\pi}/2$). Up to $K \approx 1$ they stay together and rise slowly, to about $1.6$: coupling below threshold enhances the fluctuations but keeps them of order $N^{-1/2}$. Close to $K_c$ the curves separate: $r_\infty$ no longer scales like $N^{-1/2}$, and the largest population departs first. The run takes about 15 seconds.
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from amlab.synchronization.kuramoto_sweep import critical_coupling, order_parameter_sweep
+
+sigma = 1.0
+kc = critical_coupling(1 / (np.sqrt(2 * np.pi) * sigma))
+k_values = np.linspace(0, 4, 17)
+fig, axs = plt.subplots(1, 2, figsize=(9, 4))
+for n in [50, 200, 1000]:
+    r_seeds = []
+    for seed in range(10):
+        rng = np.random.default_rng(seed)
+        omega = rng.normal(0, sigma, n)
+        theta0 = rng.uniform(0, 2 * np.pi, n)
+        r_mean, _ = order_parameter_sweep(k_values, omega, theta0, t_end=80, dt=0.1, t_average=40)
+        r_seeds.append(r_mean)
+    r_avg = np.mean(r_seeds, axis=0)
+    axs[0].plot(k_values, r_avg, "o-", label=f"N = {n}")
+    axs[1].plot(k_values, r_avg * np.sqrt(n), "o-", label=f"N = {n}")
+for ax in axs:
+    ax.axvline(kc, color="black", linestyle=":")
+    ax.set_xlabel("Coupling strength K")
+    ax.legend()
+axs[0].set_ylabel(r"mean of $r_\infty$ over seeds")
+axs[1].set_ylabel(r"$r_\infty \sqrt{N}$")
+axs[1].set_xlim(0, kc)
+axs[1].set_ylim(0, 5)
+plt.tight_layout()
+plt.show()
+```
 :::
 
 ## Exit question
 
+::: {.callout-note}
+## Exercise
+
 You run a simulation with $N = 400$ and $K = 1.0$ (normal frequencies, $\sigma = 1$) and find $r_\infty \approx 0.05$. A classmate says this shows weak partial synchronization. Is that right?
+:::
 
 ::: {.callout-tip collapse="true"}
-## Answer
+## Solution
 
 No. $K = 1.0$ is below $K_c \approx 1.60$, so the $N \to \infty$ prediction is $r_\infty = 0$. The measured value is consistent with the incoherent noise floor $N^{-1/2} = 0.05$. To claim partial synchrony you would need $r_\infty$ well above $N^{-1/2}$ and a value that does not decrease as you increase $N$.
 :::

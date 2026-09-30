@@ -15,7 +15,7 @@ Your job here is to **assemble** them into a 2D particle animation (with a short
 
 Create a new script named `vicsek_animation.py`. At the end of this page you will have a complete version.
 
-Fill in the missing imports:
+Start with these imports:
 
 ```python
 import sys
@@ -44,7 +44,10 @@ from amlab.collective_motion.vicsek import initialize_particles, vicsek_equation
 
 Put everything inside a function so you can run it with different `dt`.
 
-Create a function skeleton and choose parameter defaults.
+::: {.callout-note}
+## Exercise
+
+Create a function skeleton and choose parameter defaults. Take the values from [Initialization](vicsek-initialization.qmd) and [Update Rule](vicsek-update.qmd).
 
 ```python
 def run_simulation(dt: float = 1.0) -> None:
@@ -63,24 +66,41 @@ def run_simulation(dt: float = 1.0) -> None:
 
     # We stop here for now
 ```
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Start with the small system of the earlier pages. The speed and radius follow @vicsek1995novel.
+
+```python
+def run_simulation(dt: float = 1.0) -> None:
+    """Run an interactive Vicsek animation (Matplotlib)."""
+    num_boids = 100
+    noise_eta = 0.5
+    box_size = 10.0
+    radius_interaction = 1.0
+    v0 = 0.03
+
+    # Tail length for trajectory visualization
+    TAIL_LEN = 20
+
+    xy, theta = initialize_particles(num_boids, box_size)
+```
+:::
 
 ---
 
 ## Create the Figure Layout
 
-You want a large space for particles, and a smaller area for sliders + extra diagnostics.
+For now you only need one axis for the particles. [Interactive Animation](vicsek-animation-interactive.qmd) turns this into a grid with space for sliders and diagnostics.
 
-Create the subplots and name the axes.
+Create the figure and name the axis.
 
 ```python
 def make_figure():
-    # Create a single grid
-    fig, axs = plt.subplots(
-        1, 1,
-        figsize=(12, 8),
-        height_ratios=[4, 1],  # top row larger than bottom row
-    )
-    ax_plane = axs[0]
+    # A single square axis for the particles
+    fig, ax_plane = plt.subplots(figsize=(8, 8))
 
     return fig, ax_plane
 ```
@@ -123,177 +143,6 @@ def init_particles_plot(ax_plane: Axes, xy: np.ndarray, box_size: float, tail_le
     return xy_tail, plt_particles, plt_current
 ```
 
-::: {.callout-tip collapse="true"}
-## Tail trick (fast and simple)
-Store the last `TAIL_LEN` positions:
-
-- shift the tensor with `np.roll(...)`,
-- write the newest positions into the last slice.
-
-This avoids creating new arrays each frame.
-:::
-
 ---
 
-## Write the Animation Update Function
-
-This is the core loop:
-
-1. advance the Vicsek dynamics by one step (`vicsek_equations`).
-2. update `xy_tail`.
-3. update the particle artists.
-
-Use this checklist:
-
-- [ ] call `vicsek_equations(...)`
-- [ ] update `xy_tail` with `np.roll(...)`
-- [ ] `plt_particles.set_data(...)` and `plt_current.set_data(...)`
-
-You can follow the structure of the `update_animation` function below, which includes comments for each step.
-
-```python
-def update_animation(frame: int):
-    nonlocal xy, xy_tail, theta, noise_eta, v0, radius_interaction, box_size
-
-    # TODO: advance the Vicsek equations
-
-    # TODO: update the tail tensor
-    # TODO: update the particle artists with set_data
-
-    return (plt_particles, plt_current)
-```
-
-**Tip:** blitting requires you to return artists
-If you set `blit=True`, your update function **must** return an iterable of the artists that changed, as shown above. If you forget to return them, the animation will run but the plot will not update (it will look frozen).
-
-Move the function `update_animation` inside `run_simulation` so it can access the state variables with `nonlocal`.
-
-::: {.callout-tip collapse="true"}
-## Solution: Simple `update_animation()`
-
-```python
-def update_animation(frame: int):
-    nonlocal \
-        xy, \
-        xy_tail, \
-        theta, \
-        noise_eta, \
-        v0, \
-        radius_interaction, \
-        box_size
-    xy, theta = vicsek_equations(
-        xy,
-        theta,
-        v0=v0,
-        dt=dt,
-        radius_interaction=radius_interaction,
-        box_size=box_size,
-        noise=noise_eta,
-    )
-
-    # Update tails
-    xy_tail = np.roll(xy_tail, shift=-1, axis=2)
-    xy_tail[:, :, -1] = xy
-    plt_particles.set_data(xy_tail[0].flatten(), xy_tail[1].flatten())
-    plt_current.set_data(xy[0], xy[1])
-
-    return (plt_particles, plt_current)
-```
-:::
-
----
-
-## Create the Animation Object
-
-Matplotlib uses `FuncAnimation`. Inside `run_simulation`, after defining `update_animation`, create the animation object:
-
-```python
-ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)
-```
-
-- `interval=0` makes it as fast as your computer can handle.
-- You can set a larger interval (e.g. 20 ms) to reduce CPU usage.
-
----
-
-## Full Script
-
-At this point you have built every piece.  
-Below is a sample of how your `run_simulation` function might look with all the pieces assembled.
-
-::: {.callout-tip collapse="true"}
-## Solution: Simplified `run_simulation()`
-
-This is a simplified version that assumes you have not implemented the order plot or noise plot, neither the sliders, yet. It focuses on the particle animation.
-
-```python
-def run_simulation(dt: float = 1.0) -> None:
-    # Parameters
-    num_boids = 100
-    noise_eta = 0.5
-    box_size = 10.0
-    radius_interaction = 1.0
-    v0 = 0.03
-
-    # Initialize state
-    xy, theta = initialize_particles(num_boids, box_size)
-
-    # Order parameter history and noise diagnostic
-    # will be initialized here
-
-    # Create figure and axes
-    fig, ax_plane, ax_order, ax_sliders, ax_noise = make_figure()
-
-    # Initialize plots
-    xy_tail, plt_particles, plt_current = init_particles_plot(ax_plane, xy, box_size, tail_len=20)
-    # The order plot and noise plot will go here
-
-    # Sliders will be added here
-
-    # Define the animation update function
-    def update_animation(frame: int):
-        # See the previous step for the full implementation
-        ...
-
-    # Create the animation object
-    ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)
-
-    # The slider callbacks will come here
-
-    plt.show()
-```
-:::
-
-**Important:** For your script to work, remember to call the `run_simulation()` function at the end of your script:
-
-```python
-if __name__ == "__main__":
-    run_simulation()
-```
-
----
-
-## Checklist (Debugging)
-
-If your animation is blank:
-
-- Did you return the artists in `update_animation`?
-- Did you set axis limits (`set_xlim`, `set_ylim`)?
-- Are `xy` and `theta` updated each frame?
-- Are you calling `plt.show()` at the end of `run_simulation()`?
-- Are you calling `run_simulation()` at the end of your script?
-
----
-
-## Extension
-
-::: {.callout-tip}
-## Optional extension
-
-- Add the order parameter plot and noise diagnostic plot.
-- Add sliders for `noise_eta` and `v0`.
-- Add a slider for `radius_interaction` and see how it affects the dynamics.
-
-[Interactive Animation](vicsek-animation-interactive.qmd) shows how to add the order parameter plot and the noise diagnostic plot.
-:::
-
+Next: [Animation Loop](vicsek-animation-loop.qmd), where you make the particles move.

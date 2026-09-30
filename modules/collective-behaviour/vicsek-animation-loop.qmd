@@ -1,0 +1,204 @@
+---
+title: "Vicsek Lab: Animation Loop"
+subtitle: "Module 2: Synchronization and Collective Behaviour"
+format: html
+---
+
+This page continues [Animation](vicsek-animation.qmd). You already have `run_simulation()`, `make_figure()` and `init_particles_plot()`. Now you write the function that advances the model at every frame and assemble the full script [@hunter2007matplotlib].
+
+## Write the Animation Update Function
+
+This is the core loop:
+
+1. advance the Vicsek dynamics by one step (`vicsek_equations`).
+2. update `xy_tail`.
+3. update the particle artists.
+
+Use this checklist:
+
+- [ ] call `vicsek_equations(...)`
+- [ ] update `xy_tail` with `np.roll(...)`
+- [ ] `plt_particles.set_data(...)` and `plt_current.set_data(...)`
+
+::: {.callout-note}
+## Exercise
+
+Complete `update_animation()`, following the comments for each step.
+
+```python
+def update_animation(frame: int):
+    nonlocal xy, xy_tail, theta, noise_eta, v0, radius_interaction, box_size
+
+    # TODO: advance the Vicsek equations
+
+    # TODO: update the tail tensor
+    # TODO: update the particle artists with set_data
+
+    return (plt_particles, plt_current)
+```
+:::
+
+**Tip:** blitting requires you to return artists
+If you set `blit=True`, your update function **must** return an iterable of the artists that changed, as shown above. If you forget to return them, the animation will run but the plot will not update (it will look frozen).
+
+Move the function `update_animation` inside `run_simulation` so it can access the state variables with `nonlocal`.
+
+::: {.callout-tip collapse="true"}
+## Hint
+
+Use the tail trick. Store the last `TAIL_LEN` positions:
+
+- shift the tensor with `np.roll(...)`,
+- write the newest positions into the last slice.
+
+This avoids creating new arrays each frame.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+```python
+def update_animation(frame: int):
+    nonlocal \
+        xy, \
+        xy_tail, \
+        theta, \
+        noise_eta, \
+        v0, \
+        radius_interaction, \
+        box_size
+    xy, theta = vicsek_equations(
+        xy,
+        theta,
+        v0=v0,
+        dt=dt,
+        radius_interaction=radius_interaction,
+        box_size=box_size,
+        noise=noise_eta,
+    )
+
+    # Update tails
+    xy_tail = np.roll(xy_tail, shift=-1, axis=2)
+    xy_tail[:, :, -1] = xy
+    plt_particles.set_data(xy_tail[0].flatten(), xy_tail[1].flatten())
+    plt_current.set_data(xy[0], xy[1])
+
+    return (plt_particles, plt_current)
+```
+:::
+
+---
+
+## Create the Animation Object
+
+Matplotlib uses `FuncAnimation`. Inside `run_simulation`, after defining `update_animation`, create the animation object:
+
+```python
+ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)
+```
+
+- `interval=0` makes it as fast as your computer can handle.
+- You can set a larger interval (e.g. 20 ms) to reduce CPU usage.
+
+---
+
+## Full Script
+
+At this point you have built every piece.
+
+::: {.callout-note}
+## Exercise
+
+Assemble `run_simulation()`: parameters, initial state, figure, particle artists, the update function and the animation object. Run the script and check that the particles move and align.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+This version has no order plot, noise plot or sliders yet. It focuses on the particle animation.
+
+```python
+def run_simulation(dt: float = 1.0) -> None:
+    # Parameters
+    num_boids = 100
+    noise_eta = 0.5
+    box_size = 10.0
+    radius_interaction = 1.0
+    v0 = 0.03
+
+    # Initialize state
+    xy, theta = initialize_particles(num_boids, box_size)
+
+    # Order parameter history and noise diagnostic
+    # will be initialized here
+
+    # Create figure and axes
+    fig, ax_plane = make_figure()
+
+    # Initialize plots
+    xy_tail, plt_particles, plt_current = init_particles_plot(ax_plane, xy, box_size, tail_len=20)
+    # The order plot and noise plot will go here
+
+    # Sliders will be added here
+
+    # Define the animation update function
+    def update_animation(frame: int):
+        nonlocal xy, xy_tail, theta
+        xy, theta = vicsek_equations(
+            xy,
+            theta,
+            v0=v0,
+            dt=dt,
+            radius_interaction=radius_interaction,
+            box_size=box_size,
+            noise=noise_eta,
+        )
+        xy_tail = np.roll(xy_tail, shift=-1, axis=2)
+        xy_tail[:, :, -1] = xy
+        plt_particles.set_data(xy_tail[0].flatten(), xy_tail[1].flatten())
+        plt_current.set_data(xy[0], xy[1])
+        return (plt_particles, plt_current)
+
+    # Create the animation object
+    ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)
+
+    # The slider callbacks will come here
+
+    plt.show()
+```
+:::
+
+**Important:** For your script to work, remember to call the `run_simulation()` function at the end of your script:
+
+```python
+if __name__ == "__main__":
+    run_simulation()
+```
+
+---
+
+## Checklist (Debugging)
+
+If your animation is blank:
+
+- Did you return the artists in `update_animation`?
+- Did you set axis limits (`set_xlim`, `set_ylim`)?
+- Are `xy` and `theta` updated each frame?
+- Are you calling `plt.show()` at the end of `run_simulation()`?
+- Are you calling `run_simulation()` at the end of your script?
+
+---
+
+## Extension
+
+::: {.callout-tip}
+## Optional extension
+
+- Add the order parameter plot and noise diagnostic plot.
+- Add sliders for `noise_eta` and `v0`.
+- Add a slider for `radius_interaction` and see how it affects the dynamics.
+
+[Interactive Animation](vicsek-animation-interactive.qmd) shows how to add the order parameter plot and the noise diagnostic plot.
+:::
+
+Next: [Interactive Animation](vicsek-animation-interactive.qmd) (optional) or [Practice: Collective Motion](practice-collective-motion.qmd).

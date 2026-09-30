@@ -31,7 +31,9 @@ on $(0, L)$ with zero-flux (Neumann) boundary conditions.
 - $\gamma$ sets the reaction rate relative to diffusion.
 - $d$ is the diffusion ratio. The activator diffuses with coefficient $1$, so $d > 1$ means the inhibitor spreads faster.
 
-The homogeneous steady state is $u_* = (a+1)/b$, $v_* = u_*^2$ (see [Linearization](linearization.qmd)).
+The homogeneous steady state is $u_* = (a+1)/b$, $v_* = u_*^2$ (see [Linearization](linearization.qmd)). This is the flat state you test for pattern formation.
+
+In short, the activator builds local peaks, and the inhibitor spreads the suppressing signal over a wider region.
 
 ## What Turing Instability Means Here
 
@@ -46,6 +48,19 @@ Turing instability does not mean the model explodes. It means the flat state is 
 Not necessarily. It means the balance between activation, inhibition, and diffusion does not selectively amplify spatial modes. The inhibitor may be too strong, the activator too weak, the inhibitor may diffuse too slowly (small $d$), or the steady state may already be unstable for reasons unrelated to diffusion (for example $\operatorname{tr} J > 0$).
 :::
 
+Diffusion does not only smooth the field. For suitable reaction parameters, a fast-diffusing inhibitor makes a subset of spatial perturbations grow instead of decay.
+
+## What the Modes Mean
+
+The instability does not amplify every spatial perturbation equally. On a finite domain with fixed boundary conditions, only certain spatial shapes are natural building blocks. These are the modes. For Neumann conditions on $[0, L]$ they are $\cos(n\pi x/L)$, $n = 0, 1, 2, \dots$ ([Laplacian Eigenmodes](laplacian-eigenmodes.qmd)).
+
+- Mode $0$ is flat, with no spatial variation.
+- Mode $1$ has the longest non-constant wavelength the domain allows.
+- Mode $2$ oscillates twice as fast in space, mode $3$ three times as fast.
+- Higher modes have shorter wavelengths and finer structure.
+
+A mode is unstable when a tiny perturbation with that shape grows in the linearized system. The leading mode has the largest growth rate, so it usually sets the early spacing of the pattern. Later, the nonlinear dynamics can merge peaks, saturate amplitudes, or shift the final profile. That is why the leading mode predicts the early pattern best, even if the long-time state looks different.
+
 ## Lab Workflow
 
 ::: {.callout-important}
@@ -53,7 +68,7 @@ Not necessarily. It means the balance between activation, inhibition, and diffus
 Predict, build, validate, and test a 1D Gierer-Meinhardt solver for the two cases $a = 0.4$, $b = 1$, $\gamma = 1$, $L = 40$, with $d = 30$ (Case A) and $d = 20$ (Case B).
 :::
 
-- **Prediction.** Use the Turing conditions and the mode scan to predict which case forms a pattern and which mode leads ([Turing Numerics](turing-numerics.qmd)).
+- **Prediction.** Use the Turing conditions and the mode scan to predict which case forms a pattern and which mode leads ([Turing Numerics](turing-numerics.qmd), [Unstable Modes in 1D](unstable-modes-1d.qmd)).
 - **Implementation.** Build the Laplacian ([Laplacian in 1D](laplacian-1d.qmd)), the boundary conditions ([Boundary Conditions](boundary-conditions.qmd)), and the solver ([Solver](gierer-meinhardt-1d-solver.qmd)).
 - **Validation.** Check the time step and grid ([Time-Step Stability](time-step-stability.qmd)).
 - **Experiment.** Animate and vary parameters ([Animation](gierer-meinhardt-1d-animation.qmd)).

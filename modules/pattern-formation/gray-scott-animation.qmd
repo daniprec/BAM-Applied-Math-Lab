@@ -1,0 +1,65 @@
+---
+title: "Gray-Scott Animation"
+subtitle: "Module 4: Space and Pattern Formation"
+format: html
+---
+
+You now have the initial field and `gray_scott_pde` from [Gray-Scott Model](gray-scott.qmd). This page advances them in time, animates the result, and checks the time step. Run the animation as a Python script, not in a notebook.
+
+## Time Step and Animate
+
+Because `np.roll()` wraps around the array, this implementation already uses periodic boundary conditions. For Gierer-Meinhardt you copied the edge values after each Euler step to model zero flux. Here the pattern leaves one side of the domain and re-enters on the opposite side.
+
+::: {.callout-note}
+## Exercise
+
+Advance the field by several Euler steps per frame.
+
+```python
+import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(6, 6))
+im = ax.imshow(uv[1], cmap="jet", interpolation="bilinear", vmin=0, vmax=1)
+ax.axis("off")
+
+def update_frame(_):
+    # TODO: advance uv by one or more Euler steps
+    im.set_array(uv[1])
+    return [im]
+
+ani = animation.FuncAnimation(fig, update_frame, interval=1, blit=True)
+```
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+```python
+def update_frame(_):
+    global uv
+    for _ in range(20):
+        uv = uv + gray_scott_pde(0, uv, d1=0.1, d2=0.05, f=0.040, k=0.060) * dt
+    im.set_array(uv[1])
+    return [im]
+```
+:::
+
+## Validation
+
+- **Time step.** With $d_1 = 0.1$, $dx = 1$ and the 5-point stencil, the bound is $dt \le dx^2/(4 d_1) = 2.5$. The course uses $dt = 1$ or $dt = 2$. Try $dt = 3$ and look for a checkerboard ([Time-Step Stability](time-step-stability.qmd)).
+- **Grid units.** `amlab.pdes_2d.gray_scott.laplacian` does not divide by $dx^2$, so it assumes $dx = 1$. If you change $dx$, divide the Laplacian by $dx^2$ and recompute the bound.
+- **Symmetry.** A single centred square with no noise keeps the four-fold symmetry of the initial condition. Noise is what breaks it.
+
+```{python}
+from amlab.turing import euler_dt_max
+
+for dt in (1.0, 2.0, 3.0):
+    print(f"dt = {dt}: stable? {dt <= euler_dt_max(dx=1.0, diffusion=0.1, ndim=2)}")
+```
+
+Next: [Gray-Scott Parameters](gray-scott-parameters.qmd).
+
+::: {.callout-tip}
+Reference code is available in [amlab/pdes_2d/gray_scott.py](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/pdes_2d/gray_scott.py).
+:::

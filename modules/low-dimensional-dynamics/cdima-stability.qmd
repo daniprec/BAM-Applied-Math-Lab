@@ -8,7 +8,17 @@ This page continues [CDIMA: Nullclines and Fixed Points](cdima-nullclines.qmd). 
 
 ## Prediction
 
+::: {.callout-note}
+## Exercise
+
 For $a = 10$, which of $b = 3$ and $b = 4$ gives a stable fixed point? What should the eigenvalues look like at $b = 3.5$?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+$b_c = 3 \cdot 10/5 - 25/10 = 3.5$. The fixed point is stable for $b > b_c$, so $b = 4$ gives a stable spiral and $b = 3$ an unstable one. At $b = b_c$ the eigenvalues are a purely imaginary pair: the real part crosses zero while the imaginary part stays nonzero.
+:::
 
 ## Implementation: the Jacobian
 
@@ -22,7 +32,12 @@ J =
 \end{bmatrix}.
 $$
 
-You can compute it analytically or numerically. The numerical route uses central differences and works for any model:
+As in one dimension, a stable equilibrium attracts nearby trajectories and an unstable one repels them. In two dimensions the eigenvalues of $J$ at the fixed point decide which. You can compute $J$ analytically or numerically. The numerical route uses central differences and works for any model.
+
+::: {.callout-note}
+## Exercise
+
+Complete the central difference Jacobian. Column $j$ is the derivative of the right-hand side with respect to variable $j$.
 
 ```python
 def numerical_jacobian(func, point, args, h=1e-6):
@@ -33,9 +48,11 @@ def numerical_jacobian(func, point, args, h=1e-6):
         jac[:, j] = # TODO: (f(point + e) - f(point - e)) / (2h)
     return jac
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
 ## Solution
+
 ```python
 def numerical_jacobian(func, point, args, h=1e-6):
     jac = np.zeros((2, 2))
@@ -82,7 +99,24 @@ At $b = 3.5$ the eigenvalues are $\pm i\sqrt 7 \approx \pm 2.6458i$, as predicte
 
 ## Experiment
 
+::: {.callout-note}
+## Exercise
+
 Run the phase plane from [CDIMA: Phase Plane](cdima-phase-plane.qmd) with $a = 10$ and $b = 4, 3.6, 3.4, 3$. Where does the limit cycle appear? How does its size change as $b$ decreases below $b_c$?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+For $b = 4$ and $b = 3.6$ the oscillations die out (slowly at $b = 3.6$, where the real part of the eigenvalues is only $-0.02$). The limit cycle appears once $b < b_c = 3.5$. Its amplitude grows as $b$ decreases: about 0.43 at $b = 3.4$ and 0.86 at $b = 3$.
+
+```{python}
+from amlab.odes_2d.cdima_analysis import limit_cycle_amplitude
+
+for b in [4.0, 3.6, 3.4, 3.0]:
+    print(f"b = {b}: amplitude of x after transients = {limit_cycle_amplitude(10.0, b, t_end=400.0):.3f}")
+```
+:::
 
 ## Interpretation
 
@@ -92,6 +126,14 @@ For $b > b_c$ the fixed point is a stable spiral and the reaction settles to con
 
 The linear analysis says nothing about the size of the limit cycle, nor whether the Hopf bifurcation is supercritical. You answered those questions with simulations in [Hopf Bifurcation](hopf-bifurcation.qmd).
 
+## Resources
+
+- @strogatz2024nonlinear, Section 8.3, for the theory of the CDIMA model and its phase plane.
+- SciPy documentation for [`solve_ivp`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html).
+- Reference implementation: [amlab/odes_2d](https://github.com/daniprec/BAM-Applied-Math-Lab/tree/main/amlab/odes_2d).
+
 ## Next
+
+You now have the full phase-plane workflow: trajectories, nullclines, fixed points and their stability. Next you animate the trajectories, then reproduce the same plots for [the Van der Pol oscillator](van-der-pol.qmd) and [the FitzHugh-Nagumo model](fitzhugh-nagumo.qmd).
 
 [Animations and Interactivity](animation.qmd){.btn .btn-primary}

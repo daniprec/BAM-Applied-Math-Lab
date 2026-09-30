@@ -30,6 +30,11 @@ Kolmogorov's null distribution of $D$, which `scipy.stats.kstest` uses for its p
 
 ## Core activity: a bootstrap-calibrated KS test
 
+::: {.callout-note}
+## Exercise
+
+Complete the two functions. Then apply `ks_normal_bootstrap` to the returns with 300 bootstrap samples and compare its p-value with the naive one from `stats.kstest`.
+
 ```python
 def ks_stat_normal(x):
     """KS distance between x and the normal fitted to x."""
@@ -45,9 +50,10 @@ def ks_normal_bootstrap(x, n_boot, rng):
     # TODO: p-value = (1 + number of d_boot >= d_obs) / (n_boot + 1)
     return d_obs, ...
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solution: bootstrap KS test
+## Solution
 
 ```{python}
 def ks_stat_normal(x):
@@ -111,7 +117,36 @@ The Q-Q plot, the Jarque-Bera test and the KS test ask the same question: are th
 - With thousands of observations any test rejects even small departures from normality. Rejection says nothing about whether the departure matters for your purpose.
 - The Jarque-Bera test depends on moments that may not exist for heavy tails.
 
-::: {.callout-tip}
 ## Optional extension
+
+::: {.callout-note}
+## Exercise
+
 Fit a Student-t distribution to the returns with `stats.t.fit(r)` and adapt the bootstrap KS test to it. The t family has a shape parameter, so the null distribution now depends on it: simulate from the fitted t and refit all three parameters on every bootstrap sample. Keep `n_boot` small (about 100) because `stats.t.fit` is slow.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+The structure is the same as for the normal. Only the fit and the simulation change. A large p-value means the fitted t is consistent with the data at the level of the KS test. It does not remove the i.i.d. assumption.
+
+```python
+def ks_stat_t(x):
+    """KS distance between x and the Student-t fitted to x."""
+    params = stats.t.fit(x)
+    return stats.kstest(x, "t", args=params).statistic, params
+
+
+def ks_t_bootstrap(x, n_boot, rng):
+    d_obs, params = ks_stat_t(x)
+    d_boot = np.array([
+        ks_stat_t(stats.t.rvs(*params, size=x.size, random_state=rng))[0]
+        for _ in range(n_boot)
+    ])
+    return d_obs, params, (1 + np.sum(d_boot >= d_obs)) / (n_boot + 1)
+
+
+d_t, params_t, p_t = ks_t_bootstrap(r, n_boot=100, rng=np.random.default_rng(19))
+print(f"fitted nu = {params_t[0]:.2f}; D = {d_t:.4f}; bootstrap p = {p_t:.3f}")
+```
 :::

@@ -15,11 +15,26 @@ $$
 \frac{dx}{dt} = rx\left(1 - \frac{x}{k}\right) - \frac{x^2}{1 + x^2}.
 $$ {#eq-budworm-code}
 
+The first term is logistic growth. The second term is predation by birds, with a saturating functional response.
+
 ## Prediction
 
+::: {.callout-note}
+## Exercise
+
 Before you write code, use [Fixed Points and Stability](fixed-points-stability.qmd) to predict how many positive equilibria you expect for $r = 0.5$, $k = 10$, and which ones are stable.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+There are three positive equilibria, $x_a \approx 0.68$, $x_b = 2$ and $x_c \approx 7.32$, plus the unstable state $x = 0$. The slope $f'(x^*)$ is negative at $x_a$ and $x_c$ (stable) and positive at $x_b$ (unstable). The validation at the end of this page checks these values.
+:::
 
 ## Implementation: the ODE function {#sec-implementing-ode-function}
+
+::: {.callout-note}
+## Exercise
 
 Create a function that follows the signature required by `scipy.integrate.solve_ivp`.
 
@@ -36,9 +51,11 @@ def spruce_budworm(t: float, x: float, r: float = 0.5, k: float = 10) -> float:
 ```
 
 *Why do we need `t` as an input?* The equation does not depend on time, but `solve_ivp` always calls the function as `fun(t, y, *args)`.
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solution: ODE function
+## Solution
+
 ```python
 def spruce_budworm(t: float, x: float, r: float = 0.5, k: float = 10) -> float:
     """Dimensionless spruce budworm model (Strogatz, Section 3.7)."""
@@ -47,6 +64,11 @@ def spruce_budworm(t: float, x: float, r: float = 0.5, k: float = 10) -> float:
 :::
 
 ## Implementation: the rate plot {#sec-phase-portrait}
+
+This rate plot is the phase portrait of a one-dimensional model: it shows the equilibria and their stability at a glance.
+
+::: {.callout-note}
+## Exercise
 
 Create a function that plots $dx/dt$ against $x$ and marks the equilibria.
 
@@ -69,6 +91,7 @@ def plot_spruce_budworm_rate(x_t: float, r: float = 0.5, k: float = 10):
 ```
 
 @fig-graph shows the expected output.
+:::
 
 ```{python}
 #| label: fig-graph
@@ -85,19 +108,41 @@ plt.show()
 plt.close()
 ```
 
-::: {.callout-note collapse="true"}
-## Hint: finding zero crossings
-`np.diff(np.sign(dxdt))` is nonzero exactly where the sign changes between two grid points. If `dxdt[i+1] < 0` at a crossing, the curve goes from positive to negative, so the equilibrium is stable.
+::: {.callout-tip collapse="true"}
+## Hint
+
+- Use `np.linspace` to create the grid of $x$ values.
+- `np.diff(np.sign(dxdt))` is nonzero exactly where the sign changes between two grid points.
+- An equilibrium $x^*$ is a value where $dx/dt = 0$. It is stable if small perturbations decay back to $x^*$, and unstable if they grow.
+- A fixed point is stable if $dx/dt$ decreases as you pass through it. So if `dxdt[i+1] < 0` at a crossing, the curve goes from positive to negative and the equilibrium is stable.
 :::
 
 ::: {.callout-tip collapse="true"}
-## Solution: rate plot
-The reference implementation is `plot_spruce_budworm_rate` in [amlab/odes_1d/spruce_budworm.py](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/odes_1d/spruce_budworm.py). The key lines are:
+## Solution
+
+This follows `plot_spruce_budworm_rate` in [amlab/odes_1d/spruce_budworm.py](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/odes_1d/spruce_budworm.py).
 
 ```python
-mask_zerocross = np.diff(np.sign(dxdt)).astype(bool)
-is_stable = np.where(mask_zerocross & (dxdt[1:] < 0))[0]
-is_unstable = np.where(mask_zerocross & (dxdt[1:] > 0))[0]
+def plot_spruce_budworm_rate(x_t: float, r: float = 0.5, k: float = 10):
+    """Plot dx/dt against x, mark the equilibria and the current state x_t."""
+    x = np.linspace(0, k, 1000)
+    dxdt = spruce_budworm(0, x, r, k)
+
+    mask_zerocross = np.diff(np.sign(dxdt)).astype(bool)
+    is_stable = np.where(mask_zerocross & (dxdt[1:] < 0))[0]
+    is_unstable = np.where(mask_zerocross & (dxdt[1:] > 0))[0]
+
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.plot(x, dxdt)
+    ax.axhline(0, color="red", lw=1)
+    ax.scatter(x[is_stable], np.zeros(len(is_stable)), color="blue", zorder=3)
+    ax.scatter(x[is_unstable], np.zeros(len(is_unstable)), color="red", zorder=3)
+    ax.axvline(x_t, color="green", lw=1, linestyle="--")
+    ax.set_xlabel("Budworm population")
+    ax.set_ylabel("Rate of change")
+    ax.set_title("Spruce budworm rate of change")
+    ax.grid()
+    return fig, ax
 ```
 :::
 

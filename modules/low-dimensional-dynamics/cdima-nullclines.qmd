@@ -8,7 +8,17 @@ This page continues [CDIMA: Phase Plane](cdima-phase-plane.qmd). You add the nul
 
 ## Prediction
 
+::: {.callout-note}
+## Exercise
+
 Solve $\dot y = 0$ by hand for $x > 0$. You should get $y = 1 + x^2$. Where do you expect it to cross the $x$-nullcline for $a = 10$?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+From $\dot x = 0$: $y = (a - x)(1 + x^2)/(4x)$. From $\dot y = 0$ with $x > 0$: $y = 1 + x^2$. Setting them equal gives $a - x = 4x$, so $x^* = a/5$. For $a = 10$ the crossing is at $(2, 5)$.
+:::
 
 ## Implementation: nullclines
 
@@ -52,10 +62,16 @@ We have two options:
 - **Analytical approach**: Set $\dot x = 0$ and $\dot y = 0$ and solve the resulting equations for $y$ as a function of $x$ (or vice versa). This can be done by hand or using symbolic computation tools like SymPy.
 - **Numerical approach**: Evaluate the derivatives on a grid of $(x,y)$ values and identify where they change sign (i.e., where they cross zero). This can be done using numerical methods and is often more practical for complex systems. @fig-nullclines shows the nullclines computed using a numerical approach.
 
-Pick one of these methods to compute the nullclines for the CDIMA system, and then plot them in the phase plane. The intersection points of the nullclines correspond to equilibrium points of the system.
+The intersection points of the nullclines correspond to equilibrium points of the system.
+
+::: {.callout-note}
+## Exercise
+
+Pick one of these methods to compute the nullclines for the CDIMA system with $a = 10$, $b = 4$, and plot them in the phase plane as in @fig-nullclines.
+:::
 
 ::: {.callout-tip collapse="true"}
-## Hint: Computing Nullclines (click to expand)
+## Hint
 ```python
 # Define the limits for the grid
 x_min, x_max = 0.1, 5
@@ -89,6 +105,27 @@ dydt_nullcline_y = y_grid[dydt_zero_crossings]
 
 Now you can plot the nullclines using matplotlib
 **Recommendation:** do not join the points! There is no guarantee that the sequence of points in `dxdt_nullcline_x` and `dxdt_nullcline_y` (or `dydt_nullcline_x` and `dydt_nullcline_y`) will form a continuous curve, so it's better to plot them as individual points (e.g., using `'o'` markers) rather than trying to connect them with lines.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+With the arrays from the hint, plot each nullcline as a cloud of points. The analytical curves from the Prediction exercise should lie on top of them.
+
+```python
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.plot(dxdt_nullcline_x, dxdt_nullcline_y, "o", ms=0.5, color="blue", label="dx/dt = 0")
+ax.plot(dydt_nullcline_x, dydt_nullcline_y, "o", ms=0.5, color="red", label="dy/dt = 0")
+x_line = np.linspace(0.1, 5, 200)
+ax.plot(x_line, (a - x_line) * (1 + x_line**2) / (4 * x_line), "k--", lw=0.8, label="analytical")
+ax.plot(x_line, 1 + x_line**2, "k--", lw=0.8)
+ax.set_xlim(0, 5)
+ax.set_ylim(0, 10)
+ax.set_xlabel("x")
+ax.set_ylabel("y")
+ax.legend()
+plt.show()
+```
 :::
 
 ## Implementation: the fixed point
@@ -157,11 +194,6 @@ x_test = 2.0
 print("x-nullcline at x = 2:", (a - x_test) * (1 + x_test**2) / (4 * x_test))
 print("y-nullcline at x = 2:", 1 + x_test**2)
 ```
-
-::: {.callout-note collapse="true"}
-## Analytical nullclines
-From $\dot x = 0$: $y = (a - x)(1 + x^2)/(4x)$. From $\dot y = 0$ with $x > 0$: $y = 1 + x^2$. Setting them equal gives $a - x = 4x$, so $x^* = a/5$.
-:::
 
 ## Next
 

@@ -1,0 +1,74 @@
+---
+title: "Kuramoto Lab: Locating the Threshold"
+subtitle: "Module 2: Synchronization and Collective Behaviour"
+format: html
+---
+
+This page is the interpretation step. You compare the transition in your [Bifurcation Diagram](kuramoto-diagram.qmd) with the critical coupling $K_c = 2/(\pi g(0))$ from [Critical Coupling](critical-coupling.qmd).
+
+In your animation script from [Animation](kuramoto-animation.qmd), set the coupling strength just below and just above the critical value to see the difference in the dynamics. Below $K_c$ the oscillators remain incoherent. Above $K_c$ they start to synchronize and form a cluster on the unit circle, as in @fig-kuramoto-bifurcation-validate.
+
+```{python}
+#| label: fig-kuramoto-bifurcation-validate
+#| fig-cap: 'Comparison between the theoretical critical coupling $K_c$ and the empirical transition point observed in simulations. Individual oscillators are blue dots and the order parameter is the red vector.'
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+
+from amlab.odes_coupled.kuramoto import (
+    initialize_oscillators,
+    kuramoto_ode_meanfield,
+    kuramoto_order_parameter,
+)
+
+theta0, omega = initialize_oscillators(
+    100, distribution="normal", scale_omega=0.5, scale_phase=1.0, seed=1
+)
+fig, axs = plt.subplots(1, 2, figsize=(7, 4))
+for ax, k, title in zip(axs, [0.1, 10.0], ["K < Kc", "K > Kc"]):
+    sol = solve_ivp(kuramoto_ode_meanfield, (0, 100), theta0, args=(omega, k))
+    theta_end = sol.y[:, -1]
+    _, _, rc, rs = kuramoto_order_parameter(theta_end)
+    ax.add_artist(plt.Circle((0, 0), 1, color="lightgray", fill=False))
+    ax.scatter(np.cos(theta_end), np.sin(theta_end), s=50, color="blue", alpha=0.5)
+    ax.plot([0, rc], [0, rs], color="red", linewidth=2)
+    ax.plot([rc], [rs], "ro", markersize=6)
+    ax.set_title(title)
+    ax.set_xlabel("Cos(theta)")
+    ax.set_xlim(-1.1, 1.1)
+    ax.set_ylim(-1.1, 1.1)
+    ax.set_aspect("equal")
+    ax.grid(True)
+axs[0].set_ylabel("Sin(theta)")
+plt.tight_layout()
+plt.show()
+```
+
+::: {.callout-note}
+## Exercise
+
+Find $K_c$ from $K_c = 2/(\pi g(0))$ for your normal frequencies with $\sigma = 1$. Estimate the empirical transition point from your points: the value of $K$ where $r$ starts to rise clearly above zero. Alternatively, fit the near-onset scaling $r \approx \sqrt{16/(\pi K_c^3)}\,\sqrt{\mu/(-g''(0))}$ of [Bifurcation Diagram](kuramoto-diagram.qmd) to the points just above the transition. Do the two estimates agree?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+For a normal density $g(0) = 1/\sqrt{2\pi}$, so $K_c = 2\sqrt{2\pi}/\pi = \sqrt{8/\pi} \approx 1.60$. With $N = 1000$ and 20 values of $K$ between 0 and 5, $r_\infty$ stays below about $0.1$ up to $K \approx 1.3$ and jumps to about $0.6$ between $K \approx 1.6$ and $K \approx 1.8$. The grid spacing is about $0.26$, so the empirical threshold agrees with $K_c$ within one grid step. The exact $K$ of the jump moves with the seed, because each sample of frequencies differs from $g$ ([Finite-Size Effects](kuramoto-finite-size.qmd)).
+:::
+
+::: {.callout-note}
+## Exercise
+
+The empirical points in the normal case lie close to zero for $K < K_c$ but not exactly at zero. Give two reasons.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+First, a finite population has $r$ of order $N^{-1/2}$ even when incoherent (about $0.045$ for the $N = 500$ figures of [Bifurcation Diagram](kuramoto-diagram.qmd), $0.03$ for $N = 1000$). Second, the time window may be too short for $r(t)$ to settle near $K_c$, where the approach to the steady state is slow. [Finite-Size Effects](kuramoto-finite-size.qmd) studies the first effect.
+:::
+
+Next: [Full Simulation](kuramoto-full.qmd) (optional extension) or [Finite-Size Effects](kuramoto-finite-size.qmd).

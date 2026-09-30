@@ -1,0 +1,115 @@
+---
+title: "Space-Time Diagrams"
+subtitle: "Module 6: Explorables and Discrete Models"
+format: html
+---
+
+On the page [1D Cellular Automata](cellular-1d.qmd) you wrote `apply_rule()` and `simulate_ca()`. Here you test them against an exact result and use them to draw space-time diagrams.
+
+::: {.callout-important}
+## Core activity
+
+Validate your simulator on Rule 90 and reproduce the Rule 30 diagram from a single seed.
+:::
+
+The chunks on this page use the reference `apply_rule()`. Replace it by your own version to test your code.
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+from amlab.cellular_automata.cellular import apply_rule
+```
+
+## Validation
+
+Rule 90 has an exact solution: from a single seed, row $t$ is Pascal's triangle modulo 2 (see [Special Rules](special-rules.qmd)). Use it as a test. The chunk below runs the check with the reference `apply_rule`.
+
+```{python}
+from math import comb
+
+
+def simulate_ca(initial_state, rule_number, steps):
+    rule_bin = np.array([int(bit) for bit in f"{rule_number:08b}"])
+    grid = np.zeros((steps, len(initial_state)), dtype=int)
+    grid[0] = initial_state
+    for t in range(1, steps):
+        grid[t] = apply_rule(grid[t - 1], rule_bin)
+    return grid
+
+
+width, steps = 81, 40
+seed_row = np.zeros(width, dtype=int)
+seed_row[width // 2] = 1
+g = simulate_ca(seed_row, 90, steps)
+ok = all(g[t, width // 2 - t + 2 * k] == comb(t, k) % 2 for t in range(steps) for k in range(t + 1))
+print("Rule 90 matches Pascal's triangle mod 2:", ok)
+```
+
+Keep the lattice wider than $2 \times$ `steps` so the pattern never reaches the edges during the test.
+
+## Experiment: the space-time diagram
+
+```python
+iterations = 80
+grid_size = 121
+
+initial_state = np.zeros(grid_size, dtype=int)
+initial_state[grid_size // 2] = 1
+
+grid = simulate_ca(initial_state, rule_number=30, steps=iterations)
+
+plt.imshow(grid, cmap="binary", interpolation="nearest", aspect="auto")
+plt.xlabel("Cell index")
+plt.ylabel("Time")
+plt.show()
+```
+
+## Interpretation
+
+- Compare the diagram with your prediction on [1D Cellular Automata](cellular-1d.qmd): the growth speed and the broken symmetry.
+- Do you see long diagonal structures, nested triangles, or irregular texture? Rule 30 shows all three: a regular left edge, triangles of many sizes and an irregular right part.
+
+::: {.callout-note}
+## Exercise
+
+Add a second occupied cell at `grid_size // 2 - 5` in the first row. Count, at every time step, the number of cells in which the two runs differ. Does the effect of the change stay local or spread through the whole diagram?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+The difference spreads. It starts at 1 cell and grows to about 50 cells after 60 steps, roughly one new cell per step. Rule 30 is sensitive to small changes in the initial row.
+
+```{python}
+changed = np.zeros(121, dtype=int)
+changed[60] = 1
+changed[55] = 1
+single = np.zeros(121, dtype=int)
+single[60] = 1
+
+diff = (simulate_ca(single, 30, 60) != simulate_ca(changed, 30, 60)).sum(axis=1)
+print("Differing cells at t = 0, 10, 30, 59:", diff[[0, 10, 30, 59]])
+```
+:::
+
+## Limitations
+
+- The loop in `apply_rule()` is slow for large lattices. The vectorized version in [amlab/cellular_automata/elementary.py](../../amlab/cellular_automata/elementary.py) computes all neighbourhood indices at once.
+- Fixed-zero edges are a modelling choice. Once the pattern reaches them, the result depends on the edges.
+
+::: {.callout-tip}
+## Optional extension: interactive initial row
+
+The script [amlab/cellular_automata/cellular.py](../../amlab/cellular_automata/cellular.py) lets you click on the first row, toggle cells, and recompute the automaton immediately. Run it locally, not in the notes:
+
+```python
+from amlab.cellular_automata.cellular import main
+
+main(rule_number=30, grid_size=101, iterations=50)
+```
+:::
+
+## Next
+
+[Rule Exploration](rule-exploration.qmd){.btn .btn-primary}
