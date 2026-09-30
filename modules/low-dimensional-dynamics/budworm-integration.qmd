@@ -1,0 +1,104 @@
+---
+title: "Budworm: Integration and Time Series"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+You now integrate the budworm model from [Budworm: the Model in Code](budworm-implementation.qmd) in time [@strogatz2024nonlinear, Section 3.7; @virtanen2020scipy].
+
+## Implementation: numerical integration {#sec-numerical-integration}
+
+Create a function that evolves the system forward in time and appends the result to existing arrays. The app on the next page calls it repeatedly, each time continuing from the last state.
+
+- Function name: `evolve_spruce_budworm`
+- Inputs: `t` (time array), `x` (population array), `r`, `k`, `t_eval` (duration to evolve).
+- Use `solve_ivp` with `method="RK45"`, starting from the last values of the arrays.
+- Concatenate the new results and clip negative values with `np.clip`.
+- Return the updated `t` and `x`.
+
+```python
+def evolve_spruce_budworm(t: np.ndarray, x: np.ndarray, r=0.5, k=10, t_eval=50):
+    """Don't forget the docstring and type hints"""
+    t_span = (t[-1], t[-1] + t_eval)
+    t_points = # TODO: evaluation points along t_span, use np.linspace
+
+    solution = solve_ivp(
+        fun=spruce_budworm,
+        t_span=t_span,
+        y0=[x[-1]],
+        t_eval=t_points,
+        args=(r, k),
+        method="RK45",
+    )
+    # TODO: concatenate solution.t and solution.y[0] to t and x
+    # TODO: ensure non-negative population with np.clip
+    return t, x
+```
+
+- `args` passes `r` and `k` to your ODE function.
+- The initial condition is `[x[-1]]`, the last population value, as a list.
+
+::: {.callout-tip collapse="true"}
+## Solution: integration
+```python
+def evolve_spruce_budworm(t, x, r=0.5, k=10, t_eval=50):
+    """Evolve the budworm ODE for t_eval time units and append the result."""
+    t_span = (t[-1], t[-1] + t_eval)
+    t_points = np.linspace(t[-1], t[-1] + t_eval, 1000)
+    solution = solve_ivp(spruce_budworm, t_span, [x[-1]], args=(r, k),
+                         t_eval=t_points, method="RK45")
+    t = np.concatenate((t, solution.t))
+    x = np.clip(np.concatenate((x, solution.y[0])), 0, None)
+    return t, x
+```
+:::
+
+## Implementation: time series plot {#sec-time-series-visualization}
+
+Create `plot_spruce_budworm(t, x)` that plots population against time in green, with the y axis starting at 0, a grid, labels and a title. Return the figure and axes. @fig-time-series shows an example.
+
+```{python}
+#| label: fig-time-series
+#| fig-cap: "Budworm population for r = 0.5, k = 10, starting at x0 = 1, integrated with RK45 in five blocks of 10 time units."
+#| fig-width: 8
+#| fig-height: 4
+#| echo: false
+import matplotlib.pyplot as plt
+import numpy as np
+
+from amlab.odes_1d.spruce_budworm import evolve_spruce_budworm, plot_spruce_budworm
+
+t = np.array([0.0])
+x = np.array([1.0])
+for _ in range(5):
+    t, x = evolve_spruce_budworm(t, x, r=0.5, k=10.0, t_eval=10)
+
+plot_spruce_budworm(t, x)
+plt.show()
+plt.close()
+```
+
+## Validation
+
+The trajectory in @fig-time-series starts at $x_0 = 1$, below the threshold $x = 2$, so it should settle at the refuge $x^* \approx 0.683$.
+
+```{python}
+print(f"x at t = {t[-1]:.0f}: {x[-1]:.3f}")
+```
+
+## Experiment {#sec-exploration-questions}
+
+Once your functions work, explore these questions.
+
+- **Multiple equilibria.** For $r = 0.5$ and $k = 10$, how many equilibria exist? Which are stable?
+- **Bistability.** Start from $x_0 = 1$ and $x_0 = 8$. Do they converge to the same equilibrium?
+- **Critical slowing down.** Start at $x_0 = 2.01$. How long does the population take to leave the neighbourhood of $x = 2$? Compare with the time scale $1/|f'(2)| \approx 7$.
+- **Hysteresis.** Increase $k$ slowly from 5 to 15 and back to 5 with $r = 0.56$. Does the population return along the same path? [Hysteresis](hysteresis.qmd) gives the answer.
+
+## Interpretation and limitations
+
+Relate every result to the rate plot: the sign of $dx/dt$ decides the direction of motion. The model has constant parameters, so it cannot produce repeated outbreaks; see [Budworm and Forest: Fast and Slow](budworm-forest-fast-slow.qmd).
+
+## Next
+
+[Budworm: a Streamlit App](budworm-streamlit.qmd){.btn .btn-primary}

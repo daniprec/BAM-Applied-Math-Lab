@@ -1,0 +1,111 @@
+---
+title: "Phase Locking"
+subtitle: "Module 2: Synchronization and Collective Behaviour"
+format: html
+---
+
+A single firefly can lock its flashing to a periodic light. The model below, from @strogatz2024nonlinear [Section 4.5], is based on @ermentrout1984beyond. It is the smallest model of synchronization: one oscillator driven by one rhythm.
+
+## The model
+
+Let $\Theta(t)$ be the phase of the stimulus and $\theta(t)$ the phase of the firefly. A flash happens when a phase passes through $0$. The stimulus runs at constant frequency $\Omega$. The firefly has natural frequency $\omega$ and is pulled toward the stimulus with strength $A > 0$:
+
+$$
+\dot\Theta = \Omega, \qquad \dot\theta = \omega + A\sin(\Theta - \theta).
+$$ {#eq-firefly}
+
+If the stimulus is ahead ($0 < \Theta - \theta < \pi$), the firefly speeds up. If it is behind, the firefly slows down.
+
+## Phase difference
+
+The quantity you care about is the phase difference $\phi = \Theta - \theta$. It obeys
+
+$$
+\dot\phi = \Omega - \omega - A\sin\phi.
+$$ {#eq-phase-difference}
+
+With the dimensionless time $\tau = At$ and detuning $\mu = (\Omega - \omega)/A$, this becomes
+
+$$
+\phi' = \mu - \sin\phi,
+$$ {#eq-firefly-nondim}
+
+which is the nonuniform oscillator from [Flows on the Circle](flows-on-the-circle.qmd).
+
+## Locking range
+
+- If $|\mu| \le 1$, @eq-firefly-nondim has a stable fixed point $\phi^* = \arcsin\mu$. The firefly runs at the stimulus frequency $\Omega$ with a constant phase lag. This is **phase locking**, or entrainment.
+- If $|\mu| > 1$, there are no fixed points and $\phi$ keeps increasing. The firefly drifts relative to the stimulus. This is **phase drift**.
+
+In the original variables the firefly entrains when
+
+$$
+\omega - A \le \Omega \le \omega + A.
+$$ {#eq-locking-range}
+
+Outside this range, the time for $\phi$ to grow by $2\pi$ is
+
+$$
+T_{\text{drift}} = \frac{2\pi}{\sqrt{(\omega - \Omega)^2 - A^2}}.
+$$ {#eq-drift-period}
+
+Both predictions can be tested with a flashing light, because $\omega$ and the width of the locking range are measurable [@strogatz2024nonlinear, Section 4.5]. Real fireflies differ between species. Some can even shift their own natural frequency, which needs an extra adaptation variable [@ermentrout1991adaptive].
+
+```{python}
+#| label: fig-firefly
+#| fig-cap: "Phase difference $\\phi = \\Theta - \\theta$ for a firefly with $\\omega = 1$ and $A = 0.2$. Inside the locking range ($\\Omega = 1.15$) the difference settles to $\\arcsin\\mu$. Outside it ($\\Omega = 1.3$) the difference keeps growing, one turn every $T_{\\text{drift}}$."
+#| fig-width: 7
+#| fig-height: 3.5
+#| echo: false
+import numpy as np
+import matplotlib.pyplot as plt
+
+from amlab.synchronization.phase_models import (
+    firefly_drift_period,
+    firefly_phase_difference,
+)
+
+omega, amplitude = 1.0, 0.2
+fig, ax = plt.subplots(figsize=(7, 3.5))
+for big_omega in [1.15, 1.3]:
+    t, phi = firefly_phase_difference(0.0, omega, big_omega, amplitude, t_end=120, dt=0.05)
+    mu = (big_omega - omega) / amplitude
+    ax.plot(t, phi, label=rf"$\Omega$ = {big_omega}, $\mu$ = {mu:.2f}")
+mu_locked = (1.15 - omega) / amplitude
+ax.axhline(np.arcsin(mu_locked), color="grey", linestyle="--", label=r"$\arcsin\mu$")
+ax.set_xlabel("t")
+ax.set_ylabel(r"$\phi$ (rad)")
+ax.legend()
+plt.tight_layout()
+plt.show()
+
+print(f"Predicted drift period for Omega = 1.3: {firefly_drift_period(omega, 1.3, amplitude):.2f}")
+```
+
+::: {.callout-note}
+## Exercise
+
+Use @fig-firefly and the printed value. Measure the drift period in the plot for $\Omega = 1.3$ and compare it with @eq-drift-period.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+With $\omega = 1$, $\Omega = 1.3$ and $A = 0.2$, @eq-drift-period gives $T_{\text{drift}} = 2\pi/\sqrt{0.09 - 0.04} = 2\pi/\sqrt{0.05} \approx 28.1$. In the plot $\phi$ climbs by about $2\pi \approx 6.28$ every 28 time units, with slow stretches where $\phi$ is near $\pi/2$, the bottleneck.
+:::
+
+::: {.callout-note}
+## Exercise
+
+A firefly has a natural period of $0.9$ s and entrains to stimulus periods between $0.78$ s and $1.06$ s. Estimate $A$.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Convert periods to angular frequencies with $\Omega = 2\pi/T$. The extremes of the locking range are $\Omega_{\max} = 2\pi/0.78 \approx 8.06$ and $\Omega_{\min} = 2\pi/1.06 \approx 5.93$ rad/s. By @eq-locking-range, $\Omega_{\max} - \Omega_{\min} = 2A$, so $A \approx 1.06$ rad/s. The midpoint, $6.99$ rad/s, is close to $\omega = 2\pi/0.9 \approx 6.98$ rad/s, which is a consistency check. (These numbers are illustrative, chosen for the exercise.)
+:::
+
+## From one oscillator to many
+
+Here the stimulus is fixed and does not respond to the firefly. In a swarm every firefly is both a stimulus and a responder. The Kuramoto model in Session 11 treats that case.

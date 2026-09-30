@@ -1,0 +1,83 @@
+---
+title: "Kuramoto Lab: Finite-Size Effects"
+subtitle: "Module 2: Synchronization and Collective Behaviour"
+format: html
+---
+
+The formulas in [Critical Coupling](critical-coupling.qmd) hold in the limit $N \to \infty$. Your simulations use finite $N$. This page covers the last two steps of the workflow: interpretation and limitations.
+
+## Two finite-$N$ effects
+
+- **Noise floor.** For incoherent phases, $\mathbb{E}[r^2] = 1/N$ ([The Order Parameter](order-parameter.qmd)). Below $K_c$ you measure $r_\infty$ of order $N^{-1/2}$, not zero.
+- **Sampling of frequencies.** With $N$ random draws, the empirical frequency distribution differs from $g$. The transition point of one sample moves around $K_c$, and the sharp corner of the $N \to \infty$ curve is rounded off.
+
+Simulations and physical arguments suggest that the fluctuations of $r(t)$ are of order $N^{-1/2}$, except very close to $K_c$ where they may be amplified. As of 2000 there were no rigorous convergence results for finite $N$ [@strogatz2000kuramoto, Section 5.1]. Both effects shrink as $N$ grows. @fig-finite-size shows them with a normal frequency density, $\sigma = 1$, so $K_c \approx 1.60$.
+
+```{python}
+#| label: fig-finite-size
+#| fig-cap: "Time-averaged order parameter against $K$ for three population sizes (normal frequencies, $\\sigma = 1$, one random sample each, RK4 with $\\Delta t = 0.1$ up to $t = 80$, average over $40 \\le t \\le 80$). Error bars show the standard deviation of $r(t)$ in that window. Dotted lines mark $K_c$ and the noise floors $N^{-1/2}$."
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+import numpy as np
+import matplotlib.pyplot as plt
+
+from amlab.synchronization.kuramoto_sweep import critical_coupling, order_parameter_sweep
+
+sigma = 1.0
+kc = critical_coupling(1 / (np.sqrt(2 * np.pi) * sigma))
+k_values = np.linspace(0, 4, 17)
+
+fig, ax = plt.subplots(figsize=(7, 4))
+for idx, n in enumerate([50, 200, 1000]):
+    rng = np.random.default_rng(1)
+    omega = rng.normal(0, sigma, n)
+    theta0 = rng.uniform(0, 2 * np.pi, n)
+    r_mean, r_std = order_parameter_sweep(
+        k_values, omega, theta0, t_end=80, dt=0.1, t_average=40
+    )
+    ax.errorbar(
+        k_values + 0.03 * (idx - 1), r_mean, yerr=r_std,
+        fmt="o-", markersize=4, capsize=2, label=f"N = {n}",
+    )
+    ax.axhline(1 / np.sqrt(n), color=f"C{idx}", linestyle=":", linewidth=0.8)
+ax.axvline(kc, color="black", linestyle=":", linewidth=1)
+ax.text(kc + 0.05, 0.02, r"$K_c$")
+ax.set_xlabel("Coupling strength K")
+ax.set_ylabel(r"$r_\infty$")
+ax.set_ylim(0, 1)
+ax.legend()
+plt.tight_layout()
+plt.show()
+```
+
+## Interpretation
+
+- Below $K_c$, each curve sits near its own floor $N^{-1/2}$: about $0.14$, $0.07$ and $0.03$.
+- Near $K_c$ the fluctuations of $r(t)$ are largest. The transition is sharpest for the largest $N$.
+- The $N = 50$ sample rises before $K_c$. Its 50 frequencies have a sample standard deviation of about $0.88$, smaller than $\sigma = 1$, so this particular population is easier to synchronize. A different seed would move its curve.
+- Well above $K_c$, the three curves agree. Most oscillators are locked and sampling details matter little.
+
+## Limitations
+
+- One sample of frequencies per $N$ is not enough to separate the two finite-size effects. Average over several seeds if you need error bars on $r_\infty$ itself, not just on $r(t)$.
+- Close to $K_c$, $r(t)$ settles slowly. A fixed time window can stop too early.
+- The mean-field model has all-to-all coupling. Real oscillators often interact through a network, which changes the threshold. Module 5 returns to this with the [swing equation](../networks/swing-equation.qmd) for power grids.
+
+::: {.callout-tip}
+## Optional extension
+
+Repeat the figure with 10 seeds for each $N$ and plot the mean of $r_\infty$ over seeds. Then plot $r_\infty\sqrt{N}$ against $K$. Below $K_c$ the curves for different $N$ should collapse onto a single curve.
+:::
+
+## Exit question
+
+You run a simulation with $N = 400$ and $K = 1.0$ (normal frequencies, $\sigma = 1$) and find $r_\infty \approx 0.05$. A classmate says this shows weak partial synchronization. Is that right?
+
+::: {.callout-tip collapse="true"}
+## Answer
+
+No. $K = 1.0$ is below $K_c \approx 1.60$, so the $N \to \infty$ prediction is $r_\infty = 0$. The measured value is consistent with the incoherent noise floor $N^{-1/2} = 0.05$. To claim partial synchrony you would need $r_\infty$ well above $N^{-1/2}$ and a value that does not decrease as you increase $N$.
+:::
+
+The graded [Kuramoto Assignment](assignment-kuramoto.qmd) is released in this session.

@@ -1,0 +1,89 @@
+---
+title: "Solving Initial Value Problems"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+::: {.callout-note}
+## Reading
+- **Recommended:** SciPy documentation for [`solve_ivp`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html); [Streamlit documentation](https://docs.streamlit.io).
+- **Course material:** @virtanen2020scipy.
+:::
+
+This session builds the numerical workflow you will use in the whole course: define a right-hand side, choose an initial condition, integrate forward in time, and interpret the solution. There is no new mathematics. The core activity is the budworm pipeline in the next three pages.
+
+## The initial value problem
+
+The mathematical object is
+
+$$
+\dot{\mathbf y} = \mathbf f(t, \mathbf y), \qquad \mathbf y(t_0) = \mathbf y_0 .
+$$ {#eq-ivp}
+
+In a scalar problem $\mathbf y(t)$ is one number; in a small system it is a vector. The code does not change.
+
+## The `solve_ivp` pipeline
+
+`scipy.integrate.solve_ivp` takes
+
+- `fun(t, y, *args)`: the right-hand side. It must accept `t` first, even if the model does not depend on time.
+- `t_span = (t0, tf)`: the integration interval.
+- `y0`: the initial state, as a list or array.
+- `t_eval`: optional times at which you want the solution stored. Without it, you get the solver's own steps.
+- `args`: a tuple of extra parameters passed to `fun`.
+- `method`: the integrator. The default `"RK45"` is the explicit Runge-Kutta pair of Dormand and Prince, of order 5 with an embedded order 4 error estimate used to adapt the step size [@dormand1980family].
+- `rtol`, `atol`: relative and absolute error tolerances (defaults `1e-3` and `1e-6`).
+
+The result `sol` has `sol.t` (times), `sol.y` (array of shape `(n_variables, n_times)`), and `sol.success`.
+
+```{python}
+import numpy as np
+from scipy.integrate import solve_ivp
+
+
+def exponential_decay(t, y, lam):
+    """Right-hand side of dy/dt = -lam * y."""
+    return -lam * y
+
+
+sol = solve_ivp(
+    exponential_decay,
+    t_span=(0, 10),
+    y0=[2.0],
+    t_eval=np.linspace(0, 10, 200),
+    args=(0.5,),
+)
+print(sol.success, sol.y.shape)
+```
+
+## Validation
+
+Always test the solver on a problem with a known answer before you trust it on a new model.
+
+```{python}
+exact = 2.0 * np.exp(-0.5 * sol.t)
+for rtol in [1e-3, 1e-6, 1e-9]:
+    s = solve_ivp(exponential_decay, (0, 10), [2.0], t_eval=sol.t, args=(0.5,), rtol=rtol, atol=1e-12)
+    print(f"rtol = {rtol:.0e}: max error = {np.max(np.abs(s.y[0] - exact)):.1e}")
+```
+
+The error falls as you tighten `rtol`. If it does not, the right-hand side has a bug or the problem needs a different method.
+
+::: {.callout-note}
+## Exercise
+`args=(0.5)` without the comma raises an error. Explain why.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+`(0.5)` is just the number `0.5`, not a tuple. `solve_ivp` expects a tuple and unpacks it into `fun(t, y, *args)`. A one-element tuple needs a trailing comma: `(0.5,)`.
+:::
+
+::: {.callout-tip}
+## Optional extension
+Implement the forward Euler method $y_{n+1} = y_n + \Delta t\, f(t_n, y_n)$ for the decay problem. Halve $\Delta t$ several times and check that the error at $t = 10$ halves too (first-order convergence). The reference code in `amlab/utils/solver.py` contains Euler and Runge-Kutta versions.
+:::
+
+## Next
+
+[Budworm: the Model in Code](budworm-implementation.qmd){.btn .btn-primary}

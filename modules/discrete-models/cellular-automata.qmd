@@ -1,0 +1,92 @@
+---
+title: "Cellular Automata"
+subtitle: "Module 6: Explorables and Discrete Models"
+format: html
+---
+
+::: {.callout-note}
+## Reading
+- **Compulsory:** @boccara2010modeling, Chapter 6.
+- **Recommended:** @wolfram1983statistical.
+:::
+
+A cellular automaton (CA) is a dynamical system in which space, time and state are all discrete. Each cell of a lattice holds one of finitely many states, and all cells update at the same time with the same local rule [@wolfram1983statistical; @boccara2010modeling].
+
+## Definition
+
+A cellular automaton has four ingredients:
+
+- a **lattice** of cells, here $\mathbb{Z}$ or a ring of $N$ cells;
+- a finite **state set**, here $\{0, 1\}$;
+- a **neighbourhood**, the cells whose states determine the next state of a cell;
+- a **local rule** $f$ that maps each neighbourhood configuration to a new state.
+
+For a one-dimensional CA with radius $r$, the update is
+
+$$
+x_i^{t+1} = f\big(x_{i-r}^t, \ldots, x_i^t, \ldots, x_{i+r}^t\big),
+$$
+
+applied to every $i$ at the same time. This synchronous update is what separates a CA from a model where cells change one at a time.
+
+## Neighbourhoods
+
+- **One dimension, radius 1**: the cell and its two nearest neighbours. These are the *elementary* cellular automata [@wolfram1983statistical].
+- **Two dimensions, von Neumann neighbourhood**: the cell and its four orthogonal neighbours.
+- **Two dimensions, Moore neighbourhood**: the cell and its eight surrounding cells. The Game of Life uses it [@gardner1970life].
+
+## Rule numbering
+
+An elementary rule assigns a new state to each of the $2^3 = 8$ neighbourhoods. So there are $2^8 = 256$ elementary rules. Wolfram lists the neighbourhoods from `111` down to `000`, writes the eight outputs as a binary number, and uses its decimal value as the rule number [@wolfram1983statistical].
+
+| Neighbourhood | 111 | 110 | 101 | 100 | 011 | 010 | 001 | 000 |
+|---|---|---|---|---|---|---|---|---|
+| New state | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 0 |
+
+: Rule table of Rule 30. The outputs, read from left to right, form 00011110 in binary, which is 30. {#tbl-rule30}
+
+::: {.callout-note}
+## Exercise
+
+Write the rule table of Rule 90. Then show that Rule 90 sets the new state of a cell to the sum of its two neighbours modulo 2.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+$90 = 01011010_2$, so the outputs for `111, 110, 101, 100, 011, 010, 001, 000` are `0, 1, 0, 1, 1, 0, 1, 0`. The output is 1 exactly when the left and right cells differ, whatever the centre cell is. So $x_i^{t+1} = (x_{i-1}^t + x_{i+1}^t) \bmod 2$.
+:::
+
+Reflection (swap left and right) and complement (swap 0 and 1) map rules to rules with the same behaviour up to symmetry. The chunk below counts the resulting equivalence classes.
+
+```{python}
+from amlab.cellular_automata.elementary import equivalence_class
+
+classes = {min(equivalence_class(rule)) for rule in range(256)}
+print("Inequivalent elementary rules:", len(classes))
+print("Rule 110 is equivalent to", sorted(equivalence_class(110)))
+```
+
+## Initial conditions
+
+Two initial conditions are standard [@wolfram1983statistical]:
+
+- a **single seed**, one cell in state 1 and all others 0, which shows how a local perturbation grows;
+- a **random row**, each cell 1 with probability $1/2$, which shows the typical long-run behaviour of the rule.
+
+## Boundary conditions
+
+A computer can only store a finite lattice, so you must decide what happens at the edges.
+
+- **Periodic**: cell $N$ is the left neighbour of cell $1$, and the lattice is a ring.
+- **Fixed**: ghost cells beyond the edges hold a constant state, usually 0.
+
+On a finite lattice with periodic boundaries there are only $2^N$ configurations. Every orbit is therefore eventually periodic. The lab page [Boundary Conditions](ca-boundary-conditions.qmd) measures this.
+
+## Why no ODE solver
+
+A cellular automaton is not a discretization of a differential equation. It is defined directly by the local rule, so the numerical method is exact: a loop over time steps that applies $f$ to every cell.
+
+## Next
+
+[Wolfram Classes](wolfram-classes.qmd){.btn .btn-primary}

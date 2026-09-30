@@ -1,0 +1,114 @@
+---
+title: "Linearization"
+subtitle: "Module 4: Space and Pattern Formation"
+format: html
+---
+
+A pattern starts as a small perturbation of a spatially uniform state. To decide whether that perturbation grows, you linearize the reaction-diffusion system around the uniform state [@murray2003mathematical, Section 2.3].
+
+## Homogeneous Steady States
+
+Take the scaled two-species system
+
+$$
+\partial_t w = D\,\Delta w + \gamma R(w), \qquad w = \begin{pmatrix} u \\ v \end{pmatrix}, \quad D = \operatorname{diag}(1, d), \quad R = \begin{pmatrix} f \\ g \end{pmatrix}.
+$$
+
+A homogeneous steady state is a constant $w_* = (u_*, v_*)$ with $R(w_*) = 0$. Since $\Delta w_* = 0$, it solves the PDE for every choice of Neumann or periodic boundary conditions.
+
+## The Linearized System
+
+Write $w = w_* + \eta$ with $\eta$ small and keep only linear terms:
+
+$$
+\partial_t \eta = D\,\Delta \eta + \gamma J \eta,
+$$ {#eq-lin-system}
+
+where
+
+$$
+J =
+\begin{pmatrix}
+f_u & f_v \\
+g_u & g_v
+\end{pmatrix}_{(u_*, v_*)}
+$$ {#eq-lin-jacobian}
+
+is the Jacobian of the kinetics at the steady state. Two limits are worth keeping in mind.
+
+- Without diffusion, $\dot\eta = \gamma J\eta$. Stability is decided by $\operatorname{tr} J$ and $\det J$, as for the 2D systems of Module 1.
+- With diffusion, the Laplacian couples neighbouring points. The page [Laplacian Eigenmodes](laplacian-eigenmodes.qmd) shows how to decouple it.
+
+## The Gierer-Meinhardt Steady State
+
+For the Gierer-Meinhardt kinetics [@gierer1972theory],
+
+$$
+f(u, v) = a - b u + \frac{u^2}{v}, \qquad g(u, v) = u^2 - v, \qquad a, b > 0.
+$$
+
+From $g = 0$ you get $v_* = u_*^2$. Substituting into $f = 0$ gives $a - b u_* + 1 = 0$, so
+
+$$
+u_* = \frac{a+1}{b}, \qquad v_* = \left(\frac{a+1}{b}\right)^2.
+$$ {#eq-lin-gm-steady}
+
+At a general point the Jacobian is
+
+$$
+J(u, v) =
+\begin{pmatrix}
+-b + 2u/v & -u^2/v^2 \\
+2u & -1
+\end{pmatrix}.
+$$
+
+At $(u_*, v_*)$ this becomes
+
+$$
+f_u = \frac{b(1-a)}{1+a}, \qquad f_v = -\frac{b^2}{(1+a)^2}, \qquad g_u = \frac{2(1+a)}{b}, \qquad g_v = -1.
+$$ {#eq-lin-gm-jacobian}
+
+::: {.callout-note}
+## Exercise
+Compute $\operatorname{tr} J$ and $\det J$ at the Gierer-Meinhardt steady state. For which $a$ is the steady state stable without diffusion when $b = 1$?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+$\det J = f_u g_v - f_v g_u = -\frac{b(1-a)}{1+a} + \frac{2b}{1+a} = b > 0$.
+
+$\operatorname{tr} J = \frac{b(1-a)}{1+a} - 1$. For $b = 1$ this equals $-\frac{2a}{1+a}$, which is negative for every $a > 0$. So with $b = 1$ the steady state is a stable node or focus of the kinetics for all $a > 0$.
+:::
+
+## Checking the Algebra Numerically
+
+The helper `amlab.turing.gierer_meinhardt_jacobian` implements @eq-lin-gm-jacobian. A finite-difference Jacobian of the kinetics gives the same entries.
+
+```{python}
+import numpy as np
+
+from amlab.turing import gierer_meinhardt_jacobian, gierer_meinhardt_steady_state
+
+a, b = 0.40, 1.00
+u_s, v_s = gierer_meinhardt_steady_state(a, b)
+
+
+def kinetics(u, v):
+    return np.array([a - b * u + u**2 / v, u**2 - v])
+
+
+h = 1e-6
+jac_fd = np.column_stack(
+    [
+        (kinetics(u_s + h, v_s) - kinetics(u_s - h, v_s)) / (2 * h),
+        (kinetics(u_s, v_s + h) - kinetics(u_s, v_s - h)) / (2 * h),
+    ]
+)
+jac_exact = np.array(gierer_meinhardt_jacobian(a, b)).reshape(2, 2)
+print("steady state:", (u_s, v_s))
+print("max difference:", np.abs(jac_fd - jac_exact).max())
+print("det J =", np.linalg.det(jac_exact))
+```
+
+Next: [Laplacian Eigenmodes](laplacian-eigenmodes.qmd).

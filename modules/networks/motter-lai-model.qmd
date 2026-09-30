@@ -1,0 +1,98 @@
+---
+title: "The Motter-Lai Model"
+subtitle: "Module 5: Complex Networks"
+format: html
+---
+
+Motter and Lai proposed a minimal model of cascades of overload failures on networks [@motter2002cascade]. The model has one parameter and one rule. This page states the model. The next page implements it.
+
+## Load
+
+Something travels between every pair of nodes along shortest paths: data packets, goods, or, in a crude picture, power. The **load** $L_i$ of node $i$ is the number of shortest paths between pairs of other nodes that pass through $i$ [@motter2002cascade]. When several shortest paths join the same pair, each one counts with equal weight. This is the betweenness centrality of [Network Concepts](network-concepts.qmd), without normalization:
+
+$$
+L_i = \sum_{s \neq i \neq t} \frac{\sigma_{st}(i)}{\sigma_{st}}.
+$$
+
+## Capacity
+
+Operators build some spare capacity into each node. Motter and Lai assume that the capacity is proportional to the initial load $L_i(0)$ of the intact network [@motter2002cascade]:
+
+$$
+C_i = (1 + \alpha)\, L_i(0), \qquad \alpha \ge 0.
+$$
+
+The **tolerance parameter** $\alpha$ is the same for every node. With $\alpha = 0$ the network runs at full capacity; with large $\alpha$ every node has plenty of margin.
+
+## Cascade iteration
+
+1. Start from the intact network and compute $L_i(0)$ and $C_i$ for all nodes.
+2. Remove a trigger node.
+3. Recompute the loads $L_i$ on the remaining network. The shortest paths change, so the load redistributes.
+4. Remove every node with $L_i > C_i$.
+5. Repeat steps 3 and 4 until no node is overloaded.
+
+The damage is measured by the **relative size of the largest connected component** after the cascade [@motter2002cascade]:
+
+$$
+G = \frac{N'}{N},
+$$
+
+where $N$ is the number of nodes of the intact network and $N'$ the size of its largest component at the end. $G \approx 1$ means the network survived; $G \ll 1$ means it broke apart.
+
+## Key results
+
+Motter and Lai compared triggers chosen at random with triggers chosen as the node with the largest load, on model networks and on real networks including a power grid and the Internet [@motter2002cascade]. They found that:
+
+- a network with a heterogeneous load distribution, such as a scale-free network, survives a random trigger with little damage but can collapse after the removal of a single high-load node;
+- a network with a homogeneous load distribution is much less sensitive to the choice of the trigger;
+- $G$ increases with $\alpha$, so spare capacity limits the cascade.
+
+The first result parallels the random-failure versus attack asymmetry of [Robustness and Percolation](robustness-percolation.qmd), but here one removed node is enough, because the load it carried moves to other nodes.
+
+## A small example
+
+@fig-ml-example runs one cascade on a Barabási-Albert graph with 40 nodes. The trigger is the node with the largest load and $\alpha = 0.5$.
+
+```{python}
+#| label: fig-ml-example
+#| fig-cap: "One Motter-Lai cascade on a Barabási-Albert graph (N = 40, m = 2, alpha = 0.5). Black: trigger. Red: nodes that fail by overload in the first step. Orange: nodes that fail in the second step. Grey: survivors."
+#| echo: false
+import matplotlib.pyplot as plt
+import networkx as nx
+
+from amlab.networks_cascades import node_loads, run_cascade, select_trigger
+
+G = nx.barabasi_albert_graph(40, 2, seed=6)
+loads = node_loads(G)
+trigger = select_trigger(G, "load", loads=loads)
+result = run_cascade(G, trigger, alpha=0.5, loads=loads)
+
+step_colour = ["black", "tab:red", "tab:orange", "gold", "gold"]
+colour = {v: "lightgrey" for v in G}
+for step, nodes in enumerate(result.failed_nodes):
+    for v in nodes:
+        colour[v] = step_colour[min(step, len(step_colour) - 1)]
+pos = nx.spring_layout(G, seed=2)
+fig, ax = plt.subplots(figsize=(6, 4.5))
+nx.draw_networkx_edges(G, pos, ax=ax, alpha=0.3)
+nx.draw_networkx_nodes(G, pos, ax=ax, node_color=[colour[v] for v in G], node_size=[40 + 3 * loads[v] for v in G])
+ax.set_axis_off()
+plt.tight_layout()
+plt.show()
+print(f"failed per step: {result.failed_per_step}, G = {result.G_ratio:.2f}")
+```
+
+Node size is proportional to the initial load. Most nodes have a small load, and a few hubs carry most shortest paths. Notice that many of the failed nodes had a small initial load: a small load means a small capacity, so a modest increase after the redistribution is enough to overload them.
+
+::: {.callout-note}
+## Exercise
+
+In a star graph with $N$ nodes, what is the load of the centre and of a leaf? What happens to $G$ if the centre fails? Does $\alpha$ matter?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Every pair of leaves has exactly one shortest path, through the centre, so the centre has load $\binom{N-1}{2}$ and each leaf has load 0. If the centre fails, no edges remain and $G = 1/N$. The value of $\alpha$ does not matter: the network breaks apart through the removal itself, with no overload step.
+:::

@@ -1,0 +1,97 @@
+---
+title: "The Millennium Bridge"
+subtitle: "Module 2: Synchronization and Collective Behaviour"
+format: html
+---
+
+The London Millennium Footbridge opened on 10 June 2000. On the opening day it moved sideways, unexpectedly, when crowds crossed it [@dallard2001london]. The engineers found that the lateral force from pedestrians depended on the motion of the deck. They concluded that the same effect could occur on any bridge with a lateral frequency below about 1.3 Hz carrying enough pedestrians. The bridge was retrofitted with viscous and tuned mass dampers [@dallard2001london].
+
+@strogatz2005bridge explained the onset with a Kuramoto-type model. Bridge wobbling and crowd synchrony are two sides of one instability, and both appear when the crowd exceeds a critical size.
+
+## Modelling assumptions
+
+- The bridge is a single lateral vibration mode, a damped harmonic oscillator.
+- Each pedestrian is a phase oscillator whose sideways force is periodic in the stepping phase.
+- Pedestrians do not interact with each other. They interact only through the bridge.
+
+## Bridge
+
+Let $X(t)$ be the lateral displacement of the relevant mode. With $N$ pedestrians,
+
+$$
+M\ddot X + B\dot X + KX = G\sum_{i=1}^N \sin\Theta_i,
+\qquad
+\Omega_0 = \sqrt{K/M}.
+$$ {#eq-bridge}
+
+$M$, $B$ and $K$ are the modal mass, damping and stiffness, and $G$ is the maximum lateral force of one pedestrian [@strogatz2005bridge]. Here $K$ is a stiffness, not the Kuramoto coupling.
+
+## Pedestrians
+
+Pedestrian $i$ has natural stepping frequency $\Omega_i$, drawn from a density $P(\Omega)$. The bridge perturbs the gait according to
+
+$$
+\dot\Theta_i = \Omega_i + C A \sin(\Psi - \Theta_i + \alpha),
+\qquad i = 1, \dots, N,
+$$ {#eq-pedestrian}
+
+where $C$ measures the sensitivity to vibrations and $\alpha$ is a phase lag. The amplitude $A$ and phase $\Psi$ of the bridge are defined by
+
+$$
+X = A\sin\Psi, \qquad \dot X = A\,\Omega_0\cos\Psi.
+$$ {#eq-amp-phase}
+
+@strogatz2005bridge call @eq-pedestrian hypothetical but testable. It has the same form as the firefly equation in [Phase Locking](phase-locking.qmd), with a stimulus whose strength $CA$ grows with the wobble.
+
+## Feedback loop
+
+Compare @eq-pedestrian with the mean-field Kuramoto equation in [The Order Parameter](order-parameter.qmd). The bridge plays the role of the mean field. Crowd coherence is measured with the usual order parameter
+
+$$
+R e^{i\Phi} = \frac{1}{N}\sum_{j=1}^N e^{i\Theta_j}.
+$$ {#eq-bridge-order}
+
+A small wobble nudges some pedestrians into step. Their forces add coherently and drive the bridge harder, which entrains more pedestrians. For small crowds, $R$ fluctuates at the level $N^{-1/2}$ and the bridge barely moves [@strogatz2005bridge].
+
+## Critical crowd size
+
+For $\alpha = \pi/2$ and $P(\Omega)$ symmetric about $\Omega_0$, @strogatz2005bridge obtain
+
+$$
+N_c = \frac{4\zeta}{\pi}\,\frac{K}{G\,C\,P(\Omega_0)},
+\qquad \zeta = \frac{B}{\sqrt{4MK}},
+$$ {#eq-nc}
+
+where $\zeta$ is the damping ratio. Since $4\zeta K = 2B\sqrt{K/M} = 2B\Omega_0$, the same result reads
+
+$$
+N_c = \frac{2B\,\Omega_0}{\pi\,G\,C\,P(\Omega_0)}.
+$$ {#eq-nc-b}
+
+Compare with $K_c = 2/(\pi g(0))$ in [Critical Coupling](critical-coupling.qmd). More damping raises the threshold. A narrower spread of gait frequencies (larger $P(\Omega_0)$) lowers it. @strogatz2005bridge estimated $C \approx 16\ \text{m}^{-1}\text{s}^{-1}$ from crowd tests on the bridge. @eckhardt2007modeling analyse the model in more detail.
+
+::: {.callout-note}
+## Exercise
+
+Check that @eq-nc-b is dimensionless. Use $[G] = \text{N}$, $[B] = \text{kg/s}$, $[C] = \text{m}^{-1}\text{s}^{-1}$ and $[P] = \text{s}$ (a density over angular frequency).
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+The numerator $B\Omega_0$ has units $\text{kg}\,\text{s}^{-2}$. The denominator $GCP$ has units $(\text{kg}\,\text{m}\,\text{s}^{-2})(\text{m}^{-1}\text{s}^{-1})(\text{s}) = \text{kg}\,\text{s}^{-2}$. The ratio is dimensionless, as a number of pedestrians should be.
+:::
+
+::: {.callout-note}
+## Exercise
+
+Take $P(\Omega)$ normal with mean $\Omega_0$ and standard deviation $\sigma$. Write $N_c$ in terms of $\sigma$. How does $N_c$ change if the damping is doubled?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+$P(\Omega_0) = 1/(\sqrt{2\pi}\,\sigma)$, so $N_c = 2\sqrt{2\pi}\,B\,\Omega_0\,\sigma/(\pi G C)$. $N_c$ is proportional to $B$, so doubling the damping doubles the critical crowd size. This is the reasoning behind adding dampers.
+:::
+
+You will simulate this model in the graded [Kuramoto Assignment](assignment-kuramoto.qmd).

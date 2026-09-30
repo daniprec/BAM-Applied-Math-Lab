@@ -1,0 +1,108 @@
+---
+title: "Turing Conditions"
+subtitle: "Module 4: Space and Pattern Formation"
+format: html
+---
+
+::: {.callout-note}
+## Reading
+- **Compulsory:** @turing1952chemical.
+- **Recommended:** @murray2003mathematical, Chapter 2, Sections 2.1 to 2.6.
+:::
+
+@turing1952chemical showed that diffusion can destabilize a uniform state that is stable without diffusion. This is called diffusion-driven or Turing instability. This page derives the four conditions for it in the notation of @murray2003mathematical [Section 2.3].
+
+## The Question
+
+Take the linearized system from [Laplacian Eigenmodes](laplacian-eigenmodes.qmd). Each mode with wavenumber $k$ grows like $e^{\sigma t}$, where $\sigma$ solves
+
+$$
+\det\left(\gamma J - k^2 D - \sigma I\right) = 0, \qquad D = \operatorname{diag}(1, d).
+$$
+
+You want the uniform state to be:
+
+- stable to the flat mode $k = 0$ (stable without diffusion), and
+- unstable to at least one mode with $k \neq 0$.
+
+## Trace and Determinant of the Mode Matrix
+
+For $A(k^2) = \gamma J - k^2 D$,
+
+$$
+\operatorname{tr} A = \gamma (f_u + g_v) - (1 + d)k^2,
+$$
+
+$$
+h(k^2) \equiv \det A = d\,k^4 - \gamma\,(d f_u + g_v)\,k^2 + \gamma^2 (f_u g_v - f_v g_u).
+$$ {#eq-tc-h}
+
+Stability at $k = 0$ requires $\operatorname{tr} J < 0$ and $\det J > 0$. Then $\operatorname{tr} A < 0$ for every $k$, so the only way to get $\operatorname{Re}\sigma > 0$ is $h(k^2) < 0$ for some $k^2 > 0$, which gives one real positive $\sigma$.
+
+$h$ is a quadratic in $k^2$ with positive constant term. It becomes negative only if its minimum lies at $k^2 > 0$ and is negative. The minimum is at
+
+$$
+k_m^2 = \frac{\gamma\,(d f_u + g_v)}{2d}, \qquad
+h_{\min} = \gamma^2\left[\det J - \frac{(d f_u + g_v)^2}{4d}\right].
+$$ {#eq-tc-hmin}
+
+## The Four Conditions
+
+Collecting the requirements gives the Turing conditions [@murray2003mathematical, Section 2.3]:
+
+$$
+\begin{aligned}
+&f_u + g_v < 0, \\
+&f_u g_v - f_v g_u > 0, \\
+&d f_u + g_v > 0, \\
+&(d f_u + g_v)^2 - 4 d\,(f_u g_v - f_v g_u) > 0.
+\end{aligned}
+$$ {#eq-tc-conditions}
+
+All derivatives are evaluated at the steady state. The conditions do not contain $\gamma$ or the domain size. They are necessary for patterns. On a finite domain you also need an admissible wavenumber inside the unstable band (see [Dispersion Relation](dispersion-relation.qmd)).
+
+## What the Signs Tell You
+
+- The first and third conditions force $d \neq 1$. If both species diffuse equally, no Turing instability exists.
+- They also force $f_u$ and $g_v$ to have opposite signs. Call the species with $f_u > 0$ the activator. Then $g_v < 0$ and $d > -g_v / f_u > 1$: the inhibitor must diffuse faster than the activator.
+- With $f_u g_v < 0$, the second condition needs $f_v g_u < 0$. Either the activator promotes the inhibitor and the inhibitor suppresses the activator ($g_u > 0$, $f_v < 0$), or the opposite cross signs hold [@murray2003mathematical, Section 2.3].
+
+The usual summary is local activation with long-range inhibition [@gierer1972theory; @kondo2010reaction].
+
+## The Critical Diffusion Ratio
+
+At the onset $h_{\min} = 0$, so the critical ratio $d_c$ solves
+
+$$
+f_u^2\,d_c^2 + 2\,(2 f_v g_u - f_u g_v)\,d_c + g_v^2 = 0,
+$$ {#eq-tc-dc}
+
+taking the root with $d_c f_u + g_v > 0$ [@murray2003mathematical, Section 2.3]. For $d > d_c$ a band of wavenumbers is unstable.
+
+## Worked Example: Gierer-Meinhardt
+
+From [Linearization](linearization.qmd), $f_u = b(1-a)/(1+a)$, $f_v = -b^2/(1+a)^2$, $g_u = 2(1+a)/b$, $g_v = -1$, and $\det J = b$. So $f_u > 0$ needs $a < 1$, and $u$ is the activator. With $a = 0.4$ and $b = 1$:
+
+```{python}
+from amlab.turing import critical_diffusion_ratio, gierer_meinhardt_jacobian, turing_conditions
+
+fu, fv, gu, gv = gierer_meinhardt_jacobian(a=0.40, b=1.00)
+print(f"f_u = {fu:.4f}, f_v = {fv:.4f}, g_u = {gu:.4f}, g_v = {gv:.4f}")
+print(f"d_c = {critical_diffusion_ratio(fu, fv, gu, gv):.2f}")
+for d in (20, 30):
+    print(f"d = {d}: Turing conditions hold? {bool(turing_conditions(fu, fv, gu, gv, d))}")
+```
+
+So $d = 20$ gives no Turing instability and $d = 30$ does. You will test this prediction in the laboratory.
+
+::: {.callout-note}
+## Exercise
+For Gierer-Meinhardt with $b = 1$, show that the fourth condition reads $d f_u - 1 > 2\sqrt{d}$, and solve it for $\sqrt{d}$.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+With $g_v = -1$ and $\det J = b = 1$, the third and fourth conditions together say $d f_u - 1 > 2\sqrt{d}$. This is a quadratic inequality in $s = \sqrt d$: $f_u s^2 - 2s - 1 > 0$. For $f_u > 0$ it holds for $s > \left(1 + \sqrt{1 + f_u}\right)/f_u$. With $a = 0.4$, $f_u = 3/7$ and $s > 5.122$, so $d > 26.24$.
+:::
+
+Next: [Dispersion Relation](dispersion-relation.qmd).

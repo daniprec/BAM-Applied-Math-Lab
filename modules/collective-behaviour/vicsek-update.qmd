@@ -1,0 +1,289 @@
+---
+title: "Vicsek Lab: Update Rule"
+subtitle: "Module 2: Synchronization and Collective Behaviour"
+format: html
+---
+
+## Implementation: the update rule
+
+All boids have the same speed module $v_0$, but their headings change based on neighbors. Every time step $\Delta t$, each boid averages the headings of neighbors within radius $r$ and adds noise $\eta$. Then it moves in the new heading direction. This happens **simultaneously** to all boids. Follow the equations in @vicsek1995novel to implement the update step. A summary follows.
+
+The positions of the $i$th particle is updated as:
+
+$$
+\mathbf{x}_i(t + \Delta t) = \mathbf{x}_i(t) + v_0 \Delta t \begin{bmatrix} \cos(\theta_i(t + \Delta t)) \\ \sin(\theta_i(t + \Delta t)) \end{bmatrix}.
+$$ {#eq-vicsek-xi}
+
+where $v_0$ is the speed. @vicsek1995novel used $v_0 = 0.03$.
+
+It is important to remember that particles stay within the box. You apply **periodic boundary conditions**, meaning that a particle that goes out of the box on one side reappears on the opposite side. You can implement this with the modulo operator, if you assume that the positions are in the range $[0, L]$:
+
+$$
+\mathbf{x}_i(t + \Delta t) = \mathbf{x}_i(t + \Delta t) \mod L,
+$$ {#eq-vicsek-periodic}
+
+To use @eq-vicsek-xi you first need the new heading $\theta_i(t + \Delta t)$:
+
+$$
+\theta_i(t + \Delta t) = \langle \theta_j(t) \rangle_{j \in \mathcal{N}_i} + \frac{\eta}{2} \xi_i(t),
+$$ {#eq-vicsek-theta}
+
+where $\mathcal{N}_i$ is the set of neighbors within radius $r$ of particle $i$, including $i$ itself, $\langle \cdot \rangle$ denotes the average direction, computed as $\operatorname{atan2}(\langle\sin\theta\rangle, \langle\cos\theta\rangle)$, and $\xi_i(t)$ is a random variable uniformly distributed in $[-1, 1]$. @vicsek1995novel used $r = 1$ and noise values $\eta$ between $0$ and $5$ in their Figure 2.
+
+### Steps
+
+Outline the steps for one time step before you code:
+
+1. For each particle $i$, find its neighbors within radius $r$.
+2. Compute the average heading of these neighbors.
+3. Add noise to the average heading to get the new heading $\theta_i(t + \Delta t)$.
+4. Update the position of each particle based on its new heading.
+5. Apply periodic boundary conditions to ensure particles stay within the box.
+
+For the first step you compare every particle with every other particle. You can use nested loops or a distance matrix. Start with the loop version. Once you know the neighbors, average their headings as unit vectors, then add noise following @eq-vicsek-theta.
+
+::: {.callout-warning}
+## Do not average angles directly
+
+The plain mean of $0.1$ and $2\pi - 0.1$ is $\pi$, the opposite direction. Average $\cos\theta_j$ and $\sin\theta_j$ separately and recover the angle with `np.arctan2`.
+:::
+
+```python
+# What we have:
+xy # the positions of the particles, shape (2, N)
+theta # the headings of the particles, shape (N)
+noise # the noise level eta
+# ----
+
+num_boids = xy.shape[1]  # N
+
+# Loop over each particle
+for i in range(num_boids):
+    # Initialize list to store neighbor headings
+    ls_theta_neighbors = []
+    # Loop over all other particles to find neighbors
+    for j in range(num_boids):
+        # TODO: Compute distance between particle i and j
+        # (j == i gives distance 0, so i counts as its own neighbor)
+
+        # TODO: If distance is less than radius,
+        # add the heading of particle j to the list of neighbors
+    # After finding neighbors...
+    # TODO: Compute the average direction with np.arctan2 and add noise
+
+# Result: updated theta for all particles
+```
+
+::: {.callout-tip collapse="true"}
+## Solved: Update theta using loops (click to expand)
+```python
+num_boids = xy.shape[1]  # N
+
+# Loop over each particle
+for i in range(num_boids):
+    # Initialize list to store neighbor headings
+    ls_theta_neighbors = []
+    # Loop over all other particles to find neighbors
+    for j in range(num_boids):
+        # Compute distance between particle i and j (i itself is included)
+        dist = np.linalg.norm(xy[:, i] - xy[:, j])
+        # If distance is less than radius,
+        # add the heading of particle j to the list of neighbors
+        if dist <= radius_interaction:
+            ls_theta_neighbors.append(theta[j])
+    # After finding neighbors
+    # Compute the average direction...
+    ls_theta_neighbors = np.array(ls_theta_neighbors)
+    theta_new[i] = np.arctan2(
+        np.mean(np.sin(ls_theta_neighbors)), np.mean(np.cos(ls_theta_neighbors))
+    )
+    # ...and add noise, uniform in [-eta/2, eta/2]
+    theta_new[i] += noise / 2 * np.random.uniform(-1, 1)
+```
+:::
+
+This covers the neighbor search, the average and the noise. Now compute the new positions from the new headings, following @eq-vicsek-xi.
+
+```python
+# After updating theta for all particles
+for i in range(num_boids):
+    # TODO: Compute velocity vector based on new heading
+
+    # TODO: Update position based on velocity and time step
+
+# Result: updated xy for all particles
+```
+
+The final step applies periodic boundary conditions, following @eq-vicsek-periodic.
+
+```python
+# After updating positions for all particles
+# TODO: Apply periodic boundary conditions to xy
+
+# Result: updated xy with periodic boundaries
+```
+
+::: {.callout-tip collapse="true"}
+## Solved: Update positions and apply periodic boundaries (click to expand)
+```python
+# After updating theta for all particles
+xy_new = xy.copy()
+for i in range(num_boids):
+    # Compute velocity vector based on new heading
+    v = v0 * np.array([np.cos(theta_new[i]), np.sin(theta_new[i])])
+    # Update position based on velocity and time step
+    xy_new[:, i] = xy_new[:, i] + dt * v
+
+# Apply periodic boundary conditions to xy
+xy = np.mod(xy_new, box_size)
+# We overwrite xy with the new positions after applying periodic boundaries
+```
+:::
+
+Now put everything together in a function that takes the current positions and headings and returns them after one time step.
+
+::: {.callout-tip collapse="true"}
+## Solved: Vicsek equations, loop version (click to expand)
+
+```python
+def vicsek_equations(xy, theta, dt=1.0, eta=0.1, box_size=10, radius_interaction=1, v0=0.03):
+    xy_new = xy.copy()
+    theta_new = theta.copy()
+    num_boids = len(theta)
+    for i in range(num_boids):
+        ls_theta_neighbors = []
+        for j in range(num_boids):
+            dist = np.linalg.norm(xy[:, i] - xy[:, j])
+            if dist <= radius_interaction:
+                ls_theta_neighbors.append(theta[j])
+        ls_theta_neighbors = np.array(ls_theta_neighbors)
+        theta_new[i] = np.arctan2(
+            np.mean(np.sin(ls_theta_neighbors)), np.mean(np.cos(ls_theta_neighbors))
+        )
+        theta_new[i] += eta / 2 * np.random.uniform(-1, 1)
+
+        v = v0 * np.array([np.cos(theta_new[i]), np.sin(theta_new[i])])
+        xy_new[:, i] = xy_new[:, i] + dt * v
+
+    xy_new = np.mod(xy_new, box_size)
+    return xy_new, theta_new
+```
+:::
+
+## Vectorized version
+
+::: {.callout-tip}
+## Optional extension
+
+Loops are slow in Python: the double loop costs $O(N^2)$ interpreted operations per step. You can compute all neighbor averages at once with a distance matrix. The `amlab` code uses this version.
+:::
+
+```python
+def vicsek_equations(
+    xy: np.ndarray,
+    theta: np.ndarray,
+    noise: float = 0.1,
+    box_size: float = 25,
+    dt: float = 1,
+    radius_interaction: float = 1,
+    v0: float = 0.03,
+) -> tuple[np.ndarray, np.ndarray]:
+    # TODO: Compute distance matrix and neighbor matrix
+    # Useful functions:
+    # scipy.spatial.distance.pdist
+    # scipy.spatial.distance.squareform
+    
+    # TODO: Vectorized computation of average direction of neighbors (including itself)
+    # Useful functions: np.sin, np.cos, np.arctan2
+
+    # TODO: Add noise to the average heading
+    # Useful function: np.random.uniform
+
+    # TODO: Update position based on new headings
+    # Useful functions: np.cos, np.sin
+
+    return xy_new, theta_new
+```
+
+::: {.callout-tip collapse="true"}
+## Solved: Vicsek equations, vectorized version (click to expand) 
+```python
+def vicsek_equations(
+    xy: np.ndarray,
+    theta: np.ndarray,
+    noise: float = 0.1,
+    box_size: float = 25,
+    dt: float = 1,
+    radius_interaction: float = 1,
+    v0: float = 0.03,
+) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Update the state of the particles based on the Vicsek model.
+
+    Parameters
+    ----------
+    xy : np.ndarray
+        Position of the particles.
+    theta : np.ndarray
+        Angle of the particles.
+    noise : float, optional
+        Noise parameter, eta, default is 0.1.
+    box_size : float, optional
+        Dimension of the space, L, default is 25.
+    dt : float, optional
+        Time step, default is 1 [Vicsek1995]
+    radius_interaction : float, optional
+        Interaction radius, default is 1 [Vicsek1995]
+    v0 : float, optional
+        Speed of the particles, default is 0.03 [Vicsek1995]
+
+    Returns
+    -------
+    np.ndarray
+        Updated position of the particles.
+    np.ndarray
+        Updated angle of the particles.
+    """
+    # Compute distance matrix and neighbor matrix
+    d_matrix = scipy.spatial.distance.pdist(xy.T)
+    d_matrix = scipy.spatial.distance.squareform(d_matrix)
+    neighbors = d_matrix <= radius_interaction
+    # Vectorized computation of average direction of neighbors (including itself)
+    num_boids = xy.shape[1]
+    sin_theta = np.sin(theta)
+    cos_theta = np.cos(theta)
+    # neighbors is (N, N), sin_theta/cos_theta is (N,)
+    # Broadcasting: (N, N) * (N,) -> (N, N)
+    sum_sin = neighbors @ sin_theta  # (N,)
+    sum_cos = neighbors @ cos_theta  # (N,)
+    count = neighbors.sum(axis=1)  # (N,)
+    mean_sin = sum_sin / count
+    mean_cos = sum_cos / count
+    theta_avg = np.arctan2(mean_sin, mean_cos)
+    # Add noise: uniform in [-noise/2, noise/2]
+    noise_arr = noise * (np.random.uniform(size=num_boids) - 0.5)
+    theta_new = theta_avg + noise_arr
+    theta_new = np.mod(theta_new, 2 * np.pi)
+
+    # Update position
+    v = v0 * np.array([np.cos(theta_new), np.sin(theta_new)])
+    xy_new = xy + dt * v
+    # Periodic boundary conditions
+    xy_new = np.mod(xy_new, box_size)
+
+    return xy_new, theta_new
+```
+:::
+
+
+## Limitations of this implementation
+
+The distance in these functions is the plain Euclidean distance. With periodic boundaries, two particles near opposite edges are close to each other, but the code does not see them as neighbors. For small $r$ compared with $L$ the effect is limited to particles near the edges.
+
+::: {.callout-tip}
+## Optional extension: minimum-image distance
+
+Replace the displacement $\Delta\mathbf{x} = \mathbf{x}_j - \mathbf{x}_i$ by `dx - box_size * np.round(dx / box_size)` in each coordinate before computing the norm. Compare the order parameter with and without this correction for $N = 100$, $L = 5$.
+:::
+
+Next: [Order Parameter](vicsek-order-parameter.qmd).

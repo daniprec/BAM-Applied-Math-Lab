@@ -1,0 +1,118 @@
+---
+title: "Flows on the Circle"
+subtitle: "Module 2: Synchronization and Collective Behaviour"
+format: html
+---
+
+A periodic rhythm can be described by a single angle, the **phase** $\theta$. The phase lives on the circle: $\theta$ and $\theta + 2\pi$ are the same state. A one-dimensional flow on the circle is
+
+$$
+\dot\theta = f(\theta), \qquad f(\theta + 2\pi) = f(\theta).
+$$ {#eq-circle-flow}
+
+Unlike a flow on the line, a flow on the circle can return to its starting point. This is the simplest model of an oscillator [@strogatz2024nonlinear, Section 4.1].
+
+## Uniform oscillator
+
+The simplest choice is a constant speed, $\dot\theta = \omega$. The solution is $\theta(t) = \omega t + \theta_0$ and the period is $T = 2\pi/\omega$ [@strogatz2024nonlinear, Section 4.2].
+
+## Nonuniform oscillator
+
+A phase that speeds up and slows down along the cycle obeys
+
+$$
+\dot\theta = \omega - a \sin\theta, \qquad \omega > 0,\; a \ge 0.
+$$ {#eq-nonuniform}
+
+This equation appears in the firefly model, in overdamped pendulums and in Josephson junctions [@strogatz2024nonlinear, Sections 4.3 to 4.6]. Its behaviour depends on the ratio $a/\omega$.
+
+- For $a < \omega$ there are no fixed points. The phase circulates, slowest near $\theta = \pi/2$.
+- At $a = \omega$ a half-stable fixed point appears at $\theta = \pi/2$. This is a saddle-node bifurcation on the circle (see [Saddle-Node Bifurcation](../low-dimensional-dynamics/saddle-node-bifurcation.qmd)).
+- For $a > \omega$ there are two fixed points with $\sin\theta^* = \omega/a$. One is stable and one is unstable. The oscillation stops.
+
+For $a < \omega$ the period is
+
+$$
+T = \int_0^{2\pi} \frac{d\theta}{\omega - a\sin\theta} = \frac{2\pi}{\sqrt{\omega^2 - a^2}}.
+$$ {#eq-nonuniform-period}
+
+As $a \to \omega^-$ the period diverges like $T \approx \dfrac{\sqrt{2}\,\pi}{\sqrt{\omega}}\,(\omega - a)^{-1/2}$. The trajectory spends almost all its time in the bottleneck left behind by the fixed points that are about to appear [@strogatz2024nonlinear, Section 4.3].
+
+```{python}
+#| label: fig-nonuniform
+#| fig-cap: "Nonuniform oscillator with $\\omega = 1$. Left: the vector field $f(\\theta)$ for three values of $a$. Right: the period from @eq-nonuniform-period and the square-root scaling near $a = \\omega$."
+#| fig-width: 8
+#| fig-height: 3.5
+#| echo: false
+import numpy as np
+import matplotlib.pyplot as plt
+
+from amlab.synchronization.phase_models import nonuniform_oscillator_period
+
+omega = 1.0
+theta = np.linspace(0, 2 * np.pi, 400)
+fig, axs = plt.subplots(1, 2, figsize=(8, 3.5))
+
+for a, style in [(0.5, "-"), (1.0, "--"), (1.5, ":")]:
+    axs[0].plot(theta, omega - a * np.sin(theta), style, label=f"a = {a}")
+axs[0].axhline(0, color="black", linewidth=0.8)
+axs[0].set_xlabel(r"$\theta$")
+axs[0].set_ylabel(r"$\dot\theta$")
+axs[0].set_xticks([0, np.pi / 2, np.pi, 3 * np.pi / 2, 2 * np.pi])
+axs[0].set_xticklabels(["0", r"$\pi/2$", r"$\pi$", r"$3\pi/2$", r"$2\pi$"])
+axs[0].legend()
+
+a_values = np.linspace(0, 0.999, 400)
+axs[1].plot(a_values, nonuniform_oscillator_period(omega, a_values), label="Exact period")
+axs[1].plot(
+    a_values[200:],
+    np.sqrt(2) * np.pi / np.sqrt(omega) / np.sqrt(omega - a_values[200:]),
+    "--",
+    label="Square-root scaling",
+)
+axs[1].set_xlabel("a")
+axs[1].set_ylabel("T")
+axs[1].set_ylim(0, 60)
+axs[1].legend()
+plt.tight_layout()
+plt.show()
+```
+
+::: {.callout-note}
+## Exercise
+
+Take $a > \omega$. Find the two fixed points of @eq-nonuniform in $[0, 2\pi)$ and decide which one is stable.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+The fixed points satisfy $\sin\theta^* = \omega/a < 1$, so $\theta_1^* = \arcsin(\omega/a) \in (0, \pi/2)$ and $\theta_2^* = \pi - \theta_1^*$. The derivative of the vector field is $f'(\theta) = -a\cos\theta$. At $\theta_1^*$ the cosine is positive, so $f' < 0$ and the point is stable. At $\theta_2^*$ the cosine is negative and the point is unstable.
+:::
+
+::: {.callout-note}
+## Exercise
+
+Check @eq-nonuniform-period numerically for $\omega = 1$ and $a = 0.8$. Integrate the ODE with `solve_ivp` and measure the time it takes $\theta$ to grow by $2\pi$.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+The formula gives $T = 2\pi/\sqrt{1 - 0.64} = 2\pi/0.6 \approx 10.47$.
+
+```python
+import numpy as np
+from scipy.integrate import solve_ivp
+
+def rhs(t, theta, omega, a):
+    return omega - a * np.sin(theta)
+
+def one_turn(t, theta, omega, a):
+    return theta[0] - 2 * np.pi
+
+one_turn.terminal = True
+sol = solve_ivp(rhs, (0, 100), [0.0], args=(1.0, 0.8), events=one_turn, rtol=1e-10)
+print(sol.t_events[0][0])  # about 10.472
+```
+:::

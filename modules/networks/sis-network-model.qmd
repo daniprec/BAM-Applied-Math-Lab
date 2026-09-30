@@ -1,0 +1,235 @@
+---
+title: "SIS Model on Networks"
+subtitle: "Module 5: Complex Networks"
+format: html
+---
+
+::: {.callout-note}
+## Reading
+- **Compulsory:** @pastor2001epidemic.
+- **Recommended:** @pastor2015epidemic; @newman2002spread.
+:::
+
+In [Module 1](../low-dimensional-dynamics/compartmental-models.qmd) you wrote the SIS model as an ODE for a well-mixed population. Here every individual is a node, and infection travels only along edges [@keeling2008modeling; @pastor2015epidemic]. You will implement SIS on networks with NetworkX and measure how **network structure** (random, small-world, scale-free) changes the spread.
+
+::: {.callout-important}
+## Core activity
+Implement the discrete-time SIS model on a network, validate it, and compare the mean infected fraction on random, small-world and scale-free graphs. This page sets up the model and the initial state; [SIS Simulation](sis-network-simulation.qmd) runs it.
+:::
+
+## What is the SIS Model?
+
+- **States:** each node is Susceptible (S) or Infected (I).
+- **Transitions:**
+  - $S \to I$: infection through contacts (controlled by $\beta$).
+  - $I \to S$: recovery (controlled by $\mu$).
+- **No permanent immunity:** recovered nodes can be reinfected.
+
+### Discrete-Time Update Rule
+
+You simulate in discrete time steps $t = 0, 1, 2, \dots$.
+
+A susceptible node with $m$ infected neighbors becomes infected with probability [@keeling2008modeling]:
+
+$$
+\mathbb{P}(S \to I) = 1 - (1 - \beta)^m.
+$$
+
+::: {.callout-tip collapse="true"}
+## Why $1 - (1-\beta)^m$?
+
+If each infected neighbor independently infects you with probability $\beta$, then the probability you avoid infection from all $m$ neighbors is $(1-\beta)^m$.
+So the probability of at least one successful infection is $1-(1-\beta)^m$.
+:::
+
+On the other hand, if a node is infected, it recovers with probability:
+
+$$
+\mathbb{P}(I \to S) = \mu.
+$$
+
+## Prediction
+
+Before you write any code, answer these questions:
+
+- Take a random graph and a scale-free graph with the same $N$ and the same mean degree. With the same $(\beta, \mu)$, which one do you expect to sustain more infection?
+- What should happen to the infected fraction when $\beta = 0$?
+
+You will compare **random** (Erdős-Rényi), **small-world** (Watts-Strogatz) and **scale-free** (Barabási-Albert) graphs, running 10 to 30 repetitions for each case and plotting the **average infected fraction** over time.
+
+## Imports and Parameters
+
+```{python}
+#| message: false
+#| warning: false
+import networkx as nx
+import numpy as np
+import matplotlib.pyplot as plt
+```
+
+These are the parameters you can tune:
+
+```{python}
+SEED = 7
+
+# Model parameters
+beta = 0.20  # infection probability per infected neighbor (per step)
+mu = 0.10    # recovery probability (per step)
+
+# Simulation parameters
+steps = 120  # number of time steps to simulate
+initial_infected = 5  # should always be < N
+N = 100  # number of nodes in the graph
+```
+
+::: {.callout-note}
+## About `SEED` (why you fix it)
+
+There are **two** sources of randomness in this activity:
+
+1. the **graph** you generate (e.g., which edges appear in Erdős-Rényi), and
+2. the **stochastic SIS dynamics** (who gets infected / recovers at each step).
+
+You fix `SEED` so results are **reproducible**: rerunning the page gives the same plots, which makes debugging and reporting possible.
+
+When you run many repetitions, you use `SEED + r` so repetition `r` is a **different random trial** (new graph + new random infection events) but still reproducible. If you reused the same `SEED` in every repetition, you would repeat the *same* realization and your "average over runs" would be meaningless.
+:::
+
+## Choose a Network
+
+You will compare several models. Start by picking one. The three models are described in [Erdős-Rényi Random Graphs](erdos-renyi.qmd), [Small-World Networks](small-world.qmd) and [Preferential Attachment](preferential-attachment.qmd).
+
+
+::: {.callout-tip collapse="true"}
+## Example of Baseline Graph
+
+```python
+G = nx.erdos_renyi_graph(n=N, p=0.08, seed=SEED)
+# where p is the probability of edge creation
+```
+:::
+
+To make the comparison fair, all three graphs should have about the same mean degree, here $\langle k \rangle \approx 6$. Implement a small helper function `make_graph(<model>, <n>)`, where `<model>` is a string specifying the type of graph ("random", "small-world", or "scale-free") and `<n>` is the number of nodes.
+
+```python
+def make_graph(model: str, n: int, seed: int = SEED):
+    """Create a graph model with mean degree close to 6: 'random', 'small-world', or 'scale-free'."""
+    # TODO
+    return G
+```
+
+::: {.callout-tip collapse="true"}
+## Solved: `make_graph()`
+
+```{python}
+#| echo: true
+#| message: false
+#| warning: false
+def make_graph(model: str, n: int, seed: int = SEED):
+    if model == "random":
+        return nx.erdos_renyi_graph(n=n, p=6 / (n - 1), seed=seed)
+    if model == "small-world":
+        return nx.watts_strogatz_graph(n=n, k=6, p=0.08, seed=seed)
+    if model == "scale-free":
+        return nx.barabasi_albert_graph(n=n, m=3, seed=seed)
+    raise ValueError("model must be one of: 'random', 'small-world', 'scale-free'")
+```
+:::
+
+Now you can easily create different graph types:
+
+```{python}
+G = make_graph("random", n=100)
+print("N, E =", G.number_of_nodes(), G.number_of_edges())
+```
+
+Optional quick visualization:
+
+```{python}
+pos = nx.spring_layout(G)
+nx.draw(G, pos=pos, node_size=50, edge_color="gray")
+plt.title("Baseline network")
+plt.show()
+```
+
+## Initialize States
+
+Store the state of each individual directly on the graph as a **node attribute** called `state`.
+
+For example, start with everyone susceptible: create the attribute "state" and set it to "S" for all nodes:
+
+```{python}
+nx.set_node_attributes(G, "S", "state")
+
+print("Node 0:", G.nodes[0])  # node attributes are stored in a dictionary
+```
+
+To infect node 20:
+
+```{python}
+node_20 = G.nodes[20]
+node_20["state"] = "I"
+
+print("Node 20:", G.nodes[20])  # now node 20 has state "I"
+```
+
+Alternatively, use a dictionary to set the states of multiple nodes at once:
+
+```{python}
+# Infect nodes 20, 35, and 50
+# The rest will be susceptible by default
+state_dict = {node: "I" if node in [20, 35, 50] else "S" for node in G.nodes()}
+nx.set_node_attributes(G, state_dict, "state")
+
+print("Node 20:", G.nodes[20])  # node 20 is infected
+print("Node 21:", G.nodes[21])  # node 21 is susceptible
+```
+
+With that information in mind, you can create a function `initialize_state(<graph>)` that sets all nodes to "S" and then randomly picks a few nodes to set to "I" (the initial infected).
+
+```python
+def initialize_state(G, initial_infected=5, seed=SEED):
+    # TODO: start everyone as 'S' using node attributes
+    # TODO: randomly pick initial_infected nodes and set their node attribute to 'I'
+    # Optional: return G (mutated) for convenience
+    return G
+```
+
+Remember that you can use a seeded random number generator (via `np.random.default_rng(seed)`) to pick random nodes from the graph.
+
+::: {.callout-tip collapse="true"}
+## Solved: `initialize_state()`
+
+```{python}
+#| echo: true
+#| message: false
+#| warning: false
+def initialize_state(G, initial_infected=5, seed=SEED, rng=None):
+    if rng is None:
+        rng = np.random.default_rng(seed)
+
+    # Start everyone susceptible
+    nx.set_node_attributes(G, "S", "state")
+
+    # Infect a random subset
+    infected = rng.choice(list(G.nodes()), size=initial_infected, replace=False)
+    for node in infected:
+        G.nodes[node]["state"] = "I"
+
+    return G
+```
+:::
+
+Always validate your functions. Here, check that the number of infected nodes is correct:
+
+```{python}
+initialize_state(G, initial_infected=initial_infected, seed=SEED)
+print(
+    "Initially infected:",
+    sum(G.nodes[node]["state"] == "I" for node in G.nodes()),
+)
+```
+
+## What's Next?
+
+[SIS Simulation](sis-network-simulation.qmd){.btn .btn-primary}

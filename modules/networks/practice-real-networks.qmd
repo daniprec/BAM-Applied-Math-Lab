@@ -1,0 +1,356 @@
+---
+title: "Practice: Real Networks"
+subtitle: "Module 5: Complex Networks"
+format: html
+---
+
+This is an **ungraded practice** activity. It does not count towards your grade. It is also a good starting point if you choose a network topic for the group project.
+
+Pick **one** real network and do two things, in order:
+
+1. **Characterize the network** (basic structural properties).
+2. **Simulate propagation on it**:
+	- Default: epidemics with **both** SIS and SIR.
+	- Alternative: a different propagation process (e.g., fake-news spreading).
+
+These networks are meaningful contexts for epidemics:
+
+- **Enron email** approximates a *contact/communication* network between people.
+- **USA Flights** approximates a *mobility/transport* network connecting locations.
+
+Your goal is not only to "run code", but to justify what you measure, make your results reproducible, and interpret them.
+
+::: {.callout-note}
+## Suggested output
+
+Aim for two things:
+
+1. **Code**: a notebook or script that reproduces all figures and numbers and runs end to end.
+2. **A short write-up** with a table of core network metrics, at least one structural plot (for example a degree histogram), the top 10 nodes by degree centrality and by one other centrality measure, propagation figures (mean over several runs), and a short interpretation of the questions under "Discuss".
+
+State the exact parameters you used: $\beta$, $\mu$, initial infected nodes, number of runs and seed protocol.
+:::
+
+## Setup (Reproducibility)
+
+Use a fixed seed for reproducible results. When running multiple trials, use `SEED + r` (where `r` is the trial index) so trials differ but remain reproducible.
+
+```{python}
+#| message: false
+#| warning: false
+import networkx as nx
+import numpy as np
+import matplotlib.pyplot as plt
+
+SEED = 7  # fixed seed for reproducibility
+```
+
+## Enron email network
+
+The Enron email dataset can be represented as a graph where nodes are email addresses and edges represent communication. It is widely used to study centrality, communities, and robustness [@snapenrondataset].
+
+```{python}
+#| label: fig-enron-degree
+#| fig-cap: 'Enron network: degree histogram (log scale).'
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+path = "data/ia-enron-only/ia-enron-only.edges"
+G = nx.read_edgelist(path)
+
+degrees = [d for _, d in G.degree()]
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.hist(degrees, bins=50)
+ax.set_xlabel("Degree")
+ax.set_ylabel("Count")
+ax.set_yscale("log")
+ax.set_title("Enron degree distribution")
+plt.show()
+plt.close()
+```
+
+### Load and check the Enron data
+
+Use the local edge list if you cloned this repository:
+
+`data/ia-enron-only/ia-enron-only.edges`
+
+If you are working from the rendered website and do not have the `data/` folder, download the official SNAP file:
+
+`https://snap.stanford.edu/data/email-Enron.txt.gz` [@snapenrondataset]
+
+```python
+import networkx as nx
+
+G = nx.read_edgelist("data/ia-enron-only/ia-enron-only.edges")
+G = nx.Graph(G)  # ensure undirected simple graph
+
+print("N, E =", G.number_of_nodes(), G.number_of_edges())
+print("Self-loops:", nx.number_of_selfloops(G))
+```
+
+If the graph is disconnected, you may choose to work on the **largest connected component** for path-based metrics:
+
+```python
+largest_cc_nodes = max(nx.connected_components(G), key=len)
+H = G.subgraph(largest_cc_nodes).copy()
+print("Largest CC size:", H.number_of_nodes())
+```
+
+### Basic properties of the Enron network
+
+Using the definitions from [Network Concepts](network-concepts.qmd) and [Paths and Components](networkx-paths.qmd), report at least:
+
+- $N$, $E$, average degree, density
+- number of connected components + size of largest component
+- clustering (average clustering and/or transitivity)
+- top-10 nodes by degree centrality + one additional centrality metric (betweenness, PageRank, etc.)
+
+You may also report average shortest path length / diameter **on the largest component**.
+
+### Centrality Metrics
+
+Compute the top nodes by betweenness centrality.
+
+```python
+import networkx as nx
+
+bc = nx.betweenness_centrality(G)
+# TODO: sort and print top 10 nodes
+```
+
+### Questions to Explore
+
+- Which nodes act as brokers (hubs) in the network?
+- How does the graph change if you remove high-betweenness nodes? Answering this questions will be relevant for the epidemic simulations later.
+- Can you detect communities with a simple algorithm?
+
+## USA flights network
+
+The USA Flights graph used here is a preprocessed snapshot built from OpenFlights airport/route data [@openflightsdataset]. It is commonly used to study connectivity, robustness, and hub structure.
+
+```{python}
+#| label: fig-usa-flights
+#| fig-cap: 'USA flights: subgraph snapshot (random sample of airports).'
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+import random
+
+path = "data/openflights/openflights_usa.graphml.gz"
+G = nx.read_graphml(path)
+G = nx.Graph(G)
+
+# Sample a manageable subgraph for visualization
+nodes = list(G.nodes)
+random.seed(SEED)
+sub_nodes = random.sample(nodes, k=min(250, len(nodes)))
+H = G.subgraph(sub_nodes).copy()
+
+pos = nx.spring_layout(H, seed=SEED)
+fig, ax = plt.subplots(figsize=(7, 4))
+nx.draw(H, pos=pos, node_size=10, edge_color="#999", node_color="#1f77b4", ax=ax)
+ax.set_title("OpenFlights USA (sample)")
+plt.show()
+plt.close()
+```
+
+### Load and check the flights data
+
+Use the local GraphML file if you cloned this repository:
+
+`data/openflights/openflights_usa.graphml.gz`
+
+If you are working from the rendered website and do not have the `data/` folder, download the exact same file from this repository:
+
+`https://raw.githubusercontent.com/daniprec/BAM-Applied-Math-Lab/main/data/openflights/openflights_usa.graphml.gz`
+
+```python
+import networkx as nx
+from pathlib import Path
+import urllib.request
+
+path = Path("data/openflights/openflights_usa.graphml.gz")
+if not path.exists():
+    url = "https://raw.githubusercontent.com/daniprec/BAM-Applied-Math-Lab/main/data/openflights/openflights_usa.graphml.gz"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    urllib.request.urlretrieve(url, path)
+
+G = nx.read_graphml(path)
+G = nx.Graph(G)  # simplify to an undirected graph
+
+print("N, E =", G.number_of_nodes(), G.number_of_edges())
+print("Is connected?", nx.is_connected(G))
+```
+
+::: {.callout-tip collapse="true"}
+## Optional warm-up: node attributes and itineraries
+
+The OpenFlights data comes with **node attributes** (metadata) stored in the GraphML.
+
+```python
+airport = next(iter(G.nodes))
+print("Example airport:", airport)
+print("Attributes:", G.nodes[airport])
+```
+
+You can also ask simple connectivity questions:
+
+```python
+a, b = "IND", "FAI"  # pick two IATA codes that exist in the graph
+print("Direct flight?", G.has_edge(a, b))
+print("Path exists?", nx.has_path(G, a, b))
+
+# Fewest flights itinerary (unweighted shortest path)
+print("Itinerary:", nx.shortest_path(G, a, b))
+```
+:::
+
+### Basic properties of the flights network
+
+In addition to core connectivity/clustering metrics, report the top-10 nodes by degree centrality and one other centrality metric (betweenness, PageRank, etc.) with a brief interpretation.
+
+Try these metrics:
+
+```python
+num_nodes = G.number_of_nodes()
+num_edges = G.number_of_edges()
+avg_degree = sum(dict(G.degree()).values()) / num_nodes
+
+print(num_nodes, num_edges, avg_degree)
+```
+
+### Explore Hubs
+
+Compute the top airports by degree centrality.
+
+```python
+import networkx as nx
+
+centrality = nx.degree_centrality(G)
+# TODO: sort and print top 10 airports
+```
+
+### Questions to Explore
+
+- Which airports act as hubs? Answering this question will be relevant for the epidemic simulations later.
+- How does the network change if you remove the top hub?
+- Is the graph connected, or are there isolated components?
+
+## Your own network
+
+If you prefer, you can choose **any real network** instead of Enron or USA Flights.
+
+### Source the data
+
+Your data must come from a **trusted source**. In your report, include:
+
+- source URL,
+- source organization (who publishes/maintains it),
+- date accessed,
+- file format and any preprocessing you performed.
+
+Accepted source types include university/government open-data portals, curated research repositories, or peer-reviewed supplementary datasets.
+
+### Characterize the structure
+
+Report the same core metrics as for the Enron and flights networks:
+
+- $N$, $E$, average degree, density,
+- connected components + largest component size,
+- clustering,
+- top-10 by degree centrality + one additional centrality metric.
+
+### Choose a propagation process
+
+You may choose one of these:
+
+- **Default**: SIS and SIR.
+- **Alternative**: another process such as fake-news diffusion, independent cascade, threshold adoption, or rumor spreading.
+
+For the alternative, clearly define your node states and transition rules.
+
+## Propagation on your network
+
+Choose one of two options: SIS and SIR (the default), or one propagation model other than SIS and SIR.
+
+In all cases, use the same network for your structural analysis and propagation experiments.
+
+Implementation:
+
+- store node states as a node attribute `state`.
+
+Protocol:
+
+- run at least `runs = 20` trials,
+- use `seed_run = SEED + r` for trial `r`,
+- plot the **mean** propagation curve(s) across trials.
+
+### SIS and SIR
+
+For the default option, simulate **both** SIS and SIR on the same graph (as in [SIS Simulation](sis-network-simulation.qmd) and [SIR on Networks](sir-network.qmd)).
+
+#### SIS
+
+Report and plot:
+
+- mean infected fraction $\mathbb{E}[I(t)/N]$ over time,
+- variability: either show a band (e.g., 25 to 75%) or overlay 3 to 5 individual runs.
+
+#### SIR
+
+Report and plot:
+
+- mean curves for $S(t)/N$, $I(t)/N$, $R(t)/N$,
+- **final epidemic size** $R(\infty)/N$ (estimate from your finite simulation horizon).
+
+### Alternative propagation
+
+For the alternative option, define and simulate one propagation model other than SIS/SIR.
+
+Report and plot at least:
+
+- mean fraction of relevant states over time (e.g., spreaders, adopters, skeptics),
+- variability (band or 3 to 5 individual runs),
+- one final-outcome metric (e.g., final reach, extinction probability, time-to-peak),
+- one sensitivity experiment (change one key parameter and compare outcomes).
+
+Your write-up must explicitly explain how both:
+
+- the **propagation rules** (who can influence whom, with what probability/threshold), and
+- the **network structure** (hubs, clustering, path lengths, components)
+
+shape the observed dynamics.
+
+::: {.callout-tip collapse="true"}
+## Practical tip
+
+For large networks, you can simulate on:
+
+- the full graph (if it runs fast enough), or
+- the largest connected component, or
+- a sampled subgraph (state your sampling method and seed).
+
+The key is that your plots and conclusions must refer to the exact graph you simulated.
+:::
+
+::: {.callout-note}
+## Discuss
+
+1. Structural: what features suggest "hub-like" propagation vs "cluster-local" propagation?
+2. Rules: how do your propagation rules (infection/recovery/immunity, forwarding/forgetting, thresholds, etc.) change long-run behavior?
+3. Reach: can the process spread to almost all nodes under your parameters? Did you observe it?
+4. Extinction: can the process die out (no active spreaders/infected)? Under what conditions?
+5. Sensitivity: if you increase spreading strength (e.g., $\beta$ or equivalent) or reduce recovery/forgetting, what changes first: peak height, persistence, or final size?
+:::
+
+## Optional extensions
+
+- Remove a high-centrality node and analyze changes in connectivity and epidemic outcome.
+- Compare two different centrality metrics and discuss differences.
+- Try a community detection method and summarize results.
+
+Propagation ideas:
+
+- Hold the **graph fixed** (same graph seed) but vary only the **dynamics seed** to separate "graph randomness" from "process randomness".
+- Compare targeted removal (top-degree or top-betweenness) vs random removal and re-run your chosen propagation model.

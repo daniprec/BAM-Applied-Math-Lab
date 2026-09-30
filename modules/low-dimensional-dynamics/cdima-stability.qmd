@@ -1,0 +1,97 @@
+---
+title: "CDIMA: Stability and the Hopf Point"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+This page continues [CDIMA: Nullclines and Fixed Points](cdima-nullclines.qmd). You decide the stability of the fixed point from the Jacobian and check the Hopf condition $b_c = 3a/5 - 25/a$ from [Hopf Bifurcation](hopf-bifurcation.qmd) [@strogatz2024nonlinear, Section 8.3].
+
+## Prediction
+
+For $a = 10$, which of $b = 3$ and $b = 4$ gives a stable fixed point? What should the eigenvalues look like at $b = 3.5$?
+
+## Implementation: the Jacobian
+
+The Jacobian collects the partial derivatives of the right-hand side:
+
+$$
+J =
+\begin{bmatrix}
+\partial f/\partial x & \partial f/\partial y \\
+\partial g/\partial x & \partial g/\partial y
+\end{bmatrix}.
+$$
+
+You can compute it analytically or numerically. The numerical route uses central differences and works for any model:
+
+```python
+def numerical_jacobian(func, point, args, h=1e-6):
+    jac = np.zeros((2, 2))
+    for j in range(2):
+        e = np.zeros(2)
+        e[j] = h
+        jac[:, j] = # TODO: (f(point + e) - f(point - e)) / (2h)
+    return jac
+```
+
+::: {.callout-tip collapse="true"}
+## Solution
+```python
+def numerical_jacobian(func, point, args, h=1e-6):
+    jac = np.zeros((2, 2))
+    for j in range(2):
+        e = np.zeros(2)
+        e[j] = h
+        jac[:, j] = (np.asarray(func(0, point + e, *args))
+                     - np.asarray(func(0, point - e, *args))) / (2 * h)
+    return jac
+```
+`amlab.odes_2d.cdima_analysis.numerical_jacobian` is the reference version for CDIMA.
+:::
+
+Then compute the eigenvalues with `np.linalg.eigvals`:
+
+- both real parts negative: stable (node or spiral);
+- at least one real part positive: unstable.
+
+## Validation
+
+Compare the numerical Jacobian with the analytical one and check where the real part of the eigenvalues changes sign.
+
+```{python}
+import numpy as np
+
+from amlab.odes_2d.cdima_analysis import (
+    cdima_jacobian,
+    hopf_b,
+    locate_hopf_numerically,
+    numerical_jacobian,
+)
+
+a = 10.0
+for b in [3.0, 3.5, 4.0]:
+    ev = np.linalg.eigvals(numerical_jacobian(a, b))
+    diff = np.max(np.abs(numerical_jacobian(a, b) - cdima_jacobian(a, b)))
+    print(f"b = {b}: eigenvalues {np.round(ev, 4)}, |J_num - J_exact| = {diff:.1e}")
+
+for a in [8.0, 10.0, 15.0]:
+    print(f"a = {a}: numerical Hopf b = {locate_hopf_numerically(a):.4f}, formula 3a/5 - 25/a = {hopf_b(a):.4f}")
+```
+
+At $b = 3.5$ the eigenvalues are $\pm i\sqrt 7 \approx \pm 2.6458i$, as predicted, and the numerical Hopf point agrees with the formula to the accuracy of the root finder.
+
+## Experiment
+
+Run the phase plane from [CDIMA: Phase Plane](cdima-phase-plane.qmd) with $a = 10$ and $b = 4, 3.6, 3.4, 3$. Where does the limit cycle appear? How does its size change as $b$ decreases below $b_c$?
+
+## Interpretation
+
+For $b > b_c$ the fixed point is a stable spiral and the reaction settles to constant concentrations. For $b < b_c$ it is an unstable spiral surrounded by a stable limit cycle: the concentrations oscillate. The formula gives the whole stability boundary in the $(a, b)$ plane. Note that $b_c > 0$ requires $a > \sqrt{125/3} \approx 6.45$; for smaller $a$ the fixed point is stable for every $b > 0$.
+
+## Limitations
+
+The linear analysis says nothing about the size of the limit cycle, nor whether the Hopf bifurcation is supercritical. You answered those questions with simulations in [Hopf Bifurcation](hopf-bifurcation.qmd).
+
+## Next
+
+[Animations and Interactivity](animation.qmd){.btn .btn-primary}

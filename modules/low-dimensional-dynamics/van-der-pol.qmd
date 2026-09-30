@@ -1,0 +1,148 @@
+---
+title: "Van der Pol Oscillator"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+::: {.callout-tip}
+## Optional extension
+This page is optional in Session 8. It applies the CDIMA pipeline to a second oscillator. Session 9 returns to it in [Relaxation Oscillations](relaxation-oscillations.qmd).
+:::
+
+The Van der Pol oscillator, introduced by van der Pol for electrical circuits with triodes [@vanderpol1926relaxation], is a prototypical nonlinear system that exhibits **self-sustained oscillations**.
+For a wide range of initial conditions, trajectories converge to a stable **limit cycle**.
+
+In the form we will use in this course, the system is written as [@strogatz2024nonlinear, chap. 7.5]:
+
+$$\begin{aligned}
+\dot x &= \mu\,(y - f(x)) \\
+\dot y &= -\frac{x}{\mu}
+\end{aligned}$$ {#eq-ode-2d-van-der-pol-1}
+
+where $\mu>0$ controls the strength of the nonlinearity (and the fast-slow character for large $\mu$), and
+
+$$
+f(x) = \frac{x^3}{3} - x.
+$$ {#eq-ode-2d-van-der-pol-2}
+
+## Nullclines and Fixed Point
+
+The nullclines are especially simple in this model:
+
+$$
+\dot x = 0 \quad \Longrightarrow \quad y = \frac{x^3}{3} - x,
+\qquad
+\dot y = 0 \quad \Longrightarrow \quad x = 0.
+$$
+
+They intersect at the origin, so $(0,0)$ is the equilibrium point. For the parameter regime used in this session, the main long-run object of interest is not the equilibrium itself, but the attracting limit cycle around it.
+
+```{python}
+#| label: fig-phase-plane
+#| fig-cap: "Phase plane of the Van der Pol system with mu = 3. Trajectories are shown for different initial conditions (IC as x-y, marked black). Generated with `scipy.integrate.solve_ivp()` and matplotlib."
+#| fig-width: 8
+#| fig-height: 4
+#| echo: false
+
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.integrate import solve_ivp
+
+from amlab.odes_2d.van_der_pol import van_der_pol
+
+ls_xy = [(-2, 2), (2, -2), (-0.1, 0.1)]
+mu = 3
+
+fig, ax = plt.subplots(figsize=(8, 4))
+for x0, y0 in ls_xy:
+    sol = solve_ivp(
+        van_der_pol,
+        [0, 40],
+        [x0, y0],
+        args=(mu,),
+        t_eval=np.linspace(0, 40, 4000),
+    )
+    ax.plot(sol.y[0], sol.y[1], label=f"IC: ({x0}, {y0})")
+    # Mark the initial condition
+    ax.plot(x0, y0, "o", color="black")
+
+plt.xlabel("x")
+plt.ylabel("y")
+plt.legend()
+plt.show()
+plt.close()
+```
+
+## Implement the Vector Field
+
+```python
+def van_der_pol(t, xy, mu=1.0):
+    x, y = xy
+    dxdt = # TODO
+    dydt = # TODO
+    return np.array([dxdt, dydt])
+```
+
+::: {.callout-tip collapse="true"}
+## Solution
+```python
+def van_der_pol(t, xy, mu=1.0):
+    x, y = xy
+    fx = x**3 / 3 - x
+    dxdt = mu * (y - fx)
+    dydt = -x / mu
+    return np.array([dxdt, dydt])
+```
+:::
+
+Follow the same pipeline as in [CDIMA: Phase Plane](cdima-phase-plane.qmd): define the right-hand side, solve the initial value problem, compute nullclines, and then animate the resulting trajectory.
+
+## The Stable Limit Cycle
+
+For every $\mu > 0$ the Van der Pol system has a unique, stable limit cycle; this follows from Liénard's theorem [@strogatz2024nonlinear, Section 7.4].
+Plot this limit cycle as a $x(t)-t$ plot, and verify that it matches the phase plane trajectories.
+
+```{python}
+#| label: fig-limit-cycle
+#| fig-cap: "Time series of x(t) for the Van der Pol system with mu = 3 and IC: (2, -2). Generated with `scipy.integrate.solve_ivp()` and matplotlib."
+#| fig-width: 8
+#| fig-height: 4
+#| echo: false
+xy = (2, -2)
+
+fig, ax = plt.subplots(figsize=(8, 4))
+sol = solve_ivp(
+    van_der_pol,
+    [0, 40],
+    xy,
+    args=(mu,),
+    t_eval=np.linspace(0, 40, 4000),
+)
+ax.plot(sol.t, sol.y[0])
+plt.xlabel("Time (t)")
+plt.ylabel("x(t)")
+plt.show()
+plt.close()
+```
+
+## The Role of $\mu$
+
+The amplitude and period of the limit cycle depend on $\mu$.
+
+- For smaller $\mu$, the oscillation looks smoother and less sharply separated into time scales.
+- For larger $\mu$, the motion develops a clear slow-fast structure.
+- The trajectory spends long intervals drifting near the cubic nullcline, then jumps rapidly between branches.
+
+This is the characteristic relaxation-oscillation picture.
+
+## What to Look For
+
+- Different initial conditions approach the same closed orbit.
+- The transient depends on the initial state, but the long-run behavior does not.
+- The time trace $x(t)$ reflects the same slow-fast pattern you see in the phase plane.
+
+Play with the parameter $\mu$ to see how it changes the shape of the limit cycle and the transient dynamics.
+
+## Next
+
+[Practice: Planar Systems](practice-2d.qmd){.btn .btn-primary}

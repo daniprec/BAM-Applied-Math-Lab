@@ -1,0 +1,106 @@
+---
+title: "Fitting an Epidemic to Data"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+You now estimate $\beta$ and $\gamma$ from a time series of daily new cases. This is your first parameter estimation problem of the course.
+
+## The data
+
+`amlab.epidemics.load_cases()` reads `data/epidemic/cases.csv` with columns `date,new_cases` (see `data/epidemic/README.md`). If the file does not exist, it returns **synthetic data** and prints a warning: a deterministic SIR epidemic with $R_0 = 3$ ($\beta = 0.3$, $\gamma = 0.1$ per day) in a population of one million, with random reporting noise and a fixed seed. The figures on this page use the synthetic data unless you add a real file. With synthetic data you know the true parameters, so you can check whether the fit recovers them.
+
+```{python}
+#| warning: false
+import numpy as np
+
+from amlab.epidemics import load_cases
+
+days, cases, synthetic = load_cases()
+print("Synthetic data:", synthetic, "| days:", len(days), "| total cases:", int(cases.sum()))
+```
+
+## The observation model
+
+The SIR model predicts fractions. The data are counts of new infections per day. The expected number of new cases on day $d$ is
+
+$$
+\mu_d = N\,\bigl(S(d-1) - S(d)\bigr),
+$$
+
+the number of people who left the susceptible class during that day. `sir_incidence(days, beta, gamma, i0, N)` computes $\mu_d$.
+
+## Prediction
+
+Before fitting, estimate the growth rate from the early data by eye: on a log scale, the rising part of the curve is roughly a straight line with slope $\beta - \gamma$. What slope do you expect for the synthetic data?
+
+## Implementation
+
+Least squares chooses the parameters that minimize $\sum_d (\sqrt{\mu_d} - \sqrt{c_d})^2$, where $c_d$ are the observed counts. The square root reduces the weight of the large counts near the peak, since count noise grows with the mean.
+
+```python
+from scipy.optimize import least_squares
+
+def residuals(log_params):
+    beta, gamma, i0 = np.exp(log_params)   # log scale keeps parameters positive
+    model = # TODO: sir_incidence(...)
+    return # TODO: sqrt(model) - sqrt(cases)
+
+result = least_squares(residuals, np.log([0.25, 0.12, 1e-5]))
+```
+
+::: {.callout-tip collapse="true"}
+## Solution
+`amlab.epidemics.fit_sir_incidence` implements exactly this, with bounds on each parameter. It takes the initial number of infected people in the guess instead of the fraction.
+:::
+
+```{python}
+#| label: fig-fit
+#| fig-cap: "SIR fit to the full incidence curve. Dots: data. Line: fitted model."
+#| fig-width: 7
+#| fig-height: 3.5
+import matplotlib.pyplot as plt
+
+from amlab.epidemics import fit_sir_incidence, sir_incidence
+
+N = 1e6
+fit = fit_sir_incidence(days, cases, population=N)
+print(f"beta = {fit['beta']:.3f}, gamma = {fit['gamma']:.3f}, R0 = {fit['r0']:.2f}")
+
+fig, ax = plt.subplots(figsize=(7, 3.5))
+ax.plot(days, cases, ".", color="gray", label="data")
+ax.plot(days, sir_incidence(days, fit["beta"], fit["gamma"], fit["i0"], N), "tab:red", label="SIR fit")
+ax.set_xlabel("Day")
+ax.set_ylabel("New cases")
+ax.legend()
+ax.grid(alpha=0.3)
+plt.tight_layout()
+plt.show()
+```
+
+## Validation
+
+With the full curve, the fit should recover values close to $\beta = 0.3$, $\gamma = 0.1$. Check the residuals: they should look like noise, with no systematic pattern before or after the peak.
+
+## Experiment: identifiability
+
+A parameter is identifiable if the data determine it. Now treat the population size $N$ as unknown too (`fit_population=True`); in a real epidemic you rarely know how many people can actually be reached. Fit only the first $T$ days for several values of $T$.
+
+```{python}
+print(" T   beta-gamma    R0          N")
+for T in [20, 30, 40, 60, 90, 120]:
+    f = fit_sir_incidence(days[:T], cases[:T], population=N, fit_population=True)
+    print(f"{T:3d}   {f['beta'] - f['gamma']:.3f}      {f['r0']:8.2f}   {f['population']:.3g}")
+```
+
+The growth rate $\beta - \gamma$ is close to the true 0.2 for every $T$. $R_0$ and $N$ are not: before and around the peak (near day 55), the fit can return values far from the truth, including very large $R_0$ with a small $N$, and these fits have a lower cost than the true parameters. During exponential growth $I(t) \approx I(0)e^{(\beta-\gamma)t}$, so very different combinations of $\beta$, $\gamma$ and $N$ produce almost the same curve. Only the decline of the epidemic pins them down.
+
+## Limitations
+
+- The fit assumes the SIR model is correct. Real outbreaks involve interventions that change $\beta$ in time.
+- Reported cases are a variable, unknown fraction of true infections.
+- Least squares gives a point estimate. Quantifying uncertainty needs bootstrap or Bayesian methods, as in @castro2020turning.
+
+## Next
+
+[Predicting the Peak](peak-prediction.qmd){.btn .btn-primary}

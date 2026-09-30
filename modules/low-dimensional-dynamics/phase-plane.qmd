@@ -1,0 +1,88 @@
+---
+title: "The Phase Plane"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+A planar system
+
+$$
+\dot x = f(x, y), \qquad \dot y = g(x, y)
+$$ {#eq-planar}
+
+defines a vector field on the $(x, y)$ plane. Each point is a state, and trajectories follow the arrows. You can often understand the whole dynamics from a few geometric objects: nullclines, fixed points and closed orbits [@strogatz2024nonlinear, Chapters 6 and 7].
+
+## Nullclines
+
+The $x$-nullcline is the curve $f(x, y) = 0$, where the flow is vertical. The $y$-nullcline is $g(x, y) = 0$, where the flow is horizontal. The nullclines divide the plane into regions in which the signs of $\dot x$ and $\dot y$ are fixed, so you can sketch the direction of the flow in each region [@strogatz2024nonlinear, Section 6.1].
+
+## Fixed points and the Jacobian
+
+Fixed points are the intersections of the two nullclines. To find their type, linearize: with $\mathbf u = (x - x^*, y - y^*)$, $\dot{\mathbf u} \approx J\mathbf u$ with the Jacobian
+
+$$
+J = \begin{pmatrix} \partial f/\partial x & \partial f/\partial y \\ \partial g/\partial x & \partial g/\partial y \end{pmatrix}_{(x^*, y^*)} .
+$$
+
+Then classify $J$ by its trace and determinant as in [Linear Systems in the Plane](linear-systems-2d.qmd). If no eigenvalue has zero real part (a hyperbolic fixed point), the linearization predicts the local phase portrait correctly [@strogatz2024nonlinear, Section 6.3].
+
+## Limit cycles
+
+A limit cycle is an isolated closed trajectory. Nearby trajectories spiral towards it (stable limit cycle) or away from it (unstable). A stable limit cycle is a self-sustained oscillation: its amplitude and period are set by the system, not by the initial condition, and the system returns to it after a small perturbation [@strogatz2024nonlinear, Chapter 7]. Linear systems cannot have limit cycles: their closed orbits, when they exist, come in continuous families.
+
+```{python}
+#| echo: false
+#| label: fig-vdp-plane
+#| fig-cap: "Phase plane of the Van der Pol oscillator (mu = 1, Lienard form) with nullclines. Two trajectories, one starting inside and one outside, approach the same limit cycle."
+#| fig-width: 6
+#| fig-height: 4.5
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.integrate import solve_ivp
+
+from amlab.odes_2d.van_der_pol import van_der_pol
+
+mu = 1.0
+x, y = np.meshgrid(np.linspace(-3, 3, 25), np.linspace(-3, 3, 25))
+u, v = van_der_pol(0, [x, y], mu)
+fig, ax = plt.subplots(figsize=(6, 4.5))
+ax.streamplot(x, y, u, v, color="lightgray", density=0.8, linewidth=0.6)
+xs = np.linspace(-3, 3, 300)
+ax.plot(xs, xs**3 / 3 - xs, "b", label="x-nullcline")
+ax.axvline(0, color="r", label="y-nullcline")
+for x0 in [(0.1, 0.0), (3.0, 2.5)]:
+    sol = solve_ivp(van_der_pol, (0, 60), x0, args=(mu,), t_eval=np.linspace(0, 60, 6000))
+    ax.plot(sol.y[0], sol.y[1], lw=1.2)
+ax.set_xlim(-3, 3)
+ax.set_ylim(-3, 3)
+ax.set_xlabel("x")
+ax.set_ylabel("y")
+ax.legend(loc="upper left", fontsize=8)
+plt.tight_layout()
+plt.show()
+```
+
+## The Poincaré-Bendixson theorem
+
+In the plane, the long-run behaviour of a bounded trajectory is limited.
+
+::: {.callout-note}
+## Theorem (Poincaré-Bendixson)
+Let $R$ be a closed, bounded region of the plane, and let the vector field be continuously differentiable on an open set containing $R$. If $R$ contains no fixed points and there is a trajectory that starts in $R$ and stays in $R$ for all future time, then that trajectory is a closed orbit or spirals towards a closed orbit as $t \to \infty$ [@strogatz2024nonlinear, Section 7.3].
+:::
+
+In practice you look for a **trapping region**: a region on whose boundary the vector field points inwards. If you remove a small disc around an unstable fixed point, the remaining annulus contains no fixed point, and the theorem guarantees a closed orbit. A consequence is that chaos is impossible in autonomous planar systems; it requires at least three dimensions, as in the [Lorenz system](lorenz.qmd) [@strogatz2024nonlinear, Section 7.3].
+
+::: {.callout-note}
+## Exercise
+For the Van der Pol system in the form $\dot x = \mu(y - x^3/3 + x)$, $\dot y = -x/\mu$, find the fixed point and its type for $\mu = 1$.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+The nullclines $y = x^3/3 - x$ and $x = 0$ meet only at the origin. The Jacobian there is $\begin{pmatrix} \mu & \mu \\ -1/\mu & 0\end{pmatrix}$, with $\tau = \mu = 1$ and $\Delta = 1$. Since $\tau^2 - 4\Delta = -3 < 0$ and $\tau > 0$, the origin is an unstable spiral. Trajectories leave it and approach the limit cycle in @fig-vdp-plane.
+:::
+
+## Next
+
+[Hopf Bifurcation](hopf-bifurcation.qmd){.btn .btn-primary}

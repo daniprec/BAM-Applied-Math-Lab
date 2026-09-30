@@ -1,0 +1,112 @@
+---
+title: "FitzHugh-Nagumo Model"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+The FitzHugh-Nagumo model is a two-variable simplification of the Hodgkin-Huxley equations that keeps excitability and spiking [@fitzhugh1961impulses; @nagumo1962active]. The version used in this course is
+
+$$\begin{aligned}
+\epsilon \dot v &= f(v) - w + I_{\text{app}}, \\
+\dot w &= v - \gamma w,
+\end{aligned}$$ {#eq-fhn}
+
+with the cubic
+
+$$
+f(v) = v (1 - v)(v - \alpha), \qquad 0 < \alpha < 1 .
+$$
+
+$v$ is the fast variable (membrane potential), $w$ the slow recovery variable, $I_{\text{app}}$ an applied current, and $\epsilon \ll 1$ sets the separation of time scales.
+
+## Nullclines and geometry
+
+$$
+\dot v = 0 \;\Longrightarrow\; w = f(v) + I_{\text{app}},
+\qquad
+\dot w = 0 \;\Longrightarrow\; w = \frac{v}{\gamma}.
+$$
+
+The cubic $v$-nullcline and the straight $w$-nullcline organize the flow. Away from the cubic, $\dot v$ is of order $1/\epsilon$, so trajectories move almost horizontally. Near the outer branches of the cubic they drift slowly [@strogatz2024nonlinear, Section 7.5].
+
+- If the nullclines cross on an outer branch of the cubic, the fixed point is stable and the system is **excitable** (see [Excitability](excitability.qmd)).
+- If they cross on the middle branch, the fixed point is unstable and the system produces a **relaxation oscillation**.
+
+Increasing $I_{\text{app}}$ shifts the cubic upwards and moves the crossing from the left branch to the middle branch.
+
+```{python}
+#| label: fig-fhn-plane
+#| fig-cap: "FitzHugh-Nagumo phase planes for alpha = 0.1, gamma = 0.5, epsilon = 0.01. Left: I_app = 0, excitable; one trajectory starting at v = 0.2 makes a single excursion. Right: I_app = 0.5, oscillatory; the trajectory settles on a limit cycle."
+#| fig-width: 9
+#| fig-height: 3.8
+#| echo: false
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.integrate import solve_ivp
+
+from amlab.odes_2d.fitzhugh_nagumo import fitzhugh_nagumo
+
+gamma, alpha, eps = 0.5, 0.1, 0.01
+v = np.linspace(-0.5, 1.2, 300)
+fig, axs = plt.subplots(1, 2, figsize=(9, 3.8), sharey=True)
+for ax, i_app, v0 in zip(axs, [0.0, 0.5], [0.2, 0.0]):
+    ax.plot(v, v * (1 - v) * (v - alpha) + i_app, "b", lw=1, label="v-nullcline")
+    ax.plot(v, v / gamma, "r", lw=1, label="w-nullcline")
+    sol = solve_ivp(fitzhugh_nagumo, (0, 4), [v0, 0.0], args=(i_app, gamma, alpha, eps),
+                    max_step=0.002)
+    ax.plot(sol.y[0], sol.y[1], "k", lw=1)
+    ax.set_title(f"I_app = {i_app}")
+    ax.set_xlabel("v")
+    ax.set_xlim(-0.5, 1.2)
+    ax.set_ylim(-0.2, 0.9)
+axs[0].set_ylabel("w")
+axs[0].legend(loc="upper left", fontsize=8)
+plt.tight_layout()
+plt.show()
+```
+
+## Implement the vector field
+
+```python
+def fitzhugh_nagumo(t, vw, i_app=0.5, gamma=0.5, alpha=0.1, epsilon=0.01):
+    v, w = vw
+    fv = # TODO: cubic nonlinearity
+    dvdt = # TODO
+    dwdt = # TODO
+    return np.array([dvdt, dwdt])
+```
+
+::: {.callout-tip collapse="true"}
+## Solution
+```python
+def fitzhugh_nagumo(t, vw, i_app=0.5, gamma=0.5, alpha=0.1, epsilon=0.01):
+    v, w = vw
+    fv = v * (1 - v) * (v - alpha)
+    dvdt = (fv - w + i_app) / epsilon
+    dwdt = v - gamma * w
+    return np.array([dvdt, dwdt])
+```
+This is `amlab/odes_2d/fitzhugh_nagumo.py`, which also contains an interactive animation.
+:::
+
+Because $1/\epsilon = 100$, the problem is mildly stiff. Limit the step with `max_step` or use `method="LSODA"` so that the solver does not step over the fast jumps.
+
+## Interpret the parameters
+
+- Smaller $\epsilon$ makes the jumps faster relative to the slow drift.
+- $I_{\text{app}}$ moves the system between rest, excitability and repetitive firing.
+- $\gamma$ and $\alpha$ change the slope of the $w$-nullcline and the position of the cubic, and therefore where the nullclines intersect.
+
+::: {.callout-note}
+## Exercise
+For $\alpha = 0.1$, $\gamma = 0.5$, find the fixed point for $I_{\text{app}} = 0$ and show that it is the only one.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+Fixed points satisfy $v/\gamma = f(v)$, that is $2v = v(1-v)(v - 0.1)$. One root is $v = 0$. The others solve $(1 - v)(v - 0.1) = 2$, i.e. $v^2 - 1.1v + 2.1 = 0$, whose discriminant $1.21 - 8.4$ is negative. So $(0, 0)$ is the only fixed point.
+:::
+
+## Next
+
+[Relaxation Oscillations](relaxation-oscillations.qmd){.btn .btn-primary}

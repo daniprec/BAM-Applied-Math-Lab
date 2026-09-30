@@ -1,0 +1,55 @@
+---
+title: "Diffusion in Biology"
+subtitle: "Module 3: Modelling with Randomness"
+format: html
+---
+
+The relation $\langle x^2 \rangle = 2Dt$ has a direct consequence for living cells: diffusion is fast over short distances and very slow over long ones. The numbers on this page come from @berg1993random [Chapter 1].
+
+## Time to diffuse a distance
+
+Invert $\langle x^2 \rangle = 2Dt$ from [Mean Squared Displacement](mean-squared-displacement.qmd) to get the typical time to cover a distance $x$ along one axis:
+
+$$
+t \approx \frac{x^2}{2D}.
+$$
+
+@berg1993random [Chapter 1] uses $D = 10^{-5}\ \text{cm}^2/\text{s}$ for a small molecule in water at room temperature. The code below reproduces his two examples: the width of a bacterium ($10^{-4}$ cm) and the width of a test tube (1 cm).
+
+```{python}
+D = 1e-5  # cm^2/s, small molecule in water (Berg 1993, Chapter 1)
+
+for label, x_cm in [("bacterium, 1 micrometre", 1e-4), ("test tube, 1 cm", 1.0)]:
+    t = x_cm**2 / (2 * D)
+    print(f"{label:25s} t = {t:9.2e} s = {t / 3600:8.2e} h")
+```
+
+The first time is about half a millisecond and the second about 14 hours, as in @berg1993random [Chapter 1]. The distance grew by $10^4$ and the time by $10^8$.
+
+## Consequences
+
+- There is no "diffusion velocity". The ratio $\sqrt{\langle x^2 \rangle}/t = \sqrt{2D/t}$ depends on the observation time [@berg1993random, Chapter 1].
+- Over micrometres diffusion moves small molecules within milliseconds. Over centimetres it takes hours, so transport over large distances needs flow or active mechanisms. Berg's example is perfume: with $D \approx 10^{-1}\ \text{cm}^2/\text{s}$ in air, diffusion alone would take about a month to cross a crowded room, so convection does the work [@berg1993random, Chapter 1].
+- A random walker explores a small region thoroughly and returns to the same points many times before it wanders off [@berg1993random, Chapter 1]. Chapter 3 of the same book computes how fast molecules diffuse to a receptor or a cell ("diffusion to capture").
+- Swimming bacteria are self-propelled random walkers. Their motion is treated in @berg1993random [Chapter 6].
+
+@britton2003essential [Chapter 5] covers biological motion from the modelling side, including taxis and travelling waves.
+
+::: {.callout-note}
+## Exercise
+
+A protein such as lysozyme has $D \approx 10^{-6}\ \text{cm}^2/\text{s}$ in water [@berg1993random, Chapter 1]. Estimate the time it needs to cross a cell of diameter $10\ \mu\text{m}$ and to travel along a nerve axon of length 1 m. What does the second number tell you about how neurons must transport proteins?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+```{python}
+D = 1e-6  # cm^2/s
+for label, x_cm in [("cell, 10 micrometres", 1e-3), ("axon, 1 m", 100.0)]:
+    t = x_cm**2 / (2 * D)
+    print(f"{label:22s} t = {t:9.2e} s = {t / (3600 * 24 * 365):8.2e} years")
+```
+
+Crossing the cell takes about half a second. Diffusing along a 1 m axon would take over a century, so axons must use active transport. This is an order-of-magnitude argument; it ignores crowding and binding, which slow diffusion further.
+:::

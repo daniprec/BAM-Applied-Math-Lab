@@ -1,0 +1,94 @@
+---
+title: "Boundary Conditions"
+subtitle: "Module 4: Space and Pattern Formation"
+format: html
+---
+
+In the ODE sessions the solver handled all the bookkeeping. In a PDE the boundary conditions are part of the model, and they decide which spatial modes exist ([Laplacian Eigenmodes](laplacian-eigenmodes.qmd)). With explicit Euler you enforce them by hand after every update.
+
+## Three Common Choices
+
+| Condition | Meaning | Implementation after each Euler step |
+|---|---|---|
+| Periodic | The ends are identified, $u(0) = u(L)$ | Nothing: `np.roll` already wraps |
+| Neumann (zero flux) | No material crosses the boundary, $u_x = 0$ | Copy the nearest interior value onto the edge |
+| Dirichlet (fixed value) | The boundary is held at a prescribed value | Overwrite the edge with that value |
+
+### Neumann boundary conditions
+
+Zero flux means zero slope at the boundary. A simple implementation copies the nearest interior value:
+
+$$
+u_0 = u_1, \qquad u_{N-1} = u_{N-2}.
+$$ {#eq-bc-neumann}
+
+This sets the difference $(u_1 - u_0)/dx$ to zero. As an approximation of $u_x = 0$ at $x_0$ it is only first order in $dx$. As a centered difference it is second order at the midpoint $x_0 + dx/2$, so in effect the zero-flux boundaries sit halfway between the first two and the last two grid points. The effective domain length is $(N-2)\,dx$, not $N\,dx$. It is the scheme used in the course package and in the assignment. Ghost-point schemes that place the boundary exactly exist [@leveque2007finite, Chapter 2].
+
+On a fine grid the difference in length is small. On a coarse grid it can shift a mode into or out of the unstable band (see the optional extension on [Animal Coat Patterns](animal-coat-patterns.qmd)).
+
+### Periodic boundary conditions
+
+The left and right endpoints are neighbours. The rolled Laplacian from [Laplacian in 1D](laplacian-1d.qmd) is already correct, so no extra step is needed.
+
+### Dirichlet boundary conditions
+
+You prescribe fixed values, for example the steady state $(u_*, v_*)$, and write them into the edges.
+
+## Implement a Boundary Helper
+
+```python
+def apply_boundary_conditions_1d(uv, bc="neumann", dirichlet_values=(1.4, 1.96)):
+    # TODO: periodic: return uv unchanged
+    # TODO: neumann: copy index 1 onto 0 and index -2 onto -1, for both species
+    # TODO: dirichlet: write dirichlet_values into both ends
+    return uv
+```
+
+::: {.callout-tip collapse="true"}
+## Solution: Boundary helper (click to expand)
+
+```python
+def apply_boundary_conditions_1d(uv, bc="neumann", dirichlet_values=(1.4, 1.96)):
+    if bc == "periodic":
+        return uv
+    if bc == "neumann":
+        uv[:, 0] = uv[:, 1]
+        uv[:, -1] = uv[:, -2]
+        return uv
+    if bc == "dirichlet":
+        for species, value in enumerate(dirichlet_values):
+            uv[species, 0] = value
+            uv[species, -1] = value
+        return uv
+    raise ValueError("bc must be 'periodic', 'neumann', or 'dirichlet'")
+```
+:::
+
+## Why the Choice Matters
+
+The boundary condition changes the admissible wavenumbers. On $(0, 40)$ the Neumann modes are $k_n = n\pi/40$, while periodic modes are $k_n = 2n\pi/40$, so the periodic spectrum is twice as sparse.
+
+```{python}
+from amlab.turing import unstable_modes_1d
+
+for bc in ("neumann", "periodic"):
+    print(bc, unstable_modes_1d(a=0.40, b=1.00, d=30.0, length=40.0, bc=bc))
+```
+
+With Neumann conditions modes $5$ and $6$ grow. With periodic conditions only mode $3$ (wavenumber $6\pi/40 \approx 0.47$) is unstable, which equals the Neumann mode $6$.
+
+::: {.callout-warning}
+The periodic option of `amlab.pdes_1d.find_unstable_spatial_modes` uses the wavenumbers $(n+1)\pi/L$, which are the Neumann wavenumbers shifted by one index, not the periodic ones $2n\pi/L$. Use `amlab.turing.unstable_modes_1d(..., bc="periodic")` when you need the periodic spectrum.
+:::
+
+::: {.callout-note}
+## Exercise
+Dirichlet conditions with $u = u_*$, $v = v_*$ at both ends allow only $\sin(n\pi x/L)$ modes with $n \ge 1$. For Case A on $L = 40$, which modes are unstable?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+The Dirichlet wavenumbers are the same $n\pi/L$ as the Neumann ones, without $n = 0$. So modes $5$ and $6$ are unstable, but the eigenfunctions are sines, which vanish at the boundary instead of having zero slope there.
+:::
+
+Next: [Gierer-Meinhardt Solver in 1D](gierer-meinhardt-1d-solver.qmd).

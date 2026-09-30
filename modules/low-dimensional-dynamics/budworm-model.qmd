@@ -1,0 +1,85 @@
+---
+title: "The Spruce Budworm Model"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+::: {.callout-note}
+## Reading
+- **Compulsory:** @strogatz2024nonlinear, Section 3.7, "Insect outbreak".
+- **Recommended:** @ludwig1978qualitative.
+:::
+
+The spruce budworm is a forest insect whose outbreaks defoliate balsam fir forests. Ludwig, Jones and Holling modelled the budworm and forest system of New Brunswick, Canada, with the budworm as a fast variable and the forest as a slow one [@ludwig1978qualitative]. On this page you keep the forest fixed and study the budworm alone, as in @strogatz2024nonlinear, Section 3.7.
+
+## The dimensional model
+
+Let $N(t)$ be the budworm density. With the forest held fixed,
+
+$$
+\frac{dN}{dt} = RN\left(1 - \frac{N}{K}\right) - \frac{BN^2}{A^2 + N^2}.
+$$ {#eq-budworm-dimensional}
+
+- $RN(1 - N/K)$ is logistic growth with rate $R$ and carrying capacity $K$. The carrying capacity depends on the amount of foliage.
+- $p(N) = BN^2/(A^2 + N^2)$ is predation, mainly by birds. It saturates at the maximum rate $B$ when budworms are abundant. It vanishes like $N^2$ at low density, because birds switch to other food when budworms are rare. This is a Holling type III functional response [@ludwig1978qualitative, p. 317].
+- $A$ sets the density at which predation starts to saturate: $p(A) = B/2$.
+
+Ludwig et al. chose these forms because they need few parameters, and they state that the conclusions depend only on the qualitative shape of the terms [@ludwig1978qualitative, p. 317].
+
+```{python}
+#| echo: false
+#| label: fig-predation
+#| fig-cap: "Type III predation term p(N)/B as a function of N/A. It is small at low density and saturates at 1."
+#| fig-width: 6
+#| fig-height: 3
+import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.linspace(0, 6, 400)
+fig, ax = plt.subplots(figsize=(6, 3))
+ax.plot(x, x**2 / (1 + x**2))
+ax.axhline(1, color="gray", ls="--", lw=1)
+ax.axvline(1, color="gray", ls=":", lw=1)
+ax.set_xlabel("N / A")
+ax.set_ylabel("p(N) / B")
+ax.grid(alpha=0.3)
+plt.tight_layout()
+plt.show()
+```
+
+## Removing the units
+
+@eq-budworm-dimensional has four parameters $R, K, A, B$. Rescale the density by $A$ and time by $A/B$:
+
+$$
+x = \frac{N}{A}, \qquad \tau = \frac{B}{A}t .
+$$
+
+Since $dN/dt = B\, dx/d\tau$, dividing @eq-budworm-dimensional by $B$ gives
+
+$$
+\frac{dx}{d\tau} = r x\left(1 - \frac{x}{k}\right) - \frac{x^2}{1 + x^2},
+\qquad
+r = \frac{RA}{B}, \quad k = \frac{K}{A}.
+$$ {#eq-budworm}
+
+Only two dimensionless groups remain [@strogatz2024nonlinear, Section 3.7]. Ludwig et al. obtain the same groups under the names $R$ and $Q$ [@ludwig1978qualitative, eqn 8].
+
+- $r$ compares the budworm growth rate with the maximum predation rate.
+- $k$ is the carrying capacity measured in units of the predation scale $A$.
+
+The rest of the module uses @eq-budworm. Parameter values quoted as $r$ and $k$ are always the dimensionless ones.
+
+::: {.callout-note}
+## Exercise
+Check that $r$ and $k$ are dimensionless. Assume $N$ is measured in larvae per acre and $t$ in years.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+$R$ has units 1/year. $A$ has units larvae/acre. $B$ is a rate of larvae eaten, so it has units larvae/acre/year. Then $RA/B$ has units (1/year)(larvae/acre)/(larvae/acre/year), which cancel. $K/A$ is a ratio of two densities.
+:::
+
+## Next
+
+[Fixed Points and Stability](fixed-points-stability.qmd){.btn .btn-primary}

@@ -1,0 +1,204 @@
+---
+title: "1D Cellular Automata"
+subtitle: "Module 6: Explorables and Discrete Models"
+format: html
+---
+
+Elementary cellular automata are one of the cleanest examples of emergence in a discrete system. Each cell stores a binary state, each update only depends on the three-cell neighbourhood, and repeated rule application creates nontrivial large-scale patterns [@wolfram1983statistical]. In this lab you build the simulator yourself. The definitions are on the page [Cellular Automata](cellular-automata.qmd).
+
+```{python}
+#| label: fig-ca-rule30
+#| fig-cap: 'Rule 30 space-time diagram.'
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+from amlab.cellular_automata.cellular import apply_rule
+
+rule_number = 30
+rule_bin = np.array([int(x) for x in f"{rule_number:08b}"])
+
+iterations = 60
+grid_size = 101
+
+grid = np.zeros((iterations, grid_size), dtype=int)
+grid[0, grid_size // 2] = 1
+
+for t in range(1, iterations):
+    grid[t] = apply_rule(grid[t - 1], rule_bin)
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.imshow(grid, cmap="binary", interpolation="nearest", aspect="auto")
+ax.set_xlabel("Cell index")
+ax.set_ylabel("Time")
+plt.show()
+plt.close()
+```
+
+::: {.callout-important}
+## Core activity
+
+Implement `apply_rule()` and `simulate_ca()`, validate them on Rule 90, and reproduce the Rule 30 diagram above.
+:::
+
+## Prediction
+
+::: {.callout-note}
+## Before you code
+
+Rule 30 starts from a single occupied cell. How fast can the occupied region grow, in cells per step? Will the pattern be symmetric? Write down your answer.
+:::
+
+## Local state and neighbourhood
+
+Let $x_i^t \in \{0,1\}$ be the state of cell $i$ at time $t$. An elementary cellular automaton updates the row through a local rule
+
+$$
+x_i^{t+1} = f\big(x_{i-1}^t, x_i^t, x_{i+1}^t\big).
+$$
+
+Because each neighbourhood has three binary entries, there are only $2^3 = 8$ possible patterns. A rule is therefore an 8-entry lookup table.
+
+## Encode the rule table
+
+By convention we order the neighbourhoods from `111` down to `000`.
+
+```python
+rule_number = 30
+rule_bin = np.array([int(bit) for bit in f"{rule_number:08b}"])
+```
+
+For Rule 30 this produces the binary table `00011110`, which tells you the output for each of the eight neighbourhoods.
+
+## Implement the local update
+
+```python
+def apply_rule(state, rule_bin):
+    new_state = np.zeros_like(state)
+    for i in range(1, len(state) - 1):
+        neighborhood = state[i - 1 : i + 2]
+        # TODO: convert the three bits to an integer n between 0 and 7
+        # TODO: look up the output (rule_bin is ordered from 111 down to 000)
+        new_state[i] = # TODO
+    return new_state
+```
+
+::: {.callout-tip collapse="true"}
+## Solved: `apply_rule()`
+
+```python
+def apply_rule(state, rule_bin):
+    new_state = np.zeros_like(state)
+    for i in range(1, len(state) - 1):
+        neighborhood = state[i - 1 : i + 2]
+        index = 7 - int("".join(neighborhood.astype(str)), 2)
+        new_state[i] = rule_bin[index]
+    return new_state
+```
+:::
+
+This first version keeps the boundary cells at zero because the loop only updates indices `1` through `len(state) - 2`. The page [Boundary Conditions](ca-boundary-conditions.qmd) treats the edges properly.
+
+## Simulate many time steps
+
+Now wrap the update in a reusable simulator.
+
+```python
+def simulate_ca(initial_state, rule_number, steps):
+    rule_bin = np.array([int(bit) for bit in f"{rule_number:08b}"])
+    grid = np.zeros((steps, len(initial_state)), dtype=int)
+    grid[0] = initial_state
+
+    for t in range(1, steps):
+        grid[t] = # TODO: apply the rule to the previous row
+
+    return grid
+```
+
+::: {.callout-tip collapse="true"}
+## Solved: `simulate_ca()`
+
+```python
+def simulate_ca(initial_state, rule_number, steps):
+    rule_bin = np.array([int(bit) for bit in f"{rule_number:08b}"])
+    grid = np.zeros((steps, len(initial_state)), dtype=int)
+    grid[0] = initial_state
+    for t in range(1, steps):
+        grid[t] = apply_rule(grid[t - 1], rule_bin)
+    return grid
+```
+:::
+
+## Validation
+
+Rule 90 has an exact solution: from a single seed, row $t$ is Pascal's triangle modulo 2 (see [Special Rules](special-rules.qmd)). Use it as a test. The chunk below runs the check with the reference `apply_rule`.
+
+```{python}
+from math import comb
+
+
+def simulate_ca(initial_state, rule_number, steps):
+    rule_bin = np.array([int(bit) for bit in f"{rule_number:08b}"])
+    grid = np.zeros((steps, len(initial_state)), dtype=int)
+    grid[0] = initial_state
+    for t in range(1, steps):
+        grid[t] = apply_rule(grid[t - 1], rule_bin)
+    return grid
+
+
+width, steps = 81, 40
+seed_row = np.zeros(width, dtype=int)
+seed_row[width // 2] = 1
+g = simulate_ca(seed_row, 90, steps)
+ok = all(g[t, width // 2 - t + 2 * k] == comb(t, k) % 2 for t in range(steps) for k in range(t + 1))
+print("Rule 90 matches Pascal's triangle mod 2:", ok)
+```
+
+Keep the lattice wider than $2 \times$ `steps` so the pattern never reaches the edges during the test.
+
+## Experiment: the space-time diagram
+
+```python
+iterations = 80
+grid_size = 121
+
+initial_state = np.zeros(grid_size, dtype=int)
+initial_state[grid_size // 2] = 1
+
+grid = simulate_ca(initial_state, rule_number=30, steps=iterations)
+
+plt.imshow(grid, cmap="binary", interpolation="nearest", aspect="auto")
+plt.xlabel("Cell index")
+plt.ylabel("Time")
+plt.show()
+```
+
+## Interpretation
+
+- The occupied region can grow by at most one cell per step on each side, because each cell only sees its nearest neighbours. Compare with your prediction.
+- Rule 30 is not left-right symmetric: its reflection is Rule 86. So the pattern is not symmetric either.
+- If you change one cell in the first row, does the effect stay local or spread through the whole diagram?
+
+## Limitations
+
+- The loop in `apply_rule()` is slow for large lattices. The vectorized version in [amlab/cellular_automata/elementary.py](../../amlab/cellular_automata/elementary.py) computes all neighbourhood indices at once.
+- Fixed-zero edges are a modelling choice. Once the pattern reaches them, the result depends on the edges.
+
+::: {.callout-tip}
+## Optional extension: interactive initial row
+
+The script [amlab/cellular_automata/cellular.py](../../amlab/cellular_automata/cellular.py) lets you click on the first row, toggle cells, and recompute the automaton immediately. Run it locally, not in the notes:
+
+```python
+from amlab.cellular_automata.cellular import main
+
+main(rule_number=30, grid_size=101, iterations=50)
+```
+:::
+
+## Next
+
+[Rule Exploration](rule-exploration.qmd){.btn .btn-primary}

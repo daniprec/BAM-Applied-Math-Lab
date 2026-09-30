@@ -1,0 +1,246 @@
+---
+title: "Paths and Components"
+subtitle: "Module 5: Complex Networks"
+format: html
+---
+
+::: {.callout-note}
+## Toolkit page
+This page is self-study material for Session 23. It uses the definitions of [Network Concepts](network-concepts.qmd).
+:::
+
+This page measures **density**, **paths**, **connected components** and **distances** with `networkx` [@newman2018networks]. See [NetworkX Basics](networkx-basics.qmd) if you need a refresher on building graphs.
+
+Start by importing the libraries and creating two small graphs, one undirected and one directed.
+
+```{python}
+import networkx as nx
+import matplotlib.pyplot as plt
+
+# Create an undirected graph
+# (foods that go well together)
+G_foods = nx.from_edgelist([
+    ("bread", "cheese"),
+    ("bread", "chocolate"),
+    ("bread", "cured ham"),
+    ("cheese", "cured ham"),
+    ("chocolate", "cookies"),
+    ("chocolate", "milk"),
+    ("chocolate", "watermelon"),
+    ("cookies", "milk"),
+    ("cured ham", "watermelon"),
+])
+
+# Visualize the graph
+pos = nx.circular_layout(G_foods)
+nx.draw(G_foods, node_color="lightblue", with_labels=True, pos=pos)
+plt.show()
+```
+
+```{python}
+# Create a directed graph
+D_food_chain = nx.DiGraph()  # food chain (prey -> predator)
+D_food_chain.add_edges_from([
+    ("grass", "antelope"),
+    ("grass", "zebra"),
+    ("antelope", "lion"),
+    ("antelope", "hyena"),
+    ("zebra", "lion"),
+    ("zebra", "hyena"),
+    ("hyena", "lion"),
+])
+
+# Visualize the graph
+pos = nx.spring_layout(D_food_chain)
+nx.draw(D_food_chain, node_color="lightgreen", with_labels=True, pos=pos)
+plt.show()
+```
+
+## Density
+
+A graph density is the ratio of the number of edges to the number of possible edges. It is a measure of how many edges are present in the graph compared to the maximum possible number of edges. The density of an undirected graph can be calculated as follows:
+
+$$
+D = \frac{2|E|}{|V|(|V| - 1)}
+$$
+
+where $|E|$ is the number of edges and $|V|$ is the number of nodes in the graph.
+
+In a directed graph, there are twice as many possible edges (since each pair of nodes can have two directed edges), so the density is calculated as:
+
+$$
+D = \frac{|E|}{|V|(|V| - 1)}
+$$
+
+NetworkX provides a built-in function to calculate the density of a graph:
+
+```{python}
+# Density
+print("Density:", nx.density(G_foods))
+```
+
+A graph is **sparse** when $D \ll 1$ and **dense** when $D \approx 1$.
+In practice, many real graphs fall in an intermediate range, so density is often better viewed as a spectrum rather than a strict binary label.
+
+```{python}
+# Check if the graph is sparse, intermediate, or dense
+D = nx.density(G_foods)
+if D < 0.1:
+    print("The graph is sparse.")
+elif D > 0.6:
+    print("The graph is dense.")
+else:
+    print("The graph has intermediate density.")
+```
+
+## Connectivity in Undirected Graphs
+
+Connectivity is a fundamental property of graphs that describes how well the nodes are connected to each other. In an undirected graph, a graph is **connected** if there is a path between any two nodes. If a graph is not connected, it consists of multiple **connected components**, which are subgraphs in which any two nodes are connected by a path.
+
+### Paths in an Undirected Graph
+
+A **path** in a network is a sequence of edges connecting two nodes.
+
+Take a look at the food graph you created above. Is there a path from "bread" to "watermelon"?
+
+```{python}
+# Draw the graph
+pos = nx.circular_layout(G_foods)
+nx.draw(G_foods, node_color="lightblue", with_labels=True, pos=pos)
+plt.show()
+```
+
+NetworkX provides `has_path(<graph>, <node1>, <node2>)` to check if there is a path between two nodes:
+
+```{python}
+# Check if there is a path from 'bread' to 'watermelon'
+print(
+    "Is there a path from 'bread' to 'watermelon'?",
+    nx.has_path(G_foods, "bread", "watermelon")
+)
+```
+
+There can be more than one path between two nodes. You can use `all_simple_paths(<graph>, <node1>, <node2>)` to find all the simple paths between two nodes:
+
+```{python}
+ls_paths = list(nx.all_simple_paths(G_foods, "bread", "watermelon"))
+print("All paths from 'bread' to 'watermelon':", ls_paths)
+```
+
+### Connected Components in Undirected Graphs
+
+A **connected component** is a subgraph in which any two nodes are connected by a path. A graph is **connected** if it has only one connected component.
+
+::: {.callout-tip collapse="true"}
+## How many connected components does `G_foods` have?
+
+`G_foods` has one connected component, since all nodes are connected to each other through some path.
+
+As usual, you can verify this with NetworkX:
+```{python}
+print("Connected components:", list(nx.connected_components(G_foods)))
+```
+:::
+
+### Diameter and Average Path Length
+
+The **diameter** of a graph is the length of the longest shortest path between any two nodes in the graph. It gives an idea of how "far apart" the nodes are in the graph.
+
+```{python}
+print("Diameter:", nx.diameter(G_foods))
+```
+
+The **average path length (APL)** is the average of the shortest paths between all pairs of nodes.
+
+```{python}
+print("Average shortest path length:", nx.average_shortest_path_length(G_foods))
+```
+
+## Connectivity in Directed Graphs
+
+Connectivity in directed graphs is more complex than in undirected graphs, because you have to consider the direction of the edges. In a directed graph, you can have **strongly connected components** and **weakly connected components**.
+
+### Paths in Directed Graphs
+
+In a directed graph, a path must follow the direction of the edges. For example, in the directed food chain graph `D`, is there a path from "grass" to "lion"?
+
+```{python}
+# Draw the graph
+pos = nx.spring_layout(D_food_chain)
+nx.draw(D_food_chain, node_color="lightgreen", with_labels=True, pos=pos)
+plt.show()
+```
+
+You can check for the existence of a path in a directed graph using the same `has_path(<graph>, <node1>, <node2>)` function:
+
+```{python}
+print("Is there a path from 'grass' to 'lion'?", nx.has_path(D_food_chain, "grass", "lion"))   
+print("Is there a path from 'lion' to 'grass'?", nx.has_path(D_food_chain, "lion", "grass"))
+```
+
+### Strongly Connected Components
+
+A strongly connected component is a subgraph in which there is a directed path from any node to any other node. A directed graph is strongly connected if it has only one strongly connected component.
+
+```{python}
+print("Is strongly connected:", nx.is_strongly_connected(D_food_chain))
+print("Strongly connected components:", list(nx.strongly_connected_components(D_food_chain)))
+```
+
+
+### Weakly Connected Components
+
+A weakly connected component is a subgraph in which there is an undirected path from any node to any other node. A directed graph is weakly connected if it has only one weakly connected component.
+
+```{python}
+print("Is weakly connected:", nx.is_weakly_connected(D_food_chain))
+print("Weakly connected components:", list(nx.weakly_connected_components(D_food_chain)))
+```
+
+::: {.callout-note}
+## Exercise
+
+How can you turn `D_food_chain` into a strongly connected graph? Add as few edges as possible.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+To make `D_food_chain` strongly connected, you need to ensure that there is a directed path from every node to every other node. One way to achieve this is to add edges that create cycles between the nodes. This example is a tough one, as food chains are typically acyclic. Still, you can take note from "The Lion King":
+
+> "When we die, our bodies become the grass, and the antelope eat the grass. And so, we are all connected in the great Circle of Life." - Mufasa (lion)
+
+```{python}
+# When a predator dies, it returns to the food chain as prey for the grass
+D_food_chain.add_edges_from([
+    ("lion", "grass"),
+])
+
+# Visualize the new graph
+pos = nx.spring_layout(D_food_chain)
+nx.draw(D_food_chain, node_color="lightgreen", with_labels=True, pos=pos)
+plt.show()
+```
+
+```{python}
+print("Is strongly connected:", nx.is_strongly_connected(D_food_chain))
+print("Strongly connected components:", list(nx.strongly_connected_components(D_food_chain)))
+```
+:::
+
+### Diameter and Average Path Length in Directed Graphs
+
+The diameter and average path length in directed graphs are calculated based on the shortest paths that follow the direction of the edges. If the graph is not strongly connected, you can only calculate these metrics for the largest strongly connected component.
+
+```{python}
+# Get the largest strongly connected component
+largest_scc = max(nx.strongly_connected_components(D_food_chain), key=len)
+subgraph = D_food_chain.subgraph(largest_scc)
+print("Diameter of the largest strongly connected component:", nx.diameter(subgraph))
+print("Average shortest path length of the largest strongly connected component:", nx.average_shortest_path_length(subgraph))
+```
+## What's Next?
+
+The next page ranks nodes by degree, clustering and centrality.
+
+[Centrality in NetworkX](networkx-centrality.qmd){.btn .btn-primary}

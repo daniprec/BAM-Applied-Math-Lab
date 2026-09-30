@@ -1,0 +1,106 @@
+---
+title: "Dispersion Relation"
+subtitle: "Module 4: Space and Pattern Formation"
+format: html
+---
+
+The Turing conditions tell you whether some mode grows. The dispersion relation tells you which modes grow and how fast [@murray2003mathematical, Sections 2.5 and 2.6].
+
+## Growth Rate Versus Wavenumber
+
+For each wavenumber $k$, the growth rates are the roots of
+
+$$
+\sigma^2 - \operatorname{tr}A(k^2)\,\sigma + h(k^2) = 0, \qquad A(k^2) = \gamma J - k^2\operatorname{diag}(1, d),
+$$ {#eq-dr-quadratic}
+
+with $h(k^2) = \det A(k^2) = d\,k^4 - \gamma (d f_u + g_v) k^2 + \gamma^2 \det J$, as on the [Turing Conditions](turing-conditions.qmd) page. The function $k \mapsto \operatorname{Re}\sigma(k^2)$, taking the larger root, is the dispersion relation.
+
+## The Unstable Band
+
+$\sigma > 0$ exactly when $h(k^2) < 0$. The roots of $h$ give the band
+
+$$
+k_1^2 < k^2 < k_2^2, \qquad
+k_{1,2}^2 = \frac{\gamma}{2d}\left[(d f_u + g_v) \mp \sqrt{(d f_u + g_v)^2 - 4 d \det J}\right].
+$$ {#eq-dr-band}
+
+The band has width proportional to $\gamma$ in $k^2$. At $d = d_c$ it shrinks to the single value $k_c^2 = \gamma (d_c f_u + g_v)/(2 d_c)$ [@murray2003mathematical, Section 2.3].
+
+## The Fastest-Growing Mode
+
+The fastest-growing wavenumber $k_{\max}$ maximizes $\operatorname{Re}\sigma(k^2)$. Near onset it is close to $k_m$, the minimizer of $h$, but the two are not equal in general, because $\sigma$ also depends on the trace. You find $k_{\max}$ numerically. The corresponding wavelength $2\pi/k_{\max}$ predicts the spacing of the first visible pattern. Nonlinear effects can change the spacing later [@murray2003mathematical, Section 2.6].
+
+On a finite domain only discrete wavenumbers exist. With Neumann conditions on $(0, L)$, $k_n = n\pi/L$. The mode that grows fastest is the admissible $k_n$ with the largest $\sigma$. If no $k_n$ falls into the band, the uniform state stays stable even when the Turing conditions hold.
+
+```{python}
+#| label: fig-dr-gm
+#| fig-cap: 'Dispersion relation of Gierer-Meinhardt with $a = 0.4$, $b = 1$, $\gamma = 1$. Dots mark the Neumann modes $k_n = n\pi/L$ for $L = 40$.'
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+from amlab.turing import (
+    critical_diffusion_ratio,
+    dispersion_relation,
+    gierer_meinhardt_jacobian,
+)
+
+jac = gierer_meinhardt_jacobian(0.40, 1.00)
+d_c = critical_diffusion_ratio(*jac)
+k = np.linspace(0, 1.0, 500)
+k_n = np.arange(13) * np.pi / 40
+
+fig, ax = plt.subplots(figsize=(7, 4))
+for d in (20, d_c, 30):
+    (line,) = ax.plot(k, dispersion_relation(k**2, *jac, d), label=f"d = {d:.2f}")
+    ax.plot(k_n, dispersion_relation(k_n**2, *jac, d), "o", color=line.get_color(), ms=4)
+ax.axhline(0, color="black", lw=0.8)
+ax.set_ylim(-0.15, 0.04)
+ax.set_xlabel("wavenumber k")
+ax.set_ylabel(r"Re $\sigma(k^2)$")
+ax.legend()
+plt.show()
+plt.close()
+```
+
+For $d = 20$ every mode decays. At $d = d_c \approx 26.24$ the curve touches zero. For $d = 30$ a band of modes grows.
+
+```{python}
+import numpy as np
+
+from amlab.turing import dispersion_relation, gierer_meinhardt_jacobian, unstable_band
+
+jac = gierer_meinhardt_jacobian(0.40, 1.00)
+d = 30
+k1_sq, k2_sq = unstable_band(*jac, d)
+k = np.linspace(np.sqrt(k1_sq), np.sqrt(k2_sq), 2001)
+k_max = k[np.argmax(dispersion_relation(k**2, *jac, d))]
+
+print(f"unstable band: {np.sqrt(k1_sq):.3f} < k < {np.sqrt(k2_sq):.3f}")
+print(f"fastest-growing k = {k_max:.3f}, wavelength = {2 * np.pi / k_max:.1f}")
+print(f"closest Neumann mode on L = 40: n = {k_max * 40 / np.pi:.2f}")
+```
+
+The fastest wavenumber $k_{\max} \approx 0.43$ corresponds to a wavelength of about $14.6$, which lies between the Neumann modes $n = 5$ and $n = 6$ on $L = 40$. Both modes grow, at almost the same rate, and mode $5$ is slightly faster. The laboratory checks which one the simulation selects.
+
+::: {.callout-note}
+## Exercise
+Keep $d = 30$ and $\gamma = 1$ with Neumann conditions. Mode $n$ is unstable when $k_1 < n\pi/L < k_2$. For which domain lengths $L < 20$ is no mode $n \ge 1$ unstable?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+The code above gives $k_1 \approx 0.349$ and $k_2 \approx 0.523$. Mode $n$ is unstable for $n\pi/k_2 < L < n\pi/k_1$:
+
+- $n = 1$: $6.01 < L < 8.99$,
+- $n = 2$: $12.02 < L < 17.99$,
+- $n = 3$: $18.03 < L < 26.98$.
+
+No mode is unstable for $L \le 6.01$, for $8.99 \le L \le 12.02$, and in the narrow gap $17.99 \le L \le 18.03$. Beyond that the intervals overlap. Small domains and some intermediate sizes stay uniform even though the Turing conditions hold [@murray2003mathematical, Section 2.5].
+:::
+
+Next: [Turing Space](turing-space.qmd).

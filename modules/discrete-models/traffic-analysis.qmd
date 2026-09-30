@@ -1,0 +1,187 @@
+---
+title: "Flow and Congestion"
+subtitle: "Module 6: Explorables and Discrete Models"
+format: html
+---
+
+Once the simulator works, the next step is to extract macroscopic observables. In traffic modelling the most important one is the **fundamental diagram**, the relationship between density and average flow [@nagel1992cellular]. The theory is on the page [The Fundamental Diagram](fundamental-diagram.qmd).
+
+::: {.callout-important}
+## Core activity
+
+Estimate the fundamental diagram $q(\rho)$ for two values of `p_slow`, and validate your code against the exact result for `p_slow = 0`.
+:::
+
+::: {.callout-note}
+## Prediction
+
+Sketch $q(\rho)$ for `p_slow = 0` before you run anything. Where is the maximum? How should the curve change for `p_slow = 0.3`?
+:::
+
+```{python}
+#| label: fig-traffic-fundamental
+#| fig-cap: 'Estimated fundamental diagram for two slowdown probabilities.'
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+from amlab.cellular_automata.traffic import initialize_road, step
+
+
+def simulate_with_flow(
+    steps=300,
+    length=100,
+    density=0.2,
+    vmax=5,
+    p_slow=0.3,
+    seed=1,
+):
+    rng = np.random.default_rng(seed)
+    occupied, speeds = initialize_road(length=length, density=density, vmax=vmax, rng=rng)
+
+    flow_history = np.zeros(steps)
+    flow_history[0] = speeds[occupied].sum() / length
+
+    for t in range(1, steps):
+        occupied, speeds = step(
+            occupied,
+            speeds,
+            vmax=vmax,
+            p_slow=p_slow,
+            rng=rng,
+        )
+        flow_history[t] = speeds[occupied].sum() / length
+
+    return flow_history
+
+
+densities = np.linspace(0.05, 0.95, 19)
+burn_in = 100
+
+fig, ax = plt.subplots(figsize=(7, 4))
+
+for p_slow in (0.1, 0.3):
+    mean_flows = []
+    for density in densities:
+        flow_history = simulate_with_flow(density=density, p_slow=p_slow, seed=7)
+        mean_flows.append(flow_history[burn_in:].mean())
+
+    ax.plot(densities, mean_flows, marker="o", label=fr"$p_{{slow}}={p_slow}$")
+
+ax.set_xlabel("Density")
+ax.set_ylabel("Mean flow")
+ax.legend()
+plt.show()
+plt.close()
+```
+
+## Measure density and flow
+
+Two standard macroscopic quantities are
+
+$$
+\rho = \frac{N_{\mathrm{cars}}}{L},
+\qquad
+q(t) = \frac{1}{L}\sum_{i \in \mathrm{cars}} v_i(t).
+$$
+
+Here $\rho$ is the density and $q(t)$ is the instantaneous flow, measured as the mean number of cells traveled per road cell and per time step.
+
+To estimate stationary behavior, average $q(t)$ after a burn-in window.
+
+## Record flow during one run
+
+The simplest extension of the simulator is to track the flow after each update.
+
+```python
+def simulate_with_flow(steps, length, density, vmax, p_slow, seed):
+    rng = np.random.default_rng(seed)
+    occupied, speeds = initialize_road(length=length, density=density, vmax=vmax, rng=rng)
+
+    flow_history = np.zeros(steps)
+    flow_history[0] = speeds[occupied].sum() / length
+
+    for t in range(1, steps):
+        occupied, speeds = step(
+            occupied,
+            speeds,
+            vmax=vmax,
+            p_slow=p_slow,
+            rng=rng,
+        )
+        flow_history[t] = speeds[occupied].sum() / length
+
+    return flow_history
+```
+
+## Sweep the density
+
+Now repeat the experiment for many densities.
+
+```python
+densities = np.linspace(0.05, 0.95, 19)
+mean_flows = []
+
+for density in densities:
+    flow_history = simulate_with_flow(
+        steps=300,
+        length=100,
+        density=density,
+        vmax=5,
+        p_slow=0.3,
+        seed=7,
+    )
+    mean_flows.append(flow_history[100:].mean())
+```
+
+Plotting `mean_flows` against `densities` gives the fundamental diagram.
+
+## Validation
+
+For `p_slow = 0` the stationary flow is $q = \min(\rho\, v_{\max},\ 1 - \rho)$ [@chowdhury2000statistical]. Compare your sweep with this line before you trust the curves for `p_slow > 0`.
+
+```{python}
+# initialize_road() draws the occupancy at random, so measure the actual density
+actual = np.array([
+    initialize_road(length=100, density=d, vmax=5, rng=np.random.default_rng(7))[0].mean()
+    for d in densities
+])
+exact = np.minimum(actual * 5, 1 - actual)
+sim = np.array([simulate_with_flow(density=d, p_slow=0.0, seed=7)[burn_in:].mean() for d in densities])
+print("Largest deviation from the exact p = 0 result:", np.round(np.abs(sim - exact).max(), 3))
+```
+
+Use the measured density $N/L$, not the target value: on a road of 100 cells the random initialization can differ from the target by several cars.
+
+## Compare slowdown probabilities
+
+The most informative parameter to vary is `p_slow`.
+
+- At small density, cars rarely interact and the flow grows roughly linearly with density.
+- At intermediate density, the flow reaches a maximum.
+- At high density, braking dominates and the flow drops because congestion limits motion.
+
+Increasing `p_slow` usually lowers the peak flow and shifts the congested regime earlier.
+
+::: {.callout-note}
+## Practical tip
+
+Use several seeds if you want smoother curves. For example, estimate the mean flow for each density with 5 to 10 trials and then average the stationary values.
+:::
+
+## Interpretation
+
+- A space-time diagram in a free-flow regime and one in a congested regime show the microscopic picture.
+- The flow-density curve shows the macroscopic picture: where the maximum flow occurs and how noise changes it.
+
+## Limitations
+
+- `initialize_road()` draws the occupancy at random, so the number of cars fluctuates around `density * length`. Use the measured density $N/L$ on the horizontal axis for precise work.
+- One seed per density gives noisy curves near the maximum.
+
+## Next
+
+[Traffic Extensions](traffic-extensions.qmd){.btn .btn-primary}

@@ -1,0 +1,94 @@
+---
+title: "Robustness and Percolation"
+subtitle: "Module 5: Complex Networks"
+format: html
+---
+
+How much of a network can you remove before it falls apart? You measure the answer with the **giant component**: the largest connected component, when its size is a finite fraction of $N$. Let $S(f)$ be the fraction of the original nodes that stay in the largest component after you remove a fraction $f$ of the nodes. Removing nodes and asking whether a giant component survives is a **site percolation** problem [@callaway2000network; @newman2003structure, Section 8.1].
+
+## The Molloy-Reed criterion
+
+Consider a random graph with a given degree distribution $p_k$ and no other structure (the configuration model). Molloy and Reed proved that, as $N \to \infty$, a giant component exists almost surely when
+
+$$
+\sum_k k(k-2)\, p_k > 0 \quad \Longleftrightarrow \quad \kappa \equiv \frac{\langle k^2 \rangle}{\langle k \rangle} > 2,
+$$
+
+and does not exist when the sum is negative [@molloy1995critical]. The intuition: follow a random edge to a node. That node has on average $\kappa - 1$ further edges. The branching process started this way keeps growing when $\kappa - 1 > 1$.
+
+## Random failure
+
+Remove each node independently with probability $f$. Cohen et al. applied the criterion to the diluted graph and found the critical fraction [@cohen2000resilience]
+
+$$
+f_c = 1 - \frac{1}{\kappa_0 - 1}, \qquad \kappa_0 = \frac{\langle k^2 \rangle}{\langle k \rangle} \text{ of the intact network.}
+$$
+
+- For an Erdős-Rényi graph, $p_k$ is Poisson, $\kappa_0 = \langle k \rangle + 1$, and $f_c = 1 - 1/\langle k \rangle$.
+- For a scale-free distribution $p_k \sim k^{-\gamma}$ with $2 < \gamma \le 3$, $\langle k^2 \rangle$ diverges as $N \to \infty$, so $f_c \to 1$. An infinite network of this type keeps a giant component under almost any rate of random failure. A finite network has a finite $\kappa_0$ and a threshold $f_c < 1$ [@cohen2000resilience].
+
+## Targeted attack
+
+Now remove the nodes with the highest degree first. Albert, Jeong and Barabási showed in simulations that scale-free networks are tolerant to random failure but fragile under this attack: removing a few hubs breaks them apart much faster than an Erdős-Rényi graph with the same $N$ and $E$ [@albert2000error]. Callaway et al. derived the same behaviour analytically for degree-dependent removal [@callaway2000network].
+
+## Generated example
+
+@fig-robustness compares a Barabási-Albert graph with an Erdős-Rényi graph that has the same number of nodes and edges. The attack uses the degree ranking of the intact graph.
+
+```{python}
+#| label: fig-robustness
+#| fig-cap: "Fraction of nodes in the largest component after removing a fraction f of nodes, at random (circles) or by decreasing degree (squares). N = 1000, <k> close to 4. Dashed lines: the Cohen et al. prediction f_c for random failure, computed from the degree sequence of each graph."
+#| echo: false
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
+
+rng = np.random.default_rng(1)
+N = 1000
+G_ba = nx.barabasi_albert_graph(N, 2, seed=1)
+G_er = nx.gnm_random_graph(N, G_ba.number_of_edges(), seed=1)
+
+
+def giant_fraction(G, order, fractions):
+    """Largest component (fraction of N) after removing the first f*N nodes of order."""
+    out = []
+    for f in fractions:
+        H = G.copy()
+        H.remove_nodes_from(order[: int(f * len(order))])
+        out.append(len(max(nx.connected_components(H), key=len)) / len(order) if H else 0)
+    return np.array(out)
+
+
+fractions = np.linspace(0, 0.95, 20)
+fig, ax = plt.subplots(figsize=(6, 4))
+for G, name, c in [(G_ba, "BA", "C0"), (G_er, "ER", "C1")]:
+    nodes = list(G.nodes())
+    random_order = [nodes[i] for i in rng.permutation(N)]
+    attack_order = [v for v, _ in sorted(G.degree(), key=lambda kv: kv[1], reverse=True)]
+    ax.plot(fractions, giant_fraction(G, random_order, fractions), "o-", color=c, ms=4, label=f"{name} random")
+    ax.plot(fractions, giant_fraction(G, attack_order, fractions), "s--", color=c, ms=4, label=f"{name} attack")
+    k = np.array([d for _, d in G.degree()])
+    kappa = (k**2).mean() / k.mean()
+    fc = 1 - 1 / (kappa - 1)
+    ax.axvline(fc, color=c, ls=":", lw=1)
+    print(f"{name}: <k> = {k.mean():.2f}, kappa0 = {kappa:.2f}, predicted f_c (random) = {fc:.2f}")
+ax.set_xlabel("fraction of removed nodes f")
+ax.set_ylabel("largest component S")
+ax.legend()
+plt.tight_layout()
+plt.show()
+```
+
+The prediction assumes an uncorrelated configuration model with $N \to \infty$. The ER curve reaches zero close to its dashed line. The BA curve drops earlier than predicted, since the formula ignores finite-size effects and the degree correlations of the BA model. The qualitative result survives: under attack, the BA graph breaks apart after the removal of about 20% of its nodes, far earlier than under random failure.
+
+::: {.callout-note}
+## Exercise
+
+Use the formula for $f_c$ to predict the random-failure threshold of an Erdős-Rényi graph with $\langle k \rangle = 2$ and with $\langle k \rangle = 10$.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+$f_c = 1 - 1/\langle k \rangle$ gives $f_c = 0.5$ for $\langle k \rangle = 2$ and $f_c = 0.9$ for $\langle k \rangle = 10$. A denser random graph survives the removal of a larger fraction of nodes. At $\langle k \rangle = 1$ the intact graph is already at its percolation threshold.
+:::

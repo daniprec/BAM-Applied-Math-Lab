@@ -173,6 +173,8 @@ def plot_avg_velocity_vs_noise(
     noise_steps: int = 10,
     n_realizations: int = 1,
     verbose: bool = False,
+    steps: int = 20000,
+    avg_steps: int = 2000,
 ) -> None:
     """
     Plot the time-averaged normalized order parameter vs noise for different system sizes (N),
@@ -191,6 +193,12 @@ def plot_avg_velocity_vs_noise(
         Number of noise values to simulate within the range, default is 20.
     n_realizations : int, optional
         Number of independent realizations to average over for each parameter set, default is 1.
+    verbose : bool, optional
+        Print progress, default is False.
+    steps : int, optional
+        Total number of simulation steps per run, default is 20000.
+    avg_steps : int, optional
+        Number of final steps over which the order parameter is averaged, default is 2000.
     """
     plt.figure(figsize=(8, 6))
     noises = np.linspace(noise_range[0], noise_range[1], noise_steps)
@@ -205,7 +213,9 @@ def plot_avg_velocity_vs_noise(
         for noise in noises:
             vals = []
             for rep in range(n_realizations):
-                val = simulate_vicsek(nb, noise, density=density)
+                val = simulate_vicsek(
+                    nb, noise, density=density, steps=steps, avg_steps=avg_steps
+                )
                 vals.append(val)
             mean_val = float(np.mean(vals))
             avg_orders.append(mean_val)
@@ -228,6 +238,8 @@ def plot_avg_velocity_vs_density(
     noise: float = 2.0,
     box_size: float = 5,
     verbose: bool = False,
+    steps: int = 20000,
+    avg_steps: int = 2000,
 ) -> None:
     """
     Plot the time-averaged normalized order parameter vs density for a fixed noise.
@@ -243,6 +255,12 @@ def plot_avg_velocity_vs_density(
     box_size : float, optional
         Dimension of the space, L, default is 5.
         Vicsek used 20 but we use smaller L to speed up the simulations at high densities.
+    verbose : bool, optional
+        Print progress, default is False.
+    steps : int, optional
+        Total number of simulation steps per run, default is 20000.
+    avg_steps : int, optional
+        Number of final steps over which the order parameter is averaged, default is 2000.
     """
     avg_velocities = []
     # Because computation takes way longer in high densities,
@@ -262,7 +280,13 @@ def plot_avg_velocity_vs_density(
                     f"Box size: {box_size}, density: {density:.2f}, num_boids: {num_boids} (skipped)"
                 )
             continue
-        avg_v = simulate_vicsek(num_boids=num_boids, noise=noise, density=density)
+        avg_v = simulate_vicsek(
+            num_boids=num_boids,
+            noise=noise,
+            density=density,
+            steps=steps,
+            avg_steps=avg_steps,
+        )
         avg_velocities.append(avg_v)
         if verbose:
             print(

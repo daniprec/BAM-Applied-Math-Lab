@@ -1,0 +1,151 @@
+---
+title: "Boundary Conditions"
+subtitle: "Module 6: Explorables and Discrete Models"
+format: html
+---
+
+Every simulation runs on a finite lattice, so you must decide what the edge cells see. This page compares periodic and fixed boundaries and shows how the finite size shapes the long-run behaviour. The reference code is [amlab/cellular_automata/elementary.py](../../amlab/cellular_automata/elementary.py).
+
+::: {.callout-important}
+## Core activity
+
+Add a `boundary` argument to your simulator, compare periodic and fixed-zero edges for Rules 90 and 184, and measure the period of Rule 30 on small rings.
+:::
+
+## Prediction
+
+::: {.callout-note}
+## Before you code
+
+On a ring of $N$ cells there are $2^N$ possible rows. What does this imply for the long-run behaviour of *any* rule? Which rule, 90 or 184, will be affected more by fixed-zero edges?
+:::
+
+## Implementation
+
+With periodic boundaries the left neighbour of cell 0 is cell $N-1$. `np.roll` gives both neighbours of every cell in one line, and the three bits give the index into the rule table.
+
+```python
+def step(state, rule, boundary="periodic"):
+    table = np.array([(rule >> n) & 1 for n in range(8)])  # entry n: output for neighbourhood n
+    if boundary == "periodic":
+        left, right = # TODO: use np.roll
+    else:
+        padded = # TODO: add one ghost cell with value 0 at each end
+        left, right = padded[:-2], padded[2:]
+    return table[4 * left + 2 * state + right]
+```
+
+::: {.callout-tip collapse="true"}
+## Solved: `step()`
+
+```python
+def step(state, rule, boundary="periodic"):
+    table = np.array([(rule >> n) & 1 for n in range(8)])
+    if boundary == "periodic":
+        left, right = np.roll(state, 1), np.roll(state, -1)
+    else:
+        padded = np.concatenate(([0], state, [0]))
+        left, right = padded[:-2], padded[2:]
+    return table[4 * left + 2 * state + right]
+```
+
+This is `step_eca()` in the reference module.
+:::
+
+## Validation
+
+Far from the edges, the two boundary choices must give the same rows. Check it on a wide lattice where the pattern never reaches the edges:
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+from amlab.cellular_automata.elementary import simulate_eca, single_seed, random_row, transient_and_period
+
+a = simulate_eca(single_seed(201), 30, 80, boundary="periodic")
+b = simulate_eca(single_seed(201), 30, 80, boundary="fixed")
+print("Identical while the pattern is far from the edges:", np.array_equal(a, b))
+```
+
+## Experiment: patterns that reach the edge
+
+```{python}
+#| echo: false
+#| label: fig-boundary-rule90
+#| fig-cap: 'Rule 90 from a single seed on 41 cells for 120 steps. Left: periodic, the two fronts meet on the other side of the ring. Right: fixed zero edges.'
+#| fig-width: 8
+#| fig-height: 3.5
+
+fig, axes = plt.subplots(1, 2, figsize=(8, 3.5), sharey=True)
+for ax, bc in zip(axes, ("periodic", "fixed")):
+    ax.imshow(simulate_eca(single_seed(41), 90, 120, boundary=bc), cmap="binary", interpolation="nearest", aspect="auto")
+    ax.set_title(bc)
+    ax.set_xlabel("Cell")
+axes[0].set_ylabel("Time")
+plt.tight_layout()
+plt.show()
+```
+
+```{python}
+#| echo: false
+#| label: fig-boundary-rule184
+#| fig-cap: 'Number of occupied cells under Rule 184, from the same random row of 100 cells with density 0.4.'
+#| fig-width: 7
+#| fig-height: 3
+
+row = random_row(100, 0.4, seed=2)
+fig, ax = plt.subplots(figsize=(7, 3))
+for bc in ("periodic", "fixed"):
+    ax.plot(simulate_eca(row, 184, 150, boundary=bc).sum(axis=1), label=bc)
+ax.set_xlabel("Time")
+ax.set_ylabel("Occupied cells")
+ax.legend()
+plt.tight_layout()
+plt.show()
+```
+
+With fixed-zero edges, Rule 184 moves particles out through the right edge and brings in nothing at the left, so the road empties. With periodic edges the count is conserved. For a traffic model the boundary decides whether you model a closed ring road or an open road segment.
+
+## Experiment: every orbit on a ring is periodic
+
+A ring of $N$ cells has $2^N$ configurations. After at most $2^N$ steps some row must repeat, and from then on the evolution cycles. `transient_and_period()` records every row until the first repeat.
+
+```{python}
+#| echo: false
+#| label: fig-ring-period
+#| fig-cap: 'Period of the orbit that starts from a single seed on a ring of N cells. Logarithmic vertical axis. The dashed line is the bound 2^N.'
+#| fig-width: 7
+#| fig-height: 3.5
+
+sizes = np.arange(4, 19)
+fig, ax = plt.subplots(figsize=(7, 3.5))
+for rule in (30, 90, 110):
+    periods = [transient_and_period(single_seed(n), rule)[1] for n in sizes]
+    ax.semilogy(sizes, periods, marker="o", label=f"Rule {rule}")
+ax.semilogy(sizes, 2.0 ** sizes, "k--", label=r"$2^N$")
+ax.set_xlabel("Ring size N")
+ax.set_ylabel("Period")
+ax.legend()
+plt.tight_layout()
+plt.show()
+```
+
+## Interpretation
+
+- Any finite simulation is eventually periodic. For Rule 30 the period grows quickly with $N$, so on a lattice of a few hundred cells you never see the repeat. The class 3 behaviour you observe is a transient of a finite system.
+- Rule 90 has short periods, and for some sizes the seed dies out completely. Find the sizes where the period is 1 in the output of `transient_and_period()`.
+- A boundary is part of the model. Report it together with the rule and the lattice size.
+
+## Limitations
+
+- The period depends on the initial row, not only on the rule and $N$. The figure uses a single seed.
+- Storing every row limits `transient_and_period()` to rings of about 20 cells.
+
+::: {.callout-tip}
+## Optional extension
+
+Replace the ghost value 0 by 1, or use reflecting edges (the ghost copies the edge cell). Which rules change their long-run behaviour?
+:::
+
+## Next
+
+[Game of Life](game-of-life.qmd){.btn .btn-primary}

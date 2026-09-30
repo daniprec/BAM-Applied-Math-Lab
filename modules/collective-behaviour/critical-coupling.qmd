@@ -1,0 +1,127 @@
+---
+title: "Critical Coupling"
+subtitle: "Module 2: Synchronization and Collective Behaviour"
+format: html
+---
+
+This page summarizes Kuramoto's self-consistency argument for the limit $N \to \infty$, following @strogatz2000kuramoto [Section 4]. Work in the rotating frame, so $g$ is symmetric about $0$.
+
+## Steady states with constant $r$
+
+Look for steady solutions in which $r$ and $\psi$ are constant. In the rotating frame, with $g$ symmetric, you can choose the origin of phases so that $\psi = 0$ [@strogatz2000kuramoto]. Then the mean-field equation reads
+
+$$
+\dot\theta_i = \omega_i - K r \sin\theta_i.
+$$ {#eq-mf-steady}
+
+Each oscillator is a nonuniform oscillator ([Flows on the Circle](flows-on-the-circle.qmd)) with $a = Kr$. The population splits in two groups:
+
+- **Locked** oscillators, $|\omega_i| \le Kr$, sit at a stable fixed point with $\sin\theta_i = \omega_i/(Kr)$ and $|\theta_i| \le \pi/2$.
+- **Drifting** oscillators, $|\omega_i| > Kr$, circulate around the circle. Their stationary distribution is symmetric under $\theta \to \theta + \pi$ together with $\omega \to -\omega$, so they add nothing to $r$ [@strogatz2000kuramoto].
+
+## Self-consistency
+
+Only the locked oscillators contribute to $r$. Using $\omega = Kr\sin\theta$ to change variables,
+
+$$
+r = K r \int_{-\pi/2}^{\pi/2} \cos^2\theta \; g(Kr\sin\theta)\, d\theta.
+$$ {#eq-self-consistency}
+
+$r = 0$ always solves @eq-self-consistency: this is the **incoherent state**. A partially locked state with $r > 0$ must satisfy
+
+$$
+1 = K \int_{-\pi/2}^{\pi/2} \cos^2\theta \; g(Kr\sin\theta)\, d\theta.
+$$ {#eq-self-consistency-r}
+
+Letting $r \to 0^+$ and using $\int_{-\pi/2}^{\pi/2}\cos^2\theta\,d\theta = \pi/2$ gives the threshold where this branch starts:
+
+$$
+K_c = \frac{2}{\pi g(0)}.
+$$ {#eq-kc}
+
+This is Kuramoto's formula for the critical coupling [@kuramoto2003chemical; @strogatz2000kuramoto].
+
+## Two cases you will use
+
+**Lorentzian frequencies.** For $g(\omega) = \gamma / [\pi(\gamma^2 + \omega^2)]$, @eq-kc gives $K_c = 2\gamma$ and @eq-self-consistency-r can be solved exactly:
+
+$$
+r = \sqrt{1 - \frac{K_c}{K}}, \qquad K \ge K_c.
+$$ {#eq-r-lorentz}
+
+**Normal frequencies.** For a normal density with standard deviation $\sigma$, $K_c = 2\sqrt{2\pi}\,\sigma/\pi = \sqrt{8/\pi}\,\sigma \approx 1.596\,\sigma$. There is no closed form for $r(K)$, so you solve @eq-self-consistency-r numerically.
+
+## Square-root onset
+
+For any smooth $g$ with $g''(0) < 0$, expanding @eq-self-consistency-r for small $r$ gives
+
+$$
+r \approx \sqrt{\frac{16}{\pi K_c^3}}\sqrt{\frac{\mu}{-g''(0)}}, \qquad \mu = \frac{K - K_c}{K_c},
+$$ {#eq-r-onset}
+
+so $r$ grows like $\sqrt{K - K_c}$ just above threshold [@strogatz2000kuramoto]. The transition from incoherence to partial locking is continuous. The same square-root law appears at a supercritical pitchfork bifurcation.
+
+```{python}
+#| label: fig-critical-coupling
+#| fig-cap: "Order parameter in the limit $N \\to \\infty$. Solid: exact Lorentzian result @eq-r-lorentz with $\\gamma = 1$ ($K_c = 2$). Dashed: near-onset approximation @eq-r-onset for a normal density with $\\sigma = 1$ ($K_c \\approx 1.60$), valid only close to $K_c$."
+#| fig-width: 6
+#| fig-height: 3.5
+#| echo: false
+import numpy as np
+import matplotlib.pyplot as plt
+
+from amlab.synchronization.kuramoto_sweep import critical_coupling
+
+k = np.linspace(0, 6, 600)
+
+kc_lor = critical_coupling(1 / np.pi)
+r_lor = np.where(k > kc_lor, np.sqrt(np.clip(1 - kc_lor / np.maximum(k, 1e-12), 0, None)), 0.0)
+
+sigma = 1.0
+g0 = 1 / (np.sqrt(2 * np.pi) * sigma)
+g2 = -g0 / sigma**2
+kc_norm = critical_coupling(g0)
+mu = (k - kc_norm) / kc_norm
+r_norm = np.where(k > kc_norm, np.sqrt(16 / (np.pi * kc_norm**3) * np.clip(mu, 0, None) / (-g2)), 0.0)
+mask = (k < kc_norm) | (r_norm < 0.8)
+
+fig, ax = plt.subplots(figsize=(6, 3.5))
+ax.plot(k, r_lor, label=r"Lorentzian, $\gamma = 1$")
+ax.plot(k[mask], r_norm[mask], "--", label=r"Normal, $\sigma = 1$ (near onset)")
+ax.axvline(kc_lor, color="C0", linewidth=0.8, linestyle=":")
+ax.axvline(kc_norm, color="C1", linewidth=0.8, linestyle=":")
+ax.set_xlabel("Coupling strength K")
+ax.set_ylabel(r"$r_\infty$")
+ax.set_ylim(0, 1)
+ax.legend()
+plt.tight_layout()
+plt.show()
+```
+
+## What the argument does not show
+
+Kuramoto's argument finds the steady states. It does not prove which of them are stable, nor that the population approaches them. These questions were settled only by much later work, which @strogatz2000kuramoto reviews. Finite $N$ adds fluctuations of order $N^{-1/2}$ on top of these curves ([Finite-Size Effects](kuramoto-finite-size.qmd)).
+
+::: {.callout-note}
+## Exercise
+
+Check that @eq-r-onset agrees with the Lorentzian result @eq-r-lorentz near $K_c$.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+For $\gamma = 1$, $g(0) = 1/\pi$, $K_c = 2$ and $g''(0) = -2/\pi$. Then @eq-r-onset gives $r \approx \sqrt{16/(8\pi)}\,\sqrt{\mu\pi/2} = \sqrt{\mu}$. The exact result is $r = \sqrt{(K - K_c)/K} = \sqrt{\mu K_c/K}$, which tends to $\sqrt{\mu}$ as $K \to K_c$.
+:::
+
+::: {.callout-note}
+## Exercise
+
+Your frequencies are normal with $\sigma = 0.5$. What is $K_c$? What happens to $K_c$ if you double the spread of frequencies?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+$K_c = \sqrt{8/\pi}\times 0.5 \approx 0.80$. Since $g(0) \propto 1/\sigma$, $K_c$ is proportional to $\sigma$. Doubling the spread doubles $K_c$: a more diverse population needs stronger coupling to synchronize.
+:::

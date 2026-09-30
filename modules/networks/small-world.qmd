@@ -1,0 +1,93 @@
+---
+title: "Small-World Networks"
+subtitle: "Module 5: Complex Networks"
+format: html
+---
+
+A random graph has short paths but almost no clustering. A regular lattice has high clustering but long paths. Watts and Strogatz built a one-parameter model that interpolates between the two [@watts1998collective].
+
+## The model
+
+1. Place $N$ nodes on a ring and join each node to its $k$ nearest neighbours ($k/2$ on each side, $k$ even).
+2. Visit every edge $(u, v)$. With probability $p$, replace it by $(u, w)$, where $w$ is chosen uniformly among the nodes that are not already neighbours of $u$.
+
+At $p = 0$ you have the ring lattice. At $p = 1$ you have a graph close to a random graph with the same number of edges. The degree distribution stays narrow for every $p$: every node keeps at least $k/2$ edges.
+
+## Key result
+
+For the ring lattice, the clustering coefficient is $C(0) = \frac{3(k-2)}{4(k-1)}$, which tends to $3/4$ for large $k$, and the average path length grows linearly with $N$ [@newman2003structure, Section 6.1]. Watts and Strogatz found a wide range of small $p$ in which $L(p)$ has already dropped close to its random-graph value while $C(p)$ is still close to $C(0)$ [@watts1998collective]. A few random shortcuts are enough to shorten distances across the ring, while they destroy only a few triangles. Networks in this regime are called **small-world** networks. Watts and Strogatz reported the small-world property in a film actor collaboration network, the power grid of the western United States and the neural network of *C. elegans* [@watts1998collective].
+
+@fig-ws-sweep reproduces the shape of their Figure 2 on a smaller graph.
+
+```{python}
+#| label: fig-ws-sweep
+#| fig-cap: "Watts-Strogatz model with N = 300 and k = 6. Average clustering C(p) and average path length L(p), both divided by their values at p = 0, averaged over 3 graphs per value of p."
+#| echo: false
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
+
+N, k = 300, 6
+ps = np.logspace(-4, 0, 12)
+G0 = nx.watts_strogatz_graph(N, k, 0)
+C0, L0 = nx.average_clustering(G0), nx.average_shortest_path_length(G0)
+Cs, Ls = [], []
+for p in ps:
+    c_vals, l_vals = [], []
+    for r in range(3):
+        G = nx.connected_watts_strogatz_graph(N, k, p, seed=r)
+        c_vals.append(nx.average_clustering(G))
+        l_vals.append(nx.average_shortest_path_length(G))
+    Cs.append(np.mean(c_vals) / C0)
+    Ls.append(np.mean(l_vals) / L0)
+
+fig, ax = plt.subplots(figsize=(6, 3.5))
+ax.semilogx(ps, Cs, "o-", label="C(p) / C(0)")
+ax.semilogx(ps, Ls, "s-", label="L(p) / L(0)")
+ax.set_xlabel("rewiring probability p")
+ax.set_ylim(0, 1.05)
+ax.legend()
+plt.tight_layout()
+plt.show()
+print(f"C(0) = {C0:.3f}, formula 3(k-2)/(4(k-1)) = {3 * (k - 2) / (4 * (k - 1)):.3f}")
+```
+
+## Implementation
+
+In NetworkX, `nx.watts_strogatz_graph(n, k, p)` generates the model. The variant `nx.connected_watts_strogatz_graph` retries until the graph is connected, which you need to compute path lengths.
+
+```{python}
+SEED = 7
+
+G_sw = nx.watts_strogatz_graph(n=80, k=6, p=0.08, seed=SEED)
+pos = nx.circular_layout(G_sw)
+nx.draw(G_sw, pos=pos, node_size=40, node_color="lightblue", edge_color="gray")
+plt.title("Watts-Strogatz graph, N = 80, k = 6, p = 0.08")
+plt.show()
+
+degrees = [d for _, d in G_sw.degree()]
+print("degree range:", min(degrees), "to", max(degrees))
+print(f"C = {nx.average_clustering(G_sw):.3f}")
+```
+
+The circular layout keeps the ring visible, so you can spot the rewired shortcuts.
+
+::: {.callout-note}
+## Exercise
+
+Compute $C$ and $L$ for `nx.watts_strogatz_graph(80, 6, p)` with $p = 0$, $p = 0.08$ and $p = 1$. Which value of $p$ gives a small-world network?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+```python
+for p in [0, 0.08, 1]:
+    G = nx.connected_watts_strogatz_graph(80, 6, p, seed=SEED)
+    print(p, round(nx.average_clustering(G), 3), round(nx.average_shortest_path_length(G), 2))
+```
+
+At $p = 0.08$ the clustering is still close to the lattice value ($C(0) = 0.6$), while $L$ has dropped well below its lattice value. At $p = 1$ both are close to random-graph values.
+:::
+
+The model explains short paths together with high clustering. It does not produce hubs: for that you need [preferential attachment](preferential-attachment.qmd).

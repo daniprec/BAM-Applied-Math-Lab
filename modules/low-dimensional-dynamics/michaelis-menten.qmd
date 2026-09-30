@@ -1,0 +1,108 @@
+---
+title: "Michaelis-Menten Kinetics"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+::: {.callout-tip}
+## Optional extension
+This page is optional. It applies the Session 3 workflow to a second rate law, with saturation instead of bistability.
+:::
+
+Michaelis-Menten kinetics is one of the standard examples of a saturating nonlinear rate law [@michaelis1913kinetik]. The classical instantaneous rate is
+
+$$
+v(s) = \frac{V_{\max} s}{K_m + s},
+$$
+
+where $V_{\max}$ is the maximum rate and $K_m$ is the Michaelis constant.
+
+In the reference script used in this course, the same saturating expression is reused as a simple teaching ODE,
+
+$$
+\dot s = \frac{V_{\max}s}{K_m + s}
+$$ {#eq-ode-1d-michaelis-menten-1}
+
+This is not a full enzyme-substrate mass-action model. It is a compact one-dimensional example that lets you study how saturation changes both the rate curve and the time evolution of the state variable.
+
+## Small and Large Concentration Regimes
+
+The rate law has two useful asymptotic regimes:
+
+$$
+v(s) \approx \frac{V_{\max}}{K_m} s \quad \text{for } s \ll K_m,
+\qquad
+v(s) \approx V_{\max} \quad \text{for } s \gg K_m.
+$$
+
+So the system is approximately linear at small $s$ and nearly constant-rate at large $s$.
+
+## Implement the Saturating Rate Law
+
+```python
+def michaelis_menten(t, s, vmax=1.0, km=0.5):
+    dsdt = # TODO: saturating rate law
+    return dsdt
+```
+
+::: {.callout-tip collapse="true"}
+## Solution
+```python
+def michaelis_menten(t, s, vmax=1.0, km=0.5):
+    """Saturating teaching ODE ds/dt = vmax * s / (km + s)."""
+    return (vmax * s) / (km + s)
+```
+:::
+
+## Reference Implementation {#sec-reference}
+
+See:
+
+- `amlab/odes_1d/michaelis_menten.py`
+
+The helper `plot_michaelis_menten(...)` produces:
+
+- $s(t)$ over time
+- $v(s)$ with guides at $s=K_m$ and $v=V_{\max}/2$
+
+## Render-time Figure {#sec-render-figure}
+
+```{python}
+#| label: fig-mm
+#| fig-cap: "Michaelis-Menten: time series $s(t)$ and rate curve $v(s)$."
+#| fig-width: 8
+#| fig-height: 6
+#| echo: false
+import matplotlib.pyplot as plt
+
+from amlab.odes_1d.michaelis_menten import plot_michaelis_menten
+
+plot_michaelis_menten(s0=1.0, vmax=1.0, km=0.5, t_show=2)
+plt.show()
+plt.close()
+```
+
+## Interpret the Parameters
+
+- Increasing $V_{\max}$ raises the saturation plateau.
+- Increasing $K_m$ shifts the curve so larger values of $s$ are needed before the rate is close to saturation.
+- In the teaching ODE used here, larger $V_{\max}$ also makes the state variable evolve faster in time.
+
+## Exploration {#sec-exploration}
+
+1. Increase $V_{\max}$ and observe how the rate curve changes.
+2. Increase $K_m$ (lower affinity). How does the saturation point shift?
+
+## Run Locally {#sec-run-locally}
+
+```bash
+python amlab/odes_1d/michaelis_menten.py
+```
+
+## Limitations
+
+In the classical mechanism the substrate is consumed, so $s$ decreases. The teaching ODE above has a positive rate and makes $s$ grow without bound. Use it only to study the shape of the saturating law, not as a model of an enzyme reaction.
+
+## Next
+
+[Practice: Budworm App](practice-budworm-app.qmd){.btn .btn-primary}

@@ -1,0 +1,80 @@
+---
+title: "Animal Coat Patterns"
+subtitle: "Module 4: Space and Pattern Formation"
+format: html
+---
+
+The classical biological application of Turing's mechanism is Murray's model of mammalian coat markings [@murray1981prepattern; @murray1988leopard; @murray2003mathematical, Section 3.1]. This page lists its main claims and uses your 1D tools to reproduce the central one: domain size controls the pattern.
+
+## The Model in Brief
+
+- A reaction-diffusion system sets up a spatial prepattern of a morphogen on the embryo's skin during a short window of development [@murray1981prepattern].
+- Pigment cells later read the prepattern: where the morphogen exceeds a threshold, they produce melanin [@murray1981prepattern].
+- Only the scale and geometry of the domain were varied in Murray's simulations. Very small domains stay uniform, and increasingly complex patterns, from stripes to spots, appear as the domain grows. The size and shape of the embryo when the mechanism operates therefore decide the marking [@murray1988leopard; @murray2003mathematical, Section 3.1].
+
+## The Tail Prediction
+
+A tail is close to a tapering cylinder. Near the body the circumference is large and 2D patterns such as spots can form. Near the tip the circumference is too small for any mode around the tail, so only bands along its length remain. The model therefore predicts that a spotted animal can have a striped tail, but a striped animal cannot have a spotted tail [@murray1988leopard; @murray2003mathematical, Section 3.1].
+
+## Domain Size in 1D
+
+The same effect appears in 1D. @fig-coat-length shows the leading unstable Neumann mode for Case A ($a = 0.4$, $b = 1$, $d = 30$, $\gamma = 1$) as the domain length grows.
+
+```{python}
+#| label: fig-coat-length
+#| fig-cap: 'Leading unstable Neumann mode $n$ versus domain length $L$ for Gierer-Meinhardt Case A, using the exact Neumann spectrum $k_n = n\pi/L$. $n = 0$ means no unstable mode, so the flat state persists. The dashed line is $L\,k_{\max}/\pi$ for the continuous fastest-growing wavenumber.'
+#| fig-width: 7
+#| fig-height: 3.5
+#| echo: false
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+from amlab.turing import dispersion_relation, gierer_meinhardt_jacobian, unstable_modes_1d
+
+jac = gierer_meinhardt_jacobian(0.40, 1.00)
+k = np.linspace(0.3, 0.6, 3001)
+k_max = k[np.argmax(dispersion_relation(k**2, *jac, 30.0))]
+
+lengths = np.linspace(1, 100, 1000)
+leading = []
+for length in lengths:
+    modes = unstable_modes_1d(a=0.40, b=1.00, d=30.0, length=length, num_modes=60)
+    leading.append(modes[0][0] if modes else 0)
+
+fig, ax = plt.subplots(figsize=(7, 3.5))
+ax.step(lengths, leading, where="mid", label="leading mode")
+ax.plot(lengths, lengths * k_max / np.pi, "k--", lw=0.8, label=r"$L k_{\max} / \pi$")
+ax.set_xlabel("domain length L")
+ax.set_ylabel("leading mode n")
+ax.legend()
+plt.show()
+plt.close()
+```
+
+Below $L \approx 6$ and for $9 < L < 12$ nothing grows. As $L$ increases the leading mode jumps by one at a time, and the pattern wavelength stays close to $2\pi/k_{\max} \approx 14.6$. In linear theory, a larger domain therefore holds more peaks at the same spacing rather than wider peaks.
+
+## Evidence and Limitations
+
+- In the angelfish *Pomacanthus*, stripes keep their spacing while the fish grows, and new stripes appear between old ones. @kondo1995reaction reproduced these rearrangements with a reaction-diffusion simulation.
+- @kondo2010reaction review later work and note that a pattern consistent with a Turing model does not identify the molecules involved. Testing the mechanism requires identifying the interacting components and their interactions.
+- Linear theory predicts the onset wavelength only. The final pattern also depends on nonlinear terms, domain growth, curvature, and timing [@murray2003mathematical, Sections 2.6 and 3.1].
+
+::: {.callout-tip}
+## Optional extension
+Run the 1D solver with $L = 10$, Neumann boundaries, $dx = 1$ and $dt = 0.01$ for Case A. You will see a pattern, although @fig-coat-length predicts none. Repeat with $dx = 0.25$ and $dt = 0.001$. Explain the difference with the effective domain length of the copy boundary condition on [Boundary Conditions](boundary-conditions.qmd).
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution: effective domain length
+Copying $u_0 = u_1$ and $u_{N-1} = u_{N-2}$ places the zero-flux boundaries halfway between the first two and the last two grid points. The effective length is $(N-2)\,dx$. With $dx = 1$ that is $8$, and mode $1$ has $k = \pi/8 \approx 0.39$, inside the unstable band. With $dx = 0.25$ it is $9.5$, $\pi/9.5 \approx 0.33$ lies below the band, and the flat state persists. This is a discretization effect that disappears under grid refinement, which is why you run the convergence check.
+:::
+
+## Exit question
+
+Case A on a Neumann interval of length $L = 10$ satisfies all four Turing conditions. Will a pattern form? Explain in one or two sentences.
+
+::: {.callout-tip collapse="true"}
+## Answer
+No. The Turing conditions do not depend on the domain, but the admissible wavenumbers $n\pi/10$ for $n = 1, 2$ are $0.31$ and $0.63$, both outside the unstable band $0.349 < k < 0.523$. No mode grows, so the flat state persists.
+:::

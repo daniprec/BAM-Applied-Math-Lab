@@ -1,0 +1,85 @@
+---
+title: "Reproducible Code"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+A result is reproducible when someone else can run your code and obtain the same numbers and figures. You will need this for the assignments and the group project. The practices below follow @sandve2013ten.
+
+## Pin the environment
+
+Record the exact package versions you used. The course repository does this in `requirements.txt`:
+
+```text
+matplotlib==3.10.8
+numpy==2.2.5
+scipy==1.14.1
+streamlit==1.53.0
+```
+
+Create a clean environment and install from the file:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate      # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+After adding a package, write the versions back with `pip freeze > requirements.txt` and remove the lines you do not need.
+
+## Fix the random seed
+
+Any simulation with randomness must set a seed, and the seed must appear in the code, not only in your notes. Use a local generator instead of the global state:
+
+```{python}
+import numpy as np
+
+rng = np.random.default_rng(seed=42)
+print(rng.normal(size=3))
+rng = np.random.default_rng(seed=42)
+print(rng.normal(size=3))  # identical
+```
+
+Deterministic ODE solvers such as `solve_ivp` give the same output for the same input, but results still depend on `rtol`, `atol` and `method`. Write these values explicitly in your code.
+
+## Scripts that run from start to finish
+
+- One script (or notebook) produces each figure, from raw data to the saved file.
+- Run it in a fresh session before you submit. Notebooks run out of order hide bugs.
+- Avoid manual steps such as editing a figure by hand.
+- Use relative paths from the project root, never paths on your own computer such as `C:\Users\...`.
+
+## Freeze the data
+
+- Keep a copy of the raw data you used, with its source and download date, for example in `data/` with a `README.md`.
+- Never overwrite raw data. Write processed data to a separate file.
+- If the data came from an online source that changes, record the date and version.
+
+## Validation
+
+::: {.callout-note}
+## Exercise
+A classmate sends you `analysis.py` that reads `C:/Users/ana/Desktop/cases.csv`, uses `np.random.rand` without a seed, and imports `streamlit` which is not in `requirements.txt`. List the three changes needed to make it reproducible.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+- Move the data into the project (for example `data/cases.csv`) and read it with a relative path.
+- Create `rng = np.random.default_rng(seed)` and use `rng.random` instead of `np.random.rand`.
+- Add `streamlit` with its version to `requirements.txt`.
+:::
+
+## Next
+
+Session 4 returns to the budworm with the code from this session.
+
+[Saddle-Node Bifurcation](saddle-node-bifurcation.qmd){.btn .btn-primary}
+
+## Exit question
+
+You run the same budworm simulation twice with `solve_ivp` and get identical numbers, but a classmate with a different SciPy version gets values that differ in the fourth decimal. Is your result reproducible?
+
+::: {.callout-tip collapse="true"}
+## Answer
+Your result is repeatable on your machine but not fully reproducible. Different library versions can change default settings or internal algorithms. Pin the version in `requirements.txt` and set `rtol` and `atol` explicitly. Differences below the solver tolerance do not change any conclusion, so you should also report the tolerance you used.
+:::

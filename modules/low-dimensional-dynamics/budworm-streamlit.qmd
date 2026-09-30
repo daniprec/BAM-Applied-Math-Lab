@@ -1,0 +1,92 @@
+---
+title: "Budworm: a Streamlit App"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+With the functions from [Budworm: the Model in Code](budworm-implementation.qmd) and [Budworm: Integration and Time Series](budworm-integration.qmd), you can build an interactive app in which a slider changes a parameter and the plots update immediately. See the [Streamlit documentation](https://docs.streamlit.io).
+
+## Setup
+
+Streamlit runs on your own machine, not in Google Colab. Follow the instructions in the [README](https://github.com/daniprec/BAM-Applied-Math-Lab#readme) of the course repository to set up your environment.
+
+Create a script `spruce_budworm_app.py`. Either import your functions from a module (for example `spruce_budworm_model.py`) or paste them into the script. A separate module is better practice. Run the app with
+
+```bash
+streamlit run spruce_budworm_app.py
+```
+
+## Sidebar controls
+
+Create sliders for:
+
+- growth rate $r$ (range 0.0 to 1.0, default 0.5);
+- carrying capacity $k$ (range 0.1 to 10.0, default 10.0);
+- time to evolve (range 1 to 100, default 10).
+
+Set the initial population to $x_0 = k/10$.
+
+## Interactive features
+
+- Display the differential equation with the current parameter values.
+- Show the rate plot from [the rate plot section](budworm-implementation.qmd#sec-phase-portrait) and the time series from [the time series section](budworm-integration.qmd#sec-time-series-visualization).
+- Add an "Evolve" button that continues the simulation and updates the plots.
+- Store the time and population arrays in `st.session_state`. Streamlit reruns the whole script on every interaction, so anything not stored there is reset.
+
+## Layout
+
+```python
+import numpy as np
+import streamlit as st
+
+from your_module import (
+    evolve_spruce_budworm,
+    plot_spruce_budworm,
+    plot_spruce_budworm_rate,
+)
+
+st.title("Spruce Budworm Population Dynamics")
+
+r = st.sidebar.slider("Intrinsic growth rate (r)", 0.0, 1.0, 0.5)
+k = st.sidebar.slider("Carrying capacity (k)", 0.1, 10.0, 10.0)
+x0 = k / 10
+
+# Initialize session state on the first run
+if "sbw_x" not in st.session_state:
+    st.session_state["sbw_t"] = np.array([0.0])
+    st.session_state["sbw_x"] = np.array([x0])
+
+t_eval = st.sidebar.slider("Time", 1, 100, 10)
+button = st.sidebar.button("Evolve")
+
+t = st.session_state["sbw_t"]
+x = st.session_state["sbw_x"]
+
+if button:
+    t, x = evolve_spruce_budworm(t, x, r=r, k=k, t_eval=t_eval)
+    st.session_state["sbw_t"] = t
+    st.session_state["sbw_x"] = x
+
+fig1, ax1 = plot_spruce_budworm_rate(x[-1], r=r, k=k)
+st.pyplot(fig1)
+fig2, ax2 = plot_spruce_budworm(t, x)
+st.pyplot(fig2)
+```
+
+## Validation
+
+- With $r = 0.5$, $k = 10$ and $x_0 = 1$, pressing "Evolve" several times should bring the population to about 0.68.
+- The green line on the rate plot should always sit where the time series ends.
+
+::: {.callout-tip}
+## Optional extension
+- Add a reset button that clears `st.session_state`.
+- Show several trajectories with different initial conditions.
+- Let $k$ drift slowly in time and plot $x$ against $k$ to see the hysteresis loop of [Hysteresis](hysteresis.qmd).
+:::
+
+A complete reference app is in the [streamlit folder](https://github.com/daniprec/BAM-Applied-Math-Lab/tree/main/streamlit) of the repository.
+
+## Next
+
+[Michaelis-Menten Kinetics](michaelis-menten.qmd){.btn .btn-primary}

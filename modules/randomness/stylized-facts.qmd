@@ -1,0 +1,90 @@
+---
+title: "Stylized Facts of Returns"
+subtitle: "Module 3: Modelling with Randomness"
+format: html
+---
+
+A stylized fact is a statistical property that appears in many markets, instruments and periods. @cont2001empirical lists eleven. Any model of prices should reproduce at least the first few. This page quotes the ones you test in the lab.
+
+## The facts you test in the lab
+
+From @cont2001empirical [Section 2]:
+
+- **Absence of autocorrelations.** Linear autocorrelations of returns are often insignificant, except at very small intraday time scales (about 20 minutes).
+- **Heavy tails.** The unconditional distribution of returns has a power-law or Pareto-like tail, with a tail index that is finite, higher than two and less than five for most data sets. This excludes both the normal distribution and stable laws with infinite variance.
+- **Aggregational Gaussianity.** As the time scale $\Delta t$ of the returns grows, their distribution looks more and more normal. The shape of the distribution is therefore not the same at different time scales.
+- **Volatility clustering.** Measures of volatility have positive autocorrelation over several days: large changes tend to be followed by large changes, of either sign.
+- **Slow decay of autocorrelation in absolute returns.** The autocorrelation of $|r_t|$ decays roughly as a power law of the lag with an exponent between 0.2 and 0.4.
+
+The list also contains gain/loss asymmetry, intermittency, conditional heavy tails, the leverage effect, volume/volatility correlation and asymmetry in time scales [@cont2001empirical].
+
+## What this does to the random walk model
+
+The first fact supports the random walk hypothesis of [Returns and Efficient Markets](efficient-markets.qmd). The others reject its strong form. Uncorrelated is not the same as independent: $|r_t|$ is predictable from $|r_{t-1}|$ even when $r_t$ is not predictable from $r_{t-1}$ [@cont2001empirical]. The heavy-tail fact also rejects Mandelbrot's stable model with $\alpha < 2$ [@mandelbrot1963variation] for the far tail, since a tail index above two means finite variance.
+
+## A model that reproduces some of them
+
+The ARCH model of @engle1982autoregressive and its generalization GARCH(1,1) by @bollerslev1986generalized let the variance depend on the past:
+
+$$
+r_t = \sigma_t z_t, \qquad \sigma_t^2 = \omega + a\, r_{t-1}^2 + b\, \sigma_{t-1}^2 ,
+$$ {#eq-garch}
+
+with $z_t$ independent, zero mean and unit variance, and $a + b < 1$ for a finite unconditional variance $\omega / (1 - a - b)$. A large return raises tomorrow's variance, which produces volatility clustering while $r_t$ stays uncorrelated. See also @mantegna2000introduction [Chapter 10].
+
+The figure compares i.i.d. Gaussian returns with a GARCH(1,1) series with Student-t innovations, the synthetic fallback of the lab (`amlab.finance.synthetic_garch_prices`). The GARCH series is built to show these facts, so the figure illustrates the definitions; it is not evidence about markets.
+
+```{python}
+#| label: fig-stylized-facts
+#| fig-cap: "Top: 2000 days of i.i.d. Gaussian returns and of a synthetic GARCH(1,1) series with the same unconditional standard deviation (1% per day). Bottom: autocorrelation of $r_t$ and of $|r_t|$ for the GARCH series. The dashed band is $\\pm 2/\\sqrt{n}$."
+#| echo: false
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+from amlab.finance import autocorrelation, log_returns, synthetic_garch_prices
+
+r_garch = log_returns(synthetic_garch_prices()["close"])
+rng = np.random.default_rng(23)
+r_iid = rng.normal(0.0, 0.01, r_garch.size)
+
+fig, axes = plt.subplots(3, 1, figsize=(7, 6.5))
+axes[0].plot(r_iid[:2000], lw=0.5)
+axes[0].set_ylabel("iid Gaussian")
+axes[1].plot(r_garch[:2000], lw=0.5, color="C1")
+axes[1].set_ylabel("GARCH(1,1)")
+axes[1].set_xlabel("day")
+lags = np.arange(1, 51)
+axes[2].plot(lags, autocorrelation(r_garch, 50)[1:], "o-", ms=3, label="$r_t$")
+axes[2].plot(lags, autocorrelation(np.abs(r_garch), 50)[1:], "s-", ms=3, label="$|r_t|$")
+band = 2 / np.sqrt(r_garch.size)
+axes[2].axhline(band, ls="--", color="k", lw=0.8)
+axes[2].axhline(-band, ls="--", color="k", lw=0.8)
+axes[2].set_xlabel("lag (days)")
+axes[2].set_ylabel("autocorrelation")
+axes[2].legend()
+plt.tight_layout()
+plt.show()
+```
+
+::: {.callout-note}
+## Exercise
+
+Compute the excess kurtosis (`scipy.stats.kurtosis`) of the Gaussian and GARCH returns above. Then shuffle the GARCH returns in time with `rng.permutation` and recompute the autocorrelation of $|r_t|$ at lag 1. Which property survives the shuffle, and which one disappears?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+```{python}
+from scipy import stats
+
+shuffled = rng.permutation(r_garch)
+print(f"excess kurtosis, Gaussian: {stats.kurtosis(r_iid):.2f}")
+print(f"excess kurtosis, GARCH:    {stats.kurtosis(r_garch):.2f}")
+print(f"lag-1 ACF of |r|, GARCH:    {autocorrelation(np.abs(r_garch), 1)[1]:.3f}")
+print(f"lag-1 ACF of |r|, shuffled: {autocorrelation(np.abs(shuffled), 1)[1]:.3f}")
+```
+
+Shuffling keeps the distribution, so the fat tails (large kurtosis) survive. It destroys the time order, so volatility clustering disappears. Heavy tails and clustering are separate facts, and a model can have one without the other.
+:::

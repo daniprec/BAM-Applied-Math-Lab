@@ -1,0 +1,102 @@
+---
+title: "Reaction-Diffusion Equations"
+subtitle: "Module 4: Space and Pattern Formation"
+format: html
+---
+
+::: {.callout-note}
+## Reading
+- **Compulsory:** @murray2002mathematical, Chapter 11 (Reaction Diffusion, Chemotaxis, and Nonlocal Mechanisms).
+- **Recommended:** @britton2003essential, Chapter 5 (Biological Motion) and Chapter 7 (Pattern Formation).
+:::
+
+In Module 3 you derived the diffusion equation $\partial_t c = D\,\partial_{xx} c$ as the continuum limit of a random walk ([From random walks to diffusion](../randomness/diffusion-equation.qmd)). A reaction-diffusion equation adds local production and decay to that transport term [@murray2002mathematical, Chapter 11].
+
+## The General Form
+
+For $m$ species with concentrations $w = (w_1, \dots, w_m)$ on a domain $\Omega$,
+
+$$
+\partial_t w = D\,\Delta w + R(w), \qquad D = \operatorname{diag}(D_1, \dots, D_m).
+$$ {#eq-rd-general}
+
+- $\Delta$ is the Laplacian, $\partial_{xx}$ in 1D and $\partial_{xx} + \partial_{yy}$ in 2D.
+- $D_i > 0$ is the diffusion coefficient of species $i$.
+- $R(w)$ collects the reaction kinetics. With $D = 0$ you recover an ODE system at every point, as in Module 1.
+
+The model is incomplete without an initial condition $w(x, 0)$ and boundary conditions on $\partial\Omega$. You will meet Neumann (zero flux), Dirichlet (fixed value), and periodic conditions on the page [Laplacian Eigenmodes](laplacian-eigenmodes.qmd).
+
+## The Scaling Used in This Module
+
+For two species $u$ and $v$ we use the nondimensional form of @murray2003mathematical [Section 2.3]:
+
+$$
+\begin{aligned}
+\partial_t u &= \Delta u + \gamma f(u, v), \\
+\partial_t v &= d\,\Delta v + \gamma g(u, v).
+\end{aligned}
+$$ {#eq-rd-scaled}
+
+Here $d = D_v / D_u$ is the ratio of diffusion coefficients and $\gamma$ measures the strength of the reactions relative to diffusion. In Murray's scaling $\gamma$ is proportional to the square of the domain length, so increasing $\gamma$ at fixed domain is equivalent to enlarging the domain [@murray2003mathematical, Section 2.3]. The Gierer-Meinhardt code in `amlab.pdes_1d` and `amlab.pdes_2d` uses exactly these symbols.
+
+## Examples
+
+- **Fisher-KPP equation.** One species, logistic growth plus diffusion: $\partial_t u = D\,\partial_{xx} u + r u(1-u)$. It was proposed for the spread of an advantageous gene [@fisher1937wave]. It has travelling fronts with minimal speed $c = 2\sqrt{rD}$ [@murray2002mathematical, Chapter 13].
+- **Gierer-Meinhardt model.** An activator $u$ and an inhibitor $v$ with $f = a - bu + u^2/v$ and $g = u^2 - v$ [@gierer1972theory]. It forms stationary patterns and is the main example of this module.
+- **Gray-Scott model.** An autocatalytic reaction with feed and removal [@gray1984autocatalytic]. Its 2D simulations produce spots, stripes and self-replicating spots [@pearson1993complex].
+- **Chemical experiments.** Stationary Turing patterns were first observed experimentally in the CIMA reaction [@castets1990experimental].
+
+## A First Simulation
+
+@fig-rd-fisher shows a Fisher-KPP front with $D = r = 1$. The dashed lines move at the predicted speed $c = 2$.
+
+```{python}
+#| label: fig-rd-fisher
+#| fig-cap: 'Fisher-KPP front with $D = r = 1$, explicit Euler with $dx = 0.5$, $dt = 0.05$. Dashed lines mark positions moving at speed $c = 2\sqrt{rD} = 2$ from the front at $t = 10$.'
+#| fig-width: 7
+#| fig-height: 3.5
+#| echo: false
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+length, dx, dt = 120.0, 0.5, 0.05
+x = np.arange(0, length, dx)
+u = np.where(x < 5, 1.0, 0.0)
+
+snapshots = {}
+num_steps = int(40 / dt)
+for step in range(1, num_steps + 1):
+    lap = np.zeros_like(u)
+    lap[1:-1] = (u[2:] - 2 * u[1:-1] + u[:-2]) / dx**2
+    u = u + dt * (lap + u * (1 - u))
+    u[0], u[-1] = u[1], u[-2]
+    t = step * dt
+    if np.isclose(t % 10, 0) and t > 0:
+        snapshots[round(t)] = u.copy()
+
+front_10 = x[np.argmin(np.abs(snapshots[10] - 0.5))]
+fig, ax = plt.subplots(figsize=(7, 3.5))
+for t, profile in snapshots.items():
+    (line,) = ax.plot(x, profile, label=f"t = {t}")
+    ax.axvline(front_10 + 2 * (t - 10), color=line.get_color(), ls="--", lw=0.8)
+ax.set_xlabel("x")
+ax.set_ylabel("u(x, t)")
+ax.legend()
+plt.show()
+plt.close()
+```
+
+For an initial condition with compact support the front speed tends to the minimal speed $c = 2\sqrt{rD}$ as $t \to \infty$ [@murray2002mathematical, Chapter 13].
+
+::: {.callout-note}
+## Exercise
+Set $D = 0$ in @eq-rd-general. What happens to a spatial profile $u(x, 0)$ under Fisher-KPP kinetics, and why can no front move?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+Each point solves the logistic ODE $\dot u = r u (1-u)$ independently. Points with $u(x,0) > 0$ grow to $1$ and points with $u(x,0) = 0$ stay at $0$. Without diffusion no point can influence its neighbours, so the region with $u = 0$ never becomes invaded.
+:::
+
+Next: [Linearization](linearization.qmd).

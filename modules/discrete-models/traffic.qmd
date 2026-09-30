@@ -1,0 +1,178 @@
+---
+title: "Traffic Model"
+subtitle: "Module 6: Explorables and Discrete Models"
+format: html
+---
+
+Traffic flow is a natural agent-based model. Each car moves according to simple local rules, but repeated interactions create stop-and-go waves, jams, and a transition between free flow and congestion [@nagel1992cellular]. The rules are on the page [The Nagel-Schreckenberg Model](nagel-schreckenberg.qmd). In this lab you implement them.
+
+::: {.callout-important}
+## Core activity
+
+Implement `step()` for the Nagel-Schreckenberg model on a periodic road, validate it, and produce space-time diagrams for a free-flow and a congested density.
+:::
+
+::: {.callout-note}
+## Prediction
+
+With $v_{\max} = 5$ and $p = 0$, below which density should every car end up moving at $v_{\max}$? What changes in the space-time diagram when you switch on $p = 0.3$?
+:::
+
+```{python}
+#| label: fig-traffic
+#| fig-cap: 'Traffic CA space-time diagram (cars as black pixels).'
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+
+import matplotlib.pyplot as plt
+
+from amlab.cellular_automata.traffic import simulate
+
+grid = simulate(steps=200, length=100, density=0.2, vmax=5, p_slow=0.3, seed=1)
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.imshow(grid, cmap="binary", interpolation="nearest", aspect="auto")
+ax.set_xlabel("Road position")
+ax.set_ylabel("Time")
+plt.show()
+plt.close()
+```
+
+## Represent the road state
+
+We store the system with two arrays of length `length`:
+
+- `occupied[i]` tells us whether cell `i` contains a car.
+- `speeds[i]` stores the speed of that car, measured in cells per step.
+
+This lets the road stay discrete while each agent still has its own internal state.
+
+## Initialize the agents
+
+The initialization function samples an occupancy pattern and assigns a random speed to each occupied cell.
+
+```python
+occupied, speeds = initialize_road(length=100, density=0.2, vmax=5)
+```
+
+The density is
+
+$$
+\rho = \frac{\text{number of cars}}{\text{road length}}.
+$$
+
+## Implement one synchronous update
+
+At each time step, every car follows the same four rules:
+
+1. Accelerate up to $v_{\max}$.
+2. Brake so it does not collide with the next car.
+3. Slow down randomly with probability $p_{\text{slow}}$.
+4. Move forward by its new speed.
+
+The key point is that all cars update synchronously.
+
+```python
+def step(occupied, speeds, vmax=5, p_slow=0.3, rng=None):
+    if rng is None:
+        rng = np.random.default_rng()
+
+    # TODO: accelerate
+    # TODO: brake to avoid collisions
+    # TODO: random slowdown
+    # TODO: move cars
+    return new_occupied, new_speeds
+```
+
+::: {.callout-tip collapse="true"}
+## Hint: Update step (click to expand)
+
+```python
+def step(occupied, speeds, vmax=5, p_slow=0.3, rng=None):
+    if rng is None:
+        rng = np.random.default_rng()
+
+    length = len(occupied)
+    positions = np.where(occupied)[0]
+    speeds_new = speeds.copy()
+
+    speeds_new[positions] = np.minimum(speeds_new[positions] + 1, vmax)
+
+    gaps = np.zeros_like(positions)
+    for idx, pos in enumerate(positions):
+        next_pos = positions[(idx + 1) % len(positions)]
+        gaps[idx] = (next_pos - pos - 1) % length
+    speeds_new[positions] = np.minimum(speeds_new[positions], gaps)
+
+    slow_mask = rng.random(len(positions)) < p_slow
+    speeds_new[positions[slow_mask]] = np.maximum(
+        speeds_new[positions[slow_mask]] - 1, 0
+    )
+
+    new_occupied = np.zeros_like(occupied)
+    new_speeds = np.zeros_like(speeds)
+    new_positions = (positions + speeds_new[positions]) % length
+    new_occupied[new_positions] = True
+    new_speeds[new_positions] = speeds_new[positions]
+
+    return new_occupied, new_speeds
+```
+:::
+
+## Validation
+
+Three checks catch most bugs:
+
+- the number of cars stays constant;
+- no two cars ever occupy the same cell (the occupancy array keeps the same number of `True` entries);
+- for $p = 0$ and density below $1/(v_{\max}+1)$, every car reaches $v_{\max}$ after a transient.
+
+```{python}
+import numpy as np
+from amlab.cellular_automata.traffic import initialize_road, step
+
+rng = np.random.default_rng(0)
+occupied, speeds = initialize_road(length=120, density=0.1, vmax=5, rng=rng)
+n_cars = occupied.sum()
+for t in range(200):
+    occupied, speeds = step(occupied, speeds, vmax=5, p_slow=0.0, rng=rng)
+    assert occupied.sum() == n_cars, "a car was lost or two cars collided"
+print("Cars:", n_cars, "| speeds after 200 steps:", np.unique(speeds[occupied]))
+```
+
+## Simulate a full run
+
+Wrap the update in a loop and save the occupancy pattern at every time step.
+
+```python
+grid = simulate(steps=200, length=100, density=0.2, vmax=5, p_slow=0.3, seed=1)
+```
+
+## Plot the space-time diagram
+
+```python
+plt.imshow(grid, cmap="binary", interpolation="nearest", aspect="auto")
+plt.xlabel("Road position")
+plt.ylabel("Time")
+plt.show()
+```
+
+## What the dark bands mean
+
+In the diagram, black cells are occupied sites. When dense diagonal bands become nearly horizontal, cars are moving slowly and congestion is forming. When the pattern is sparse and diagonal, cars are advancing freely.
+
+## Interpretation
+
+A jam is not imposed externally. It emerges from repeated local braking and stochastic slowdown. Jams in the diagram drift to the left while cars move to the right: the jam front moves against the traffic.
+
+## Limitations
+
+- The road is a ring with one lane, identical cars and identical drivers.
+- The cell-based loop over cars in `step()` is slow for long roads. The vectorized version in [amlab/cellular_automata/traffic_models.py](../../amlab/cellular_automata/traffic_models.py) stores only the car positions.
+
+Full reference: [amlab/cellular_automata/traffic.py](../../amlab/cellular_automata/traffic.py).
+
+## Next
+
+[Flow and Congestion](traffic-analysis.qmd){.btn .btn-primary}

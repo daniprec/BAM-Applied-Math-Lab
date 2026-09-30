@@ -1,0 +1,87 @@
+---
+title: "Animation in 1D"
+subtitle: "Module 4: Space and Pattern Formation"
+format: html
+---
+
+This is the experiment step. Once the Euler loop works and passes the checks on [Time-Step Stability](time-step-stability.qmd), the animation is a matter of moving that loop into a Matplotlib callback, as in the animation pages of Module 1.
+
+Run this code as a Python script, not in a notebook, so the animation window updates smoothly.
+
+## Animate the Profile
+
+```python
+import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Reuse laplacian_1d, gierer_meinhardt_pde and apply_boundary_conditions_1d
+# from the previous pages, and the initial field uv from the solver page.
+
+dx, dt, steps_per_frame = 1.0, 0.01, 100
+x = np.arange(uv.shape[1]) * dx
+
+fig, ax = plt.subplots(figsize=(7, 4))
+(plot_v,) = ax.plot(x, uv[1])
+ax.set_ylim(1.5, 2.5)
+ax.set_xlabel("x")
+ax.set_ylabel("v(x)")
+
+
+def update_frame(_):
+    # TODO: advance uv by steps_per_frame Euler steps
+    # TODO: update the line data
+    return (plot_v,)
+
+
+ani = animation.FuncAnimation(fig, update_frame, interval=1, blit=True)
+plt.show()
+```
+
+::: {.callout-tip collapse="true"}
+## Solution: 1D animation update (click to expand)
+
+```python
+def update_frame(_):
+    global uv
+    for _ in range(steps_per_frame):
+        uv = uv + dt * gierer_meinhardt_pde(0, uv, d=30, dx=dx)
+        uv = apply_boundary_conditions_1d(uv, bc="neumann")
+    plot_v.set_ydata(uv[1])
+    return (plot_v,)
+```
+
+`global` is needed because the callback reassigns `uv`. If you wrap everything inside a function, as `amlab.pdes_1d.gierer_meinhardt_1d.run_simulation` does, use `nonlocal` instead.
+:::
+
+## Save Frames for the Assignment
+
+The assignment asks for one frame every 500 steps. A loop that stores snapshots is simpler than recording the live animation.
+
+```python
+frames = []
+for step in range(50000):
+    uv = uv + dt * gierer_meinhardt_pde(0, uv, d=30, dx=dx)
+    uv = apply_boundary_conditions_1d(uv, bc="neumann")
+    if step % 500 == 0:
+        frames.append(uv[1].copy())
+
+# Build the animation from the stored frames, for example with
+# animation.FuncAnimation(fig, lambda i: plot_v.set_ydata(frames[i]), frames=len(frames))
+# and save it with ani.save("gm1d.gif", writer="pillow").
+```
+
+## Explore
+
+- Run Case A ($d = 30$) and Case B ($d = 20$). Which one keeps its peaks?
+- In Case A, count the half-wavelengths at $t = 100$ and at $t = 500$. Does the count match the leading mode $n = 5$ from [Turing Numerics](turing-numerics.qmd), or does mode $6$ win for some seeds?
+- Change the seed. The peak positions move, but the spacing should not.
+
+::: {.callout-tip}
+## Optional extension
+Run the reference animation with `python -m amlab.pdes_1d.gierer_meinhardt_1d`. Click on the Turing-space panel to change $(a, d)$ and restart from noise. Pick points just above and just below the boundary curve and compare the time the pattern takes to appear with $1/\sigma_{\max}$ from the dispersion relation.
+:::
+
+The hosted Streamlit version is available at [bam-applied-math-lab.streamlit.app](https://bam-applied-math-lab.streamlit.app/Gierer_Meinhardt_1D).
+
+Next: [Animal Coat Patterns](animal-coat-patterns.qmd).

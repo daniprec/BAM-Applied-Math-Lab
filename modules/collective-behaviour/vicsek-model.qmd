@@ -1,0 +1,77 @@
+---
+title: "The Vicsek Model"
+subtitle: "Module 2: Synchronization and Collective Behaviour"
+format: html
+---
+
+::: {.callout-note}
+## Reading
+- **Compulsory:** @vicsek1995novel.
+- **Recommended:** @couzin2002collective; @helbing1995social.
+:::
+
+The Kuramoto model synchronizes phases in time. The Vicsek model aligns headings in space. It describes $N$ self-propelled particles that move at constant speed and copy the average heading of their neighbours, with some noise [@vicsek1995novel]. There is no leader and no global signal, yet the whole group can move in one direction.
+
+## Rules
+
+Each particle $i$ has a position $\mathbf{x}_i(t)$ in a square box of side $L$ with periodic boundaries, and a heading $\theta_i(t)$. At every time step $\Delta t$ all particles update at the same time:
+
+$$
+\theta_i(t + \Delta t) = \langle \theta(t) \rangle_{r,i} + \Delta\theta_i,
+$$ {#eq-vicsek-theta-rule}
+
+$$
+\mathbf{x}_i(t + \Delta t) = \mathbf{x}_i(t) + v_0 \Delta t \begin{bmatrix} \cos\theta_i(t + \Delta t) \\ \sin\theta_i(t + \Delta t) \end{bmatrix}.
+$$ {#eq-vicsek-x-rule}
+
+- $\langle \theta \rangle_{r,i}$ is the mean direction of all particles within distance $r$ of particle $i$, including $i$ itself. It is computed as $\arctan\big(\langle\sin\theta\rangle / \langle\cos\theta\rangle\big)$, using the quadrant of the vector $(\langle\cos\theta\rangle, \langle\sin\theta\rangle)$.
+- $\Delta\theta_i$ is drawn uniformly from $[-\eta/2, \eta/2]$. The noise amplitude $\eta$ runs from $0$ (no noise) to $2\pi$ (a random heading every step).
+- The speed $v_0$ is the same for all particles.
+
+@vicsek1995novel used $r = 1$, $\Delta t = 1$ and $v_0 = 0.03$. The two control parameters are the noise $\eta$ and the density $\rho = N/L^2$.
+
+## Order parameter
+
+Collective motion is measured by the normalized average velocity
+
+$$
+v_a = \frac{1}{N v_0}\left|\sum_{i=1}^N \mathbf{v}_i\right| = \left|\frac{1}{N}\sum_{i=1}^N e^{i\theta_i}\right|,
+$$ {#eq-vicsek-va}
+
+which is the Kuramoto order parameter applied to headings. $v_a \approx 1$ when all particles move the same way and $v_a \approx 0$ when headings are random.
+
+## Kinetic phase transition
+
+@vicsek1995novel found that $v_a$ falls from near $1$ to near $0$ as the noise increases, and rises as the density increases. Near the transition they reported the scaling laws
+
+$$
+v_a \sim \big(\eta_c(\rho) - \eta\big)^{\beta}, \qquad v_a \sim \big(\rho - \rho_c(\eta)\big)^{\delta},
+$$
+
+with $\beta = 0.45 \pm 0.07$ and $\delta = 0.35 \pm 0.06$. They interpreted it as a continuous transition. Later simulations of much larger systems by @gregoire2004onset and @chate2008collective found that the onset of collective motion is discontinuous. Near the threshold, the ordered phase organizes into dense travelling bands. Small simulations like the ones in this course cannot distinguish the two scenarios.
+
+![Order parameter against noise at density $\rho = 4$ for $N = 40$ and $N = 100$, one realization each, generated with `amlab.collective_motion.vicsek`. Compare with Figure 2(a) of @vicsek1995novel.](../../img/s04_order_parameter_vs_noise.png){#fig-vicsek-noise width=80%}
+
+::: {.callout-note}
+## Exercise
+
+In @fig-vicsek-noise, $v_a$ stays around $0.1$ to $0.2$ at the largest noise, instead of going to zero. Why? Use what you know from the Kuramoto model.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+At high noise the headings are close to independent and uniform. Then $v_a$ is the modulus of the mean of $N$ random unit vectors, so $\mathbb{E}[v_a^2] = 1/N$ ([The Order Parameter](order-parameter.qmd)). For $N = 40$ and $N = 100$ this gives typical values of $0.16$ and $0.1$, which is what the figure shows.
+:::
+
+::: {.callout-note}
+## Exercise
+
+Compare the Vicsek model with the mean-field Kuramoto model. Name one analogue of the coupling strength $K$ and one analogue of the frequency spread $\sigma$.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Alignment plays the role of coupling. Its effective strength grows with the number of neighbours inside radius $r$, so the density $\rho$ (or $r$ itself) acts like $K$. The noise $\eta$ plays the role of the disorder that opposes alignment, like $\sigma$. One important difference: in the Vicsek model the neighbours change as particles move, so the interaction network is itself dynamic.
+:::

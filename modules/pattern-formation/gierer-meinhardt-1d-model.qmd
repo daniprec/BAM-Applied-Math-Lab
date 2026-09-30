@@ -1,0 +1,98 @@
+---
+title: "Gierer-Meinhardt Model in 1D"
+subtitle: "Module 4: Space and Pattern Formation"
+format: html
+---
+
+::: {.callout-note}
+## Reading
+- **Compulsory:** @gierer1972theory.
+- **Recommended:** @murray2003mathematical, Sections 2.3 to 2.6.
+:::
+
+The Gierer-Meinhardt model is an activator-inhibitor system that produces spatial patterns when diffusion and reaction act together [@gierer1972theory]. In this laboratory you build a 1D solver for it and compare the simulation with the Turing analysis of the previous session.
+
+In the ODE sessions, `solve_ivp()` handled time integration for a short state vector. Here the state is a field sampled on a grid, so you write the update rule yourself: build the Laplacian, evaluate the reactions, advance with explicit Euler, and enforce the boundary conditions.
+
+## The Model
+
+$$
+\begin{aligned}
+\frac{\partial u}{\partial t} &= \Delta u + \gamma \left(a - b u + \frac{u^2}{v}\right), \\
+\frac{\partial v}{\partial t} &= d\,\Delta v + \gamma \left(u^2 - v\right),
+\end{aligned}
+$$ {#eq-gm1-model}
+
+on $(0, L)$ with zero-flux (Neumann) boundary conditions.
+
+- $u(x,t)$ is the activator. Through the term $u^2 / v$, a local increase in $u$ reinforces its own production.
+- $v(x,t)$ is the inhibitor. Larger $v$ reduces the ratio $u^2 / v$ and suppresses activation.
+- $a$ is a baseline source of $u$ and $b$ is its linear decay rate.
+- $\gamma$ sets the reaction rate relative to diffusion.
+- $d$ is the diffusion ratio. The activator diffuses with coefficient $1$, so $d > 1$ means the inhibitor spreads faster.
+
+The homogeneous steady state is $u_* = (a+1)/b$, $v_* = u_*^2$ (see [Linearization](linearization.qmd)).
+
+## What Turing Instability Means Here
+
+Turing instability does not mean the model explodes. It means the flat state is stable to uniform perturbations but unstable to some spatially varying ones [@turing1952chemical].
+
+- If every point is nudged in the same way, the system returns to $(u_*, v_*)$.
+- If one region is nudged above its neighbours, that difference can grow into a pattern.
+
+::: {.callout-note collapse="true"}
+## Does no Turing instability mean that the inhibitor dominates?
+
+Not necessarily. It means the balance between activation, inhibition, and diffusion does not selectively amplify spatial modes. The inhibitor may be too strong, the activator too weak, the inhibitor may diffuse too slowly (small $d$), or the steady state may already be unstable for reasons unrelated to diffusion (for example $\operatorname{tr} J > 0$).
+:::
+
+## Lab Workflow
+
+::: {.callout-important}
+## Core activity
+Predict, build, validate, and test a 1D Gierer-Meinhardt solver for the two cases $a = 0.4$, $b = 1$, $\gamma = 1$, $L = 40$, with $d = 30$ (Case A) and $d = 20$ (Case B).
+:::
+
+- **Prediction.** Use the Turing conditions and the mode scan to predict which case forms a pattern and which mode leads ([Turing Numerics](turing-numerics.qmd)).
+- **Implementation.** Build the Laplacian ([Laplacian in 1D](laplacian-1d.qmd)), the boundary conditions ([Boundary Conditions](boundary-conditions.qmd)), and the solver ([Solver](gierer-meinhardt-1d-solver.qmd)).
+- **Validation.** Check the time step and grid ([Time-Step Stability](time-step-stability.qmd)).
+- **Experiment.** Animate and vary parameters ([Animation](gierer-meinhardt-1d-animation.qmd)).
+- **Interpretation and limitations.** Compare with Murray's domain-size argument ([Animal Coat Patterns](animal-coat-patterns.qmd)).
+
+## A Preview of the Result
+
+```{python}
+#| label: fig-gm1-preview
+#| fig-cap: 'Gierer-Meinhardt in 1D, profile of $v(x)$ at $t = 500$ for Case A ($d = 30$) and Case B ($d = 20$). Explicit Euler with $dx = 1$, $dt = 0.01$, Neumann boundaries, 1% noise around the steady state.'
+#| fig-width: 7
+#| fig-height: 3.5
+#| echo: false
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+from amlab.pdes_1d.gierer_meinhardt_1d import gierer_meinhardt_pde
+
+length, dx, dt, num_iter = 40, 1.0, 0.01, 50000
+num_points = int(length / dx)
+x = np.arange(num_points) * dx
+
+fig, ax = plt.subplots(figsize=(7, 3.5))
+for d in (30, 20):
+    rng = np.random.default_rng(3)
+    uv = np.array([[1.4], [1.96]]) * (1 + 0.01 * rng.standard_normal((2, num_points)))
+    for _ in range(num_iter):
+        uv = uv + dt * gierer_meinhardt_pde(0, uv, gamma=1, a=0.40, b=1.00, d=d, dx=dx)
+        uv[:, 0] = uv[:, 1]
+        uv[:, -1] = uv[:, -2]
+    ax.plot(x, uv[1], label=f"d = {d}")
+ax.set_xlabel("x")
+ax.set_ylabel("v(x)")
+ax.legend()
+plt.show()
+plt.close()
+```
+
+An interactive version of this model runs at [bam-applied-math-lab.streamlit.app](https://bam-applied-math-lab.streamlit.app/Gierer_Meinhardt_1D).
+
+Next: [Turing Numerics](turing-numerics.qmd).

@@ -1,0 +1,103 @@
+---
+title: "Saddle-Node Bifurcation"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+::: {.callout-note}
+## Reading
+- **Compulsory:** @strogatz2024nonlinear, Section 3.7.
+- **Recommended:** @murray2002mathematical, Chapter 1 (continuous population models for single species).
+:::
+
+A bifurcation is a qualitative change in the dynamics as a parameter crosses a critical value: fixed points appear, disappear or change stability. In one dimension, the basic way to create or destroy fixed points is the saddle-node bifurcation [@strogatz2024nonlinear, Section 3.1].
+
+## Normal form
+
+The prototype is
+
+$$
+\dot x = \mu + x^2 .
+$$ {#eq-saddle-node}
+
+- $\mu < 0$: two fixed points $x^* = \pm\sqrt{-\mu}$. The negative one is stable, the positive one unstable.
+- $\mu = 0$: one half-stable fixed point at $x^* = 0$.
+- $\mu > 0$: no fixed points.
+
+As $\mu$ increases through 0, the two fixed points approach each other, collide and annihilate. Near any saddle-node bifurcation of a smooth 1D system, a Taylor expansion reduces the dynamics to @eq-saddle-node, which is why it is called a normal form [@strogatz2024nonlinear, Section 3.1].
+
+## Conditions
+
+At a saddle-node bifurcation of $\dot x = f(x; \mu)$, a fixed point is also a point of tangency:
+
+$$
+f(x^*; \mu_c) = 0, \qquad \frac{\partial f}{\partial x}(x^*; \mu_c) = 0 .
+$$ {#eq-sn-conditions}
+
+The linearization gives no information at $\mu_c$: the decay rate $|f'(x^*)|$ goes to zero, and perturbations relax more and more slowly as $\mu \to \mu_c$. This is called critical slowing down.
+
+## Bifurcation diagram of the budworm
+
+Apply @eq-sn-conditions to the budworm model with $k$ as the control parameter and $r = 0.56$ fixed. @fig-bif-k plots the positive fixed points against $k$.
+
+```{python}
+#| echo: false
+#| label: fig-bif-k
+#| fig-cap: "Bifurcation diagram of the budworm model for r = 0.56. Solid: stable fixed points. Dashed: unstable. Saddle-node bifurcations occur near k = 6.45 and k = 9.94."
+#| fig-width: 7
+#| fig-height: 4
+import matplotlib.pyplot as plt
+import numpy as np
+
+from amlab.odes_1d.budworm_analysis import budworm_equilibria, budworm_slope
+
+r = 0.56
+ks, xs, stable = [], [], []
+for k in np.linspace(2, 16, 1400):
+    for x in budworm_equilibria(r, k):
+        ks.append(k)
+        xs.append(x)
+        stable.append(budworm_slope(x, r, k) < 0)
+ks, xs, stable = map(np.array, (ks, xs, stable))
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.plot(ks[stable], xs[stable], "k.", ms=2, label="stable")
+ax.plot(ks[~stable], xs[~stable], ".", color="tab:red", ms=1, label="unstable")
+ax.set_xlabel("k")
+ax.set_ylabel("x*")
+ax.legend()
+ax.grid(alpha=0.3)
+plt.tight_layout()
+plt.show()
+```
+
+The diagram has an S shape. The middle branch is unstable. At each fold, a stable branch meets the unstable branch in a saddle-node bifurcation.
+
+You can find the folds numerically by checking where the number of equilibria changes:
+
+```{python}
+counts = [len(budworm_equilibria(0.56, k)) for k in np.linspace(2, 16, 1400)]
+k_grid = np.linspace(2, 16, 1400)
+changes = k_grid[1:][np.diff(counts) != 0]
+print("Number of equilibria changes near k =", np.round(changes, 2))
+```
+
+::: {.callout-note}
+## Exercise
+Show that the saddle-node conditions @eq-sn-conditions for $f(x) = rx(1 - x/k) - x^2/(1+x^2)$ can be solved for $r$ and $k$ in terms of the double root $x$.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+For $x \neq 0$ divide $f = 0$ by $x$: $r(1 - x/k) = x/(1+x^2)$. Tangency of the two curves means equal slopes: $-r/k = (1 - x^2)/(1 + x^2)^2$. Substituting $r/k$ into the first equation gives
+
+$$
+r = \frac{2x^3}{(1 + x^2)^2}, \qquad k = \frac{2x^3}{x^2 - 1}, \qquad x > 1,
+$$
+
+as in @strogatz2024nonlinear, Section 3.7. These curves are used on the next page.
+:::
+
+## Next
+
+[Hysteresis](hysteresis.qmd){.btn .btn-primary}

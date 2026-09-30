@@ -1,0 +1,121 @@
+---
+title: "Hysteresis"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+When a system has an S-shaped bifurcation diagram, the state it occupies depends on the direction in which the parameter changes. This is hysteresis: undoing the change in the parameter does not undo the change in the state [@strogatz2024nonlinear, Sections 3.7 and 3.4].
+
+## The loop in k
+
+Take $r = 0.56$ and let $k$ grow slowly from 5 to 15, then decrease back to 5. "Slowly" means that the population has time to reach the attracting fixed point for each value of $k$. @fig-hysteresis shows the result on top of the bifurcation diagram from [Saddle-Node Bifurcation](saddle-node-bifurcation.qmd).
+
+```{python}
+#| echo: false
+#| label: fig-hysteresis
+#| fig-cap: "Hysteresis loop of the budworm model for r = 0.56. Increasing k (blue), the population stays on the refuge branch until the fold near k = 9.94 and then jumps to the outbreak branch. Decreasing k (red), it stays on the outbreak branch until the fold near k = 6.45."
+#| fig-width: 7
+#| fig-height: 4
+import matplotlib.pyplot as plt
+import numpy as np
+
+from amlab.odes_1d.budworm_analysis import (
+    budworm_equilibria,
+    budworm_slope,
+    quasi_static_sweep,
+)
+
+r = 0.56
+k_up = np.linspace(5, 15, 201)
+x_up = quasi_static_sweep(r, k_up, x0=0.5)
+x_down = quasi_static_sweep(r, k_up[::-1], x0=x_up[-1])
+
+fig, ax = plt.subplots(figsize=(7, 4))
+for k in np.linspace(5, 15, 600):
+    for x in budworm_equilibria(r, k):
+        ax.plot(k, x, ".", ms=1.5, color="gray" if budworm_slope(x, r, k) < 0 else "pink")
+ax.plot(k_up, x_up, color="tab:blue", lw=2, label="k increasing")
+ax.plot(k_up[::-1], x_down, color="tab:red", lw=2, ls="--", label="k decreasing")
+ax.set_xlabel("k")
+ax.set_ylabel("x")
+ax.legend()
+ax.grid(alpha=0.3)
+plt.tight_layout()
+plt.show()
+```
+
+The outbreak starts at $k \approx 9.94$ but only ends when $k$ drops below $6.45$. Between these values the answer to "what is the budworm density for this forest?" depends on history.
+
+## The region of bistability
+
+The saddle-node curves from the exercise on the previous page,
+
+$$
+r(x) = \frac{2x^3}{(1+x^2)^2}, \qquad k(x) = \frac{2x^3}{x^2 - 1}, \qquad x > 1,
+$$
+
+bound the region of the $(k, r)$ plane with three positive fixed points [@strogatz2024nonlinear, Section 3.7]. The two branches meet at a cusp. Both $dr/dx$ and $dk/dx$ vanish at $x = \sqrt 3$, which gives the cusp point $(k, r) = (3\sqrt 3, 3\sqrt 3/8) \approx (5.20, 0.65)$.
+
+```{python}
+#| echo: false
+#| label: fig-cusp
+#| fig-cap: "Stability diagram of the budworm model in the (k, r) plane. Inside the shaded region there are two stable fixed points (bistability). The horizontal line r = 0.56 is the path of the loop above."
+#| fig-width: 6
+#| fig-height: 4
+from amlab.odes_1d.budworm_analysis import bifurcation_curves
+
+x = np.linspace(1.001, 60, 4000)
+k_c, r_c = bifurcation_curves(x)
+upper = x < np.sqrt(3)
+fig, ax = plt.subplots(figsize=(6, 4))
+ax.plot(k_c[upper], r_c[upper], "k")
+ax.plot(k_c[~upper], r_c[~upper], "k")
+kk = np.linspace(3 * np.sqrt(3), 40, 400)
+ax.fill_between(kk, np.interp(kk, k_c[~upper], r_c[~upper]),
+                np.interp(kk, k_c[upper][::-1], r_c[upper][::-1]), alpha=0.25, label="bistable")
+ax.axhline(0.56, color="tab:blue", lw=1, ls=":")
+ax.plot(3 * np.sqrt(3), 3 * np.sqrt(3) / 8, "ro", label="cusp")
+ax.text(25, 0.62, "outbreak only")
+ax.text(25, 0.2, "refuge only")
+ax.set_xlim(0, 40)
+ax.set_ylim(0, 0.8)
+ax.set_xlabel("k")
+ax.set_ylabel("r")
+ax.legend(loc="upper right")
+plt.tight_layout()
+plt.show()
+```
+
+As $k \to \infty$ the upper curve approaches $r = 1/2$. Ludwig et al. used this fact: for a large carrying capacity, outbreaks require $R > 1/2$ in their notation [@ludwig1978qualitative, p. 325].
+
+## Consequences
+
+- An outbreak is triggered by crossing one fold and ended only by crossing the other. Returning the parameter to its value just before the outbreak is not enough.
+- Near a fold the refuge state loses resilience: the decay rate $|f'(x^*)|$ tends to zero, so the system recovers more slowly from perturbations. Similar arguments are used for sudden shifts in lakes, coral reefs and forests [@scheffer2001catastrophic].
+
+::: {.callout-note}
+## Exercise
+Fix $k = 10$ and vary $r$ instead. The folds are at $r \approx 0.384$ and $r \approx 0.560$. Describe what happens when $r$ increases from 0.3 to 0.7 and then decreases back to 0.3.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+Starting on the refuge branch, the population stays low until $r \approx 0.560$, where the refuge fixed point disappears and the population jumps to the outbreak level. On the way back it stays high until $r \approx 0.384$, where the outbreak fixed point disappears and it drops to the refuge. Between 0.384 and 0.560 the state depends on the direction of change.
+:::
+
+::: {.callout-tip}
+## Optional extension
+`amlab/odes_1d/spruce_budworm_histeresis.py` lets $k$ oscillate in time, $k(t) = k_0 + A(1 + \sin 2\pi f t)$, and animates $x$ against $k$. Run it locally:
+
+```python
+from amlab.odes_1d.spruce_budworm_histeresis import make_animation
+
+make_animation()
+```
+
+Change `r` inside `make_animation` to 0.56 and `k0`, `amp` so that $k$ spans the interval $[6, 11]$. Does a loop appear? What happens if you increase the frequency `freq`?
+:::
+
+## Next
+
+[Budworm and Forest: Fast and Slow](budworm-forest-fast-slow.qmd){.btn .btn-primary}

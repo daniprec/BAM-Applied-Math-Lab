@@ -1,0 +1,141 @@
+---
+title: "CDIMA: Parameter Map"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+You now build a clickable map of the $(a, b)$ parameter plane of the CDIMA model: clicking a point shows the phase portrait for those parameters. You also locate the Hopf curve from simulations alone and compare it with $b_c = 3a/5 - 25/a$ [@strogatz2024nonlinear, Section 8.3].
+
+## Prediction
+
+Sketch the curve $b = 3a/5 - 25/a$ for $2 \le a \le 20$. In which part of the plane do you expect oscillations?
+
+## Implementation: the clickable map
+
+The map has two panels. The left one shows the $(a, b)$ plane with the theoretical Hopf curve. A click there sets the parameters and redraws the right panel: nullclines, the fixed point and a few trajectories. The core of the code is the click callback:
+
+```python
+def on_click(event):
+    if event.inaxes == ax_map:
+        a, b = event.xdata, event.ydata
+        # TODO: clear ax_phase
+        # TODO: draw nullclines y = (a - x)(1 + x^2)/(4x) and y = 1 + x^2
+        # TODO: integrate and plot trajectories from a few initial conditions
+        # TODO: mark the fixed point (a/5, 1 + (a/5)^2)
+        fig.canvas.draw_idle()
+
+fig.canvas.mpl_connect("button_press_event", on_click)
+```
+
+::: {.callout-tip collapse="true"}
+## Solution
+`run_parameter_map` in `amlab/odes_2d/cdima_analysis.py` is a complete version. Run it locally (it needs an interactive Matplotlib window):
+
+```python
+from amlab.odes_2d.cdima_analysis import run_parameter_map
+
+run_parameter_map()
+```
+
+The older script `amlab/odes_2d/cdima.py` also has a clickable stability diagram, combined with the animation from [Animations and Interactivity](animation.qmd).
+:::
+
+@fig-map-static shows what the right panel displays for four points of the map.
+
+```{python}
+#| echo: false
+#| label: fig-map-static
+#| fig-cap: "CDIMA phase portraits at four points of the (a, b) plane. Top: oscillation (b below the Hopf curve). Bottom: stable fixed point (b above it). Blue: x-nullcline; red: y-nullcline."
+#| fig-width: 8
+#| fig-height: 6
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.integrate import solve_ivp
+
+from amlab.odes_2d.cdima import cdima
+from amlab.odes_2d.cdima_analysis import cdima_fixed_point, hopf_b
+
+points = [(10, 2), (15, 5), (10, 5), (5, 2)]
+fig, axs = plt.subplots(2, 2, figsize=(8, 6))
+for ax, (a, b) in zip(axs.flat, points):
+    p = cdima_fixed_point(a)
+    xmax, ymax = 1.6 * p[0] + 1, 1.6 * p[1] + 1
+    xg = np.linspace(0.01, xmax, 300)
+    ax.plot(xg, (a - xg) * (1 + xg**2) / (4 * xg), "b", lw=1)
+    ax.plot(xg, 1 + xg**2, "r", lw=1)
+    sol = solve_ivp(cdima, (0, 60), [0.2, 0.2], args=(a, b), t_eval=np.linspace(0, 60, 4000))
+    ax.plot(sol.y[0], sol.y[1], "k", lw=0.8)
+    ax.plot(*p, "o", color="k", mfc="k" if b > hopf_b(a) else "w")
+    ax.set_xlim(0, xmax)
+    ax.set_ylim(0, ymax)
+    ax.set_title(f"a = {a}, b = {b}, b_c = {hopf_b(a):.2f}", fontsize=9)
+plt.tight_layout()
+plt.show()
+```
+
+## Validation: the Hopf curve from simulations
+
+Without using the formula, decide for each $a$ the largest $b$ at which the long-run solution still oscillates. Simulate from a point near the fixed point, discard the transient and measure the amplitude of $x(t)$.
+
+```{python}
+#| label: fig-hopf-numeric
+#| fig-cap: "Hopf curve of the CDIMA model. Line: theory b_c = 3a/5 - 25/a. Dots: b at which the simulated oscillation amplitude drops below 0.05, found by bisection."
+#| fig-width: 6
+#| fig-height: 3.5
+from amlab.odes_2d.cdima_analysis import limit_cycle_amplitude
+
+
+def oscillates(a, b, threshold=0.05):
+    return limit_cycle_amplitude(a, b, t_end=200.0) > threshold
+
+
+def hopf_by_simulation(a, b_lo=0.05, b_hi=10.0, steps=10):
+    for _ in range(steps):
+        b_mid = 0.5 * (b_lo + b_hi)
+        if oscillates(a, b_mid):
+            b_lo = b_mid
+        else:
+            b_hi = b_mid
+    return 0.5 * (b_lo + b_hi)
+
+
+a_vals = [8.0, 10.0, 12.0, 15.0]
+b_sim = [hopf_by_simulation(a) for a in a_vals]
+for a, b in zip(a_vals, b_sim):
+    print(f"a = {a}: simulation {b:.3f}, theory {hopf_b(a):.3f}")
+
+aa = np.linspace(6.5, 16, 200)
+fig, ax = plt.subplots(figsize=(6, 3.5))
+ax.plot(aa, hopf_b(aa), "k--", label="theory")
+ax.plot(a_vals, b_sim, "o", label="simulation")
+ax.set_xlabel("a")
+ax.set_ylabel("b")
+ax.legend()
+ax.grid(alpha=0.3)
+plt.tight_layout()
+plt.show()
+```
+
+The simulated boundary lies slightly below the theoretical one. Near $b_c$ the amplitude grows like $\sqrt{b_c - b}$, so an oscillation with amplitude below the threshold 0.05 is counted as "no oscillation". Lower the threshold and increase `t_end` to get closer to the theory.
+
+## Experiment and interpretation
+
+- Click points close to the Hopf curve. How does the size of the limit cycle change?
+- For $a < \sqrt{125/3} \approx 6.45$ the curve is below $b = 0$. Can you find oscillations there?
+
+The map turns the formula into a picture: one inequality between two parameters decides whether the reaction oscillates.
+
+## Next
+
+Session 9 studies excitable systems.
+
+[Excitability](excitability.qmd){.btn .btn-primary}
+
+## Exit question
+
+A student finds a limit cycle in a simulation at $a = 10$, $b = 3.6$. The theory says the fixed point is stable for $b > 3.5$. Which is wrong?
+
+::: {.callout-tip collapse="true"}
+## Answer
+Probably neither is wrong yet, but the claim needs checking. For $b = 3.6$ the eigenvalues have real part $-0.02$, so the decay is slow: a trajectory can look like a limit cycle for a long time. Integrate longer and measure the amplitude at late times. If a cycle truly persisted above $b_c$, the bifurcation would be subcritical, which the amplitude measurements in [Hopf Bifurcation](hopf-bifurcation.qmd) do not support.
+:::

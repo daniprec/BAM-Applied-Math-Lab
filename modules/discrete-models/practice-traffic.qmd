@@ -1,0 +1,63 @@
+---
+title: "Practice: Traffic"
+subtitle: "Module 6: Explorables and Discrete Models"
+format: html
+---
+
+This is ungraded practice. You now have the core ingredients of an agent-based traffic model: local update rules, a reproducible simulator, a space-time diagram, and macroscopic observables such as density and flow [@nagel1992cellular; @wilensky2015abm]. This page combines them into one short traffic study.
+
+You can follow the guide here:
+
+[Traffic Model](traffic.qmd){.btn .btn-primary}
+[Flow and Congestion](traffic-analysis.qmd){.btn .btn-primary}
+[Traffic Extensions](traffic-extensions.qmd){.btn .btn-primary}
+
+## Goals
+
+The practice checks three skills:
+
+- Build a correct agent-based traffic simulator.
+- Connect microscopic update rules with macroscopic observables.
+- Explain when and why congestion appears.
+
+## Core tasks
+
+1. Implement `initialize_road()`, `step()`, and `simulate()` for the Nagel-Schreckenberg model.
+2. Produce space-time diagrams for at least three densities: one low-density regime, one intermediate regime, and one congested regime.
+3. Estimate the fundamental diagram $q(\rho)$ using at least 10 density values and a burn-in period before you average the flow.
+4. Validate the result for `p_slow = 0` against $q = \min(\rho\, v_{\max},\ 1 - \rho)$.
+5. Compare the flow-density curve for at least two values of `p_slow`, and describe where the maximum flow occurs and how the onset of congestion changes when `p_slow` increases.
+
+## Questions to answer
+
+- At what density does free flow begin to break down in your experiments?
+- Does higher random slowdown mostly change the peak flow, the jam onset, or both?
+- Which figure best explains the transition from microscopic rules to macroscopic congestion?
+
+::: {.callout-tip}
+## Optional extensions
+
+- Add sliders for density, `p_slow`, or `vmax`.
+- Compare random initial conditions with a localized dense cluster of cars.
+- Introduce a small fraction of slow vehicles and study the effect on the flow curve.
+- Replace the periodic road by open boundaries with inflow and outflow.
+:::
+
+## Tips
+
+- Test one update step on a short road before you launch long runs.
+- Fix the seed when you debug.
+- Discard an initial burn-in window when you estimate stationary flow.
+- Keep the plotting code separate from the simulation code so repeated experiments stay simple.
+
+Reference code: [amlab/cellular_automata/traffic.py](../../amlab/cellular_automata/traffic.py) and [amlab/cellular_automata/traffic_models.py](../../amlab/cellular_automata/traffic_models.py).
+
+## Exit question
+
+On a ring road you measure the same density twice and get two clearly different mean flows. Your code has no bug. Name one model feature from this session that can explain it.
+
+::: {.callout-tip collapse="true"}
+## Answer
+
+A slow-to-start rule ($p_0 > p$). It creates a density range with a metastable high-flow state and a jammed state, so the flow depends on the initial condition and not only on the density [@barlovic1998metastable]. A run that is too short, so that the burn-in has not removed the transient, can give the same symptom.
+:::

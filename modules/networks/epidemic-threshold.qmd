@@ -1,0 +1,98 @@
+---
+title: "Epidemic Threshold"
+subtitle: "Module 5: Complex Networks"
+format: html
+---
+
+In the well-mixed SIS model of [Compartmental Models](../low-dimensional-dynamics/compartmental-models.qmd), an infection persists only if $R_0 > 1$. On a network, the corresponding condition depends on the degree distribution. This page derives it and states exactly when the threshold vanishes.
+
+## Setup
+
+Use the continuous-time SIS model: each S-I edge transmits at rate $\beta$ and each infected node recovers at rate $\mu$. The **spreading rate** is $\lambda = \beta/\mu$. In the discrete-time simulations of [SIS Simulation](sis-network-simulation.qmd), $\lambda \approx \beta/\mu$ when both probabilities are small.
+
+## Homogeneous mean field
+
+If every node had exactly $\langle k \rangle$ neighbours, the infected density $\rho$ would obey $\dot\rho = -\rho + \lambda\langle k \rangle \rho(1-\rho)$ (time in units of $1/\mu$). The threshold is $\lambda_c = 1/\langle k \rangle$ [@pastor2015epidemic].
+
+## Heterogeneous mean field
+
+Now group nodes by degree. Let $\rho_k$ be the fraction of infected nodes among nodes of degree $k$. Assume an uncorrelated network: an edge leads to a node of degree $k'$ with probability $k' p_{k'}/\langle k \rangle$. Then [@pastor2001epidemic; @pastor2015epidemic]
+
+$$
+\frac{d\rho_k}{dt} = -\rho_k + \lambda k (1 - \rho_k)\,\Theta, \qquad \Theta = \frac{1}{\langle k \rangle}\sum_{k'} k' p_{k'} \rho_{k'} .
+$$
+
+Linearize around $\rho_k = 0$. Multiply by $k p_k / \langle k \rangle$ and sum over $k$: $\dot\Theta = \left(\lambda \langle k^2 \rangle / \langle k \rangle - 1\right)\Theta$. The disease-free state becomes unstable when
+
+$$
+\lambda > \lambda_c = \frac{\langle k \rangle}{\langle k^2 \rangle}.
+$$
+
+For a Poisson degree distribution, $\langle k^2 \rangle = \langle k \rangle^2 + \langle k \rangle$ and $\lambda_c = 1/(\langle k \rangle + 1)$, close to the homogeneous result. For SIR the analogous result is a critical transmissibility $T_c = \langle k \rangle / (\langle k^2 \rangle - \langle k \rangle)$ [@newman2002spread].
+
+## When does the threshold vanish?
+
+For a scale-free distribution $p_k \sim k^{-\gamma}$ with $2 < \gamma \le 3$, $\langle k^2 \rangle$ diverges as $N \to \infty$, so $\lambda_c \to 0$ [@pastor2001epidemic]. Read this result with its assumptions:
+
+- It is an **asymptotic result** for an **idealized infinite** scale-free network with $2 < \gamma \le 3$.
+- It relies on the heterogeneous mean-field approximation, which ignores degree correlations and the fixed structure of the contacts.
+- Every **finite** network has a largest degree $k_{\max}$, so $\langle k^2 \rangle$ is finite and the threshold is **small but nonzero** [@pastor2002finite]. For the Barabási-Albert model, $\langle k^2 \rangle \approx m(m+1)\ln N$ (see [Preferential Attachment](preferential-attachment.qmd)), so the formula gives $\lambda_c \approx 2/\big((m+1)\ln N\big)$, which decreases only logarithmically with $N$.
+- Other approximations give other finite-size thresholds. The quenched mean-field theory, which keeps the full adjacency matrix, predicts $\lambda_c = 1/\Lambda_{\max}$, where $\Lambda_{\max}$ is the largest eigenvalue of $A$ [@castellano2010thresholds; @pastor2015epidemic].
+
+@fig-threshold-N computes both predictions on generated graphs.
+
+```{python}
+#| label: fig-threshold-N
+#| fig-cap: "Epidemic threshold predictions against network size for Barabási-Albert (m = 3) and Erdős-Rényi graphs with the same mean degree. Solid: heterogeneous mean field <k>/<k^2>. Dashed: quenched mean field 1/Lambda_max. One graph per size."
+#| echo: false
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
+from scipy.sparse.linalg import eigsh
+
+Ns = np.array([300, 1000, 3000, 10_000, 30_000])
+res = {"BA": ([], []), "ER": ([], [])}
+for i, n in enumerate(Ns):
+    graphs = {
+        "BA": nx.barabasi_albert_graph(n, 3, seed=i),
+        "ER": nx.fast_gnp_random_graph(n, 6 / (n - 1), seed=i),
+    }
+    for name, G in graphs.items():
+        k = np.array([d for _, d in G.degree()], dtype=float)
+        A = nx.to_scipy_sparse_array(G, format="csr", dtype=float)
+        lam_max = eigsh(A, k=1, which="LA", return_eigenvectors=False)[0]
+        res[name][0].append(k.mean() / (k**2).mean())
+        res[name][1].append(1 / lam_max)
+
+fig, ax = plt.subplots(figsize=(6, 3.8))
+for name, c in [("BA", "C0"), ("ER", "C1")]:
+    ax.semilogx(Ns, res[name][0], "o-", color=c, label=f"{name}: <k>/<k²>")
+    ax.semilogx(Ns, res[name][1], "s--", color=c, label=f"{name}: 1/Λmax")
+ax.set_xlabel("N")
+ax.set_ylabel(r"$\lambda_c$")
+ax.set_ylim(bottom=0)
+ax.legend()
+plt.tight_layout()
+plt.show()
+for name in res:
+    print(name, "HMF:", np.round(res[name][0], 3))
+```
+
+For the ER graphs the threshold stays near $1/(\langle k \rangle + 1) = 1/7 \approx 0.14$. For the BA graphs it decreases slowly with $N$ but stays well above zero at every size you can simulate.
+
+::: {.callout-note}
+## Exercise
+
+A BA network with $m = 3$ has $N = 10^9$ nodes. Estimate $\lambda_c$ from the heterogeneous mean-field formula. Compare it with an ER graph with the same mean degree.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+$\lambda_c \approx 2/\big((m+1)\ln N\big) = 2/(4 \times 20.7) \approx 0.024$. The ER graph gives $\lambda_c = 1/(\langle k \rangle + 1) = 1/7 \approx 0.14$ at any size. Even for a network the size of a large country the BA threshold is small but clearly positive.
+:::
+
+::: {.callout-tip}
+## Optional extension
+Use `amlab.networks_spreading.run_sis_fast` on a BA graph with $N = 2000$. Fix $\mu = 0.05$, vary $\beta$, and plot the long-time prevalence against $\lambda = \beta/\mu$. Locate the value of $\lambda$ where the prevalence leaves zero and compare it with both predictions.
+:::

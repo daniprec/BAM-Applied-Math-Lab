@@ -1,0 +1,87 @@
+---
+title: "Stable Distributions"
+subtitle: "Module 3: Modelling with Randomness"
+format: html
+---
+
+The Gaussian is the limit of sums with finite variance. Sums of variables with power-law tails and infinite variance also converge, but to a different family: the Lévy stable laws [@gnedenko1954limit; @mantegna2000introduction, Chapter 4].
+
+## Definition
+
+A random variable $X$ is stable if a sum of independent copies has the same shape as $X$ itself: for every $n$ there are constants $a_n > 0$ and $b_n$ with
+
+$$
+X_1 + \dots + X_n \overset{d}{=} a_n X + b_n .
+$$
+
+The scale factor is always $a_n = n^{1/\alpha}$ for some index $0 < \alpha \le 2$ [@gnedenko1954limit]. A stable law has no closed-form density in general. It is defined through its characteristic function. For the symmetric case centred at zero,
+
+$$
+\mathbb{E}\left[e^{ikX}\right] = \exp\left(-|c k|^{\alpha}\right),
+$$ {#eq-stable-cf}
+
+with scale $c > 0$. The general family adds a skewness parameter $\beta \in [-1, 1]$ and a location [@mantegna2000introduction, Chapter 4].
+
+## Key properties
+
+- $\alpha = 2$ gives the Gaussian with variance $2c^2$. $\alpha = 1$ gives the Cauchy law, with density $c / [\pi (c^2 + x^2)]$.
+- For $\alpha < 2$ the tails are power laws, $\Pr(|X| > x) \sim C x^{-\alpha}$ as $x \to \infty$. The variance is infinite. For $\alpha \le 1$ the mean does not exist either [@mantegna2000introduction, Chapter 4].
+- **Generalized central limit theorem.** If i.i.d. variables have tails $\Pr(|X| > x) \sim C x^{-\alpha}$ with $0 < \alpha < 2$, their suitably centred sums divided by $n^{1/\alpha}$ converge to a stable law with the same $\alpha$. If the variance is finite, the limit is Gaussian [@gnedenko1954limit].
+- In the power-law notation of [Power Laws](power-laws.qmd), where the density decays as $x^{-\alpha_{\text{pdf}}}$, the stable index is $\alpha = \alpha_{\text{pdf}} - 1$. Only $\alpha_{\text{pdf}} < 3$ leads to a non-Gaussian limit.
+
+You can sample symmetric stable variables with the method of @chambers1976method, implemented in `amlab.random_walks.sample_symmetric_stable` and in `scipy.stats.levy_stable` [@virtanen2020scipy].
+
+## Cauchy against normal sample means
+
+For Gaussian data the sample mean of $n$ values has width $\propto n^{-1/2}$. For Cauchy data, $\alpha = 1$ and $a_n = n$, so the sample mean $S_n / n$ has *exactly* the same Cauchy law as a single observation. Averaging does not help.
+
+```{python}
+#| label: fig-cauchy-vs-normal
+#| fig-cap: "Running sample mean of 10000 draws for five independent sequences. Left: standard normal. Right: standard Cauchy ($\\alpha = 1$). The normal means settle at 0; the Cauchy means keep jumping whenever a very large value arrives."
+#| echo: false
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+from amlab.random_walks import sample_symmetric_stable
+
+rng = np.random.default_rng(20)
+n = np.arange(1, 10001)
+
+fig, axes = plt.subplots(1, 2, figsize=(9, 3.5), sharex=True)
+for _ in range(5):
+    axes[0].plot(n, np.cumsum(rng.standard_normal(n.size)) / n, lw=0.8)
+    axes[1].plot(n, np.cumsum(sample_symmetric_stable(1.0, n.size, rng=rng)) / n, lw=0.8)
+axes[0].set_title("normal")
+axes[1].set_title("Cauchy")
+for ax in axes:
+    ax.set_xscale("log")
+    ax.set_xlabel("sample size $n$")
+axes[0].set_ylabel("running mean")
+plt.tight_layout()
+plt.show()
+```
+
+::: {.callout-note}
+## Exercise
+
+Check the scaling $a_n = n^{1/\alpha}$ for $\alpha = 1.5$. Draw 10000 sums of $n$ symmetric stable variables for $n = 1, 10, 100, 1000$, and compute the interquartile range (IQR) of each set of sums. Fit the slope of $\log \text{IQR}$ against $\log n$. Why do you use the IQR and not the standard deviation?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+```{python}
+rng = np.random.default_rng(4)
+ns = np.array([1, 10, 100, 1000])
+iqr = []
+for m in ns:
+    s = sample_symmetric_stable(1.5, (10000, m), rng=rng).sum(axis=1)
+    q75, q25 = np.percentile(s, [75, 25])
+    iqr.append(q75 - q25)
+slope = np.polyfit(np.log(ns), np.log(iqr), 1)[0]
+print(f"slope {slope:.3f}, theory 1/alpha = {1 / 1.5:.3f}")
+```
+
+The standard deviation is infinite for $\alpha < 2$, so its sample value is dominated by the largest draw and does not converge. Quantiles exist for every stable law.
+:::

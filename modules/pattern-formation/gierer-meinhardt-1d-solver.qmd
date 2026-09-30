@@ -1,0 +1,160 @@
+---
+title: "Gierer-Meinhardt Solver in 1D"
+subtitle: "Module 4: Space and Pattern Formation"
+format: html
+---
+
+You now have a Laplacian and a boundary helper. This page combines them with the reaction terms of @eq-gm1s-model and an explicit Euler loop [@gierer1972theory].
+
+$$
+\partial_t u = \Delta u + \gamma \left(a - b u + \frac{u^2}{v}\right), \qquad
+\partial_t v = d\,\Delta v + \gamma \left(u^2 - v\right).
+$$ {#eq-gm1s-model}
+
+## Initialize the Fields
+
+Start from the homogeneous steady state and add a small perturbation.
+
+```python
+import numpy as np
+
+rng = np.random.default_rng(3)
+
+length = 40
+dx = 1.0
+num_points = int(length / dx)
+a, b = 0.40, 1.00
+u_star = (a + 1) / b
+
+# TODO: create a (2, num_points) array with u = u_star and v = u_star**2
+uv =
+
+# TODO: multiply by (1 + 1% Gaussian noise) to break the symmetry
+uv =
+```
+
+::: {.callout-tip collapse="true"}
+## Solution: Field initialization (click to expand)
+
+```python
+uv = np.array([[u_star], [u_star**2]]) * np.ones((2, num_points))
+uv = uv * (1 + 0.01 * rng.standard_normal((2, num_points)))
+```
+:::
+
+Why add noise? A perfectly uniform initial condition is a steady state, so it never moves, even when it is unstable. Small perturbations reveal whether the system amplifies spatial differences.
+
+## Build the PDE Right-Hand Side
+
+Use your Laplacian helper for both $u$ and $v$, then add the reaction terms.
+
+```python
+def gierer_meinhardt_pde(t, uv, gamma=1, a=0.40, b=1.00, d=30, dx=1.0):
+    u, v = uv
+    lu = laplacian_1d(u, dx)
+    lv = laplacian_1d(v, dx)
+
+    # TODO: write the reaction terms
+    f =
+    g =
+
+    # TODO: combine diffusion and reaction
+    du_dt =
+    dv_dt =
+    return np.array([du_dt, dv_dt])
+```
+
+::: {.callout-tip collapse="true"}
+## Solution: Gierer-Meinhardt PDE in 1D (click to expand)
+
+```python
+def gierer_meinhardt_pde(t, uv, gamma=1, a=0.40, b=1.00, d=30, dx=1.0):
+    u, v = uv
+    lu = laplacian_1d(u, dx)
+    lv = laplacian_1d(v, dx)
+
+    f = a - b * u + (u**2) / v
+    g = u**2 - v
+    du_dt = lu + gamma * f
+    dv_dt = d * lv + gamma * g
+    return np.array([du_dt, dv_dt])
+```
+:::
+
+## Advance in Time
+
+Explicit Euler updates every grid point at once:
+
+$$
+u^{n+1} = u^n + dt\,\dot u^n, \qquad v^{n+1} = v^n + dt\,\dot v^n.
+$$ {#eq-gm1s-euler}
+
+You cannot hand this to `solve_ivp()` directly, because the boundary values must be reset after every step. Complete the loop below.
+
+```python
+num_iter = 50000
+dt = 0.01
+
+for _ in range(num_iter):
+    dudt, dvdt = gierer_meinhardt_pde(0, uv, d=30, dx=dx)
+
+    # TODO: Euler update for u and v
+
+    # TODO: Neumann boundary conditions on both fields
+```
+
+::: {.callout-tip collapse="true"}
+## Solution: Euler loop with Neumann boundaries (click to expand)
+
+```python
+for _ in range(num_iter):
+    dudt, dvdt = gierer_meinhardt_pde(0, uv, d=30, dx=dx)
+    uv[0] = uv[0] + dt * dudt
+    uv[1] = uv[1] + dt * dvdt
+    uv = apply_boundary_conditions_1d(uv, bc="neumann")
+```
+:::
+
+## Plot the Pattern
+
+```python
+import matplotlib.pyplot as plt
+
+x = np.arange(num_points) * dx
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.plot(x, uv[1])
+ax.set_xlabel("x")
+ax.set_ylabel("v(x)")
+ax.set_title("Gierer-Meinhardt in 1D")
+plt.show()
+```
+
+Your profile should look like the $d = 30$ curve on [Gierer-Meinhardt Model in 1D](gierer-meinhardt-1d-model.qmd). The exact peak positions depend on the noise.
+
+## Validation
+
+Before you trust any figure, run three checks.
+
+- **Time step.** With $d = 30$ and $dx = 1$, explicit Euler needs $dt \le dx^2/(2d) \approx 0.0167$. The choice $dt = 0.01$ is safe, $dt = 0.02$ is not. See [Time-Step Stability](time-step-stability.qmd) for the derivation and a failing example.
+- **Convergence.** Halve $dx$ (and divide $dt$ by four) and check that the profile barely changes ([Time-Step Stability](time-step-stability.qmd)).
+- **Prediction.** Count the half-wavelengths. Case A should show about five on $(0, 40)$, matching the leading mode from [Turing Numerics](turing-numerics.qmd). Case B should return to the flat state.
+
+```{python}
+import numpy as np
+
+from amlab.turing import euler_dt_max, simulate_gm_1d
+
+print(f"dt bound for d = 30, dx = 1: {euler_dt_max(dx=1.0, diffusion=30.0):.4f}")
+for d in (30.0, 20.0):
+    x, uv = simulate_gm_1d(d=d, dx=1.0, dt=0.01, t_end=500.0, bc="neumann", seed=3)
+    spread = uv[1].max() - uv[1].min()
+    print(f"d = {d:.0f}: max(v) - min(v) = {spread:.2e}")
+```
+
+For $d = 30$ the spread is of order $0.4$; for $d = 20$ it is at rounding level, so the flat state is recovered.
+
+Next: [Time-Step Stability](time-step-stability.qmd).
+
+::: {.callout-tip}
+Reference code is available in [amlab/pdes_1d/gierer_meinhardt_1d.py](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/pdes_1d/gierer_meinhardt_1d.py).
+:::

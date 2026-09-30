@@ -1,0 +1,113 @@
+---
+title: "Network Concepts"
+subtitle: "Module 5: Complex Networks"
+format: html
+---
+
+::: {.callout-note}
+## Reading
+- **Compulsory:** @newman2003structure, Sections 1 to 3.
+- **Recommended:** @newman2018networks; @menczer2020firstcourse.
+:::
+
+A network (or graph) $G = (V, E)$ is a set of $N = |V|$ nodes and a set of $E = |E|$ edges that join pairs of nodes [@newman2003structure]. In Module 1 you modelled an epidemic with ODEs that assume every individual meets every other one. A network drops that assumption: interactions happen only along edges.
+
+## Adjacency matrix and degree
+
+For an undirected, unweighted graph, the adjacency matrix has $A_{ij} = 1$ if nodes $i$ and $j$ share an edge and $A_{ij} = 0$ otherwise. The degree of node $i$ is
+
+$$
+k_i = \sum_{j} A_{ij}, \qquad \langle k \rangle = \frac{1}{N}\sum_i k_i = \frac{2E}{N}.
+$$
+
+The **degree distribution** $p_k$ is the fraction of nodes with degree $k$. Its second moment $\langle k^2 \rangle = \sum_k k^2 p_k$ appears in every result of this module: percolation, cascades and epidemic thresholds all depend on how broad $p_k$ is [@newman2003structure]. Many real networks have right-skewed degree distributions, sometimes close to a power law $p_k \sim k^{-\gamma}$ with $2 < \gamma < 3$ [@newman2003structure, Section 3.3].
+
+## Paths and the small-world effect
+
+A **path** is a sequence of edges that joins two nodes. The distance $d_{ij}$ is the length of the shortest path. The **average path length** $\ell$ averages $d_{ij}$ over all pairs, and the **diameter** is the largest $d_{ij}$. In many real networks $\ell$ is small and grows slowly (about logarithmically) with $N$. This is the small-world effect [@newman2003structure, Section 3.1; @watts1998collective].
+
+## Clustering
+
+The local clustering coefficient of node $i$ is
+
+$$
+C_i = \frac{\text{number of edges among the neighbours of } i}{k_i (k_i - 1)/2}.
+$$
+
+It measures how often two neighbours of $i$ are also neighbours of each other. Social networks tend to have much higher clustering than a random graph with the same $N$ and $E$ [@watts1998collective; @newman2003structure, Section 3.2].
+
+## Centrality
+
+Centrality measures rank nodes by importance. Each one encodes a different idea of "important" [@newman2018networks]:
+
+- **Degree centrality**: $k_i / (N-1)$. Many direct contacts.
+- **Closeness centrality**: $(N-1) / \sum_{j} d_{ij}$. Short distances to everyone else [@sabidussi1966centrality].
+- **Betweenness centrality**: $b_v = \sum_{s \neq v \neq t} \sigma_{st}(v) / \sigma_{st}$, where $\sigma_{st}$ counts shortest paths from $s$ to $t$ and $\sigma_{st}(v)$ counts those that pass through $v$ [@freeman1977betweenness]. You will use betweenness as the "load" of a node in the cascade lab.
+- **PageRank**: stationary distribution of a random walk with random restarts, used for directed graphs [@page1999pagerank].
+
+## Communities
+
+A **community** is a group of nodes with many edges inside the group and few edges to the rest of the network [@girvan2002community]. A common quality score is the modularity
+
+$$
+Q = \frac{1}{2E}\sum_{ij}\left(A_{ij} - \frac{k_i k_j}{2E}\right)\delta(c_i, c_j),
+$$
+
+which compares the edges inside communities with the number expected in a random graph with the same degrees [@newman2018networks]. Here $c_i$ is the community of node $i$.
+
+## Worked example: the karate club
+
+@fig-karate shows Zachary's karate club, a social network of 34 club members [@zachary1977information]. Node size is proportional to betweenness and colours show the communities found by greedy modularity maximization.
+
+```{python}
+#| label: fig-karate
+#| fig-cap: "Zachary's karate club. Node size is proportional to betweenness centrality; colours are communities found by greedy modularity maximization."
+#| echo: false
+import matplotlib.pyplot as plt
+import networkx as nx
+from networkx.algorithms.community import greedy_modularity_communities, modularity
+
+G = nx.karate_club_graph()
+communities = greedy_modularity_communities(G)
+colour = {v: i for i, c in enumerate(communities) for v in c}
+bc = nx.betweenness_centrality(G)
+
+pos = nx.spring_layout(G, seed=3)
+fig, ax = plt.subplots(figsize=(6, 4.5))
+nx.draw_networkx_edges(G, pos, ax=ax, alpha=0.4)
+nx.draw_networkx_nodes(
+    G, pos, ax=ax,
+    node_size=[80 + 2500 * bc[v] for v in G],
+    node_color=[colour[v] for v in G], cmap="tab10", vmin=0, vmax=9,
+)
+ax.set_axis_off()
+plt.tight_layout()
+plt.show()
+
+k = [d for _, d in G.degree()]
+print(f"N = {G.number_of_nodes()}, E = {G.number_of_edges()}, <k> = {sum(k)/len(k):.2f}")
+print(f"average clustering = {nx.average_clustering(G):.3f}")
+print(f"average path length = {nx.average_shortest_path_length(G):.3f}")
+print(f"{len(communities)} communities, Q = {modularity(G, communities):.3f}")
+```
+
+::: {.callout-note}
+## Exercise
+
+Nodes 0 and 33 are the instructor and the club administrator. Predict their rank by degree and by betweenness. Then check with `nx.degree_centrality` and `nx.betweenness_centrality`.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Nodes 0 and 33 take the first two places in both rankings. Node 33 has the largest degree, and node 0 has the largest betweenness because many shortest paths between the two groups pass through it.
+
+```python
+bc = nx.betweenness_centrality(G)
+dc = nx.degree_centrality(G)
+print(sorted(bc, key=bc.get, reverse=True)[:3])
+print(sorted(dc, key=dc.get, reverse=True)[:3])
+```
+:::
+
+The toolkit pages [NetworkX Basics](networkx-basics.qmd), [Paths and Components](networkx-paths.qmd) and [Centrality in NetworkX](networkx-centrality.qmd) show how to compute every quantity on this page.

@@ -1,0 +1,82 @@
+---
+title: "The Nagel-Schreckenberg Model"
+subtitle: "Module 6: Explorables and Discrete Models"
+format: html
+---
+
+::: {.callout-note}
+## Reading
+- **Compulsory:** @nagel1992cellular.
+- **Recommended:** @boccara2010modeling, Chapter 6.
+:::
+
+Nagel and Schreckenberg proposed a cellular automaton for single-lane freeway traffic [@nagel1992cellular]. The road is a ring of $L$ cells. Each cell is empty or holds one car. Each car $n$ has a position $x_n$ and an integer speed $v_n \in \{0, 1, \ldots, v_{\max}\}$, measured in cells per time step. The model is *agent-based*: every car carries its own state and reacts to the car in front.
+
+## The four rules
+
+Let $d_n$ be the number of empty cells between car $n$ and the car ahead. At every time step, all cars apply the following rules in this order, in parallel [@nagel1992cellular]:
+
+1. **Acceleration.** $v_n \leftarrow \min(v_n + 1,\ v_{\max})$.
+2. **Braking.** $v_n \leftarrow \min(v_n,\ d_n)$.
+3. **Randomization.** With probability $p$, $v_n \leftarrow \max(v_n - 1,\ 0)$.
+4. **Motion.** $x_n \leftarrow x_n + v_n$.
+
+Rule 2 guarantees that cars never collide. Cars never overtake, so their order on the ring never changes. The number of cars is conserved on the ring, and the density is $\rho = N/L$.
+
+## The role of the randomization step
+
+Without rule 3 ($p = 0$) the model is deterministic. From a random start it reaches a stationary state with flow
+
+$$
+q(\rho) = \min\big(\rho\, v_{\max},\ 1 - \rho\big),
+$$
+
+so every car moves at $v_{\max}$ for $\rho < 1/(v_{\max}+1)$ and jams only appear above that density [@chowdhury2000statistical].
+
+With $p > 0$ three things change [@nagel1992cellular; @chowdhury2000statistical]:
+
+- drivers fluctuate in speed, even on an empty road;
+- a car that brakes randomly forces the car behind to brake, which can start a jam in free traffic, with no external cause;
+- jams move backwards, against the direction of traffic.
+
+With $v_{\max} = 1$ and $p = 0$ the model reduces to the elementary Rule 184 [@chowdhury2000statistical].
+
+```{python}
+#| echo: false
+#| label: fig-nasch-randomization
+#| fig-cap: 'Space-time diagrams on a ring of 200 cells at density 0.15, v_max = 5. Left: p = 0, all cars move freely after a transient. Right: p = 0.3, jams form spontaneously and travel backwards. Cars move to the right; time runs downward.'
+#| fig-width: 8
+#| fig-height: 4
+
+import matplotlib.pyplot as plt
+from amlab.cellular_automata.traffic_models import space_time
+
+fig, axes = plt.subplots(1, 2, figsize=(8, 4), sharey=True)
+for ax, p in zip(axes, (0.0, 0.3)):
+    ax.imshow(space_time(length=200, density=0.15, steps=200, p=p, seed=4), cmap="binary", interpolation="nearest", aspect="auto")
+    ax.set_title(f"p = {p}")
+    ax.set_xlabel("Road cell")
+axes[0].set_ylabel("Time")
+plt.tight_layout()
+plt.show()
+```
+
+## Scales
+
+In the original interpretation one cell corresponds to 7.5 m, the space a car occupies in a jam, and one time step to about 1 s. Then $v_{\max} = 5$ corresponds to $5 \times 7.5$ m/s $= 135$ km/h [@nagel1992cellular].
+
+::: {.callout-note}
+## Exercise
+
+Why must the braking rule come before the randomization rule? What could go wrong if you apply randomization first and braking second?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+If randomization comes first, a car whose speed is limited by the gap ($d_n < v_n - 1$) brakes to $d_n$ anyway, so the random slowdown has no effect on it. Fluctuations would then only act on cars with enough free road ahead, and cars in dense traffic would move deterministically. In the original order the random slowdown acts after braking, on every car, including cars that follow closely. This is what lets one random slowdown propagate backwards as a jam. Test it: swap the two rules in your code and compare the space-time diagrams.
+:::
+
+## Next
+
+[The Fundamental Diagram](fundamental-diagram.qmd){.btn .btn-primary}

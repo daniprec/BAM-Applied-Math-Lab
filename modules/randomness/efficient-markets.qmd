@@ -1,0 +1,85 @@
+---
+title: "Returns and Efficient Markets"
+subtitle: "Module 3: Modelling with Randomness"
+format: html
+---
+
+::: {.callout-note}
+## Reading
+- **Compulsory:** @mantegna2000introduction, Chapters 1 to 3.
+- **Recommended:** @mandelbrot1963variation; @mantegna1995scaling.
+:::
+
+The first random walk model of prices is older than Einstein's theory of Brownian motion. Bachelier modelled price changes on the Paris exchange as independent Gaussian increments in his 1900 thesis [@bachelier1900theorie]. This session asks how well that model describes real markets.
+
+## Prices and returns
+
+Let $P_t$ be the closing price on day $t$. The simple return and the log return are
+
+$$
+R_t = \frac{P_t - P_{t-1}}{P_{t-1}}, \qquad r_t = \ln \frac{P_t}{P_{t-1}} = \ln(1 + R_t).
+$$ {#eq-returns}
+
+For daily data $|R_t|$ is usually small and $r_t \approx R_t$. Log returns have one property that makes them the natural variable for modelling: they add over time. The log return over $\Delta t$ days is
+
+$$
+r_t(\Delta t) = \ln \frac{P_t}{P_{t - \Delta t}} = \sum_{i=0}^{\Delta t - 1} r_{t-i} .
+$$ {#eq-returns-aggregate}
+
+So $\ln P_t$ is a random walk whose steps are the daily log returns, and everything from [The Random Walk](random-walk.qmd) and [Stable Distributions](stable-distributions.qmd) applies to it.
+
+## The random walk hypothesis
+
+The simplest model assumes that daily log returns are independent and identically distributed, often Gaussian with mean $\mu$ and variance $\sigma^2$:
+
+$$
+\ln P_t = \ln P_0 + \sum_{i=1}^{t} r_i, \qquad r_i \overset{\text{iid}}{\sim} \mathcal{N}(\mu, \sigma^2).
+$$ {#eq-geometric-rw}
+
+Then $\operatorname{Var}[r_t(\Delta t)] = \sigma^2 \Delta t$, the financial version of $\mathrm{MSD} = 2Dt$. Bachelier's original model used price changes instead of log returns [@bachelier1900theorie].
+
+## Efficient markets
+
+@fama1970efficient calls a market efficient when prices "fully reflect" the available information. He distinguishes three forms by the information set: past prices (weak form), all public information (semi-strong form), and all information, including private information (strong form). Fama also notes that the independence assumed in @eq-geometric-rw is stronger than what efficiency requires. In a "fair game" model the deviations of returns from their expected values cannot be predicted from the information set, but they need not be independent or identically distributed [@fama1970efficient].
+
+The practical consequence you test in the lab: under weak-form efficiency, past returns should carry no linear information about future returns.
+
+```{python}
+#| label: fig-geometric-rw
+#| fig-cap: "Five simulated price paths from the geometric random walk with $P_0 = 100$, $\\mu = 0$ and $\\sigma = 0.01$ per day over 1000 days. All paths come from the same model; the apparent trends are chance."
+#| echo: false
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+rng = np.random.default_rng(22)
+r = rng.normal(0.0, 0.01, size=(5, 1000))
+prices = 100 * np.exp(np.cumsum(r, axis=1))
+
+fig, ax = plt.subplots(figsize=(7, 3.5))
+ax.plot(prices.T, lw=0.8)
+ax.set_xlabel("day")
+ax.set_ylabel("price")
+plt.tight_layout()
+plt.show()
+```
+
+::: {.callout-note}
+## Exercise
+
+A price goes from 100 to 150 and then back to 100. Compute the two simple returns and the two log returns. Which of them sum to the total return over the two days?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+```{python}
+p = np.array([100.0, 150.0, 100.0])
+R = np.diff(p) / p[:-1]
+r = np.diff(np.log(p))
+print("simple returns:", R, "sum", R.sum())
+print("log returns:   ", r.round(4), "sum", r.sum().round(12))
+```
+
+The simple returns are $+50\%$ and $-33.3\%$; their sum, $+16.7\%$, is not the true total return of $0$. The log returns are $\pm 0.405$ and sum to exactly $0$.
+:::

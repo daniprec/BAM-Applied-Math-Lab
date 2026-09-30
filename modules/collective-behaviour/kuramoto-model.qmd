@@ -1,0 +1,76 @@
+---
+title: "The Kuramoto Model"
+subtitle: "Module 2: Synchronization and Collective Behaviour"
+format: html
+---
+
+::: {.callout-note}
+## Reading
+- **Compulsory:** @strogatz2000kuramoto, Sections 1 to 4.
+- **Recommended:** @strogatz2005bridge.
+:::
+
+The Kuramoto model describes a large population of coupled oscillators with different natural frequencies. Each oscillator $i$ has a phase $\theta_i$ and a natural frequency $\omega_i$ [@kuramoto1975self; @kuramoto2003chemical; @strogatz2000kuramoto].
+
+## From limit cycles to phases
+
+For any system of weakly coupled, nearly identical limit-cycle oscillators, the long-term dynamics reduce to phase equations of the form
+
+$$
+\dot\theta_i = \omega_i + \sum_{j=1}^N \Gamma_{ij} \left( \theta_j - \theta_i \right),\quad i = 1, \dots, N,
+$$ {#eq-ode-pairwise}
+
+where $\Gamma_{ij}$ is the coupling function that describes how oscillator $j$ influences oscillator $i$ through their phase difference [@kuramoto2003chemical; @strogatz2000kuramoto]. This reduction keeps the timing of each oscillator and discards its amplitude. @winfree1967biological first proposed studying populations in this way.
+
+## Kuramoto's choice
+
+Kuramoto took the simplest case: equally weighted, all-to-all, purely sinusoidal coupling,
+
+$$
+\Gamma_{ij}(\theta) = \frac{K}{N} \sin \theta.
+$$ {#eq-gamma}
+
+Substituting into @eq-ode-pairwise gives the **Kuramoto model**:
+
+$$
+\dot\theta_i = \omega_i + \frac{K}{N}\sum_{j=1}^N \sin(\theta_j - \theta_i), \quad i = 1, \dots, N.
+$$ {#eq-kuramoto}
+
+- $K \ge 0$ is the coupling strength.
+- The factor $1/N$ keeps the total input to each oscillator finite as $N$ grows.
+- The natural frequencies $\omega_i$ are drawn from a density $g(\omega)$ that is unimodal and symmetric about its mean $\Omega$ [@strogatz2000kuramoto].
+
+Two oscillators with $\theta_j$ slightly ahead of $\theta_i$ give $\sin(\theta_j - \theta_i) > 0$, so $i$ speeds up toward $j$. The coupling always pulls phases together. What competes against it is the spread of natural frequencies.
+
+## Rotating frame
+
+Move to a frame that rotates at the mean frequency, $\theta_i \to \theta_i + \Omega t$. The coupling depends only on phase differences, so @eq-kuramoto keeps its form and the new frequencies have mean zero. From now on you can assume $g(\omega) = g(-\omega)$ [@strogatz2000kuramoto].
+
+## Frequency densities used in this module
+
+| Density | $g(\omega)$ | $g(0)$ |
+|---|---|---|
+| Normal, standard deviation $\sigma$ | $\dfrac{1}{\sqrt{2\pi}\,\sigma}\, e^{-\omega^2/(2\sigma^2)}$ | $\dfrac{1}{\sqrt{2\pi}\,\sigma}$ |
+| Lorentzian (Cauchy), scale $\gamma$ | $\dfrac{\gamma}{\pi(\gamma^2 + \omega^2)}$ | $\dfrac{1}{\pi\gamma}$ |
+
+The Lorentzian case gives closed-form results ([Critical Coupling](critical-coupling.qmd)). The normal case is the default in the lab. The **initial phases** are drawn uniformly on $[0, 2\pi)$ unless stated otherwise.
+
+::: {.callout-note}
+## Exercise
+
+Show that @eq-kuramoto with $N = 2$ reduces to the firefly equation of [Phase Locking](phase-locking.qmd) for the phase difference $\phi = \theta_2 - \theta_1$. What is the locking condition?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+With $N = 2$, $\dot\theta_1 = \omega_1 + \tfrac{K}{2}\sin(\theta_2 - \theta_1)$ and $\dot\theta_2 = \omega_2 + \tfrac{K}{2}\sin(\theta_1 - \theta_2)$. Subtracting,
+
+$$
+\dot\phi = (\omega_2 - \omega_1) - K\sin\phi.
+$$
+
+This is the phase-difference equation of [Phase Locking](phase-locking.qmd) with detuning $\omega_2 - \omega_1$ and strength $K$. The two oscillators lock when $|\omega_2 - \omega_1| \le K$.
+:::
+
+Next: [The Order Parameter](order-parameter.qmd) turns @eq-kuramoto into a mean-field equation.

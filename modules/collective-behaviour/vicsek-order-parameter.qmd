@@ -1,0 +1,121 @@
+---
+title: "Vicsek Lab: Order Parameter"
+subtitle: "Module 2: Synchronization and Collective Behaviour"
+format: html
+---
+
+## Implementation: the order parameter
+
+The order parameter $\varphi$ (called $v_a$ in [The Vicsek Model](vicsek-model.qmd)) is defined as the magnitude of the average velocity vector normalized by the speed:
+
+$$
+\varphi(t) = \frac{1}{N v_0} \left|\sum_{i=1}^N v_0 \begin{bmatrix} \cos(\theta_i(t)) \\ \sin(\theta_i(t)) \end{bmatrix}\right| = \frac{1}{N} \left|\sum_{i=1}^N \begin{bmatrix} \cos(\theta_i(t)) \\ \sin(\theta_i(t)) \end{bmatrix}\right|.
+$$ {#eq-vicsek-order-parameter}
+
+You can compute this at each time step to see how the system evolves. In the disordered phase, $\varphi \approx 0$ because the headings are random and cancel out. In the ordered phase, $\varphi \approx 1$ because all particles align in the same direction.
+
+```python
+def vicsek_order_parameter(theta: np.ndarray, v0: float = 0.03) -> float:
+    # TODO: Compute the order parameter phi based on the headings theta
+    return phi
+```
+
+::: {.callout-tip collapse="true"}
+## Solved: Order parameter (click to expand)
+```python
+def vicsek_order_parameter(theta: np.ndarray, v0: float = 0.03) -> float:
+    """
+    Compute the normalized order parameter (mean velocity divided by v0), as in Vicsek et al. (1995).
+    """
+    vx = v0 * np.cos(theta)
+    vy = v0 * np.sin(theta)
+    avg_vx = np.mean(vx)
+    avg_vy = np.mean(vy)
+    return float(np.sqrt(avg_vx**2 + avg_vy**2) / v0)
+```
+:::
+
+## Experiment: reproduce Figure 2
+
+Try to reproduce Figure 2 of the original paper [@vicsek1995novel], which shows the order parameter $\varphi$ as a function of noise $\eta$ for different densities $\rho = N / L^2$. Run simulations for different values of $N$, $L$, and $\eta$, compute the order parameter at each time step, and then average it over time to get a single value for each combination of parameters.
+
+For reference, here are the parameters used in the original paper for Figure 2(a):
+
+- Number of particles $N$: from 40 up to 10000. Start with the two smallest values, 40 and 100, and try larger ones only if you have time.
+- Density $\rho$: constant at 4.0
+- Box size L: computed from density and number of particles, so $L = \sqrt{N / \rho}$.
+- Noise $\eta$: try several values between 0.0 and 5.0
+
+@fig-vicsek-order-parameter shows the order parameter as a function of noise for different values of $N$ at a constant density of $\rho = 4.0$. This is a small sample of the figure you want to produce. You should see that as noise increases, the order parameter decreases, indicating a transition from an ordered phase to a disordered phase. The larger the number of particles, the sharper this transition should be.
+
+```{python}
+#| label: fig-vicsek-order-parameter
+#| fig-cap: 'Order parameter against noise for $N = 40$ and $N = 100$ at density $\rho = 4$ (5000 steps, average over the last 1000, one realization).'
+#| fig-alt: 'Order parameter vs noise for different N. Density = 4.'
+#| fig-width: 6
+#| fig-height: 4
+#| echo: false
+#| warning: false
+import numpy as np
+import matplotlib.pyplot as plt
+
+from amlab.collective_motion.vicsek import plot_avg_velocity_vs_noise
+
+np.random.seed(0)
+
+plot_avg_velocity_vs_noise(
+    num_boids_list=[40, 100],
+    density=4.0,
+    noise_range=(0.0, 5.0),
+    noise_steps=10,
+    n_realizations=1,
+    verbose=False,
+    steps=5000,
+    avg_steps=1000,
+)
+plt.show()
+plt.close()
+```
+
+And here are the parameters for Figure 2(b):
+
+- Density $\rho$: try several values between 0.1 and 10.0. Higher values will take longer to compute, so start with a few values like 0.1, 1.0, and 4.0. In addition, you can distribute the values logarithmically so that you have more points at low densities where they compute faster.
+- Box size $L$: constant at 20.
+- Number of particles $N$: computed from density and box size, so $N = \rho L^2$.
+- Noise $\eta$: constant. The course uses $\eta = 2.0$; check the value in the caption of Figure 2(b) of @vicsek1995novel.
+
+@fig-vicsek-order-parameter-density shows the order parameter as a function of density for different values of $N$ at a constant noise level. This is a small sample of the figure you want to generate. At low densities the order parameter is small (disordered phase), and at high densities it grows toward one (ordered phase). In a small box it does not reach zero at low density, because few particles give a large noise floor of order $1/\sqrt{N}$.
+
+```{python}
+#| label: fig-vicsek-order-parameter-density
+#| fig-cap: 'Order parameter against density at noise $\eta = 2$ in a box of side $L = 5$ (5000 steps, average over the last 1000).'
+#| fig-alt: 'Order parameter vs density. Noise = 2.0 and L = 5.'
+#| fig-width: 6
+#| fig-height: 4
+#| echo: false
+#| warning: false
+import numpy as np
+import matplotlib.pyplot as plt
+
+from amlab.collective_motion.vicsek import plot_avg_velocity_vs_density
+
+plot_avg_velocity_vs_density(
+    density_range=(0.1, 3.0),
+    density_steps=6,
+    noise=2.0,
+    box_size=5,
+    verbose=False,
+    steps=5000,
+    avg_steps=1000,
+)
+plt.show()
+plt.close()
+```
+
+
+## Interpretation
+
+- Both figures show the two routes to order in @vicsek1995novel: less noise, or more density.
+- The curves for $N = 40$ and $N = 100$ are close. With systems this small you cannot tell whether the transition is continuous or discontinuous; that question needed much larger simulations [@gregoire2004onset; @chate2008collective].
+
+Next: [Validation](vicsek-validation.qmd).

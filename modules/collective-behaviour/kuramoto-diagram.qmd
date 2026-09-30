@@ -1,0 +1,198 @@
+---
+title: "Kuramoto Lab: Bifurcation Diagram"
+subtitle: "Module 2: Synchronization and Collective Behaviour"
+format: html
+---
+
+This page is the experiment step. You scan the coupling $K$, measure the steady-state coherence $r_\infty$ and compare it with theory. As $K$ increases, the system moves from incoherence ($r \approx 0$) to partial synchrony ($r > 0$) [@kuramoto2003chemical; @strogatz2000kuramoto].
+
+## Theory to compare with
+
+For any symmetric unimodal frequency density $g(\omega)$, the critical coupling is ([Critical Coupling](critical-coupling.qmd))
+
+$$
+K_c = \frac{2}{\pi g(0)}.
+$$ {#eq-kuramoto-kc}
+
+For a Cauchy (Lorentzian) distribution with scale parameter $\gamma$,
+
+$$
+g(\omega)=\frac{1}{\pi} \frac{\gamma}{\omega^2+\gamma^2},
+$$ {#eq-cauchy-density}
+
+so $g(0)=1/(\pi\gamma)$ and the critical coupling simplifies to
+
+$$
+K_c = 2\gamma.
+$$ {#eq-kc-cauchy}
+
+In this case the order parameter has a closed form:
+
+$$
+r_\infty(K)=
+\begin{cases}
+0, & K \le K_c, \\
+\sqrt{1-\frac{K_c}{K}}, & K > K_c.
+\end{cases}
+$$ {#eq-r-cauchy}
+
+**Warning:** @eq-r-cauchy holds only for the Cauchy distribution.
+
+```{python}
+#| label: fig-kuramoto-bifurcation-bad
+#| fig-cap: 'Kuramoto diagram: theoretical curve from @eq-r-cauchy and empirical points (drawn from a normal distribution). Why is there a mismatch?'
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+
+from amlab.odes_coupled.kuramoto import (
+    initialize_oscillators,
+    kuramoto_ode_meanfield,
+    kuramoto_order_parameter,
+)
+from amlab.odes_coupled.kuramoto_diagram import kuramoto_critical_coupling
+
+
+def draw_diagram(theory, data, num_oscillators=500, scale=1.0):
+    """Theoretical curve for `theory` and simulated points with frequencies from `data`."""
+    ls_k = np.linspace(0.0, 5.0, 20)
+    r_theory = kuramoto_critical_coupling(ls_k, scale=scale, distribution=theory)
+    theta, omega = initialize_oscillators(
+        num_oscillators, distribution=data, scale_omega=scale, seed=1
+    )
+    ls_r = np.zeros_like(ls_k)
+    for idx, k in enumerate(ls_k):
+        sol = solve_ivp(
+            kuramoto_ode_meanfield, (0, 100), theta,
+            t_eval=np.arange(90, 100, 0.1), args=(omega, k),
+        )
+        r, _, _, _ = kuramoto_order_parameter(np.mod(sol.y, 2 * np.pi))
+        ls_r[idx] = np.mean(r)
+        theta = sol.y[:, -1]  # continue from the last state
+    fig, ax = plt.subplots(figsize=(7, 4))
+    ax.plot(ls_k, r_theory, label=f"Theoretical ({theory})", color="blue")
+    ax.plot(ls_k, ls_r, "o", label=f"Empirical ({data} frequencies)", color="red")
+    ax.set_xlabel("Coupling strength (K)")
+    ax.set_ylabel("Order parameter (r)")
+    ax.legend()
+    plt.show()
+
+
+draw_diagram(theory="cauchy", data="normal")
+```
+
+For any other smooth symmetric density with $g''(0) < 0$, the theoretical order parameter near onset is [@strogatz2000kuramoto]
+
+$$
+r \approx \sqrt{\frac{16}{\pi K_c^3}} \sqrt{\frac{\mu}{-g''(0)}}
+$$ {#eq-r-near-onset}
+
+where $\mu$ measures the distance from the critical point (a dimensionless reduced coupling) and $g''(0)$ is the second derivative of the frequency distribution at $0$.
+
+$$
+\mu = \frac{K - K_c}{K_c}
+$$ {#eq-mu-def}
+
+This formula comes from expanding the self-consistency equation for small $r$. It captures the square-root growth of $r$ just above $K_c$ and fails far from it.
+
+For a normal distribution with standard deviation $\sigma$:
+
+$$
+g(\omega) = \frac{1}{\sqrt{2\pi}\sigma} \exp\left(-\frac{\omega^2}{2\sigma^2}\right)
+$$ {#eq-normal-density}
+
+$$
+g''(\omega) = \left( \frac{\omega^2}{\sigma^4} - \frac{1}{\sigma^2} \right) g(\omega)
+$$ {#eq-normal-second-derivative}
+
+## Experiment
+
+In a new script, draw the theoretical bifurcation diagram for $0 < K < 5$.
+
+On top of it, draw the empirical curve. Use $N = 1000$ oscillators, integrate up to $t = 100$, and average $r(t)$ over the window $90 \le t \le 100$. Use the final phases for one value of $K$ as the initial condition for the next. (The figures on this page use $N = 500$ to render quickly.)
+
+Do your two curves match? The example in @fig-kuramoto-bifurcation-bad shows a mismatch. Can you explain why? Can you fix it? If you are stuck, check the solution below.
+
+::: {.callout-tip collapse="true"}
+## Why is there a mismatch?
+
+The mismatch occurs because the closed-form theoretical curve @eq-r-cauchy is derived for a **Cauchy** frequency distribution, while the empirical data in @fig-kuramoto-bifurcation-bad is generated from a **normal** distribution.
+
+To fix this you have two consistent options:
+
+- Keep the normal distribution and use a matching theoretical prediction (typically only an approximation near onset, such as @eq-r-near-onset).
+- Keep the closed-form curve @eq-r-cauchy and generate the empirical data using a Cauchy distribution.
+
+```{python}
+#| label: fig-kuramoto-bifurcation-normal
+#| fig-cap: 'Kuramoto diagram: empirical points (normal frequencies) and a matching theoretical prediction (see @eq-r-near-onset for the near-onset scaling).'
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+draw_diagram(theory="normal", data="normal")
+```
+
+Alternatively, fix the mismatch by changing the empirical distribution to a Cauchy distribution, which matches the closed-form curve @eq-r-cauchy.
+
+```{python}
+#| label: fig-kuramoto-bifurcation-cauchy
+#| fig-cap: 'Kuramoto diagram: theoretical curve @eq-r-cauchy and empirical points (Cauchy frequencies).'
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+draw_diagram(theory="cauchy", data="cauchy")
+```
+:::
+
+## Interpretation
+
+Find the critical coupling $K_c$ from the theoretical formula and check if it matches the empirical transition point in your simulations. You can estimate the empirical $K_c$ by looking for the value of $K$ where $r$ starts to deviate significantly from zero. Or use the near-onset scaling @eq-r-near-onset to fit the empirical data and extract an estimate of $K_c$.
+
+In your animation script from the previous page, try setting the coupling strength just below and just above the critical value to see the difference in the dynamics. You should see that below $K_c$, the oscillators remain incoherent, while above $K_c$, they start to synchronize and form a cluster on the unit circle.
+
+```{python}
+#| label: fig-kuramoto-bifurcation-validate
+#| fig-cap: 'Comparison between the theoretical critical coupling $K_c$ and the empirical transition point observed in simulations. Individual oscillators are blue dots and the order parameter is the red vector.'
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+theta0, omega = initialize_oscillators(
+    100, distribution="normal", scale_omega=0.5, scale_phase=1.0, seed=1
+)
+fig, axs = plt.subplots(1, 2, figsize=(7, 4))
+for ax, k, title in zip(axs, [0.1, 10.0], ["K < Kc", "K > Kc"]):
+    sol = solve_ivp(kuramoto_ode_meanfield, (0, 100), theta0, args=(omega, k))
+    theta_end = sol.y[:, -1]
+    _, _, rc, rs = kuramoto_order_parameter(theta_end)
+    ax.add_artist(plt.Circle((0, 0), 1, color="lightgray", fill=False))
+    ax.scatter(np.cos(theta_end), np.sin(theta_end), s=50, color="blue", alpha=0.5)
+    ax.plot([0, rc], [0, rs], color="red", linewidth=2)
+    ax.plot([rc], [rs], "ro", markersize=6)
+    ax.set_title(title)
+    ax.set_xlabel("Cos(theta)")
+    ax.set_xlim(-1.1, 1.1)
+    ax.set_ylim(-1.1, 1.1)
+    ax.set_aspect("equal")
+    ax.grid(True)
+axs[0].set_ylabel("Sin(theta)")
+plt.tight_layout()
+plt.show()
+```
+
+::: {.callout-note}
+## Exercise
+
+The empirical points in the normal case lie close to zero for $K < K_c$ but not exactly at zero. Give two reasons.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+First, a finite population has $r$ of order $N^{-1/2}$ even when incoherent (about $0.045$ for $N = 500$). Second, the time window may be too short for $r(t)$ to settle near $K_c$, where the approach to the steady state is slow. [Finite-Size Effects](kuramoto-finite-size.qmd) studies the first effect.
+:::
+
+Next: [Full Simulation](kuramoto-full.qmd) (optional extension) or [Finite-Size Effects](kuramoto-finite-size.qmd).

@@ -1,0 +1,90 @@
+---
+title: "The Social Force Model"
+subtitle: "Module 2: Synchronization and Collective Behaviour"
+format: html
+---
+
+@helbing1995social model pedestrians as if they were subject to "social forces". These forces are not physical. They measure the motivation of a pedestrian to change velocity in response to a goal, to other people and to walls. Unlike the Vicsek and Couzin models, this is a continuous-time model with acceleration, so speeds can change.
+
+## Equation of motion
+
+Pedestrian $\alpha$ wants to walk in the direction $\mathbf{e}_\alpha$ of its next target at desired speed $v^0_\alpha$. Deviations from the desired velocity relax on a time scale $\tau_\alpha$:
+
+$$
+\mathbf{F}^0_\alpha = \frac{1}{\tau_\alpha}\left(v^0_\alpha \mathbf{e}_\alpha - \mathbf{v}_\alpha\right).
+$$ {#eq-sf-drive}
+
+The total social force adds repulsion from other pedestrians $\beta$, repulsion from borders $B$ and optional attractions $i$ [@helbing1995social]:
+
+$$
+\frac{d\mathbf{w}_\alpha}{dt} = \mathbf{F}^0_\alpha + \sum_\beta \mathbf{F}_{\alpha\beta} + \sum_B \mathbf{F}_{\alpha B} + \sum_i \mathbf{F}_{\alpha i} + \text{fluctuations},
+$$ {#eq-sf-total}
+
+where $\mathbf{w}_\alpha$ is the preferred velocity. The actual velocity equals $\mathbf{w}_\alpha$, capped at a maximum speed $v^{\max}_\alpha$.
+
+## Repulsion
+
+The repulsion from pedestrian $\beta$ is the gradient of a potential, $\mathbf{f}_{\alpha\beta} = -\nabla_{\mathbf{r}_{\alpha\beta}} V_{\alpha\beta}[b(\mathbf{r}_{\alpha\beta})]$, with $\mathbf{r}_{\alpha\beta} = \mathbf{r}_\alpha - \mathbf{r}_\beta$. The equipotential lines are ellipses stretched in the walking direction of $\beta$, because $\beta$ needs room for its next step:
+
+$$
+2b = \sqrt{\left(|\mathbf{r}_{\alpha\beta}| + |\mathbf{r}_{\alpha\beta} - v_\beta \Delta t\, \mathbf{e}_\beta|\right)^2 - (v_\beta \Delta t)^2}.
+$$ {#eq-sf-ellipse}
+
+Forces from behind count less. A situation outside the angle of sight $2\varphi$ is weighted by a factor $c$ with $0 < c < 1$.
+
+In their simulations @helbing1995social used $V_{\alpha\beta}(b) = V^0 e^{-b/\sigma}$ and $U_{\alpha B}(d) = U^0 e^{-d/R}$ with $V^0 = 2.1\ \text{m}^2\text{s}^{-2}$, $\sigma = 0.3$ m, $U^0 = 10\ \text{m}^2\text{s}^{-2}$, $R = 0.2$ m, $\Delta t = 2$ s, $\tau_\alpha = 0.5$ s, $2\varphi = 200^\circ$ and $c = 0.5$. Desired speeds were normal with mean $1.34$ m/s and standard deviation $0.26$ m/s.
+
+```{python}
+#| label: fig-social-force
+#| fig-cap: "Magnitude of the repulsive social force from a standing pedestrian ($v_\\beta = 0$, so $b = |\\mathbf{r}_{\\alpha\\beta}|$) and from a wall, with the parameters of @helbing1995social."
+#| fig-width: 6
+#| fig-height: 3.5
+#| echo: false
+import numpy as np
+import matplotlib.pyplot as plt
+
+d = np.linspace(0, 2, 300)  # distance in metres
+v0_pot, sigma = 2.1, 0.3
+u0_pot, r_wall = 10.0, 0.2
+
+fig, ax = plt.subplots(figsize=(6, 3.5))
+ax.plot(d, v0_pot / sigma * np.exp(-d / sigma), label="Other pedestrian")
+ax.plot(d, u0_pot / r_wall * np.exp(-d / r_wall), "--", label="Wall")
+ax.set_xlabel("Distance (m)")
+ax.set_ylabel(r"Force per unit mass (m s$^{-2}$)")
+ax.set_ylim(0, 10)
+ax.legend()
+plt.tight_layout()
+plt.show()
+```
+
+## Collective effects
+
+With only these local rules, simulations reproduced two effects seen in real crowds [@helbing1995social]:
+
+- **Lane formation** in counterflowing crowds: people walking in the same direction form lanes.
+- **Oscillations at bottlenecks**: at a narrow door, the passing direction switches back and forth between the two groups.
+
+::: {.callout-note}
+## Exercise
+
+A pedestrian walks at $1.0$ m/s and wants $1.34$ m/s. What acceleration does @eq-sf-drive give with $\tau = 0.5$ s? How long does it take to close most of the gap?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+The acceleration is $(1.34 - 1.0)/0.5 = 0.68\ \text{m s}^{-2}$. Without other forces, the gap decays like $e^{-t/\tau}$, so after about $3\tau = 1.5$ s only $5\%$ of it is left.
+:::
+
+::: {.callout-note}
+## Exercise
+
+Name one difference between the social force model and the Vicsek model, in the rules and in the question each model answers.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+In the rules: Vicsek particles have fixed speed and only turn; social force pedestrians accelerate and decelerate, and each has its own goal. In the question: Vicsek asks when a group with no goal starts moving together. The social force model asks how people with goals share space, which is why @helbing1995social propose it as a tool for planning pedestrian areas.
+:::

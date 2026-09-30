@@ -6,9 +6,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import solve_ivp
 
-# ensure repo root on path so we can import the provided model
-sys.path.append(".")
-from spruce_budworm import spruce_budworm
+try:
+    from amlab.odes_1d.spruce_budworm import spruce_budworm
+except ImportError:
+    # Fallback when the script runs from inside amlab/odes_1d
+    sys.path.append(".")
+    from spruce_budworm import spruce_budworm
 
 
 def k_func(t, k0: float = 6.0, amp: float = 4.0, freq: float = 0.01):

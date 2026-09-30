@@ -1,0 +1,150 @@
+---
+title: "Assignment: Pattern Formation"
+subtitle: "Module 4: Space and Pattern Formation"
+format: html
+---
+
+<!-- TODO(Daniel): confirm individual vs group submission and deadline -->
+
+::: {.callout-important}
+## Graded assignment
+This assignment is graded and counts for 10% of the final grade. It is released in Session 21 (Parts 1 and 2, Gierer-Meinhardt in 1D) and extended in Session 22 (Parts 3 and 4, Gierer-Meinhardt and Gray-Scott in 2D). Under the course AI policy, you may not use generative AI to solve graded assignments.
+:::
+
+You will take an analytical and a numerical approach to two reaction-diffusion systems that show Turing instability for suitable parameters, Gierer-Meinhardt and Gray-Scott [@turing1952chemical; @gierer1972theory; @gray1984autocatalytic; @pearson1993complex].
+
+The governing equations are
+
+$$
+u_t = D_1 \Delta u + \gamma f(u, v), \qquad
+v_t = D_2 \Delta v + \gamma g(u, v),
+$$
+
+with
+
+$$
+\text{Gierer-Meinhardt: } f(u, v) = a - bu + \frac{u^2}{v}, \qquad g(u, v) = u^2 - v, \qquad a, b > 0,
+$$
+
+$$
+\text{Gray-Scott: } f(u, v) = -uv^2 + F(1-u), \qquad g(u, v) = uv^2 - (F + k)v, \qquad F, k > 0.
+$$
+
+For Gierer-Meinhardt, consider the equations on a rectangle $\Omega_2 = (0, L_1) \times (0, L_2)$ with Neumann zero-flux boundary conditions, and start by reducing the problem to one dimension, $\Omega_1 = (0, L_1)$.
+
+Use the session pages as a guide:
+
+[Turing Conditions](turing-conditions.qmd){.btn .btn-primary}
+[Turing Numerics](turing-numerics.qmd){.btn .btn-primary}
+[Gierer-Meinhardt Solver in 1D](gierer-meinhardt-1d-solver.qmd){.btn .btn-primary}
+[Time-Step Stability](time-step-stability.qmd){.btn .btn-primary}
+[Gierer-Meinhardt Solver in 2D](gierer-meinhardt-2d-solver.qmd){.btn .btn-primary}
+[Gray-Scott](gray-scott.qmd){.btn .btn-primary}
+
+## Submission
+
+::: {.callout-note}
+Submit two files:
+
+- One coding deliverable: a Python script, a notebook, or a small app. It must reproduce all figures and numerical results end to end, with fixed random seeds.
+- A short report written in LaTeX (10 pages maximum), submitted as PDF.
+
+The report must include a figure of the Turing space in the $(a, d)$ plane, a table of the unstable modes for each test case, figures from the simulations, the stability and convergence checks of Part 2, and a comparison between prediction and simulation.
+:::
+
+## Part 1: Gierer-Meinhardt in 1D, Analysis (Session 21)
+
+The Turing conditions are
+
+$$
+f_u + g_v < 0, \qquad \det J = f_u g_v - f_v g_u > 0, \qquad D_1 g_v + D_2 f_u > 2 \sqrt{D_1 D_2 \det J} > 0.
+$$
+
+These conditions do not depend on $\gamma$ or on the size of the region. They are necessary but not sufficient. On a finite region you must also check that unstable spatial modes exist, which depends on the Laplacian eigenvalues $\lambda_n$.
+
+1. Take $\gamma = 1$, $D_1 = 1$, and $D_2 = d > 0$. Find the region of $(a, b, d)$ where the conditions hold (the Turing space). Plot its section at $b = 1$ in the $(a, d)$ plane.
+2. Solve the Sturm-Liouville problem on the interval with Neumann boundary conditions and identify the spectrum of the Laplacian. For each spatial mode, the temporal eigenvalues are those of
+
+$$
+A_n = \gamma J + \lambda_n D =
+\begin{pmatrix}
+\gamma f_u + \lambda_n D_1 & \gamma f_v \\
+\gamma g_u & \gamma g_v + \lambda_n D_2
+\end{pmatrix},
+\qquad
+\det(A_n - \sigma^{(n)} I) = 0.
+$$
+
+   List the unstable modes and the leading mode.
+3. On $(0, L)$ with $L = 40$, decide which of these parameter sets gives Turing instability and find the leading mode:
+   - Case A: $\gamma = 1$, $a = 0.4$, $b = 1$, $d = 30$
+   - Case B: $\gamma = 1$, $a = 0.4$, $b = 1$, $d = 20$
+
+## Part 2: Gierer-Meinhardt in 1D, Simulation (Session 21)
+
+Implement a 1D finite-difference scheme in space and explicit Euler in time.
+
+1. Use $N = 40$ spatial points, $dx = 1$ (so $L = N\,dx = 40$), and $dt = 0.01$.
+2. **Stability check.** State the explicit Euler bound for your scheme and show that $dt = 0.01$ satisfies it. Run one case with a time step above the bound and describe what goes wrong.
+3. Start from the homogeneous steady state plus 1% noise. In one case the perturbation should decay; in the other the unstable mode should grow.
+4. Integrate for $5 \times 10^4$ steps of size $dt = 0.01$, saving one frame every 500 steps. Join the 100 frames into an animation.
+5. **Convergence check.** Repeat Case A with $dx$ halved and $dt$ divided by four. Report whether the number of peaks and their spacing change, and quantify the difference.
+6. Compare the number of half-wavelengths with the leading mode from Part 1.
+7. Run at least one experiment of your own (parameters, interval length, or numerical settings) and comment on what changed.
+
+## Part 3: Gierer-Meinhardt in 2D (Session 22)
+
+1. Extend your scheme and your analysis to the rectangle $\Omega_2 = (0, L_1) \times (0, L_2)$. State the explicit Euler bound in 2D and choose $dt$ accordingly. Say what pattern you expect.
+2. For $L_1 = 20$ and $L_2 = 50$, decide whether Cases A and B give Turing instability, count the unstable modes $(n, m)$, and find the leading mode.
+3. Test your predictions against the simulation.
+
+## Part 4: Gray-Scott in 2D (Session 22)
+
+Gray-Scott models the autocatalytic reaction
+
+$$
+U + 2V \rightarrow 3V, \qquad V \rightarrow P,
+$$
+
+where $P$ is inert and $V$ activates its own production. The PDE system is
+
+$$
+u_t = D_1 \Delta u - uv^2 + F(1-u), \qquad
+v_t = D_2 \Delta v + uv^2 - (F + k)v.
+$$
+
+Focus on numerical observation and description of the patterns, following @pearson1993complex. Use periodic boundary conditions on the square $[0, L] \times [0, L]$.
+
+1. Take $N = 250$ and $dx = 1$, so $L = 250$.
+2. Start from $(u^*, v^*) = (1, 0)$. Set $(u, v) = (0.5, 0.5)$ on a central $20 \times 20$ square and add 10% noise there. Later, place similar squares at other positions.
+3. Use explicit Euler with $dt = 2$. Check that the scheme is stable for this $dx$ and $dt$, and show that larger values break it.
+4. Take $D_1 = 0.1$, $D_2 = 0.05$ and integrate for:
+   - Type A: $F = 0.040$, $k = 0.060$
+   - Type B: $F = 0.014$, $k = 0.047$
+   - Type C: $F = 0.062$, $k = 0.065$
+   - Type D: $F = 0.078$, $k = 0.061$
+   - Type E: $F = 0.082$, $k = 0.059$
+5. Integrate up to $t = 5 \times 10^4$, saving one image every $\Delta t = 200$, and build an animation from the 250 frames.
+6. Describe each solution type. You may compare with [Munafo's classification](https://www.mrob.com/pub/comp/xmorphia/index.html), which extends Pearson's.
+
+## Short Discussion
+
+Your report should answer:
+
+- Which Gierer-Meinhardt case produced a pattern, and did it match your prediction?
+- Did the number of peaks match the leading unstable mode?
+- Which numerical or modelling choice had the clearest effect on the result?
+
+## Possible Extensions
+
+- **Domain shape.** Compare $(0, L) \times (0, L)$ with $(0, 2L) \times (0, L)$ using the same parameters. Relate stripe orientation and spacing to the Laplacian spectrum.
+- **Domain size.** Keep the parameters fixed and vary $L$ in 1D or $(L_1, L_2)$ in 2D. Find the minimum size for a visible pattern and compare with the unstable modes ([Animal Coat Patterns](animal-coat-patterns.qmd)).
+- **Boundary conditions.** Replace Neumann by periodic boundaries in 1D and compare the unstable modes and the final profiles.
+- **Artistic project.** Use Gray-Scott to build an evolving image, with different $(F, k)$ or different perturbations in different regions ([Gray-Scott: Interaction](gray-scott-art.qmd)).
+
+## Tips
+
+- Get the mode scan and a short simulation working before long runs.
+- Check the time step before every new grid.
+- Keep the solver modular, so one function serves every parameter set.
+- Focus on the comparison between prediction and observation.

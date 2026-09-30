@@ -1,0 +1,114 @@
+---
+title: "Linear Systems in the Plane"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+::: {.callout-note}
+## Reading
+- **Compulsory:** @strogatz2024nonlinear, Chapter 5, Sections 6.1-6.2, Chapter 7 and Section 8.2.
+- **Recommended:** @epstein1998introduction.
+:::
+
+In one dimension a trajectory can only move monotonically towards a fixed point or away from it. In two dimensions it can also rotate, and sustained oscillations become possible. The first step is to understand linear systems, because near a fixed point every smooth system looks linear [@strogatz2024nonlinear, Chapter 5].
+
+## Eigenvalues from trace and determinant
+
+Consider $\dot{\mathbf x} = A\mathbf x$ with $A = \begin{pmatrix} a & b \\ c & d \end{pmatrix}$. Let
+
+$$
+\tau = \operatorname{tr} A = a + d, \qquad \Delta = \det A = ad - bc .
+$$
+
+The eigenvalues are the roots of $\lambda^2 - \tau\lambda + \Delta = 0$:
+
+$$
+\lambda_{1,2} = \frac{\tau \pm \sqrt{\tau^2 - 4\Delta}}{2}, \qquad \lambda_1 + \lambda_2 = \tau, \quad \lambda_1\lambda_2 = \Delta .
+$$ {#eq-eigen}
+
+Solutions are combinations of $e^{\lambda_1 t}$ and $e^{\lambda_2 t}$, so the signs and the type (real or complex) of the eigenvalues decide the phase portrait [@strogatz2024nonlinear, Section 5.2].
+
+## Classification
+
+- $\Delta < 0$: real eigenvalues of opposite sign. **Saddle point**.
+- $\Delta > 0$ and $\tau^2 > 4\Delta$: real eigenvalues of the same sign. **Node**, stable if $\tau < 0$ and unstable if $\tau > 0$.
+- $\Delta > 0$ and $\tau^2 < 4\Delta$: complex eigenvalues $\tau/2 \pm i\omega$. **Spiral**, stable if $\tau < 0$ and unstable if $\tau > 0$. The frequency is $\omega = \sqrt{4\Delta - \tau^2}/2$.
+- $\Delta > 0$ and $\tau = 0$: purely imaginary eigenvalues. **Center**, with closed orbits.
+- $\Delta = 0$: at least one zero eigenvalue. Non-isolated fixed points.
+
+```{python}
+#| echo: false
+#| label: fig-trace-det
+#| fig-cap: "Classification of fixed points of linear systems in the (trace, determinant) plane. The parabola is tau^2 = 4 Delta."
+#| fig-width: 6
+#| fig-height: 4.5
+import matplotlib.pyplot as plt
+import numpy as np
+
+tau = np.linspace(-4, 4, 400)
+fig, ax = plt.subplots(figsize=(6, 4.5))
+ax.plot(tau, tau**2 / 4, "k")
+ax.axhline(0, color="k")
+ax.plot([0, 0], [0, 4.5], "k", lw=2)
+ax.fill_between(tau, -2, 0, color="tab:gray", alpha=0.2)
+ax.text(-1.0, -1.2, "saddles")
+ax.text(-3.6, 1.2, "stable\nnodes")
+ax.text(2.5, 1.2, "unstable\nnodes")
+ax.text(-1.9, 3.3, "stable\nspirals")
+ax.text(0.5, 3.3, "unstable\nspirals")
+ax.text(0.08, 4.1, "centers", rotation=90, fontsize=8)
+ax.set_xlim(-4, 4)
+ax.set_ylim(-2, 4.5)
+ax.set_xlabel("trace τ")
+ax.set_ylabel("determinant Δ")
+plt.tight_layout()
+plt.show()
+```
+
+```{python}
+#| echo: false
+#| label: fig-portraits
+#| fig-cap: "Phase portraits of four linear systems: saddle, stable node, stable spiral and center."
+#| fig-width: 9
+#| fig-height: 2.6
+examples = {
+    "saddle": [[1, 0], [0, -1]],
+    "stable node": [[-2, 0], [0, -0.5]],
+    "stable spiral": [[-0.3, -1], [1, -0.3]],
+    "center": [[0, -1], [1, 0]],
+}
+x, y = np.meshgrid(np.linspace(-2, 2, 20), np.linspace(-2, 2, 20))
+fig, axs = plt.subplots(1, 4, figsize=(9, 2.6))
+for ax, (name, A) in zip(axs, examples.items()):
+    A = np.array(A)
+    ax.streamplot(x, y, A[0, 0] * x + A[0, 1] * y, A[1, 0] * x + A[1, 1] * y,
+                  density=0.7, linewidth=0.7, arrowsize=0.7)
+    ax.plot(0, 0, "ko", ms=4)
+    ax.set_title(name, fontsize=9)
+    ax.set_xticks([])
+    ax.set_yticks([])
+plt.tight_layout()
+plt.show()
+```
+
+## From linear to nonlinear
+
+For a nonlinear system, the Jacobian at a fixed point plays the role of $A$. The linear classification carries over to the nonlinear system for saddles, nodes and spirals. Centers and the borderline cases on $\Delta = 0$ or $\tau^2 = 4\Delta$ can change type under nonlinear terms [@strogatz2024nonlinear, Section 6.3].
+
+::: {.callout-note}
+## Exercise
+Classify the fixed point of $\dot x = -x + 2y$, $\dot y = -2x - y$.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+$\tau = -2$, $\Delta = 1 + 4 = 5$, $\tau^2 - 4\Delta = 4 - 20 < 0$. The eigenvalues are $-1 \pm 2i$: a stable spiral with angular frequency 2.
+
+```{python}
+print(np.linalg.eigvals([[-1, 2], [-2, -1]]))
+```
+:::
+
+## Next
+
+[The Phase Plane](phase-plane.qmd){.btn .btn-primary}

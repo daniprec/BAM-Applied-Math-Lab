@@ -1,0 +1,100 @@
+---
+title: "Fixed Points and Stability"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+A one-dimensional model $\dot x = f(x)$ is fully described by the graph of $f$. This page applies that idea to the budworm model $f(x) = rx(1 - x/k) - x^2/(1+x^2)$ from [The Spruce Budworm Model](budworm-model.qmd) [@strogatz2024nonlinear, Chapter 2 and Section 3.7].
+
+## Fixed points
+
+A fixed point (equilibrium) $x^*$ satisfies $f(x^*) = 0$. For the budworm, $x^* = 0$ is always a fixed point. The others satisfy
+
+$$
+r\left(1 - \frac{x}{k}\right) = \frac{x}{1 + x^2}.
+$$ {#eq-budworm-fixed}
+
+The left side is the per capita growth rate, a straight line with intercepts $r$ and $k$. The right side is the per capita predation rate. Fixed points are the intersections of the two curves, and there can be one, two or three of them [@strogatz2024nonlinear, Section 3.7; @ludwig1978qualitative, Fig. 1].
+
+```{python}
+#| echo: false
+#| label: fig-intersections
+#| fig-cap: "Graphical solution of the fixed point equation for k = 10. Small r gives one intersection (refuge), intermediate r gives three, large r gives one (outbreak)."
+#| fig-width: 7
+#| fig-height: 3.5
+import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.linspace(0, 10, 500)
+k = 10
+fig, ax = plt.subplots(figsize=(7, 3.5))
+ax.plot(x, x / (1 + x**2), "k", lw=2, label="x / (1 + x²)")
+for r in [0.3, 0.45, 0.65]:
+    ax.plot(x, r * (1 - x / k), label=f"r(1 - x/k), r = {r}")
+ax.set_ylim(0, 0.7)
+ax.set_xlabel("x")
+ax.legend()
+ax.grid(alpha=0.3)
+plt.tight_layout()
+plt.show()
+```
+
+## Linear stability
+
+Write $x = x^* + \eta$ with $\eta$ small. A Taylor expansion gives $\dot\eta \approx f'(x^*)\,\eta$, so the perturbation grows or decays like $e^{f'(x^*)t}$ [@strogatz2024nonlinear, Section 2.4].
+
+- $f'(x^*) < 0$: the fixed point is stable.
+- $f'(x^*) > 0$: the fixed point is unstable.
+- $f'(x^*) = 0$: linearization is inconclusive; this happens at a bifurcation.
+
+The time scale of the decay or growth is $1/|f'(x^*)|$. For the budworm,
+
+$$
+f'(x) = r\left(1 - \frac{2x}{k}\right) - \frac{2x}{(1 + x^2)^2}.
+$$
+
+At $x^* = 0$, $f'(0) = r > 0$, so the zero state is always unstable. A small budworm population always grows, because predation vanishes faster than growth as $x \to 0$ [@ludwig1978qualitative, p. 317].
+
+## The phase line
+
+You can read stability directly from the sign of $f$: the flow moves right where $f > 0$ and left where $f < 0$. @fig-rate shows the rate for $r = 0.5$ and $k = 10$.
+
+```{python}
+#| echo: false
+#| label: fig-rate
+#| fig-cap: "Rate dx/dt against x for r = 0.5, k = 10. Blue: stable fixed points. Red: unstable fixed point. The green dashed line marks x = 1."
+#| fig-width: 8
+#| fig-height: 4
+import matplotlib.pyplot as plt
+
+from amlab.odes_1d.spruce_budworm import plot_spruce_budworm_rate
+
+plot_spruce_budworm_rate(1.0, r=0.5, k=10.0)
+plt.show()
+plt.close()
+```
+
+The positive fixed points for these values can be computed exactly, since @eq-budworm-fixed is a cubic in $x$.
+
+```{python}
+from amlab.odes_1d.budworm_analysis import budworm_equilibria, budworm_slope
+
+x_star = budworm_equilibria(r=0.5, k=10.0)
+for x in x_star:
+    s = budworm_slope(x, 0.5, 10.0)
+    print(f"x* = {x:.3f}, f'(x*) = {s:+.3f}, {'stable' if s < 0 else 'unstable'}")
+```
+
+::: {.callout-note}
+## Exercise
+Show that the middle fixed point for $r = 0.5$, $k = 10$ is exactly $x^* = 2$.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+Substitute $x = 2$ in @eq-budworm-fixed: the left side is $0.5(1 - 0.2) = 0.4$ and the right side is $2/5 = 0.4$. The other roots of the cubic $-(r/k)x^3 + rx^2 - (1 + r/k)x + r = 0$ are $4 \pm \sqrt{11} \approx 0.683$ and $7.317$.
+:::
+
+## Next
+
+[Bistability](bistability.qmd){.btn .btn-primary}

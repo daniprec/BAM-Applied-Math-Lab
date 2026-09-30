@@ -148,9 +148,9 @@ def compute_nullclines(
 
 def run_interactive_plot(
     system_func: Callable,
-    t_span: Tuple[float, float] = (0.0, 10.0),
-    t_step: float = 0.01,
-    limits: Tuple[float, float, float, float] = (-1, -0.05, 1, 1),
+    t_span: Tuple[float, float] = (0.0, 500.0),
+    t_step: float = 0.5,
+    limits: Tuple[float, float, float, float] = (-70.0, -0.05, 50.0, 0.6),
 ):
     """
     Runs an interactive simulation of a dynamical system with the ability to update initial conditions.
@@ -168,8 +168,9 @@ def run_interactive_plot(
     """
     # Initialize the systems with lists
     # We will use its mutable properties to update the initial conditions
-    y0 = [0.0, 0.0]
-    args = [0.1, 0.5, 0.1, 0.01]
+    # State (v, n) in (mV, dimensionless); args = [i_ext]
+    y0 = [-60.0, 0.0]
+    args = [100.0]
 
     t_eval = np.arange(t_span[0], t_span[1], t_step)
 
@@ -222,8 +223,8 @@ def run_interactive_plot(
     (plot_fixedpoint,) = ax_phase.plot([], [], "ko", markersize=8)
 
     # Set up the plot parameters
-    ax_phase.set_xlabel("x")
-    ax_phase.set_ylabel("y")
+    ax_phase.set_xlabel("v (mV)")
+    ax_phase.set_ylabel("n")
     ax_phase.set_title("Phase Plane Analysis")
     ax_phase.legend()
     ax_phase.set_xlim(limits[0], limits[2])
@@ -238,7 +239,7 @@ def run_interactive_plot(
 
     ax_xt.set_title("Time Series")
     ax_xt.set_xlabel("Time (t)")
-    ax_xt.set_ylabel("x")
+    ax_xt.set_ylabel("v (mV)")
     ax_xt.set_xlim(t_span)
     ax_xt.set_ylim(limits[0], limits[2])
 
@@ -249,7 +250,7 @@ def run_interactive_plot(
     # Initialize the line object for animation on stability diagram
     (plot_stabpoint,) = ax_stability.plot([], [], color="red")
     ax_stability.set_xlabel("I app")
-    ax_stability.set_xlim(0, 0.75)
+    ax_stability.set_xlim(0, 300)
     ax_stability.set_ylim(0, 1)
 
     # ------------------------------------------------------------------------ #
@@ -360,7 +361,7 @@ def run_interactive_plot(
 
 def main():
     """
-    Main function to run the interactive FitzHugh-Nagumo model simulation.
+    Main function to run the interactive Morris-Lecar model simulation.
     """
     # Run interactive plot
     run_interactive_plot(morris_lecar)

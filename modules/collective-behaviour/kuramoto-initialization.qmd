@@ -1,0 +1,182 @@
+---
+title: "Kuramoto Lab: Initialization"
+subtitle: "Module 2: Synchronization and Collective Behaviour"
+format: html
+---
+
+In this lab you implement the Kuramoto model, animate it, and measure the transition to synchrony. You follow the course workflow: prediction, implementation, validation, experiment, interpretation and limitations. The theory is in [The Kuramoto Model](kuramoto-model.qmd), [The Order Parameter](order-parameter.qmd) and [Critical Coupling](critical-coupling.qmd).
+
+::: {.callout-important}
+## Core activity
+
+The core of this lab is four pages: this one, [The ODE](kuramoto-ode.qmd), [Animation](kuramoto-animation.qmd) and [Bifurcation Diagram](kuramoto-diagram.qmd). [Full Simulation](kuramoto-full.qmd) is an optional extension. [Finite-Size Effects](kuramoto-finite-size.qmd) closes the session. The graded [Kuramoto Assignment](assignment-kuramoto.qmd) is released today and builds on all of them.
+:::
+
+## Prediction
+
+Before writing code, answer these questions on paper. You will check them later.
+
+- Take $N = 100$ oscillators with normal frequencies, $\sigma = 1$. What is $K_c$?
+- What value of $r$ do you expect at $t = 0$ for uniform random phases? (Hint: [The Order Parameter](order-parameter.qmd) has an exercise on this.)
+- For $K = 10$ and for $K = 0.1$, sketch what the phases on the circle will look like at $t = 10$.
+
+::: {.callout-tip collapse="true"}
+## Answers
+
+$K_c = 2/(\pi g(0)) = \sqrt{8/\pi} \approx 1.60$. At $t = 0$, $r$ is of order $1/\sqrt{N} = 0.1$. For $K = 10 \gg K_c$ most phases gather in a tight cluster. For $K = 0.1 \ll K_c$ they stay spread around the circle.
+:::
+
+## What you need
+
+- `numpy` for random sampling and vectorized arithmetic.
+- `scipy.integrate.solve_ivp()` to integrate the ODE.
+- `matplotlib.pyplot` for figures and `matplotlib.animation` for the animation.
+- `matplotlib.widgets.Slider` for the optional interactive version.
+
+## Initialize Oscillators
+
+The phases $\theta_i$ are sampled uniformly on $[0, 2\pi)$ and the natural frequencies $\omega_i$ from a normal distribution with standard deviation $\sigma$ [@kuramoto2003chemical; @strogatz2000kuramoto].
+
+Write a function to initialize the oscillators:
+
+```python
+def initialize_oscillators(num_oscillators: int, sigma: float = 1.0, seed: int = None):
+    rng = np.random.default_rng(seed)
+    # Assign a random initial phase to each oscillator
+    theta = # TODO: draw from a uniform distribution on [0, 2 pi)
+
+    # Assign a random natural frequency to each oscillator
+    omega = # TODO: draw from a normal distribution with standard deviation sigma
+    return theta, omega
+```
+
+The outputs `theta` and `omega` are 1D arrays of length `num_oscillators`. If you don't know how to sample from these distributions, see the hint below.
+
+::: {.callout-tip collapse="true"}
+## How to sample from distributions (click to expand)
+
+A NumPy random generator `rng = np.random.default_rng(seed)` has methods for sampling:
+
+- Uniform distribution: `rng.uniform(low=0.0, high=2 * np.pi, size=num_oscillators)`
+- Normal distribution: `rng.normal(loc=0.0, scale=sigma, size=num_oscillators)`
+
+A fixed `seed` makes your runs reproducible.
+
+If you need more help, you can expand the code snippet below for a complete implementation.
+:::
+
+::: {.callout-tip collapse="true"}
+## Complete initialization function (click to expand)
+
+```python
+def initialize_oscillators(num_oscillators: int, sigma: float = 1.0, seed: int = None):
+    rng = np.random.default_rng(seed)
+    # Assign a random initial phase to each oscillator
+    theta = rng.uniform(low=0.0, high=2 * np.pi, size=num_oscillators)
+
+    # Assign a random natural frequency to each oscillator
+    omega = rng.normal(loc=0.0, scale=sigma, size=num_oscillators)
+    return theta, omega
+```
+
+(Remember to import numpy first.)
+:::
+
+## Plot the Oscillators
+
+To visualize the oscillators, plot their phases on the unit circle. The x-coordinate is $\cos(\theta_i)$ and the y-coordinate is $\sin(\theta_i)$. This way, each oscillator corresponds to a point on the circle. Write code to visualize the oscillators as blue dots on the unit circle. Your output should be similar to @fig-kuramoto-circle-sample, but feel free to use your own style.
+```{python}
+#| label: fig-kuramoto-circle-sample
+#| fig-cap: 'Sample visualization of oscillators on the unit circle. Each blue dot represents an oscillator with phase $\theta_i$.'
+#| fig-width: 6
+#| fig-height: 6
+#| echo: false
+import numpy as np
+import matplotlib.pyplot as plt
+
+from amlab.odes_coupled.kuramoto import initialize_oscillators
+
+num_oscillators = 100
+theta, omega = initialize_oscillators(num_oscillators, distribution="normal", seed=1)
+
+x = np.cos(theta)
+y = np.sin(theta)
+fig, ax = plt.subplots(figsize=(6, 6))
+ax.set_title("Kuramoto Model")
+ax.set_xlabel("Cos(theta)")
+ax.set_ylabel("Sin(theta)")
+ax.set_xlim(-1.1, 1.1)
+ax.set_ylim(-1.1, 1.1)
+ax.set_aspect("equal")
+ax.grid(True)
+# Draw unit circle (optional, but it helps to visualize the boundary)
+circle = plt.Circle((0, 0), 1, color="lightgray", fill=False)
+ax.add_artist(circle)
+
+ax.scatter(x, y, s=50, color="blue", alpha=0.5)
+plt.show()
+plt.close()
+```
+
+If you don't know how to achieve the plot above, feel free to expand some of the hints below.
+
+::: {.callout-tip collapse="true"}
+## How to compute the positions of the oscillators (click to expand)
+
+To compute the x and y coordinates for the plot, you can use NumPy's `cos` and `sin` functions applied to the `theta` array:
+
+```python
+x = np.cos(theta)
+y = np.sin(theta)
+```
+
+(Remember to import numpy first.)
+:::
+
+::: {.callout-tip collapse="true"}
+## How to create the plot (click to expand)
+
+To create the plot, you can use Matplotlib's `subplots` function to set up the figure and axes, and then use `scatter` to plot the points. Here's a complete example:
+
+```python
+# First, we prepare the figure and axes
+fig, ax = plt.subplots(figsize=(6, 6))
+# fig is the Figure, a "canvas" where everything is drawn
+# ax is the Axes, a "subplot" where we can plot data
+# A single figure can have multiple axes (e.g. for subplots)
+ax.set_title("Kuramoto Model")  # Title of the plot
+ax.set_xlabel("Cos(theta)")  # Name of x-axis
+ax.set_ylabel("Sin(theta)")  # Name of y-axis
+ax.set_xlim(-1.1, 1.1)  # Limits for x-axis
+ax.set_ylim(-1.1, 1.1)  # Limits for y-axis
+ax.set_aspect("equal")  # Make the circle look circular
+ax.grid(True)  # Show grid lines
+# Draw unit circle (optional, but it helps to visualize the boundary)
+circle = plt.Circle((0, 0), 1, color="lightgray", fill=False)
+ax.add_artist(circle)
+
+# Now we are ready to plot the oscillators as blue dots
+ax.scatter(x, y, s=50, color="blue", alpha=0.5)
+# s is the size of the dots
+# alpha is the transparency (0 is fully transparent, 1 is fully opaque)
+# we want the oscillators to be somewhat transparent so we can see overlaps
+
+# Finally, we show the plot and close it to free up memory
+plt.show()
+plt.close()
+```
+:::
+
+::: {.callout-note}
+## Exercise
+
+Compute the order parameter of your initial phases with `np.abs(np.mean(np.exp(1j * theta)))`. Repeat for $N = 100$, $1000$ and $10000$. Does it match your prediction?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+You should find values close to $0.1$, $0.03$ and $0.01$, that is, of order $1/\sqrt{N}$. The exact numbers change with the seed.
+:::
+
+Next: [The ODE](kuramoto-ode.qmd).

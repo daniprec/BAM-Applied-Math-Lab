@@ -1,0 +1,133 @@
+---
+title: "Lorenz Attractor"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+::: {.callout-tip}
+## Optional extension
+This page and [Sensitivity and Chaos](lorenz-sensitivity.qmd) are extra material, not part of the syllabus sessions. They extend the planar systems of Session 7 to three dimensions, where the Poincaré-Bendixson theorem no longer applies and chaos becomes possible [@strogatz2024nonlinear, Chapter 9].
+:::
+
+The Lorenz system is one of the standard examples where a smooth deterministic ODE produces irregular long-term behavior [@lorenz1963deterministic; @strogatz2024nonlinear].
+
+$$
+\begin{aligned}
+\dot x &= s (y - x), \\
+\dot y &= r x - y - x z, \\
+\dot z &= x y - b z.
+\end{aligned}
+$$ {#eq-lorenz-lorenz-1}
+
+For the classical Lorenz attractor, the standard parameter choice is
+
+$$
+s = 10,
+\qquad
+r = 28,
+\qquad
+b = \frac{8}{3}.
+$$
+
+```{python}
+#| label: fig-lorenz
+#| fig-cap: 'Lorenz attractor trajectory (Euler integration).'
+#| fig-width: 6
+#| fig-height: 5
+#| echo: false
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+from amlab.extra.lorenz_attractor import simulate_lorenz
+
+num_steps = 5000
+dt = 0.01
+xyzs = simulate_lorenz(initial_state=(0.0, 1.0, 1.05), dt=dt, num_steps=num_steps)
+
+fig = plt.figure(figsize=(6, 5))
+ax = fig.add_subplot(projection="3d")
+ax.plot(*xyzs.T, lw=0.6)
+ax.set_xlabel("X")
+ax.set_ylabel("Y")
+ax.set_zlabel("Z")
+ax.set_title("Lorenz Attractor")
+plt.show()
+plt.close()
+```
+
+## Implement the vector field
+
+The right-hand side takes one point $(x,y,z)$ and returns the instantaneous velocity in phase space.
+
+```python
+def lorenz(xyz, s=10.0, r=28.0, b=8.0 / 3.0):
+    x, y, z = xyz
+    x_dot = # TODO
+    y_dot = # TODO
+    z_dot = # TODO
+    return np.array([x_dot, y_dot, z_dot])
+```
+
+::: {.callout-tip collapse="true"}
+## Solution
+```python
+def lorenz(xyz, s=10.0, r=28.0, b=8.0 / 3.0):
+    x, y, z = xyz
+    x_dot = s * (y - x)
+    y_dot = r * x - y - x * z
+    z_dot = x * y - b * z
+    return np.array([x_dot, y_dot, z_dot])
+```
+:::
+
+## Fixed points
+
+Setting the right-hand side equal to zero gives the equilibrium points.
+
+For $r > 1$, the Lorenz system has three fixed points [@strogatz2024nonlinear, Section 9.2]:
+
+$$
+(0,0,0),
+\qquad
+\left(\sqrt{b(r-1)}, \sqrt{b(r-1)}, r-1\right),
+\qquad
+\left(-\sqrt{b(r-1)}, -\sqrt{b(r-1)}, r-1\right).
+$$
+
+For $s = 10$, $b = 8/3$ the two nonzero fixed points lose stability in a subcritical Hopf bifurcation at $r = s(s + b + 3)/(s - b - 1) \approx 24.74$ [@strogatz2024nonlinear, Section 9.2]. At $r = 28$ no fixed point is stable, and trajectories keep circling around the two lobes of the attractor.
+
+## Simulate with Euler
+
+Forward Euler updates the state by
+
+$$
+\mathbf{x}_{n+1} = \mathbf{x}_n + \Delta t\, f(\mathbf{x}_n).
+$$
+
+In code, that becomes a simple loop over time steps. Euler is only first-order accurate; it is used here because every step is visible. Use `solve_ivp` for quantitative work.
+
+```python
+def simulate_lorenz(initial_state=(0.0, 1.0, 1.05), dt=0.01, num_steps=10000):
+    xyzs = np.empty((num_steps + 1, 3))
+    xyzs[0] = initial_state
+
+    for i in range(num_steps):
+        xyzs[i + 1] = xyzs[i] + lorenz(xyzs[i]) * dt
+
+    return xyzs
+```
+
+## What to look for
+
+- The trajectory stays in a bounded region of phase space.
+- It alternates between two lobes instead of converging to one point.
+- The geometry looks structured, but the switching times are hard to predict over long intervals.
+
+Try changing $r$ or the initial condition and observe how the trajectory changes.
+
+Reference code: [amlab/extra/lorenz_attractor.py](https://github.com/daniprec/BAM-Applied-Math-Lab/blob/main/amlab/extra/lorenz_attractor.py).
+
+## Next
+
+[Sensitivity and Chaos](lorenz-sensitivity.qmd){.btn .btn-primary}

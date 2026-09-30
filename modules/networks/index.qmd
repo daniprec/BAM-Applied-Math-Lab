@@ -1,175 +1,58 @@
 ---
-title: "Networks"
-subtitle: "Structure, Centrality and Spreading on Graphs"
+title: "Module 5: Complex Networks"
+subtitle: "Structure, Robustness and Spreading on Graphs"
 format: html
 ---
 
-This session connects **graph structure** (who is connected to whom) with **dynamics on graphs** (how processes spread along edges).
-Our main applications are epidemic spreading with the **SIS** and **SIR** models [@kermack1927contribution; @pastor2015epidemic].
+This module replaces the well-mixed populations of Modules 1 and 2 by networks: who interacts with whom is now given by a graph. You will measure the structure of networks, build the classical models of network growth, and study three processes whose outcome depends on that structure: percolation under node removal, cascades of overload failures, and epidemic spreading [@newman2003structure; @newman2018networks]. The code uses `networkx` [@hagberg2008networkx]. Reusable functions are in `amlab/networks_cascades/` and `amlab/networks_spreading/`.
 
-You will work with both:
+# Session Structure
 
-- **Synthetic graph models** (random, small-world, scale-free) to build intuition.
-- **Real networks** (Enron email, USA flights) to test your ideas.
+**Session 23: Networks: fundamental concepts**
 
-::: {.callout-tip}
-## Use notebooks for this session
+[Network Concepts](network-concepts.qmd){.btn .btn-primary}
+[Robustness and Percolation](robustness-percolation.qmd){.btn .btn-primary}
 
-I recommend following this session using **Jupyter notebooks** rather than standalone scripts.
+Toolkit (self-study before the labs):
 
-- You can iterate faster (run one cell at a time).
-- You can keep figures, outputs, and notes next to the code.
-- It's easier to debug simulations and compare parameter sweeps.
-:::
+[NetworkX Basics](networkx-basics.qmd){.btn .btn-primary}
+[Drawing Graphs](networkx-drawing.qmd){.btn .btn-primary}
+[Paths and Components](networkx-paths.qmd){.btn .btn-primary}
+[Centrality in NetworkX](networkx-centrality.qmd){.btn .btn-primary}
 
-## From Collective Motion to Networks
+**Session 24: Laboratory: cascading failures in power grids**
 
-In the previous session on **collective motion**, you simulated agent-based models in continuous space (e.g., Vicsek/Couzin): who interacts with whom was determined by **geometry** (metric distance, vision cones, neighborhoods).
+[The Iberian Blackout](iberian-blackout.qmd){.btn .btn-primary}
+[The Motter-Lai Model](motter-lai-model.qmd){.btn .btn-primary}
+[Cascade Simulation](cascade-simulation.qmd){.btn .btn-primary}
+[Swing Equation](swing-equation.qmd){.btn .btn-primary}
 
-In this session we switch the lens: we keep the same simulation mindset, but we represent interactions with a **graph**. Edges encode the possible transmission/interaction channels.
+**Session 25: Models of network growth**
 
-- Geometry-based interactions → **network topology**.
-- Local rules in space → local rules **along edges**.
-- Same themes: heterogeneity, hubs, robustness, emergent outcomes.
+[Erdős-Rényi Random Graphs](erdos-renyi.qmd){.btn .btn-primary}
+[Small-World Networks](small-world.qmd){.btn .btn-primary}
+[Preferential Attachment](preferential-attachment.qmd){.btn .btn-primary}
 
-[Back to Collective Motion](../collective-motion/index.qmd){.btn .btn-secondary}
+**Session 26: Laboratory: spreading processes on networks**
 
-### Why simulate on networks instead of using ODEs?
+[SIS Model on Networks](sis-network-model.qmd){.btn .btn-primary}
+[SIS Simulation](sis-network-simulation.qmd){.btn .btn-primary}
+[SIR on Networks](sir-network.qmd){.btn .btn-primary}
+[Epidemic Threshold](epidemic-threshold.qmd){.btn .btn-primary}
+[Vaccination Strategies](vaccination-strategies.qmd){.btn .btn-primary}
 
-In classical epidemic models, we use mean-field ODEs:
+[Practice: Real Networks](practice-real-networks.qmd){.btn .btn-secondary}
 
- dS/dt, dI/dt, dR/dt.
+---
 
-Those assume homogeneous mixing: every individual interacts with every other with equal probability [@keeling2008modeling].
+# Learning Goals
 
-Real systems are not homogeneous:
+By the end of this module, you should be able to:
 
-* Some nodes have 2 connections.
-* Others have 200.
-* Paths are constrained by topology.
-* Clusters slow or accelerate spreading.
-
-On networks, infection propagates only along edges. Structure matters.
-
-This lets you connect:
-
-* Degree heterogeneity.
-* Centrality.
-* Robustness.
-* Epidemic thresholds.
-
-## Case Studies
-
-[Network Fundamentals](fundamentals.qmd){.btn .btn-primary}
-[Network Connectivity](connectivity.qmd){.btn .btn-primary}
-
-[Graph Models](models.qmd){.btn .btn-primary}
-
-[SIS Model](sis.qmd){.btn .btn-primary}
-[SIR Model](sir.qmd){.btn .btn-primary}
-
-[Assignment: Real-World Networks](assignment.qmd){.btn .btn-secondary}
-
-## Learning Goals
-
-By the end of this session, you should be able to:
-
-- Represent real systems as graphs and load datasets with `networkx`.
-- Measure core properties (degree, density, components, paths, clustering).
-- Quantify **node importance** with centrality (degree, closeness, betweenness, PageRank).
-- Generate and compare standard graph models (Erdős–Rényi, Watts–Strogatz, Barabási–Albert).
-- Implement **SIS** and **SIR** simulations using **node attributes** for state.
-- Run reproducible experiments (fixed `SEED`, multiple trials, summary curves) and interpret results.
-
-## Flow of this Session
-
-### Fundamentals: graphs in `networkx`
-
-NetworkX is a Python package for the creation, manipulation, and study of the structure, dynamics, and functions of complex networks [@hagberg2008networkx].
-
-We start with the basic data structure:
-
-- nodes, edges, and attributes,
-- visualization,
-- reading graphs from files.
-
-This tutorial is based on *A First Course in Network Science* [@menczer2020firstcourse]. [You can see their official Github repository here.](https://github.com/CambridgeUniversityPress/FirstCourseNetworkScience/tree/master). Please take a look at the folder [references/networkx_indiana](../../references/networkx_indiana/) for more information.
-
-You will practice:
-
-* undirected vs directed graphs,
-* weighted edges,
-* adjacency/edge lists,
-* connected components.
-
-These concepts follow the formal definitions of nodes, links, directed and weighted graphs introduced in the lecture notes.
-
-### Connectivity + centrality
-
-Next we measure structure:
-
-* degree and density,
-* paths, diameter, components,
-* clustering coefficient,
-* centrality measures (degree/closeness/betweenness/PageRank) and what they mean.
-
-### Graph models (synthetic networks)
-
-We generate synthetic networks to compare structure:
-
-* Erdos–Rényi random graphs.
-* Watts–Strogatz small-world networks.
-* Barabási–Albert preferential attachment networks.
-
-These models aim to reproduce properties of real networks such as short paths, clustering, and heavy-tailed degree distributions [@watts1998collective; @barabasi1999emergence; @newman2018networks].
-
-You will measure:
-
-* Average degree.
-* Average path length.
-* Clustering coefficient.
-* Degree distribution.
-
-### Spreading: SIS and SIR
-
-This is the core computational part of the lab.
-
-We simulate:
-
-* **SIS model**
-  Susceptible → Infected → Susceptible
-  No permanent immunity.
-
-* **SIR model**
-  Susceptible → Infected → Recovered
-  Permanent immunity.
-
-Key questions you will answer:
-
-* How does network structure affect epidemic size?
-* What is the epidemic threshold?
-* How do hubs change the outcome?
-* What happens if we remove high-degree nodes first?
-
-You will compare spreading on:
-
-* Random networks.
-* Small-world networks.
-* Scale-free networks.
-* Real datasets such as air transportation or email communication .
-
-## Assignment
-
-The final project is [Assignment: Real-World Networks](assignment.qmd).
-
-You will choose **one** real network (Enron or USA Flights), then:
-
-1. **Characterize the network** (structure + centrality).
-2. Run **both** **SIS** and **SIR** simulations on that same network.
-
-Your submission includes:
-
-- **Code** that reproduces results end-to-end.
-- A short **report** (figures + interpretation).
-
-The emphasis is on **reproducible experiments** and clear interpretation of how structure changes outcomes.
+- Represent a real system as a graph and load network data with `networkx`.
+- Compute and interpret degree distributions, path lengths, clustering, centrality and communities.
+- Apply the Molloy-Reed criterion to predict when a network keeps a giant component under random failure, and explain why targeted attacks are more damaging on heterogeneous networks.
+- Implement the Motter-Lai cascade model, validate it, and explain what it leaves out compared with a real power grid event.
+- Generate Erdős-Rényi, Watts-Strogatz and Barabási-Albert networks and relate their properties to the model rules.
+- Simulate SIS and SIR on networks with reproducible seeds, derive the threshold $\lambda_c = \langle k \rangle / \langle k^2 \rangle$, and state the assumptions behind the vanishing threshold of scale-free networks.
+- Compare random, targeted and acquaintance vaccination.

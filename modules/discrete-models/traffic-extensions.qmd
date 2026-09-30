@@ -1,0 +1,135 @@
+---
+title: "Traffic Extensions"
+subtitle: "Module 6: Explorables and Discrete Models"
+format: html
+---
+
+The Nagel-Schreckenberg model is a minimal model. This page adds three extensions from the literature and asks one question for each: does it change the fundamental diagram *qualitatively*, or only shift the numbers? The code is in [amlab/cellular_automata/traffic_models.py](../../amlab/cellular_automata/traffic_models.py), which stores only car positions and speeds and runs much faster than the cell-based lab code.
+
+::: {.callout-important}
+## Core activity
+
+Reproduce the slow-to-start experiment below and explain why two initial conditions give two different flows at the same density. The other two extensions are optional.
+:::
+
+## Prediction
+
+::: {.callout-note}
+## Before you run the code
+
+For each extension, write down whether you expect a new feature in $q(\rho)$ (a new branch, a jump, a change of slope) or only a lower or higher curve.
+:::
+
+## Slow-to-start rule
+
+In the velocity-dependent randomization (VDR) model, a car that was stopped in the previous step brakes randomly with probability $p_0$, and a moving car with the usual probability $p$ [@barlovic1998metastable]. With $p_0 > p$, cars leave a jam more slowly than they drive in free flow. This is one of the slow-to-start rules.
+
+In `nasch_step()` this is one extra line: build the vector of randomization probabilities from the speeds before acceleration.
+
+```python
+prob = np.full(x.size, p)
+prob[v == 0] = p0          # stopped cars start with a delay
+```
+
+Barlovic et al. show that this rule produces metastable high-flow states and hysteresis in the fundamental diagram [@barlovic1998metastable]. To see it, start from two initial conditions at every density: evenly spaced moving cars (homogeneous) and one compact jam.
+
+```{python}
+#| echo: false
+#| label: fig-vdr-hysteresis
+#| fig-cap: 'Fundamental diagram from a homogeneous start (circles) and a compact jam (crosses). Ring of 1000 cells, v_max = 5, p = 0.01, 1000 steps averaged after 1000 burn-in steps. Left: standard model (p0 = p). Right: slow-to-start (p0 = 0.75).'
+#| fig-width: 8
+#| fig-height: 3.5
+
+import numpy as np
+import matplotlib.pyplot as plt
+from amlab.cellular_automata.traffic_models import fundamental_diagram, two_lane_flow
+
+densities = np.linspace(0.02, 0.4, 20)
+fig, axes = plt.subplots(1, 2, figsize=(8, 3.5), sharey=True)
+for ax, p0, title in zip(axes, (None, 0.75), ("Standard, p0 = p", "Slow-to-start, p0 = 0.75")):
+    for mode, marker in (("homogeneous", "o"), ("jam", "x")):
+        q = fundamental_diagram(densities, length=1000, steps=2000, burn_in=1000, p=0.01, p0=p0, mode=mode, seed=2)
+        ax.plot(densities, q, marker=marker, label=mode)
+    ax.set_title(title)
+    ax.set_xlabel(r"Density $\rho$")
+axes[0].set_ylabel(r"Flow $q$")
+axes[0].legend()
+plt.tight_layout()
+plt.show()
+```
+
+In the standard model both starts give the same curve. With slow-to-start there is a density range where the homogeneous start keeps a high flow and the jammed start stays at a low flow. The high-flow state is metastable: a large enough perturbation sends it to the jammed branch. **This changes the diagram qualitatively**: the flow is no longer a function of density alone, it also depends on history.
+
+## Slow vehicles
+
+Give a fraction $f$ of the cars a lower maximum speed $v_{\max}^{\text{slow}}$. On a single lane nobody can overtake, so at low density every fast car ends up behind a slow one and the cars form platoons [@knospe1999disorder].
+
+```{python}
+#| echo: false
+#| label: fig-slow-vehicles
+#| fig-cap: 'Single lane with a fraction f of slow cars (v_max = 2 instead of 5), p = 0.1, ring of 400 cells.'
+#| fig-width: 6
+#| fig-height: 3.5
+
+d = np.linspace(0.02, 0.6, 20)
+fig, ax = plt.subplots(figsize=(6, 3.5))
+for f in (0.0, 0.05, 0.2):
+    ax.plot(d, fundamental_diagram(d, length=400, p=0.1, slow_fraction=f, vmax_slow=2, seed=3), marker=".", label=f"f = {f}")
+ax.set_xlabel(r"Density $\rho$")
+ax.set_ylabel(r"Flow $q$")
+ax.legend()
+plt.tight_layout()
+plt.show()
+```
+
+Even a small fraction of slow cars sets the slope of the free-flow branch to roughly $v_{\max}^{\text{slow}} - p$, the speed of the slowest car. At high density the curves merge, because the gaps limit every car. **This also changes the diagram qualitatively** at low density.
+
+::: {.callout-tip}
+## Optional extension: two lanes
+
+Add a second lane and a symmetric lane-changing rule, as in Rickert et al. [@rickert1996two]. In `two_lane_step()` a car changes lane when its gap ahead is shorter than $v+1$, the other lane offers a longer gap, the target cell is free, and the gap behind in the other lane is at least $v_{\max}$. Then each lane applies the Nagel-Schreckenberg rules.
+
+```{python}
+#| echo: false
+#| label: fig-two-lanes
+#| fig-cap: 'Flow per lane on one lane and on two lanes, with and without 10% slow cars (v_max = 2), p = 0.1, ring of 300 cells per lane.'
+#| fig-width: 6
+#| fig-height: 3.5
+
+d = np.linspace(0.02, 0.6, 15)
+fig, ax = plt.subplots(figsize=(6, 3.5))
+for f, ls in ((0.0, "-"), (0.1, "--")):
+    ax.plot(d, fundamental_diagram(d, length=300, p=0.1, slow_fraction=f, vmax_slow=2, seed=4), ls, marker=".", label=f"one lane, f = {f}")
+    ax.plot(d, [two_lane_flow(300, r, steps=500, burn_in=200, p=0.1, slow_fraction=f, vmax_slow=2, seed=4) for r in d], ls, marker="s", markersize=3, label=f"two lanes, f = {f}")
+ax.set_xlabel(r"Density per lane $\rho$")
+ax.set_ylabel("Flow per lane")
+ax.legend(fontsize=8)
+plt.tight_layout()
+plt.show()
+```
+
+With identical cars, the flow per lane on two lanes stays close to the single-lane curve: a second lane mostly doubles the road, it does not change the shape of the diagram. With slow cars, overtaking is possible, but lane changes need a free gap in the other lane. Knospe et al. found that even a small number of slow cars can still create platoons at low density on two lanes [@knospe1999disorder]. In the figure, overtaking restores most of the free flow at the lowest densities, but already at $\rho \approx 0.1$ the two-lane flow falls towards the one-lane curve with slow cars. Check this with several seeds before you draw conclusions.
+:::
+
+## Interpretation
+
+| Extension | Qualitative change of $q(\rho)$? |
+|---|---|
+| Slow-to-start ($p_0 > p$) | Yes: metastable high-flow branch and hysteresis |
+| Fraction of slow vehicles, one lane | Yes: free-flow slope set by the slowest cars, platoons |
+| Two lanes, identical cars | No: flow per lane close to the single-lane curve |
+
+## Limitations
+
+- Each point is one run with one seed. Near the edges of the hysteresis range, the result depends on the seed and on the run length, because metastable states decay at random times.
+- The lane-changing rule here is a simplified symmetric rule. Rickert et al. show that the details of lane changing affect the shape of the diagram [@rickert1996two].
+
+::: {.callout-tip}
+## Optional extension
+
+Replace the ring by an open road: cars enter at the left with probability $\alpha$ per step and leave at the right. Plot the flow as a function of $\alpha$.
+:::
+
+## Next
+
+[Practice: Traffic](practice-traffic.qmd){.btn .btn-primary}

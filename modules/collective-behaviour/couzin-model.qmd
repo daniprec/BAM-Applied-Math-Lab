@@ -1,0 +1,74 @@
+---
+title: "The Couzin Model"
+subtitle: "Module 2: Synchronization and Collective Behaviour"
+format: html
+---
+
+The Vicsek model has alignment only. Its groups spread out and have no boundary. @couzin2002collective added two behaviours that real animal groups show: individuals avoid collisions, and they are attracted to others so they are not left alone. The model was built for fish schools and bird flocks in three dimensions. The course uses a two-dimensional version.
+
+## Behavioural zones
+
+$N$ individuals have positions $\mathbf{c}_i$ and unit direction vectors $\mathbf{v}_i$. Time advances in steps of $\tau = 0.1$ s, which corresponds to the response latency of fish. Around each individual there are three non-overlapping zones [@couzin2002collective]:
+
+- the **zone of repulsion** (zor), radius $r_r$;
+- the **zone of orientation** (zoo), from $r_r$ to $r_o$;
+- the **zone of attraction** (zoa), from $r_o$ to $r_a$.
+
+Neighbours in a blind region behind the individual, of angle $360^\circ - \alpha$, are not detected. Here $\alpha$ is the field of perception. Let $\mathbf{r}_{ij} = (\mathbf{c}_j - \mathbf{c}_i)/|\mathbf{c}_j - \mathbf{c}_i|$ be the unit vector from $i$ to neighbour $j$.
+
+## Rules
+
+**Repulsion has priority.** If $n_r > 0$ neighbours are in the zor, the desired direction is
+
+$$
+\mathbf{d}_i(t+\tau) = -\sum_{j \ne i}^{n_r} \mathbf{r}_{ij}(t).
+$$ {#eq-couzin-repulsion}
+
+**Otherwise, orientation and attraction.** With $n_o$ neighbours in the zoo and $n_a$ in the zoa,
+
+$$
+\mathbf{d}_o(t+\tau) = \sum_{j=1}^{n_o} \frac{\mathbf{v}_j(t)}{|\mathbf{v}_j(t)|},
+\qquad
+\mathbf{d}_a(t+\tau) = \sum_{j \ne i}^{n_a} \mathbf{r}_{ij}(t).
+$$ {#eq-couzin-oa}
+
+If only the zoo has neighbours, $\mathbf{d}_i = \mathbf{d}_o$. If only the zoa has neighbours, $\mathbf{d}_i = \mathbf{d}_a$. If both do, $\mathbf{d}_i = \tfrac12(\mathbf{d}_o + \mathbf{d}_a)$. If the result is the zero vector, or no neighbour is detected, the individual keeps its direction, $\mathbf{d}_i = \mathbf{v}_i$.
+
+**Noise.** The desired direction is rotated by a random angle from a wrapped Gaussian with standard deviation $\sigma$.
+
+**Limited turning.** Individuals turn toward $\mathbf{d}_i$ at most by an angle $\theta\tau$ per step, where $\theta$ is the turning rate. They move at constant speed $s$.
+
+## Collective states
+
+@couzin2002collective measure two quantities, the group polarization and the group angular momentum:
+
+$$
+p_{\text{group}} = \frac{1}{N}\left|\sum_{i=1}^N \mathbf{v}_i\right|,
+\qquad
+m_{\text{group}} = \frac{1}{N}\left|\sum_{i=1}^N \mathbf{r}_{ic} \times \mathbf{v}_i\right|,
+$$ {#eq-couzin-order}
+
+where $\mathbf{r}_{ic}$ is the unit vector from the group centroid $\mathbf{c}_{\text{group}} = N^{-1}\sum_i \mathbf{c}_i$ to individual $i$. Both lie in $[0, 1]$. Varying the widths $\Delta r_o = r_o - r_r$ and $\Delta r_a = r_a - r_o$, they found four states:
+
+| State | $p_{\text{group}}$ | $m_{\text{group}}$ |
+|---|---|---|
+| Swarm | low | low |
+| Torus (milling) | low | high |
+| Dynamic parallel group | high | low |
+| Highly parallel group | very high | low |
+
+They also found **collective memory**: for the same parameters, the group state depends on the path taken through parameter space [@couzin2002collective]. This is hysteresis, as in the spruce budworm model of Module 1 ([Hysteresis](../low-dimensional-dynamics/hysteresis.qmd)).
+
+::: {.callout-note}
+## Exercise
+
+Set $\Delta r_o = 0$ in the Couzin model. Which rules remain, and which collective state do you expect?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+With no zone of orientation there is no alignment, only repulsion and attraction. Individuals stay together but do not align, so you expect a swarm: low $p_{\text{group}}$ and low $m_{\text{group}}$. This matches the swarm region of @couzin2002collective.
+:::
+
+The code for this model is in [amlab/collective_motion/couzin.py](../../amlab/collective_motion/couzin.py) and the animation in [amlab/collective_motion/couzin_animation.py](../../amlab/collective_motion/couzin_animation.py). Implementing it is Option A of [Practice: Collective Motion](practice-collective-motion.qmd).

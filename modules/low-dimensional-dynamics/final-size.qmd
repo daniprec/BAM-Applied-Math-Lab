@@ -1,0 +1,89 @@
+---
+title: "The Final Size of an Epidemic"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+An SIR epidemic always ends with some susceptibles left. How many people are infected in total can be computed without solving the ODE in time [@kermack1927contribution; @hethcote2000mathematics].
+
+## The final size relation
+
+Divide $\dot S = -\beta S I$ by $\dot R = \gamma I$:
+
+$$
+\frac{dS}{dR} = -R_0 S \quad \Longrightarrow \quad S(t) = S(0)\, e^{-R_0 (R(t) - R(0))} .
+$$
+
+As $t \to \infty$, $I \to 0$. With $R(0) = 0$ and $R(\infty) = 1 - S(\infty)$ you get
+
+$$
+\ln\frac{S(0)}{S(\infty)} = R_0 \bigl(1 - S(\infty)\bigr) .
+$$ {#eq-final-size}
+
+For a small initial seed, $S(0) \to 1$, and the fraction ever infected, $z = 1 - S(\infty)$, satisfies
+
+$$
+z = 1 - e^{-R_0 z} .
+$$ {#eq-final-size-z}
+
+For $R_0 \le 1$ the only solution in $[0, 1]$ is $z = 0$. For $R_0 > 1$ there is a unique positive solution, and it is the final size [@hethcote2000mathematics].
+
+## Solving it numerically
+
+@eq-final-size-z has no closed-form solution in elementary functions, but a root finder solves it instantly.
+
+```{python}
+import numpy as np
+from scipy.optimize import brentq
+
+for r0 in [1.5, 2.0, 3.0, 5.0]:
+    z = brentq(lambda z: z - 1 + np.exp(-r0 * z), 1e-9, 1.0)
+    print(f"R0 = {r0}: final size z = {z:.3f}, herd immunity threshold = {1 - 1 / r0:.3f}")
+```
+
+The final size is larger than the herd immunity threshold $1 - 1/R_0$. The epidemic overshoots: when $S$ reaches $1/R_0$ the number of infectious people is at its maximum, and they still cause many infections on the way down.
+
+## Peak prevalence
+
+The same trick gives the maximum of $I$. From $dI/dS = -1 + 1/(R_0 S)$,
+
+$$
+I_{\max} = I(0) + S(0) - \frac{1}{R_0} - \frac{1}{R_0}\ln\bigl(R_0 S(0)\bigr),
+$$
+
+valid when $R_0 S(0) > 1$ [@hethcote2000mathematics]. `amlab.epidemics.peak_prevalence` implements this formula.
+
+::: {.callout-note}
+## Exercise
+Check the final size relation against a simulation for $R_0 = 3$ ($\beta = 0.3$, $\gamma = 0.1$) with $I(0) = 10^{-4}$.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+```{python}
+from scipy.integrate import solve_ivp
+
+from amlab.epidemics import final_size, sir_rhs
+
+sol = solve_ivp(sir_rhs, (0, 400), [1 - 1e-4, 1e-4, 0.0], args=(0.3, 0.1), rtol=1e-9)
+print(f"Simulated: {1 - sol.y[0, -1]:.4f}")
+print(f"Relation:  {final_size(3.0, s0=1 - 1e-4) + 1e-4:.4f}")
+```
+The simulated fraction $1 - S(\infty)$ matches @eq-final-size including the initial seed.
+:::
+
+## Extensions
+
+The SIR model is the starting point of a large family. Each extension relaxes one assumption from [Compartmental Models](compartmental-models.qmd).
+
+- **SEIR:** an exposed class $E$ for people infected but not yet infectious. It changes the timing of the epidemic but, in the simplest case, not $R_0$ [@hethcote2000mathematics; @keeling2008modeling].
+- **Vital dynamics:** births and deaths allow endemic equilibria and recurrent epidemics [@hethcote2000mathematics].
+- **Age structure:** contact rates that depend on age [@hethcote2000mathematics; @keeling2008modeling].
+- **Spatial structure and networks:** contacts limited to neighbours or to a contact network. Module 5 studies epidemics on networks [@pastor2015epidemic].
+- **Stochastic models:** needed when the number of cases is small, for example to compute the probability that an outbreak dies out by chance [@keeling2008modeling].
+
+## Next
+
+Session 6 implements these models and fits them to data.
+
+[Simulating the SIR Model](sir-simulation.qmd){.btn .btn-primary}

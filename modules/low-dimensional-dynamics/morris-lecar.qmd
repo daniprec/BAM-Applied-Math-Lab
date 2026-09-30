@@ -1,0 +1,115 @@
+---
+title: "Morris-Lecar Model"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+Morris and Lecar built a model of the voltage oscillations of the barnacle giant muscle fiber, with two non-inactivating conductances: an excitatory calcium current and a potassium recovery current [@morris1981voltage]. Unlike FitzHugh-Nagumo, every term has a physiological meaning.
+
+## The equations
+
+With membrane potential $V$ and the fraction $n$ of open potassium channels,
+
+$$
+\begin{aligned}
+C\dot V &= I_{\text{app}} - g_{\text{Ca}}\, m_\infty(V)(V - V_{\text{Ca}}) - g_{\text{K}}\, n\,(V - V_{\text{K}}) - g_L (V - V_L),\\
+\dot n &= \phi\,\frac{n_\infty(V) - n}{\tau_n(V)},
+\end{aligned}
+$$ {#eq-ml}
+
+$$
+m_\infty(V) = \tfrac12\left[1 + \tanh\frac{V - V_1}{V_2}\right],\quad
+n_\infty(V) = \tfrac12\left[1 + \tanh\frac{V - V_3}{V_4}\right],\quad
+\tau_n(V) = \operatorname{sech}\frac{V - V_3}{2V_4}.
+$$
+
+The calcium activation $m$ is assumed instantaneous, $m = m_\infty(V)$, which reduces the model to two variables [@morris1981voltage]. This is the form given by Lecar in [Scholarpedia](http://www.scholarpedia.org/article/Morris-Lecar_model), with the rate constant written as $\phi$.
+
+`amlab/odes_2d/morris_lecar.py` implements @eq-ml with default values $C = 20$, $g_{\text{Ca}} = 4$, $g_{\text{K}} = 8$, $g_L = 2$ (conductances in mS/cm², capacitance in µF/cm²), $V_{\text{Ca}} = 120$, $V_{\text{K}} = -84$, $V_L = -60$, $V_1 = -1.2$, $V_2 = 18$, $V_3 = 2$, $V_4 = 30$ (all in mV) and $\phi = 0.04$. The results below are for these values.
+
+```{python}
+#| echo: false
+#| label: fig-ml
+#| fig-cap: "Morris-Lecar model with the amlab default parameters. Left: V(t) for three applied currents, starting at V = -60 mV, n = 0. Right: phase plane for I_app = 150 with the V-nullcline (blue), the n-nullcline (red) and the limit cycle."
+#| fig-width: 9
+#| fig-height: 3.8
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.integrate import solve_ivp
+
+from amlab.odes_2d.morris_lecar import morris_lecar
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9, 3.8))
+for i_app in [60.0, 150.0, 260.0]:
+    sol = solve_ivp(morris_lecar, (0, 500), [-60.0, 0.0], args=(i_app,), method="LSODA",
+                    max_step=1.0, rtol=1e-8)
+    ax1.plot(sol.t, sol.y[0], lw=1, label=f"I_app = {i_app:.0f}")
+ax1.set_xlabel("t (ms)")
+ax1.set_ylabel("V (mV)")
+ax1.legend(fontsize=8)
+
+v = np.linspace(-70, 50, 400)
+i_app, g_ca, g_k, g_l, v_ca, v_k, v_l = 150.0, 4.0, 8.0, 2.0, 120.0, -84.0, -60.0
+m_inf = 0.5 * (1 + np.tanh((v + 1.2) / 18))
+n_inf = 0.5 * (1 + np.tanh((v - 2) / 30))
+ax2.plot(v, (i_app - g_ca * m_inf * (v - v_ca) - g_l * (v - v_l)) / (g_k * (v - v_k)), "b", lw=1)
+ax2.plot(v, n_inf, "r", lw=1)
+sol = solve_ivp(morris_lecar, (0, 500), [-60.0, 0.0], args=(i_app,), method="LSODA",
+                max_step=1.0, rtol=1e-8)
+ax2.plot(sol.y[0][sol.t > 200], sol.y[1][sol.t > 200], "k", lw=1.2)
+ax2.set_ylim(-0.05, 0.8)
+ax2.set_xlabel("V (mV)")
+ax2.set_ylabel("n")
+plt.tight_layout()
+plt.show()
+```
+
+## What the simulations show
+
+With these parameters:
+
+- for small currents ($I_{\text{app}} = 60$) the model rests at a stable fixed point;
+- for intermediate currents ($I_{\text{app}} = 150$) it fires periodically;
+- for large currents ($I_{\text{app}} = 260$) the membrane stays depolarized at a new stable fixed point.
+
+The rest state loses stability through a pair of complex eigenvalues, a Hopf bifurcation. You can locate it with the numerical Jacobian of [CDIMA: Stability and the Hopf Point](cdima-stability.qmd):
+
+```{python}
+from scipy.optimize import brentq, fsolve
+
+
+def max_real_eigenvalue(i_app, h=1e-6):
+    fp = fsolve(lambda y: morris_lecar(0, y, i_app), [-30.0, 0.1])
+    jac = np.zeros((2, 2))
+    for j in range(2):
+        e = np.zeros(2)
+        e[j] = h
+        jac[:, j] = (morris_lecar(0, fp + e, i_app) - morris_lecar(0, fp - e, i_app)) / (2 * h)
+    return np.linalg.eigvals(jac).real.max()
+
+
+print(f"Lower Hopf point: I_app = {brentq(max_real_eigenvalue, 90, 110):.1f}")
+print(f"Upper Hopf point: I_app = {brentq(max_real_eigenvalue, 220, 240):.1f}")
+```
+
+Simulations started far from rest already oscillate for $I_{\text{app}} \approx 96$, below the lower Hopf point near 101.8. In that range a stable rest state and a stable limit cycle coexist, which indicates a subcritical Hopf bifurcation for this parameter set. Other parameter sets make the Morris-Lecar model start firing through a saddle-node bifurcation instead, at arbitrarily low frequency; this is why it is used to compare different classes of neural excitability [@ellner2006dynamic].
+
+::: {.callout-note}
+## Exercise
+Derive the $V$-nullcline shown in @fig-ml from @eq-ml.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+Set $\dot V = 0$ and solve for $n$:
+$n = \dfrac{I_{\text{app}} - g_{\text{Ca}} m_\infty(V)(V - V_{\text{Ca}}) - g_L(V - V_L)}{g_{\text{K}}(V - V_{\text{K}})}$. The $n$-nullcline is $n = n_\infty(V)$.
+:::
+
+::: {.callout-tip}
+## Optional extension
+Run `python amlab/odes_2d/morris_lecar.py` for the interactive version, then find the smallest current at which the model fires when you start from the rest state and when you start from $V = 20$ mV.
+:::
+
+## Next
+
+[Bistable Switches](bistable-switches.qmd){.btn .btn-primary}

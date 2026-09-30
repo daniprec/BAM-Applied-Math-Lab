@@ -1,0 +1,83 @@
+---
+title: "Bistable Switches"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+A bistable switch is a system with two stable states and a threshold between them. You met one in [Bistability](bistability.qmd) for the budworm. In cell biology, switches let a cell make a lasting decision from a transient signal. Gardner, Cantor and Collins built one from two genes that repress each other, and predicted the conditions for bistability with a two-variable model [@gardner2000construction].
+
+## The toggle switch
+
+Let $u$ and $v$ be the concentrations of two repressor proteins. Each one represses the promoter of the other:
+
+$$
+\dot u = \frac{\alpha_1}{1 + v^{\beta}} - u, \qquad
+\dot v = \frac{\alpha_2}{1 + u^{\gamma}} - v .
+$$ {#eq-toggle}
+
+$\alpha_1, \alpha_2$ are the effective synthesis rates, $\beta, \gamma$ describe the cooperativity of repression, and the $-u$, $-v$ terms are degradation and dilution [@gardner2000construction].
+
+## Geometry of the switch
+
+The nullclines are $u = \alpha_1/(1 + v^\beta)$ and $v = \alpha_2/(1 + u^\gamma)$. When repression is cooperative ($\beta, \gamma > 1$) and the two synthesis rates are balanced and large enough, the nullclines cross three times: two stable states (one gene on, the other off) and a saddle between them. The stable manifold of the saddle separates the two basins [@gardner2000construction].
+
+```{python}
+#| echo: false
+#| label: fig-toggle
+#| fig-cap: "Toggle switch with alpha1 = alpha2 = 10 and beta = gamma = 2. Nullclines (blue: du/dt = 0, red: dv/dt = 0) cross three times. Trajectories from different initial conditions end in one of the two stable states (black dots); the open dot is the saddle."
+#| fig-width: 5.5
+#| fig-height: 4.5
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.integrate import solve_ivp
+from scipy.optimize import fsolve
+
+
+def toggle(t, y, a1=10.0, a2=10.0, beta=2.0, gamma=2.0):
+    u, v = y
+    return [a1 / (1 + v**beta) - u, a2 / (1 + u**gamma) - v]
+
+
+s = np.linspace(0, 11, 400)
+fig, ax = plt.subplots(figsize=(5.5, 4.5))
+ax.plot(10 / (1 + s**2), s, "b", label="du/dt = 0")
+ax.plot(s, 10 / (1 + s**2), "r", label="dv/dt = 0")
+rng = np.random.default_rng(0)
+for u0, v0 in rng.uniform(0, 10, size=(12, 2)):
+    sol = solve_ivp(toggle, (0, 20), [u0, v0], t_eval=np.linspace(0, 20, 400))
+    ax.plot(sol.y[0], sol.y[1], color="gray", lw=0.8)
+for guess in [(10, 0.1), (0.1, 10), (2, 2)]:
+    fp = fsolve(lambda y: toggle(0, y), guess)
+    jac_eigs = np.linalg.eigvals(np.array([[-1, -20 * fp[1] / (1 + fp[1]**2) ** 2],
+                                           [-20 * fp[0] / (1 + fp[0]**2) ** 2, -1]]))
+    ax.plot(*fp, "o", color="k", mfc="k" if np.all(jac_eigs.real < 0) else "w", ms=7)
+ax.set_xlim(0, 11)
+ax.set_ylim(0, 11)
+ax.set_xlabel("u")
+ax.set_ylabel("v")
+ax.legend(loc="upper right")
+plt.tight_layout()
+plt.show()
+```
+
+## Why it works as a memory
+
+A transient signal that pushes the state across the separatrix, for example an inducer that temporarily inactivates one repressor, flips the switch. When the signal is removed, the system stays in the new state. Gardner et al. showed this experimentally in *Escherichia coli*: the toggle switched between states in response to transient chemical or thermal induction and kept its state afterwards [@gardner2000construction].
+
+The same structure appears in the budworm: two stable states, a threshold, and hysteresis when a parameter changes slowly ([Hysteresis](hysteresis.qmd)).
+
+::: {.callout-note}
+## Exercise
+Take $\beta = \gamma = 1$ (no cooperativity) and $\alpha_1 = \alpha_2 = \alpha$. Show that the symmetric fixed point $u = v$ is the only fixed point with $u = v$ and find it.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+With $u = v$: $u = \alpha/(1 + u)$, so $u^2 + u - \alpha = 0$ and $u = (-1 + \sqrt{1 + 4\alpha})/2$, the only positive root. For $\beta = \gamma = 1$ the nullclines are hyperbolas that cross only once, so this fixed point is the only one and there is no bistability. Cooperativity is needed for the switch [@gardner2000construction].
+:::
+
+## Session wrap-up
+
+Part I of the course ends here. You have seen the main behaviours of low-dimensional systems: equilibria and their stability, bistability and hysteresis, limit cycles and Hopf bifurcations, excitability and relaxation oscillations. Part II couples many oscillators together.
+
+[Module 2: Synchronization and Collective Behaviour](../collective-behaviour/index.qmd){.btn .btn-primary}

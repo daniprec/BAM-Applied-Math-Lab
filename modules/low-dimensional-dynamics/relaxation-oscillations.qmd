@@ -1,0 +1,93 @@
+---
+title: "Relaxation Oscillations"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+A relaxation oscillation alternates slow build-up with fast release. Van der Pol introduced the term for self-oscillating electrical circuits [@vanderpol1926relaxation]. The standard example is his oscillator with strong nonlinearity [@strogatz2024nonlinear, Section 7.5].
+
+## The Van der Pol oscillator for large $\mu$
+
+The equation $\ddot x + \mu(x^2 - 1)\dot x + x = 0$ has negative damping for $|x| < 1$ and positive damping for $|x| > 1$. With $F(x) = x^3/3 - x$ and $y = \dot x/\mu + F(x)$ it becomes
+
+$$
+\dot x = \mu\bigl(y - F(x)\bigr), \qquad \dot y = -\frac{x}{\mu},
+$$ {#eq-vdp-lienard}
+
+which is the form in `amlab/odes_2d/van_der_pol.py` [@strogatz2024nonlinear, Section 7.5].
+
+For $\mu \gg 1$, $\dot x$ is of order $\mu$ and $\dot y$ of order $1/\mu$. Away from the cubic nullcline $y = F(x)$ the trajectory jumps almost horizontally, in a time of order $1/\mu$. On the outer branches of the cubic it creeps slowly, in a time of order $\mu$. When it reaches a knee of the cubic ($x = \pm 1$) it jumps to the other branch.
+
+## The period
+
+Strogatz computes the period from the time spent on the slow branches. On a slow branch $y \approx F(x)$, so $\dot y = F'(x)\dot x = (x^2 - 1)\dot x = -x/\mu$. Integrating from $x = 2$ to $x = 1$ and doubling for the two branches gives
+
+$$
+T \approx 2\mu \int_1^2 \frac{x^2 - 1}{x}\,dx = (3 - 2\ln 2)\,\mu \approx 1.61\,\mu,
+$$ {#eq-vdp-period}
+
+with corrections that vanish relative to $\mu$ as $\mu \to \infty$ [@strogatz2024nonlinear, Section 7.5].
+
+```{python}
+#| echo: false
+#| label: fig-relaxation
+#| fig-cap: "Van der Pol oscillator for mu = 10. Left: limit cycle and cubic nullcline in the Lienard plane. Right: x(t), with slow drifts and fast jumps."
+#| fig-width: 9
+#| fig-height: 3.5
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.integrate import solve_ivp
+
+from amlab.odes_2d.van_der_pol import van_der_pol
+
+mu = 10.0
+sol = solve_ivp(van_der_pol, (0, 80), [2.0, 0.0], args=(mu,), method="LSODA",
+                t_eval=np.linspace(0, 80, 8000), rtol=1e-8)
+xs = np.linspace(-2.5, 2.5, 300)
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9, 3.5))
+ax1.plot(xs, xs**3 / 3 - xs, "b", lw=1, label="y = F(x)")
+ax1.plot(sol.y[0], sol.y[1], "k", lw=1)
+ax1.set_xlabel("x")
+ax1.set_ylabel("y")
+ax1.legend(fontsize=8)
+ax2.plot(sol.t, sol.y[0], "k", lw=1)
+ax2.set_xlabel("t")
+ax2.set_ylabel("x")
+plt.tight_layout()
+plt.show()
+```
+
+## Numerical check
+
+Measure the period from upward zero crossings of $x(t)$ and compare with @eq-vdp-period.
+
+```{python}
+for mu in [5.0, 10.0, 20.0, 40.0]:
+    t_end = 12 * mu
+    s = solve_ivp(van_der_pol, (0, t_end), [2.0, 0.0], args=(mu,), method="LSODA",
+                  t_eval=np.linspace(0, t_end, 40000), rtol=1e-8)
+    x = s.y[0]
+    up = s.t[1:][(x[:-1] < 0) & (x[1:] >= 0)]
+    period = np.mean(np.diff(up[1:]))
+    print(f"mu = {mu:4.0f}: T = {period:6.2f}, (3 - 2 ln 2) mu = {(3 - 2 * np.log(2)) * mu:6.2f}")
+```
+
+The relative error falls as $\mu$ grows, as expected for an asymptotic formula.
+
+## Where you meet it again
+
+The FitzHugh-Nagumo model has the same geometry: a fast variable with a cubic nullcline and a slow recovery variable ([FitzHugh-Nagumo Model](fitzhugh-nagumo.qmd)). When its fixed point sits on the middle branch, the system produces relaxation oscillations; when it sits on an outer branch, the system is excitable.
+
+::: {.callout-note}
+## Exercise
+Evaluate the integral in @eq-vdp-period.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+$\int_1^2 (x - 1/x)\,dx = [x^2/2 - \ln x]_1^2 = (2 - \ln 2) - 1/2 = 3/2 - \ln 2$. Multiplying by $2\mu$ gives $(3 - 2\ln 2)\mu$.
+:::
+
+## Next
+
+[Morris-Lecar Model](morris-lecar.qmd){.btn .btn-primary}

@@ -1,0 +1,78 @@
+---
+title: "Bistability"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+For some values of $r$ and $k$ the budworm model has two stable fixed points separated by an unstable one. The system is then **bistable**: the long-run state depends on where you start [@strogatz2024nonlinear, Section 3.7].
+
+## Two stable states
+
+With $r = 0.5$ and $k = 10$ the positive fixed points are $x_a \approx 0.683$, $x_b = 2$ and $x_c \approx 7.317$ (see [Fixed Points and Stability](fixed-points-stability.qmd)).
+
+- $x_a$ is stable. Strogatz calls it the **refuge** level: predation keeps the budworm scarce.
+- $x_c$ is stable. It is the **outbreak** level: the budworm is limited by food, not by predators.
+- $x_b$ is unstable. It is the threshold between the two.
+
+Ludwig et al. describe the same two regimes as limitation by predators and limitation by food [@ludwig1978qualitative, p. 320].
+
+## Basins of attraction
+
+The basin of attraction of a stable fixed point is the set of initial conditions whose trajectories approach it. In one dimension trajectories cannot cross fixed points, so the basins here are intervals:
+
+- $0 < x_0 < 2$ converges to the refuge $x_a$;
+- $x_0 > 2$ converges to the outbreak $x_c$.
+
+```{python}
+#| echo: false
+#| label: fig-bistable-trajectories
+#| fig-cap: "Trajectories of the budworm model for r = 0.5, k = 10 from several initial conditions. The dotted line is the unstable threshold x = 2."
+#| fig-width: 7
+#| fig-height: 3.5
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.integrate import solve_ivp
+
+from amlab.odes_1d.spruce_budworm import spruce_budworm
+
+t = np.linspace(0, 60, 600)
+fig, ax = plt.subplots(figsize=(7, 3.5))
+for x0 in [0.2, 1.0, 1.9, 2.1, 4.0, 9.5]:
+    sol = solve_ivp(spruce_budworm, (0, 60), [x0], args=(0.5, 10.0), t_eval=t)
+    ax.plot(sol.t, sol.y[0], color="tab:blue" if x0 < 2 else "tab:red")
+ax.axhline(2.0, color="k", ls=":", lw=1)
+ax.set_xlabel("Dimensionless time τ")
+ax.set_ylabel("x")
+ax.grid(alpha=0.3)
+plt.tight_layout()
+plt.show()
+```
+
+Two features of @fig-bistable-trajectories deserve attention.
+
+- Trajectories that start near $x = 2$ take a long time to leave it, because $|f'(2)| = 0.14$ is small.
+- Trajectories never overshoot. In a one-dimensional autonomous ODE, solutions are monotonic in time, so oscillations are impossible [@strogatz2024nonlinear, Section 2.6].
+
+## Ecological interpretation
+
+Bistability means that the same forest conditions ($r$ and $k$ fixed) can support two very different budworm densities. Which one you observe depends on history: a large enough immigration or a good year for the insect can push the population across the threshold, and it will then grow to the outbreak level without any change in the parameters.
+
+The model also shows what it cannot do. With $r$ and $k$ constant, an outbreak never ends. The observed cycles of outbreak and collapse require the forest to change, which is the subject of [Budworm and Forest: Fast and Slow](budworm-forest-fast-slow.qmd).
+
+Bistability with a threshold is common in ecological models of sudden regime shifts in lakes, forests and other systems [@scheffer2001catastrophic].
+
+::: {.callout-note}
+## Exercise
+For $r = 0.5$ and $k = 10$, the population sits at the refuge $x_a \approx 0.68$. What is the smallest instantaneous increase $\Delta x$ that triggers an outbreak?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+The population must cross the unstable fixed point $x_b = 2$, so $\Delta x > 2 - 0.683 \approx 1.32$ in dimensionless units, that is about $1.32A$ in larvae per acre.
+:::
+
+## Next
+
+Session 3 turns this analysis into code.
+
+[Solving Initial Value Problems](solve-ivp.qmd){.btn .btn-primary}
