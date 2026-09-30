@@ -545,7 +545,7 @@ window.Quarto = {
 <section id="the-data" class="level2">
 <h2 class="anchored" data-anchor-id="the-data">The data</h2>
 <p><code>amlab.epidemics.load_cases()</code> reads <code>data/epidemic/cases.csv</code> with columns <code>date,new_cases</code> (see <code>data/epidemic/README.md</code>). If the file does not exist, it returns <strong>synthetic data</strong> and prints a warning: a deterministic SIR epidemic with <span class="math inline">\(R_0 = 3\)</span> (<span class="math inline">\(\beta = 0.3\)</span>, <span class="math inline">\(\gamma = 0.1\)</span> per day) in a population of one million, with random reporting noise and a fixed seed. The figures on this page use the synthetic data unless you add a real file. With synthetic data you know the true parameters, so you can check whether the fit recovers them.</p>
-<div id="e4f63b7d" class="cell" data-execution_count="1">
+<div id="d93d1248" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.epidemics <span class="im">import</span> load_cases</span>
@@ -593,7 +593,7 @@ Solution
 <div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>The synthetic data use <span class="math inline">\(\beta = 0.3\)</span> and <span class="math inline">\(\gamma = 0.1\)</span>, so the slope of <span class="math inline">\(\ln c_d\)</span> is <span class="math inline">\(\beta - \gamma = 0.2\)</span> per day: cases double about every <span class="math inline">\(\ln 2 / 0.2 \approx 3.5\)</span> days. A straight-line fit to the first weeks gives a value close to this.</p>
-<div id="0956ad60" class="cell" data-execution_count="2">
+<div id="f6d5aaef" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>early <span class="op">=</span> (days <span class="op">&gt;=</span> <span class="dv">5</span>) <span class="op">&amp;</span> (days <span class="op">&lt;=</span> <span class="dv">30</span>) <span class="op">&amp;</span> (cases <span class="op">&gt;</span> <span class="dv">0</span>)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>slope <span class="op">=</span> np.polyfit(days[early], np.log(cases[early]), <span class="dv">1</span>)[<span class="dv">0</span>]</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"slope of log(cases) for days 5 to 30: </span><span class="sc">{</span>slope<span class="sc">:.3f}</span><span class="ss"> per day"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -642,7 +642,7 @@ Solution
 <div id="callout-4" class="callout-4-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p><code>amlab.epidemics.fit_sir_incidence</code> implements exactly this, with bounds on each parameter. It takes the initial number of infected people in the guess instead of the fraction.</p>
-<div id="94225bef" class="cell" data-execution_count="3">
+<div id="d8ed4567" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.optimize <span class="im">import</span> least_squares</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.epidemics <span class="im">import</span> sir_incidence</span>
@@ -707,7 +707,7 @@ Figure&nbsp;1: SIR fit to the full incidence curve. Dots: data. Line: fitted mod
 <section id="experiment-identifiability" class="level2">
 <h2 class="anchored" data-anchor-id="experiment-identifiability">Experiment: identifiability</h2>
 <p>A parameter is identifiable if the data determine it. Now treat the population size <span class="math inline">\(N\)</span> as unknown too (<code>fit_population=True</code>); in a real epidemic you rarely know how many people can actually be reached. Fit only the first <span class="math inline">\(T\)</span> days for several values of <span class="math inline">\(T\)</span>.</p>
-<div id="3d8954ff" class="cell" data-execution_count="5">
+<div id="641c6cd5" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">" T   beta-gamma    R0          N"</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> T <span class="kw">in</span> [<span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">40</span>, <span class="dv">60</span>, <span class="dv">90</span>, <span class="dv">120</span>]:</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    f <span class="op">=</span> fit_sir_incidence(days[:T], cases[:T], population<span class="op">=</span>N, fit_population<span class="op">=</span><span class="va">True</span>)</span>
@@ -734,7 +734,6 @@ Figure&nbsp;1: SIR fit to the full incidence curve. Dots: data. Line: fitted mod
 </section>
 <section id="next" class="level2">
 <h2 class="anchored" data-anchor-id="next">Next</h2>
-<p><a href="../../modules/low-dimensional-dynamics/peak-prediction.html" class="btn btn-primary">Predicting the Peak</a></p>
 
 
 <!-- -->
@@ -1325,8 +1324,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb12-153"><a href="#cb12-153" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Least squares gives a point estimate. Quantifying uncertainty needs bootstrap or Bayesian methods, as in @castro2020turning.</span>
 <span id="cb12-154"><a href="#cb12-154" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-155"><a href="#cb12-155" aria-hidden="true" tabindex="-1"></a><span class="fu">## Next</span></span>
-<span id="cb12-156"><a href="#cb12-156" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-157"><a href="#cb12-157" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Predicting the Peak</span><span class="co">](peak-prediction.qmd)</span>{.btn .btn-primary}</span>
 </code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
