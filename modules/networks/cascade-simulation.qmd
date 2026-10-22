@@ -17,6 +17,9 @@ Go back to the two questions at the end of [The Iberian Blackout](iberian-blacko
 
 ## Implementation
 
+::: {.callout-note}
+## Exercise
+
 Complete the two functions below. Use `nx.betweenness_centrality(G, normalized=False)` for the load.
 
 ```python
@@ -46,9 +49,10 @@ def run_cascade(G, trigger, alpha):
         # TODO: remove the overloaded nodes from H
     return # TODO
 ```
+:::
 
 ::: {.callout-tip collapse="true"}
-## Solved: `node_loads()` and `run_cascade()`
+## Solution
 
 ```python
 def node_loads(G):
@@ -139,11 +143,23 @@ plt.show()
 
 ## Interpretation
 
+::: {.callout-note}
+## Exercise
+
 Compare @fig-cascade-alpha with your predictions:
 
 - For which graph and which trigger does the cascade stay small at small $\alpha$?
 - How large must $\alpha$ be before the highest-load trigger stops causing a large cascade on the BA graph?
 - Motter and Lai found that heterogeneous networks are fragile to load-based attacks [@motter2002cascade]. Does your plot agree? With a single graph realization of 150 nodes, which features of the curves would you trust and which not?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+- No combination keeps the cascade small at $\alpha = 0$: every curve starts well below 1. Random triggers recover first: $G$ is close to 1 from about $\alpha = 0.25$ on both graphs.
+- On the BA graph the highest-load trigger still destroys a large part of the network at $\alpha = 0.5$, and $G$ stays below 0.9 up to $\alpha = 1$. On the ER graph the same trigger stops causing large cascades near $\alpha = 0.4$ to $0.5$.
+- Yes: the gap between random and load-based triggers is much larger and lasts much longer on the BA graph, as Motter and Lai found. Trust this qualitative gap. Do not trust the exact values of $\alpha$ or the small bumps: one graph of 150 nodes and 5 random trials give noisy curves.
+:::
 
 ## Limitations
 
@@ -159,5 +175,3 @@ Compare @fig-cascade-alpha with your predictions:
 - Replace the trigger "highest load" with "highest degree" (`select_trigger(G, "degree")`). Do the two rankings give the same cascade?
 - Load a real network from `data/` (for example the USA flights graph) and repeat the sweep on its largest component. Use `nx.betweenness_centrality(G, k=..., seed=...)` if the exact computation is too slow.
 :::
-
-[Swing Equation](swing-equation.qmd){.btn .btn-primary}

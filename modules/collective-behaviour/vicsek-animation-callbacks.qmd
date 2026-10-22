@@ -1,0 +1,228 @@
+---
+title: "Vicsek Lab: Callbacks and Full Script"
+subtitle: "Module 2: Synchronization and Collective Behaviour"
+format: html
+---
+
+::: {.callout-tip}
+## Optional extension
+
+This page is optional. It continues [Sliders](vicsek-animation-sliders.qmd), where you wrote `update_animation()` and created the sliders. Here you make the sliders change the simulation and assemble the full script [@hunter2007matplotlib].
+:::
+
+## Slider Callbacks
+
+
+You need **two** callbacks:
+
+1. A general callback that updates parameters **without** reinitializing particles.
+2. A special callback for `num_boids` that **reinitializes** the system and updates the tail tensor.
+
+The callbacks change your state variables. The simplest approach is to define them **inside** `run_simulation`, after creating `ani`, so they can use `nonlocal` to access `xy`, `theta`, etc.
+
+::: {.callout-note}
+## Exercise
+
+Implement both callbacks and connect them with `on_changed`.
+
+```python
+def update_sliders(_):
+    nonlocal radius_interaction, noise_eta, v0, box_size
+    # TODO: read the new values from the sliders
+    # TODO: update the limits of ax_plane
+
+
+def update_num_boids(_):
+    nonlocal xy, theta, num_boids, xy_tail
+    # TODO: read the new number of boids and reinitialize xy, theta and xy_tail
+    # TODO: update the particle artists
+
+
+# TODO: connect the callbacks with on_changed
+```
+:::
+
+::: {.callout-tip collapse="true"}
+## Hint
+
+Pause the animation during parameter changes. Inside a callback:
+
+```python
+ani.event_source.stop()
+# update parameters / reinit
+ani.event_source.start()
+```
+
+This reduces glitches while you resize arrays or change plot limits.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+```python
+def update_sliders(_):
+    nonlocal radius_interaction, noise_eta, v0, box_size
+    ani.event_source.stop()
+    noise_eta = slider_noise_eta.val
+    v0 = slider_v0.val
+    box_size = slider_box_size.val
+    radius_interaction = slider_radius_interaction.val
+    ax_plane.set_xlim(0, box_size)
+    ax_plane.set_ylim(0, box_size)
+    ani.event_source.start()
+
+
+def update_num_boids(_):
+    nonlocal xy, theta, num_boids, xy_tail
+    ani.event_source.stop()
+    num_boids = int(slider_num_boids.val)
+    xy, theta = initialize_particles(num_boids, box_size=box_size)
+    xy_tail = np.repeat(xy[:, :, np.newaxis], TAIL_LEN, axis=2)
+    plt_particles.set_data(xy_tail[0].flatten(), xy_tail[1].flatten())
+    plt_current.set_data(xy[0], xy[1])
+    ani.event_source.start()
+
+
+for slider in (slider_radius_interaction, slider_noise_eta, slider_v0, slider_box_size):
+    slider.on_changed(update_sliders)
+slider_num_boids.on_changed(update_num_boids)
+```
+:::
+
+## Full Script
+
+At this point you have built every piece.
+
+::: {.callout-note}
+## Exercise
+
+Assemble `run_simulation()` in `vicsek_animation_full.py`: parameters, state, figure, the three plots, the sliders, `update_animation`, the animation object and the callbacks. Run it and move the noise slider slowly from 0 to 5. The red curve should drop from $r \approx 1$ towards $r \approx 0$.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+```python
+def run_simulation(dt: float = 1.0) -> None:
+    # Parameters
+    num_boids = 100
+    noise_eta = 0.5
+    box_size = 10.0
+    radius_interaction = 1.0
+    v0 = 0.03
+    ORDER_WINDOW = 3000
+    TAIL_LEN = 20
+
+    # Initialize state
+    xy, theta = initialize_particles(num_boids, box_size)
+
+    # Order parameter history and noise diagnostic
+    ls_order_param = []
+    dict_noise = {}
+
+    # Create figure and axes
+    fig, ax_plane, ax_order, ax_sliders, ax_noise = make_figure()
+
+    # Initialize plots
+    xy_tail, plt_particles, plt_current = init_particles_plot(ax_plane, xy, box_size, tail_len=TAIL_LEN)
+    line_order_param = init_order_plot(ax_order, order_window=ORDER_WINDOW)
+    line_noise = init_noise_plot(ax_noise)
+
+    # Create sliders
+    ax_num_boids, ax_radius_interaction, ax_noise_eta, ax_v0, ax_box_size = make_slider_axes(ax_sliders)
+    slider_num_boids, slider_radius_interaction, slider_noise_eta, slider_v0, slider_box_size = make_sliders(
+        ax_num_boids=ax_num_boids,
+        ax_radius_interaction=ax_radius_interaction,
+        ax_noise_eta=ax_noise_eta,
+        ax_v0=ax_v0,
+        ax_box_size=ax_box_size,
+        num_boids=num_boids,
+        radius_interaction=radius_interaction,
+        noise_eta=noise_eta,
+        v0=v0,
+        box_size=box_size,
+    )
+
+    def update_animation(frame: int):
+        nonlocal xy, xy_tail, theta, dict_noise, ls_order_param
+        xy, theta = vicsek_equations(
+            xy,
+            theta,
+            v0=v0,
+            dt=dt,
+            radius_interaction=radius_interaction,
+            box_size=box_size,
+            noise=noise_eta,
+        )
+        xy_tail = np.roll(xy_tail, shift=-1, axis=2)
+        xy_tail[:, :, -1] = xy
+        plt_particles.set_data(xy_tail[0].flatten(), xy_tail[1].flatten())
+        plt_current.set_data(xy[0], xy[1])
+
+        ls_order_param.append(vicsek_order_parameter(theta))
+        ls_order_param = ls_order_param[-ORDER_WINDOW:]
+        line_order_param.set_data(np.arange(len(ls_order_param)), ls_order_param)
+
+        dict_noise[noise_eta] = np.mean(ls_order_param[-ORDER_WINDOW // 3 :])
+        dict_noise = dict(sorted(dict_noise.items()))
+        line_noise.set_data(*zip(*dict_noise.items()))
+        return (plt_particles, plt_current, line_order_param, line_noise)
+
+    # Create the animation object
+    ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)
+
+    # Slider callbacks
+    def update_sliders(_):
+        nonlocal radius_interaction, noise_eta, v0, box_size
+        ani.event_source.stop()
+        noise_eta = slider_noise_eta.val
+        v0 = slider_v0.val
+        box_size = slider_box_size.val
+        radius_interaction = slider_radius_interaction.val
+        ax_plane.set_xlim(0, box_size)
+        ax_plane.set_ylim(0, box_size)
+        ani.event_source.start()
+
+    def update_num_boids(_):
+        nonlocal xy, theta, num_boids, xy_tail
+        ani.event_source.stop()
+        num_boids = int(slider_num_boids.val)
+        xy, theta = initialize_particles(num_boids, box_size=box_size)
+        xy_tail = np.repeat(xy[:, :, np.newaxis], TAIL_LEN, axis=2)
+        plt_particles.set_data(xy_tail[0].flatten(), xy_tail[1].flatten())
+        plt_current.set_data(xy[0], xy[1])
+        ani.event_source.start()
+
+    for slider in (slider_radius_interaction, slider_noise_eta, slider_v0, slider_box_size):
+        slider.on_changed(update_sliders)
+    slider_num_boids.on_changed(update_num_boids)
+
+    plt.show()
+
+if __name__ == "__main__":
+    run_simulation()
+```
+
+The full script with all functions defined is in `amlab/collective_motion/vicsek_animation.py`. You can run it and experiment with the sliders to see how the Vicsek model behaves under different conditions.
+:::
+
+## Checklist (Debugging)
+
+If your animation is blank:
+
+- Did you return the artists in `update_animation`?
+- Did you set axis limits (`set_xlim`, `set_ylim`)?
+- Are `xy` and `theta` updated each frame?
+- Are you calling `plt.show()` at the end of `run_simulation()`?
+- Are you calling `run_simulation()` at the end of your script?
+
+If sliders do nothing:
+
+- Did you call `slider.on_changed(...)`?
+- Are you updating the right variables (`nonlocal`)?
+
+## Optional Extensions
+
+1. **Color by heading**: map `theta` to a colormap for the current points.
+2. **Quiver plot**: show velocity vectors for a subset of particles.
+3. **Pause button**: add a Matplotlib `Button` widget.

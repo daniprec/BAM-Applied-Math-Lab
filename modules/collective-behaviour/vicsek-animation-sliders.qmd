@@ -1,0 +1,213 @@
+---
+title: "Vicsek Lab: Sliders"
+subtitle: "Module 2: Synchronization and Collective Behaviour"
+format: html
+---
+
+::: {.callout-tip}
+## Optional extension
+
+This page is optional. It continues [Interactive Animation](vicsek-animation-interactive.qmd), where you created the $2 \times 2$ figure, the order-parameter plot and the noise diagnostic plot. Here you write the update function and create the sliders [@hunter2007matplotlib].
+:::
+
+## Write the Animation Update Function
+
+The core loop is expanded to include updates for the order parameter plot and noise diagnostic plot. The pipeline is as follows:
+
+1. advance the Vicsek dynamics by one step (`vicsek_equations`).
+2. update `xy_tail`.
+3. update the particle artists.
+4. update order-parameter history `ls_order_param` and its plot.
+5. update the noise diagnostic `dict_noise` and its plot.
+
+As you can see, steps 1-3 remain the same as in [Animation Loop](vicsek-animation-loop.qmd). Use this checklist:
+
+- [x] call `vicsek_equations(...)`
+- [x] update `xy_tail` with `np.roll(...)`
+- [x] `plt_particles.set_data(...)` and `plt_current.set_data(...)`
+- [ ] append `vicsek_order_parameter(theta)` to the window list
+- [ ] set line data for the order parameter plot
+- [ ] compute a *recent average*
+- [ ] update `dict_noise[noise_eta]` and redraw the noise curve
+
+::: {.callout-note}
+## Exercise
+
+Complete `update_animation()`, following the comments for each step. Keep the function inside `run_simulation` so it can access the state variables with `nonlocal`.
+
+```python
+def update_animation(frame: int):
+    nonlocal xy, xy_tail, theta, noise_eta, v0, radius_interaction, box_size, dict_noise, ls_order_param
+
+    # TODO: advance the Vicsek equations
+
+    # TODO: update the tail tensor
+    # TODO: update the particle artists with set_data
+
+    # TODO: update the order parameter history and plot
+
+    # TODO: compute a recent average and update dict_noise
+
+    # TODO: update the noise diagnostic plot with set_data
+
+
+    return (plt_particles, plt_current, line_order_param, line_noise)
+```
+:::
+
+::: {.callout-tip collapse="true"}
+## Hint
+
+Keep only the last `ORDER_WINDOW` values with `ls_order_param[-ORDER_WINDOW:]`. For the recent average, take the mean of the last third of that window. `line_noise.set_data(*zip(*dict_noise.items()))` turns the dictionary into x and y lists.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+```python
+def update_animation(frame: int):
+    nonlocal \
+        xy, \
+        xy_tail, \
+        theta, \
+        noise_eta, \
+        v0, \
+        radius_interaction, \
+        box_size, \
+        dict_noise, \
+        ls_order_param
+    xy, theta = vicsek_equations(
+        xy,
+        theta,
+        v0=v0,
+        dt=dt,
+        radius_interaction=radius_interaction,
+        box_size=box_size,
+        noise=noise_eta,
+    )
+
+    # Update tails
+    xy_tail = np.roll(xy_tail, shift=-1, axis=2)
+    xy_tail[:, :, -1] = xy
+    plt_particles.set_data(xy_tail[0].flatten(), xy_tail[1].flatten())
+    plt_current.set_data(xy[0], xy[1])
+
+    # Update order parameter
+    ls_order_param.append(vicsek_order_parameter(theta))
+    ls_order_param = ls_order_param[-ORDER_WINDOW:]
+    x_vals = np.arange(len(ls_order_param))
+    line_order_param.set_data(x_vals, ls_order_param)
+
+    # Average the last ORDER_WINDOW//3 values to get the order parameter (similar to Couzin)
+    order_param = np.mean(ls_order_param[-ORDER_WINDOW // 3 :])
+    dict_noise[noise_eta] = order_param
+    dict_noise = dict(sorted(dict_noise.items()))
+    if dict_noise:
+        line_noise.set_data(*zip(*dict_noise.items()))
+    else:
+        line_noise.set_data([], [])
+    return (plt_particles, plt_current, line_order_param, line_noise)
+```
+:::
+
+## Create the Animation Object
+
+This stays the same as before:
+
+```python
+ani = animation.FuncAnimation(fig, update_animation, interval=0, blit=True)
+```
+
+## Add Sliders
+
+You want sliders for:
+
+- Number of boids $N$ (special: requires reinitializing particles).
+- Interaction radius $r$.
+- Noise $\eta$.
+- Speed $v_0$.
+- Box size $L$.
+
+### Create Slider Axes
+
+Create small inset axes inside `ax_sliders`:
+
+```python
+def make_slider_axes(ax_sliders: Axes):
+    ax_sliders.axis("off")
+
+    ax_num_boids = ax_sliders.inset_axes([0.0, 1.2, 0.8, 0.1])
+    ax_radius_interaction = ax_sliders.inset_axes([0.0, 1.0, 0.8, 0.1])
+    ax_noise_eta = ax_sliders.inset_axes([0.0, 0.8, 0.8, 0.1])
+    ax_v0 = ax_sliders.inset_axes([0.0, 0.6, 0.8, 0.1])
+    ax_box_size = ax_sliders.inset_axes([0.0, 0.4, 0.8, 0.1])
+
+    return ax_num_boids, ax_radius_interaction, ax_noise_eta, ax_v0, ax_box_size
+```
+
+### Create the Slider Widgets
+
+Matplotlib's `Slider` lives in `matplotlib.widgets`. Its signature is `Slider(ax, label, valmin, valmax, valinit=..., valstep=...)`.
+
+::: {.callout-note}
+## Exercise
+
+Import `Slider` and create the five sliders with appropriate ranges and initial values.
+
+```python
+from matplotlib.widgets import Slider
+
+def make_sliders(
+    *,
+    ax_num_boids,
+    ax_radius_interaction,
+    ax_noise_eta,
+    ax_v0,
+    ax_box_size,
+    num_boids: int,
+    radius_interaction: float,
+    noise_eta: float,
+    v0: float,
+    box_size: float,
+):
+    # TODO: define the sliders with appropriate ranges and initial values
+
+    return slider_num_boids, slider_radius_interaction, slider_noise_eta, slider_v0, slider_box_size
+```
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+These are the ranges used in `amlab/collective_motion/vicsek_animation.py`. The noise range $[0, 5]$ matches the x-limits of the noise plot.
+
+```python
+from matplotlib.widgets import Slider
+
+def make_sliders(
+    *,
+    ax_num_boids,
+    ax_radius_interaction,
+    ax_noise_eta,
+    ax_v0,
+    ax_box_size,
+    num_boids: int,
+    radius_interaction: float,
+    noise_eta: float,
+    v0: float,
+    box_size: float,
+):
+    slider_num_boids = Slider(ax_num_boids, "Number of boids", 100, 1000, valinit=num_boids, valstep=100)
+    slider_radius_interaction = Slider(
+        ax_radius_interaction, "Interaction radius", 0, 50, valinit=radius_interaction, valstep=1
+    )
+    slider_noise_eta = Slider(ax_noise_eta, "Noise", 0.0, 5.0, valinit=noise_eta, valstep=0.01)
+    slider_v0 = Slider(ax_v0, "Speed", 0.0, 0.1, valinit=v0, valstep=0.01)
+    slider_box_size = Slider(ax_box_size, "Dimension", 1, 50, valinit=box_size, valstep=1)
+
+    return slider_num_boids, slider_radius_interaction, slider_noise_eta, slider_v0, slider_box_size
+```
+
+Call it with keyword arguments, because of the `*` in the signature.
+:::
+
