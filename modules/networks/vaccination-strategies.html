@@ -54,7 +54,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -546,9 +566,9 @@ window.Quarto = {
 <section id="three-strategies" class="level2">
 <h2 class="anchored" data-anchor-id="three-strategies">Three strategies</h2>
 <ul>
-<li><strong>Random immunization.</strong> Vaccinate a fraction <span class="math inline">\(g\)</span> of nodes chosen uniformly at random. In the heterogeneous mean-field picture this rescales the spreading rate to <span class="math inline">\(\lambda(1-g)\)</span>, so the epidemic stops when <span class="math inline">\(g &gt; g_c = 1 - \lambda_c/\lambda\)</span>. For an infinite scale-free network with <span class="math inline">\(2 &lt; \gamma \le 3\)</span>, <span class="math inline">\(\lambda_c \to 0\)</span> and therefore <span class="math inline">\(g_c \to 1\)</span>: random vaccination would have to reach almost everyone <span class="citation" data-cites="pastor2002immunization">(<a href="#ref-pastor2002immunization" role="doc-biblioref"><strong>pastor2002immunization?</strong></a>)</span>.</li>
-<li><strong>Targeted immunization.</strong> Vaccinate the nodes with the highest degree. Removing hubs cuts <span class="math inline">\(\langle k^2 \rangle\)</span> sharply, and a small fraction <span class="math inline">\(g\)</span> is enough to restore a finite threshold <span class="citation" data-cites="pastor2002immunization">(<a href="#ref-pastor2002immunization" role="doc-biblioref"><strong>pastor2002immunization?</strong></a>)</span>. This needs the degree of every node, which you rarely know for a real population.</li>
-<li><strong>Acquaintance immunization.</strong> Pick a random node and vaccinate one of its random neighbours. A random neighbour has degree <span class="math inline">\(k\)</span> with probability <span class="math inline">\(k p_k / \langle k \rangle\)</span>, so the method favours hubs without any global knowledge <span class="citation" data-cites="cohen2003efficient">(<a href="#ref-cohen2003efficient" role="doc-biblioref"><strong>cohen2003efficient?</strong></a>)</span>.</li>
+<li><strong>Random immunization.</strong> Vaccinate a fraction <span class="math inline">\(g\)</span> of nodes chosen uniformly at random. In the heterogeneous mean-field picture this rescales the spreading rate to <span class="math inline">\(\lambda(1-g)\)</span>, so the epidemic stops when <span class="math inline">\(g &gt; g_c = 1 - \lambda_c/\lambda\)</span>. For an infinite scale-free network with <span class="math inline">\(2 &lt; \gamma \le 3\)</span>, <span class="math inline">\(\lambda_c \to 0\)</span> and therefore <span class="math inline">\(g_c \to 1\)</span>: random vaccination would have to reach almost everyone <span class="citation" data-cites="pastor2002immunization">(<a href="#ref-pastor2002immunization" role="doc-biblioref">Pastor-Satorras and Vespignani 2002</a>)</span>.</li>
+<li><strong>Targeted immunization.</strong> Vaccinate the nodes with the highest degree. Removing hubs cuts <span class="math inline">\(\langle k^2 \rangle\)</span> sharply, and a small fraction <span class="math inline">\(g\)</span> is enough to restore a finite threshold <span class="citation" data-cites="pastor2002immunization">(<a href="#ref-pastor2002immunization" role="doc-biblioref">Pastor-Satorras and Vespignani 2002</a>)</span>. This needs the degree of every node, which you rarely know for a real population.</li>
+<li><strong>Acquaintance immunization.</strong> Pick a random node and vaccinate one of its random neighbours. A random neighbour has degree <span class="math inline">\(k\)</span> with probability <span class="math inline">\(k p_k / \langle k \rangle\)</span>, so the method favours hubs without any global knowledge <span class="citation" data-cites="cohen2003efficient">(<a href="#ref-cohen2003efficient" role="doc-biblioref">Cohen, Havlin, and ben-Avraham 2003</a>)</span>.</li>
 </ul>
 <p>The three selection rules are in <code>amlab.networks_spreading</code>.</p>
 <div class="callout callout-style-default callout-important callout-titled">
@@ -653,7 +673,7 @@ Solution
 <section id="validation" class="level2">
 <h2 class="anchored" data-anchor-id="validation">Validation</h2>
 <p>Check the mean degree of the vaccinated nodes. Random selection should match the network mean up to sampling noise (with 100 nodes and a broad degree distribution, the noise is about <span class="math inline">\(\pm 0.6\)</span>). Acquaintance selection should give a clearly higher value, and targeted selection the highest.</p>
-<div id="ac2e610c" class="cell" data-execution_count="1">
+<div id="c607355d" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -837,7 +857,7 @@ Solution
 </div>
 <div id="callout-11" class="callout-11-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>Acquaintance immunization. It vaccinates the named contacts, not the people first reached. A named contact is a random neighbour, and random neighbours have degree <span class="math inline">\(k\)</span> with probability proportional to <span class="math inline">\(k p_k\)</span>, so they are more often hubs <span class="citation" data-cites="cohen2003efficient">(<a href="#ref-cohen2003efficient" role="doc-biblioref"><strong>cohen2003efficient?</strong></a>)</span>. Vaccinating hubs lowers <span class="math inline">\(\langle k^2 \rangle\)</span> and raises the epidemic threshold.</p>
+<p>Acquaintance immunization. It vaccinates the named contacts, not the people first reached. A named contact is a random neighbour, and random neighbours have degree <span class="math inline">\(k\)</span> with probability proportional to <span class="math inline">\(k p_k\)</span>, so they are more often hubs <span class="citation" data-cites="cohen2003efficient">(<a href="#ref-cohen2003efficient" role="doc-biblioref">Cohen, Havlin, and ben-Avraham 2003</a>)</span>. Vaccinating hubs lowers <span class="math inline">\(\langle k^2 \rangle\)</span> and raises the epidemic threshold.</p>
 </div>
 </div>
 </div>
@@ -845,9 +865,17 @@ Solution
 
 <!-- -->
 
+
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-cohen2003efficient" class="csl-entry" role="listitem">
+Cohen, Reuven, Shlomo Havlin, and Daniel ben-Avraham. 2003. <span>“Efficient Immunization Strategies for Computer Networks and Populations.”</span> <em>Physical Review Letters</em> 91 (24): 247901. <a href="https://doi.org/10.1103/PhysRevLett.91.247901">https://doi.org/10.1103/PhysRevLett.91.247901</a>.
+</div>
+<div id="ref-pastor2002immunization" class="csl-entry" role="listitem">
+Pastor-Satorras, Romualdo, and Alessandro Vespignani. 2002. <span>“Immunization of Complex Networks.”</span> <em>Physical Review E</em> 65 (3): 036104. <a href="https://doi.org/10.1103/PhysRevE.65.036104">https://doi.org/10.1103/PhysRevE.65.036104</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

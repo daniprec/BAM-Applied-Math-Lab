@@ -54,7 +54,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -512,8 +532,8 @@ window.Quarto = {
   <li><a href="#validation" id="toc-validation" class="nav-link" data-scroll-target="#validation">Validation</a></li>
   <li><a href="#interpretation" id="toc-interpretation" class="nav-link" data-scroll-target="#interpretation">Interpretation</a></li>
   <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
-  <li><a href="#next" id="toc-next" class="nav-link" data-scroll-target="#next">Next</a></li>
   <li><a href="#exit-question" id="toc-exit-question" class="nav-link" data-scroll-target="#exit-question">Exit question</a></li>
+  <li><a href="#next" id="toc-next" class="nav-link" data-scroll-target="#next">Next</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/low-dimensional-dynamics/peak-prediction.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -540,7 +560,7 @@ window.Quarto = {
 </header>
 
 
-<p>Given the data up to today, can you predict when the epidemic curve will peak? Castro, Ares, Cuesta and Manrubia argue that during the expansion phase you cannot: the time of the turning point cannot be determined with certainty before it is reached, there is only a short horizon for reliable prediction, and this persists even in error-free synthetic data <span class="citation" data-cites="castro2020turning">(<a href="#ref-castro2020turning" role="doc-biblioref"><strong>castro2020turning?</strong></a>)</span>. They reach this conclusion with an SIR model extended by confinement and a Bayesian fit to COVID-19 data from Spain. Here you reproduce the main effect with the plain SIR model.</p>
+<p>Given the data up to today, can you predict when the epidemic curve will peak? Castro, Ares, Cuesta and Manrubia argue that during the expansion phase you cannot: the time of the turning point cannot be determined with certainty before it is reached, there is only a short horizon for reliable prediction, and this persists even in error-free synthetic data <span class="citation" data-cites="castro2020turning">(<a href="#ref-castro2020turning" role="doc-biblioref">Castro et al. 2020</a>)</span>. They reach this conclusion with an SIR model extended by confinement and a Bayesian fit to COVID-19 data from Spain. Here you reproduce the main effect with the plain SIR model.</p>
 <section id="prediction" class="level2">
 <h2 class="anchored" data-anchor-id="prediction">Prediction</h2>
 <p>Before you run the experiment, write down how many days of data you think you need to predict the peak day within <span class="math inline">\(\pm 3\)</span> days, for an epidemic that peaks around day 55.</p>
@@ -583,7 +603,7 @@ window.Quarto = {
 <span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
 <span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>T = 30: predicted peaks from 33 to 69
+<pre><code>T = 30: predicted peaks from 33 to 70
 T = 40: predicted peaks from 43 to 74
 T = 50: predicted peaks from 51 to 65
 T = 60: predicted peaks from 54 to 58
@@ -609,13 +629,13 @@ Figure&nbsp;1: Predicted peak day against the number of days of data used in the
 </section>
 <section id="interpretation" class="level2">
 <h2 class="anchored" data-anchor-id="interpretation">Interpretation</h2>
-<p>Before the peak, the predictions spread over several weeks, even though the model is exactly right and only the reporting noise differs. The reason is the identifiability problem from <a href="../../modules/low-dimensional-dynamics/fitting-epidemic-data.html">Fitting an Epidemic to Data</a>: the rising part of the curve fixes <span class="math inline">\(\beta - \gamma\)</span> but not <span class="math inline">\(R_0\)</span> or <span class="math inline">\(N\)</span>, and the peak time depends on those. Castro et al.&nbsp;show that this sensitivity is a property of exponential growth, and conclude that forecasts should be given as probabilities of different outcomes, not as a single date <span class="citation" data-cites="castro2020turning">(<a href="#ref-castro2020turning" role="doc-biblioref"><strong>castro2020turning?</strong></a>)</span>.</p>
+<p>Before the peak, the predictions spread over several weeks, even though the model is exactly right and only the reporting noise differs. The reason is the identifiability problem from <a href="../../modules/low-dimensional-dynamics/fitting-epidemic-data.html">Fitting an Epidemic to Data</a>: the rising part of the curve fixes <span class="math inline">\(\beta - \gamma\)</span> but not <span class="math inline">\(R_0\)</span> or <span class="math inline">\(N\)</span>, and the peak time depends on those. Castro et al.&nbsp;show that this sensitivity is a property of exponential growth, and conclude that forecasts should be given as probabilities of different outcomes, not as a single date <span class="citation" data-cites="castro2020turning">(<a href="#ref-castro2020turning" role="doc-biblioref">Castro et al. 2020</a>)</span>.</p>
 </section>
 <section id="limitations" class="level2">
 <h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
 <ul>
 <li>The model used for the fit is the model that generated the data. With real data the model is also wrong, which adds uncertainty.</li>
-<li>Least squares with ten noise realizations is a rough substitute for a proper uncertainty analysis such as the Bayesian fit of <span class="citation" data-cites="castro2020turning">(<a href="#ref-castro2020turning" role="doc-biblioref"><strong>castro2020turning?</strong></a>)</span>.</li>
+<li>Least squares with ten noise realizations is a rough substitute for a proper uncertainty analysis such as the Bayesian fit of <span class="citation" data-cites="castro2020turning">Castro et al. (<a href="#ref-castro2020turning" role="doc-biblioref">2020</a>)</span>.</li>
 </ul>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -631,37 +651,53 @@ Optional extension
 </div>
 </div>
 </section>
-<section id="next" class="level2">
-<h2 class="anchored" data-anchor-id="next">Next</h2>
-<p>Session 7 moves to two-dimensional systems.</p>
-<p><a href="../../modules/low-dimensional-dynamics/linear-systems-2d.html" class="btn btn-primary">Linear Systems in the Plane</a></p>
-</section>
 <section id="exit-question" class="level2">
 <h2 class="anchored" data-anchor-id="exit-question">Exit question</h2>
-<p>Two groups fit an SIR model to the first 30 days of an outbreak. Group A reports “<span class="math inline">\(R_0 = 2.9\)</span>, peak on day 57”. Group B reports “<span class="math inline">\(R_0\)</span> between 2 and 200, peak between day 40 and day 70”. Which report is more useful, and why?</p>
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Answer
+Exercise
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Two groups fit an SIR model to the first 30 days of an outbreak. Group A reports “<span class="math inline">\(R_0 = 2.9\)</span>, peak on day 57”. Group B reports “<span class="math inline">\(R_0\)</span> between 2 and 200, peak between day 40 and day 70”. Which report is more useful, and why?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Solution
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>Group B’s report is more useful. With only early data, the fit determines the growth rate but not <span class="math inline">\(R_0\)</span> or the peak time. A single number hides this uncertainty and invites decisions based on false precision. A range, or better a probability distribution, states honestly what the data support <span class="citation" data-cites="castro2020turning">(<a href="#ref-castro2020turning" role="doc-biblioref"><strong>castro2020turning?</strong></a>)</span>.</p>
+<p>Group B’s report is more useful. With only early data, the fit determines the growth rate but not <span class="math inline">\(R_0\)</span> or the peak time. A single number hides this uncertainty and invites decisions based on false precision. A range, or better a probability distribution, states honestly what the data support <span class="citation" data-cites="castro2020turning">(<a href="#ref-castro2020turning" role="doc-biblioref">Castro et al. 2020</a>)</span>.</p>
 </div>
 </div>
 </div>
+</section>
+<section id="next" class="level2">
+<h2 class="anchored" data-anchor-id="next">Next</h2>
+<p>Session 7 moves to two-dimensional systems.</p>
 
 
 <!-- -->
 
+
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-castro2020turning" class="csl-entry" role="listitem">
+Castro, Mario, Saúl Ares, José A. Cuesta, and Susanna Manrubia. 2020. <span>“The Turning Point and End of an Expanding Epidemic Cannot Be Precisely Forecast.”</span> <em>Proceedings of the National Academy of Sciences</em> 117 (42): 26190–96. <a href="https://doi.org/10.1073/pnas.2007868117">https://doi.org/10.1073/pnas.2007868117</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -1174,20 +1210,23 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a>If you have real incidence data, save them as <span class="in">`data/epidemic/cases.csv`</span> (schema in <span class="in">`data/epidemic/README.md`</span>) and repeat the experiment with a moving cut-off. Compare the predicted peaks with the observed one.</span>
 <span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a><span class="fu">## Next</span></span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exit question</span></span>
 <span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a>Session 7 moves to two-dimensional systems.</span>
-<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Linear Systems in the Plane</span><span class="co">](linear-systems-2d.qmd)</span>{.btn .btn-primary}</span>
-<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exit question</span></span>
+<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercise</span></span>
+<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a>Two groups fit an SIR model to the first 30 days of an outbreak. Group A reports "$R_0 = 2.9$, peak on day 57". Group B reports "$R_0$ between 2 and 200, peak between day 40 and day 70". Which report is more useful, and why?</span>
+<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a>Two groups fit an SIR model to the first 30 days of an outbreak. Group A reports "$R_0 = 2.9$, peak on day 57". Group B reports "$R_0$ between 2 and 200, peak between day 40 and day 70". Which report is more useful, and why?</span>
-<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
-<span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a><span class="fu">## Answer</span></span>
-<span id="cb3-89"><a href="#cb3-89" aria-hidden="true" tabindex="-1"></a>Group B's report is more useful. With only early data, the fit determines the growth rate but not $R_0$ or the peak time. A single number hides this uncertainty and invites decisions based on false precision. A range, or better a probability distribution, states honestly what the data support <span class="co">[</span><span class="ot">@castro2020turning</span><span class="co">]</span>.</span>
-<span id="cb3-90"><a href="#cb3-90" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solution</span></span>
+<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a>Group B's report is more useful. With only early data, the fit determines the growth rate but not $R_0$ or the peak time. A single number hides this uncertainty and invites decisions based on false precision. A range, or better a probability distribution, states honestly what the data support <span class="co">[</span><span class="ot">@castro2020turning</span><span class="co">]</span>.</span>
+<span id="cb3-89"><a href="#cb3-89" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb3-90"><a href="#cb3-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-91"><a href="#cb3-91" aria-hidden="true" tabindex="-1"></a><span class="fu">## Next</span></span>
+<span id="cb3-92"><a href="#cb3-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-93"><a href="#cb3-93" aria-hidden="true" tabindex="-1"></a>Session 7 moves to two-dimensional systems.</span>
 </code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

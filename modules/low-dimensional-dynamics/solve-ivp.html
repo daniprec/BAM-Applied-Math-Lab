@@ -530,7 +530,6 @@ window.Quarto = {
   <li><a href="#the-initial-value-problem" id="toc-the-initial-value-problem" class="nav-link active" data-scroll-target="#the-initial-value-problem">The initial value problem</a></li>
   <li><a href="#the-solve_ivp-pipeline" id="toc-the-solve_ivp-pipeline" class="nav-link" data-scroll-target="#the-solve_ivp-pipeline">The <code>solve_ivp</code> pipeline</a></li>
   <li><a href="#validation" id="toc-validation" class="nav-link" data-scroll-target="#validation">Validation</a></li>
-  <li><a href="#next" id="toc-next" class="nav-link" data-scroll-target="#next">Next</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/low-dimensional-dynamics/solve-ivp.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -600,12 +599,13 @@ Reading
 <li><code>y0</code>: the initial state, as a list or array.</li>
 <li><code>t_eval</code>: optional times at which you want the solution stored. Without it, you get the solver’s own steps.</li>
 <li><code>args</code>: a tuple of extra parameters passed to <code>fun</code>.</li>
-<li><code>method</code>: the integrator. The default <code>"RK45"</code> is the explicit Runge-Kutta pair of Dormand and Prince, of order 5 with an embedded order 4 error estimate used to adapt the step size <span class="citation" data-cites="dormand1980family">(<a href="#ref-dormand1980family" role="doc-biblioref"><strong>dormand1980family?</strong></a>)</span>.</li>
+<li><code>method</code>: the integrator. The default <code>"RK45"</code> is the explicit Runge-Kutta pair of Dormand and Prince, of order 5 with an embedded order 4 error estimate used to adapt the step size <span class="citation" data-cites="dormand1980family">(<a href="#ref-dormand1980family" role="doc-biblioref">Dormand and Prince 1980</a>)</span>.</li>
 <li><code>rtol</code>, <code>atol</code>: relative and absolute error tolerances (defaults <code>1e-3</code> and <code>1e-6</code>).</li>
 </ul>
 <p>The default <code>RK45</code> method is a good first choice for most examples in this module. Later sessions make the choice of method part of the modelling discussion.</p>
 <p>The result <code>sol</code> has <code>sol.t</code> (times), <code>sol.y</code> (array of shape <code>(n_variables, n_times)</code>), and <code>sol.success</code>.</p>
-<div id="79b5b420" class="cell" data-execution_count="1">
+<p>Around the solver you use two more libraries. NumPy holds initial conditions, evaluation grids and the post-processing of trajectories. Matplotlib draws time series, parameter comparisons and rate plots.</p>
+<div id="cf4418bc" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.integrate <span class="im">import</span> solve_ivp</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -631,7 +631,7 @@ Reading
 <section id="validation" class="level2">
 <h2 class="anchored" data-anchor-id="validation">Validation</h2>
 <p>Always test the solver on a problem with a known answer before you trust it on a new model.</p>
-<div id="44df9501" class="cell" data-execution_count="2">
+<div id="8bd1a577" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>exact <span class="op">=</span> <span class="fl">2.0</span> <span class="op">*</span> np.exp(<span class="op">-</span><span class="fl">0.5</span> <span class="op">*</span> sol.t)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> rtol <span class="kw">in</span> [<span class="fl">1e-3</span>, <span class="fl">1e-6</span>, <span class="fl">1e-9</span>]:</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> solve_ivp(exponential_decay, (<span class="dv">0</span>, <span class="dv">10</span>), [<span class="fl">2.0</span>], t_eval<span class="op">=</span>sol.t, args<span class="op">=</span>(<span class="fl">0.5</span>,), rtol<span class="op">=</span>rtol, atol<span class="op">=</span><span class="fl">1e-12</span>)</span>
@@ -685,9 +685,6 @@ Optional extension
 <p>Implement the forward Euler method <span class="math inline">\(y_{n+1} = y_n + \Delta t\, f(t_n, y_n)\)</span> for the decay problem. Halve <span class="math inline">\(\Delta t\)</span> several times and check that the error at <span class="math inline">\(t = 10\)</span> halves too (first-order convergence). The reference code in <code>amlab/utils/solver.py</code> contains Euler and Runge-Kutta versions.</p>
 </div>
 </div>
-</section>
-<section id="next" class="level2">
-
 
 
 <!-- -->
@@ -695,7 +692,10 @@ Optional extension
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">Next</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-dormand1980family" class="csl-entry" role="listitem">
+Dormand, J. R., and P. J. Prince. 1980. <span>“A Family of Embedded <span>Runge-Kutta</span> Formulae.”</span> <em>Journal of Computational and Applied Mathematics</em> 6 (1): 19–26. <a href="https://doi.org/10.1016/0771-050X(80)90013-3">https://doi.org/10.1016/0771-050X(80)90013-3</a>.
+</div>
 <div id="ref-virtanen2020scipy" class="csl-entry" role="listitem">
 Virtanen, Pauli, Ralf Gommers, Travis E. Oliphant, Matt Haberland, Tyler Reddy, David Cournapeau, Evgeni Burovski, et al. 2020. <span>“SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python.”</span> <em>Nature Methods</em> 17 (3): 261–72. <a href="https://doi.org/10.1038/s41592-019-0686-2">https://doi.org/10.1038/s41592-019-0686-2</a>.
 </div>
@@ -1188,55 +1188,55 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>The result <span class="in">`sol`</span> has <span class="in">`sol.t`</span> (times), <span class="in">`sol.y`</span> (array of shape <span class="in">`(n_variables, n_times)`</span>), and <span class="in">`sol.success`</span>.</span>
 <span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.integrate <span class="im">import</span> solve_ivp</span>
-<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> exponential_decay(t, y, lam):</span>
-<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Right-hand side of dy/dt = -lam * y."""</span></span>
-<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">-</span>lam <span class="op">*</span> y</span>
-<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>sol <span class="op">=</span> solve_ivp(</span>
-<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>    exponential_decay,</span>
-<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a>    t_span<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">10</span>),</span>
-<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a>    y0<span class="op">=</span>[<span class="fl">2.0</span>],</span>
-<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a>    t_eval<span class="op">=</span>np.linspace(<span class="dv">0</span>, <span class="dv">10</span>, <span class="dv">200</span>),</span>
-<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>    args<span class="op">=</span>(<span class="fl">0.5</span>,),</span>
-<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(sol.success, sol.y.shape)</span>
-<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a><span class="fu">## Validation</span></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>Around the solver you use two more libraries. NumPy holds initial conditions, evaluation grids and the post-processing of trajectories. Matplotlib draws time series, parameter comparisons and rate plots.</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.integrate <span class="im">import</span> solve_ivp</span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> exponential_decay(t, y, lam):</span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Right-hand side of dy/dt = -lam * y."""</span></span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">-</span>lam <span class="op">*</span> y</span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a>sol <span class="op">=</span> solve_ivp(</span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a>    exponential_decay,</span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a>    t_span<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">10</span>),</span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>    y0<span class="op">=</span>[<span class="fl">2.0</span>],</span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>    t_eval<span class="op">=</span>np.linspace(<span class="dv">0</span>, <span class="dv">10</span>, <span class="dv">200</span>),</span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>    args<span class="op">=</span>(<span class="fl">0.5</span>,),</span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(sol.success, sol.y.shape)</span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a>Always test the solver on a problem with a known answer before you trust it on a new model.</span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a><span class="fu">## Validation</span></span>
 <span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a>exact <span class="op">=</span> <span class="fl">2.0</span> <span class="op">*</span> np.exp(<span class="op">-</span><span class="fl">0.5</span> <span class="op">*</span> sol.t)</span>
-<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> rtol <span class="kw">in</span> [<span class="fl">1e-3</span>, <span class="fl">1e-6</span>, <span class="fl">1e-9</span>]:</span>
-<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> solve_ivp(exponential_decay, (<span class="dv">0</span>, <span class="dv">10</span>), [<span class="fl">2.0</span>], t_eval<span class="op">=</span>sol.t, args<span class="op">=</span>(<span class="fl">0.5</span>,), rtol<span class="op">=</span>rtol, atol<span class="op">=</span><span class="fl">1e-12</span>)</span>
-<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"rtol = </span><span class="sc">{</span>rtol<span class="sc">:.0e}</span><span class="ss">: max error = </span><span class="sc">{</span>np<span class="sc">.</span><span class="bu">max</span>(np.<span class="bu">abs</span>(s.y[<span class="dv">0</span>] <span class="op">-</span> exact))<span class="sc">:.1e}</span><span class="ss">"</span>)</span>
-<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a>The error falls as you tighten <span class="in">`rtol`</span>. If it does not, the right-hand side has a bug or the problem needs a different method.</span>
+<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a>Always test the solver on a problem with a known answer before you trust it on a new model.</span>
+<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a>exact <span class="op">=</span> <span class="fl">2.0</span> <span class="op">*</span> np.exp(<span class="op">-</span><span class="fl">0.5</span> <span class="op">*</span> sol.t)</span>
+<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> rtol <span class="kw">in</span> [<span class="fl">1e-3</span>, <span class="fl">1e-6</span>, <span class="fl">1e-9</span>]:</span>
+<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> solve_ivp(exponential_decay, (<span class="dv">0</span>, <span class="dv">10</span>), [<span class="fl">2.0</span>], t_eval<span class="op">=</span>sol.t, args<span class="op">=</span>(<span class="fl">0.5</span>,), rtol<span class="op">=</span>rtol, atol<span class="op">=</span><span class="fl">1e-12</span>)</span>
+<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"rtol = </span><span class="sc">{</span>rtol<span class="sc">:.0e}</span><span class="ss">: max error = </span><span class="sc">{</span>np<span class="sc">.</span><span class="bu">max</span>(np.<span class="bu">abs</span>(s.y[<span class="dv">0</span>] <span class="op">-</span> exact))<span class="sc">:.1e}</span><span class="ss">"</span>)</span>
+<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
-<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercise</span></span>
-<span id="cb5-90"><a href="#cb5-90" aria-hidden="true" tabindex="-1"></a><span class="in">`args=(0.5)`</span> without the comma raises an error. Explain why.</span>
-<span id="cb5-91"><a href="#cb5-91" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb5-92"><a href="#cb5-92" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-93"><a href="#cb5-93" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
-<span id="cb5-94"><a href="#cb5-94" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solution</span></span>
-<span id="cb5-95"><a href="#cb5-95" aria-hidden="true" tabindex="-1"></a><span class="in">`(0.5)`</span> is just the number <span class="in">`0.5`</span>, not a tuple. <span class="in">`solve_ivp`</span> expects a tuple and unpacks it into <span class="in">`fun(t, y, *args)`</span>. A one-element tuple needs a trailing comma: <span class="in">`(0.5,)`</span>.</span>
-<span id="cb5-96"><a href="#cb5-96" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb5-97"><a href="#cb5-97" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-98"><a href="#cb5-98" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip}</span>
-<span id="cb5-99"><a href="#cb5-99" aria-hidden="true" tabindex="-1"></a><span class="fu">## Optional extension</span></span>
-<span id="cb5-100"><a href="#cb5-100" aria-hidden="true" tabindex="-1"></a>Implement the forward Euler method $y_{n+1} = y_n + \Delta t\, f(t_n, y_n)$ for the decay problem. Halve $\Delta t$ several times and check that the error at $t = 10$ halves too (first-order convergence). The reference code in <span class="in">`amlab/utils/solver.py`</span> contains Euler and Runge-Kutta versions.</span>
-<span id="cb5-101"><a href="#cb5-101" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb5-102"><a href="#cb5-102" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-103"><a href="#cb5-103" aria-hidden="true" tabindex="-1"></a><span class="fu">## Next</span></span>
+<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a>The error falls as you tighten <span class="in">`rtol`</span>. If it does not, the right-hand side has a bug or the problem needs a different method.</span>
+<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-90"><a href="#cb5-90" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb5-91"><a href="#cb5-91" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercise</span></span>
+<span id="cb5-92"><a href="#cb5-92" aria-hidden="true" tabindex="-1"></a><span class="in">`args=(0.5)`</span> without the comma raises an error. Explain why.</span>
+<span id="cb5-93"><a href="#cb5-93" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb5-94"><a href="#cb5-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-95"><a href="#cb5-95" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb5-96"><a href="#cb5-96" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solution</span></span>
+<span id="cb5-97"><a href="#cb5-97" aria-hidden="true" tabindex="-1"></a><span class="in">`(0.5)`</span> is just the number <span class="in">`0.5`</span>, not a tuple. <span class="in">`solve_ivp`</span> expects a tuple and unpacks it into <span class="in">`fun(t, y, *args)`</span>. A one-element tuple needs a trailing comma: <span class="in">`(0.5,)`</span>.</span>
+<span id="cb5-98"><a href="#cb5-98" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb5-99"><a href="#cb5-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-100"><a href="#cb5-100" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip}</span>
+<span id="cb5-101"><a href="#cb5-101" aria-hidden="true" tabindex="-1"></a><span class="fu">## Optional extension</span></span>
+<span id="cb5-102"><a href="#cb5-102" aria-hidden="true" tabindex="-1"></a>Implement the forward Euler method $y_{n+1} = y_n + \Delta t\, f(t_n, y_n)$ for the decay problem. Halve $\Delta t$ several times and check that the error at $t = 10$ halves too (first-order convergence). The reference code in <span class="in">`amlab/utils/solver.py`</span> contains Euler and Runge-Kutta versions.</span>
+<span id="cb5-103"><a href="#cb5-103" aria-hidden="true" tabindex="-1"></a>:::</span>
 </code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

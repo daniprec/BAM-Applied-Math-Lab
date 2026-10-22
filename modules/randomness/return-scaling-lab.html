@@ -54,7 +54,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -541,8 +561,8 @@ window.Quarto = {
 </header>
 
 
-<p>In <a href="../../modules/randomness/scaling-of-returns.html">Scaling of Returns</a> you saw the prediction <span class="math inline">\(p_{\Delta t}(0) \propto \Delta t^{-1/\alpha}\)</span> and the result <span class="math inline">\(\alpha \approx 1.4\)</span> of <span class="citation" data-cites="mantegna1995scaling">(<a href="#ref-mantegna1995scaling" role="doc-biblioref"><strong>mantegna1995scaling?</strong></a>)</span> for minute data. Here you aggregate daily returns over longer horizons and test how the distribution changes with <span class="math inline">\(\Delta t\)</span>.</p>
-<div id="73b835ba" class="cell" data-execution_count="1">
+<p>In <a href="../../modules/randomness/scaling-of-returns.html">Scaling of Returns</a> you saw the prediction <span class="math inline">\(p_{\Delta t}(0) \propto \Delta t^{-1/\alpha}\)</span> and the result <span class="math inline">\(\alpha \approx 1.4\)</span> of <span class="citation" data-cites="mantegna1995scaling">Mantegna and Stanley (<a href="#ref-mantegna1995scaling" role="doc-biblioref">1995</a>)</span> for minute data. Here you aggregate daily returns over longer horizons and test how the distribution changes with <span class="math inline">\(\Delta t\)</span>.</p>
+<div id="4ce7fe91" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy <span class="im">import</span> stats</span>
@@ -631,7 +651,7 @@ Solution
 </div>
 <div id="callout-4" class="callout-4-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div id="57a9965c" class="cell" data-execution_count="2">
+<div id="2ea9ad87" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> aggregate_returns(r, horizon):</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Sum r over non-overlapping blocks of length horizon."""</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    m <span class="op">=</span> r.size <span class="op">//</span> horizon</span>
@@ -675,7 +695,7 @@ dt = 100: blocks    50, std 0.0913, kurtosis  -0.58, p(0)    3.37</code></pre>
 <section id="validation-a-shuffled-series" class="level2">
 <h2 class="anchored" data-anchor-id="validation-a-shuffled-series">Validation: a shuffled series</h2>
 <p>Shuffling the returns in time keeps their distribution and destroys all dependence. The shuffled series is i.i.d. with the same fat tails. For it, the standard deviation must grow as <span class="math inline">\(\sqrt{\Delta t}\)</span> and, when the fourth moment is finite, the excess kurtosis of a sum of <span class="math inline">\(\Delta t\)</span> i.i.d. terms is the one-day value divided by <span class="math inline">\(\Delta t\)</span>.</p>
-<div id="53366b7f" class="cell" data-execution_count="3">
+<div id="343c0be0" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">32</span>)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>table_shuffled <span class="op">=</span> scaling_table(rng.permutation(r))</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>slope_sd <span class="op">=</span> np.polyfit(np.log(horizons), np.log(table_shuffled[:, <span class="dv">0</span>]), <span class="dv">1</span>)[<span class="dv">0</span>]</span>
@@ -728,15 +748,15 @@ Figure&nbsp;1: Scaling with the horizon <span class="math inline">\(\Delta t\)</
 <h2 class="anchored" data-anchor-id="interpretation">Interpretation</h2>
 <ul>
 <li>The standard deviation grows close to <span class="math inline">\(\sqrt{\Delta t}\)</span> because daily returns are nearly uncorrelated. This is the part of the random walk model that survives.</li>
-<li>The excess kurtosis falls with <span class="math inline">\(\Delta t\)</span>: the distribution becomes more Gaussian at longer horizons, which is the aggregational Gaussianity of <span class="citation" data-cites="cont2001empirical">(<a href="#ref-cont2001empirical" role="doc-biblioref"><strong>cont2001empirical?</strong></a>)</span>. If it falls more slowly for the original data than for the shuffled data, the difference comes from volatility clustering, since that is the only thing the shuffle removed.</li>
-<li>The effective <span class="math inline">\(\alpha\)</span> from <span class="math inline">\(p_{\Delta t}(0)\)</span> tells you whether the centre of the distribution rescales like a Lévy law or like a Gaussian over these horizons. <span class="citation" data-cites="mantegna1995scaling">(<a href="#ref-mantegna1995scaling" role="doc-biblioref"><strong>mantegna1995scaling?</strong></a>)</span> found <span class="math inline">\(\alpha \approx 1.4\)</span> for horizons of 1 to 1000 minutes on the S&amp;P 500; daily and longer horizons are a different regime.</li>
+<li>The excess kurtosis falls with <span class="math inline">\(\Delta t\)</span>: the distribution becomes more Gaussian at longer horizons, which is the aggregational Gaussianity of <span class="citation" data-cites="cont2001empirical">Cont (<a href="#ref-cont2001empirical" role="doc-biblioref">2001</a>)</span>. If it falls more slowly for the original data than for the shuffled data, the difference comes from volatility clustering, since that is the only thing the shuffle removed.</li>
+<li>The effective <span class="math inline">\(\alpha\)</span> from <span class="math inline">\(p_{\Delta t}(0)\)</span> tells you whether the centre of the distribution rescales like a Lévy law or like a Gaussian over these horizons. <span class="citation" data-cites="mantegna1995scaling">Mantegna and Stanley (<a href="#ref-mantegna1995scaling" role="doc-biblioref">1995</a>)</span> found <span class="math inline">\(\alpha \approx 1.4\)</span> for horizons of 1 to 1000 minutes on the S&amp;P 500; daily and longer horizons are a different regime.</li>
 </ul>
 </section>
 <section id="limitations" class="level2">
 <h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
 <ul>
 <li>At <span class="math inline">\(\Delta t = 100\)</span> days a 20-year series gives only about 50 blocks. The kurtosis and <span class="math inline">\(p(0)\)</span> at long horizons are very noisy. Report them with that caveat or use overlapping blocks and account for the dependence they introduce.</li>
-<li>The sample kurtosis is unreliable for heavy tails <span class="citation" data-cites="cont2001empirical">(<a href="#ref-cont2001empirical" role="doc-biblioref"><strong>cont2001empirical?</strong></a>)</span>. Use it to compare series, not as a precise value.</li>
+<li>The sample kurtosis is unreliable for heavy tails <span class="citation" data-cites="cont2001empirical">(<a href="#ref-cont2001empirical" role="doc-biblioref">Cont 2001</a>)</span>. Use it to compare series, not as a precise value.</li>
 <li>The <span class="math inline">\(p(0)\)</span> estimate depends on the window width. Try a few widths and check that your conclusion does not change.</li>
 </ul>
 </section>
@@ -752,7 +772,7 @@ Exercise
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Plot the histograms of <span class="math inline">\(r(\Delta t)/\Delta t^{1/2}\)</span> for <span class="math inline">\(\Delta t = 1, 5, 20\)</span> on one log-density axis. If the returns scaled like a Gaussian random walk, the curves would collapse onto one. Repeat with <span class="math inline">\(\Delta t^{1/1.4}\)</span> and compare which rescaling collapses the centre better, as in <span class="citation" data-cites="mantegna1995scaling">(<a href="#ref-mantegna1995scaling" role="doc-biblioref"><strong>mantegna1995scaling?</strong></a>)</span>.</p>
+<p>Plot the histograms of <span class="math inline">\(r(\Delta t)/\Delta t^{1/2}\)</span> for <span class="math inline">\(\Delta t = 1, 5, 20\)</span> on one log-density axis. If the returns scaled like a Gaussian random walk, the curves would collapse onto one. Repeat with <span class="math inline">\(\Delta t^{1/1.4}\)</span> and compare which rescaling collapses the centre better, as in <span class="citation" data-cites="mantegna1995scaling">Mantegna and Stanley (<a href="#ref-mantegna1995scaling" role="doc-biblioref">1995</a>)</span>.</p>
 </div>
 </div>
 <div class="callout callout-style-default callout-tip callout-titled">
@@ -811,7 +831,7 @@ Solution
 </div>
 <div id="callout-8" class="callout-8-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>No.&nbsp;The two methods look at different parts of the distribution. The Hill estimator measures the far tail of one-day returns. The <span class="math inline">\(p_{\Delta t}(0)\)</span> method measures how the height of the centre changes under aggregation, which depends on the whole distribution and on the dependence between days. <span class="citation" data-cites="mantegna1995scaling">(<a href="#ref-mantegna1995scaling" role="doc-biblioref"><strong>mantegna1995scaling?</strong></a>)</span> found exactly this combination for the S&amp;P 500: a Lévy-like centre with <span class="math inline">\(\alpha \approx 1.4\)</span> and tails that fall off faster than a Lévy law, so the variance is finite. The truncated Lévy flight of <span class="citation" data-cites="mantegna1994stochastic">(<a href="#ref-mantegna1994stochastic" role="doc-biblioref"><strong>mantegna1994stochastic?</strong></a>)</span> is one model with both properties.</p>
+<p>No.&nbsp;The two methods look at different parts of the distribution. The Hill estimator measures the far tail of one-day returns. The <span class="math inline">\(p_{\Delta t}(0)\)</span> method measures how the height of the centre changes under aggregation, which depends on the whole distribution and on the dependence between days. <span class="citation" data-cites="mantegna1995scaling">Mantegna and Stanley (<a href="#ref-mantegna1995scaling" role="doc-biblioref">1995</a>)</span> found exactly this combination for the S&amp;P 500: a Lévy-like centre with <span class="math inline">\(\alpha \approx 1.4\)</span> and tails that fall off faster than a Lévy law, so the variance is finite. The truncated Lévy flight of <span class="citation" data-cites="mantegna1994stochastic">Mantegna and Stanley (<a href="#ref-mantegna1994stochastic" role="doc-biblioref">1994</a>)</span> is one model with both properties.</p>
 </div>
 </div>
 </div>
@@ -819,9 +839,20 @@ Solution
 
 <!-- -->
 
+
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-cont2001empirical" class="csl-entry" role="listitem">
+Cont, Rama. 2001. <span>“Empirical Properties of Asset Returns: Stylized Facts and Statistical Issues.”</span> <em>Quantitative Finance</em> 1 (2): 223–36. <a href="https://doi.org/10.1080/713665670">https://doi.org/10.1080/713665670</a>.
+</div>
+<div id="ref-mantegna1994stochastic" class="csl-entry" role="listitem">
+Mantegna, Rosario N., and H. Eugene Stanley. 1994. <span>“Stochastic Process with Ultraslow Convergence to a <span>G</span>aussian: The Truncated <span>L</span><span>é</span>vy Flight.”</span> <em>Physical Review Letters</em> 73 (22): 2946–49. <a href="https://doi.org/10.1103/PhysRevLett.73.2946">https://doi.org/10.1103/PhysRevLett.73.2946</a>.
+</div>
+<div id="ref-mantegna1995scaling" class="csl-entry" role="listitem">
+———. 1995. <span>“Scaling Behaviour in the Dynamics of an Economic Index.”</span> <em>Nature</em> 376: 46–49. <a href="https://doi.org/10.1038/376046a0">https://doi.org/10.1038/376046a0</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

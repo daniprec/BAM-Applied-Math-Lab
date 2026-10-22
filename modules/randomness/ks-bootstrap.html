@@ -54,7 +54,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -540,7 +560,7 @@ window.Quarto = {
 
 
 <p>The Kolmogorov-Smirnov (KS) test compares a whole distribution function with a model. Used naively with estimated parameters it gives wrong p-values. On this page you see why and build a version calibrated by simulation. You continue from <a href="../../modules/randomness/normality-tests.html">Normality Tests</a>.</p>
-<div id="62c8ae99" class="cell" data-execution_count="1">
+<div id="9c7de20b" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy <span class="im">import</span> stats</span>
@@ -558,8 +578,8 @@ window.Quarto = {
 <p><span class="math display">\[
 D = \sup_x |F_n(x) - F(x)| .
 \]</span></p>
-<p>Kolmogorov’s null distribution of <span class="math inline">\(D\)</span>, which <code>scipy.stats.kstest</code> uses for its p-value, assumes that <span class="math inline">\(F\)</span> is fixed <strong>before</strong> you see the data. Here you do not know <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\sigma\)</span>; you estimate them from the same returns. The fitted normal is then pulled towards the data, so <span class="math inline">\(D\)</span> is systematically smaller than under a fixed <span class="math inline">\(F\)</span>. The standard p-values are too large and the test rejects too rarely <span class="citation" data-cites="lilliefors1967kolmogorov">(<a href="#ref-lilliefors1967kolmogorov" role="doc-biblioref"><strong>lilliefors1967kolmogorov?</strong></a>)</span>.</p>
-<p><span class="citation" data-cites="lilliefors1967kolmogorov">(<a href="#ref-lilliefors1967kolmogorov" role="doc-biblioref"><strong>lilliefors1967kolmogorov?</strong></a>)</span> obtained the correct null distribution by Monte Carlo. The same idea is a parametric bootstrap <span class="citation" data-cites="efron1979bootstrap">(<a href="#ref-efron1979bootstrap" role="doc-biblioref"><strong>efron1979bootstrap?</strong></a>)</span>: simulate many normal samples of size <span class="math inline">\(n\)</span>, estimate <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\sigma\)</span> on each one, recompute <span class="math inline">\(D\)</span>, and compare the observed <span class="math inline">\(D\)</span> with that simulated distribution. Because the normal is a location-scale family, the null distribution of <span class="math inline">\(D\)</span> with estimated parameters does not depend on the true <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\sigma\)</span>, so you can simulate from <span class="math inline">\(\mathcal{N}(0, 1)\)</span>.</p>
+<p>Kolmogorov’s null distribution of <span class="math inline">\(D\)</span>, which <code>scipy.stats.kstest</code> uses for its p-value, assumes that <span class="math inline">\(F\)</span> is fixed <strong>before</strong> you see the data. Here you do not know <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\sigma\)</span>; you estimate them from the same returns. The fitted normal is then pulled towards the data, so <span class="math inline">\(D\)</span> is systematically smaller than under a fixed <span class="math inline">\(F\)</span>. The standard p-values are too large and the test rejects too rarely <span class="citation" data-cites="lilliefors1967kolmogorov">(<a href="#ref-lilliefors1967kolmogorov" role="doc-biblioref">Lilliefors 1967</a>)</span>.</p>
+<p><span class="citation" data-cites="lilliefors1967kolmogorov">Lilliefors (<a href="#ref-lilliefors1967kolmogorov" role="doc-biblioref">1967</a>)</span> obtained the correct null distribution by Monte Carlo. The same idea is a parametric bootstrap <span class="citation" data-cites="efron1979bootstrap">(<a href="#ref-efron1979bootstrap" role="doc-biblioref">Efron 1979</a>)</span>: simulate many normal samples of size <span class="math inline">\(n\)</span>, estimate <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\sigma\)</span> on each one, recompute <span class="math inline">\(D\)</span>, and compare the observed <span class="math inline">\(D\)</span> with that simulated distribution. Because the normal is a location-scale family, the null distribution of <span class="math inline">\(D\)</span> with estimated parameters does not depend on the true <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\sigma\)</span>, so you can simulate from <span class="math inline">\(\mathcal{N}(0, 1)\)</span>.</p>
 </section>
 <section id="core-activity-a-bootstrap-calibrated-ks-test" class="level2">
 <h2 class="anchored" data-anchor-id="core-activity-a-bootstrap-calibrated-ks-test">Core activity: a bootstrap-calibrated KS test</h2>
@@ -601,7 +621,7 @@ Solution
 </div>
 <div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div id="5b479696" class="cell" data-execution_count="2">
+<div id="19681354" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ks_stat_normal(x):</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""KS distance between x and the normal fitted to x."""</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> stats.kstest(x, <span class="st">"norm"</span>, args<span class="op">=</span>(x.mean(), x.std(ddof<span class="op">=</span><span class="dv">1</span>))).statistic</span>
@@ -669,7 +689,7 @@ Figure&nbsp;1: p-values of the naive KS test (parameters estimated, standard p-v
 </section>
 <section id="interpretation" class="level2">
 <h2 class="anchored" data-anchor-id="interpretation">Interpretation</h2>
-<p>The Q-Q plot, the Jarque-Bera test and the KS test ask the same question: are the returns consistent with an i.i.d. normal sample? For market data the answer is usually a clear no, because of the heavy tails you see in the Q-Q plot <span class="citation" data-cites="cont2001empirical">(<a href="#ref-cont2001empirical" role="doc-biblioref"><strong>cont2001empirical?</strong></a>)</span>.</p>
+<p>The Q-Q plot, the Jarque-Bera test and the KS test ask the same question: are the returns consistent with an i.i.d. normal sample? For market data the answer is usually a clear no, because of the heavy tails you see in the Q-Q plot <span class="citation" data-cites="cont2001empirical">(<a href="#ref-cont2001empirical" role="doc-biblioref">Cont 2001</a>)</span>.</p>
 </section>
 <section id="limitations" class="level2">
 <h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
@@ -731,9 +751,20 @@ Solution
 
 <!-- -->
 
+
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-cont2001empirical" class="csl-entry" role="listitem">
+Cont, Rama. 2001. <span>“Empirical Properties of Asset Returns: Stylized Facts and Statistical Issues.”</span> <em>Quantitative Finance</em> 1 (2): 223–36. <a href="https://doi.org/10.1080/713665670">https://doi.org/10.1080/713665670</a>.
+</div>
+<div id="ref-efron1979bootstrap" class="csl-entry" role="listitem">
+Efron, Bradley. 1979. <span>“Bootstrap Methods: Another Look at the Jackknife.”</span> <em>The Annals of Statistics</em> 7 (1): 1–26. <a href="https://doi.org/10.1214/aos/1176344552">https://doi.org/10.1214/aos/1176344552</a>.
+</div>
+<div id="ref-lilliefors1967kolmogorov" class="csl-entry" role="listitem">
+Lilliefors, Hubert W. 1967. <span>“On the <span>K</span>olmogorov-<span>S</span>mirnov Test for Normality with Mean and Variance Unknown.”</span> <em>Journal of the American Statistical Association</em> 62 (318): 399–402. <a href="https://doi.org/10.1080/01621459.1967.10482916">https://doi.org/10.1080/01621459.1967.10482916</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
