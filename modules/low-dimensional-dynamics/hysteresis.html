@@ -787,6 +787,9 @@ Figure&nbsp;1: Hysteresis loop of the budworm model for r = 0.56. Increasing k (
 <li>In the parameter plane, click a point with <span class="math inline">\(r &gt; 0.65\)</span>, above the cusp, and sweep again. What happened to the loop?</li>
 </ol>
 </div>
+<div class="python-next">
+<p><strong>Build this in Python.</strong> In Lab 1 (Session 4) you sweep the budworm parameters in code and map where the equilibria appear and disappear: <a href="../../modules/low-dimensional-dynamics/budworm-integration.html#sec-exploration-questions">Budworm: Integration and Time Series</a>. The optional extension at the end of this page animates the loop with <code>amlab/odes_1d/spruce_budworm_histeresis.py</code>.</p>
+</div>
 </section>
 <section id="the-region-of-bistability" class="level2">
 <h2 class="anchored" data-anchor-id="the-region-of-bistability">The region of bistability</h2>
@@ -1567,75 +1570,79 @@ Strogatz, Steven H. 2024. <em>Nonlinear Dynamics and Chaos: With Applications to
 <span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>In the parameter plane, click a point with $r &gt; 0.65$, above the cusp, and sweep again. What happened to the loop?</span>
 <span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a><span class="fu">## The region of bistability</span></span>
-<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a>The saddle-node curves from the exercise on the previous page,</span>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a>::: {.python-next}</span>
+<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a>**Build this in Python.** In Lab 1 (Session 4) you sweep the budworm parameters in code and map where the equilibria appear and disappear: <span class="co">[</span><span class="ot">Budworm: Integration and Time Series</span><span class="co">](budworm-integration.qmd#sec-exploration-questions)</span>. The optional extension at the end of this page animates the loop with <span class="in">`amlab/odes_1d/spruce_budworm_histeresis.py`</span>.</span>
+<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a>r(x) = \frac{2x^3}{(1+x^2)^2}, \qquad k(x) = \frac{2x^3}{x^2 - 1}, \qquad x &gt; 1,</span>
-<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a><span class="fu">## The region of bistability</span></span>
+<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a>The saddle-node curves from the exercise on the previous page,</span>
 <span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a>bound the region of the $(k, r)$ plane with three positive fixed points <span class="co">[</span><span class="ot">@strogatz2024nonlinear, Section 3.7</span><span class="co">]</span>. The two branches meet at a cusp. Both $dr/dx$ and $dk/dx$ vanish at $x = \sqrt 3$, which gives the cusp point $(k, r) = (3\sqrt 3, 3\sqrt 3/8) \approx (5.20, 0.65)$.</span>
-<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-75"><a href="#cb2-75" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb2-76"><a href="#cb2-76" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb2-77"><a href="#cb2-77" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-cusp</span></span>
-<span id="cb2-78"><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Stability diagram of the budworm model in the (k, r) plane. Inside the shaded region there are two stable fixed points (bistability). The horizontal line r = 0.56 is the path of the loop above."</span></span>
-<span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 6</span></span>
-<span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 4</span></span>
-<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.odes_1d.budworm_analysis <span class="im">import</span> bifurcation_curves</span>
-<span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.linspace(<span class="fl">1.001</span>, <span class="dv">60</span>, <span class="dv">4000</span>)</span>
-<span id="cb2-84"><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a>k_c, r_c <span class="op">=</span> bifurcation_curves(x)</span>
-<span id="cb2-85"><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a>upper <span class="op">=</span> x <span class="op">&lt;</span> np.sqrt(<span class="dv">3</span>)</span>
-<span id="cb2-86"><a href="#cb2-86" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">4</span>))</span>
-<span id="cb2-87"><a href="#cb2-87" aria-hidden="true" tabindex="-1"></a>ax.plot(k_c[upper], r_c[upper], <span class="st">"k"</span>)</span>
-<span id="cb2-88"><a href="#cb2-88" aria-hidden="true" tabindex="-1"></a>ax.plot(k_c[<span class="op">~</span>upper], r_c[<span class="op">~</span>upper], <span class="st">"k"</span>)</span>
-<span id="cb2-89"><a href="#cb2-89" aria-hidden="true" tabindex="-1"></a>kk <span class="op">=</span> np.linspace(<span class="dv">3</span> <span class="op">*</span> np.sqrt(<span class="dv">3</span>), <span class="dv">40</span>, <span class="dv">400</span>)</span>
-<span id="cb2-90"><a href="#cb2-90" aria-hidden="true" tabindex="-1"></a>ax.fill_between(kk, np.interp(kk, k_c[<span class="op">~</span>upper], r_c[<span class="op">~</span>upper]),</span>
-<span id="cb2-91"><a href="#cb2-91" aria-hidden="true" tabindex="-1"></a>                np.interp(kk, k_c[upper][::<span class="op">-</span><span class="dv">1</span>], r_c[upper][::<span class="op">-</span><span class="dv">1</span>]), alpha<span class="op">=</span><span class="fl">0.25</span>, label<span class="op">=</span><span class="st">"bistable"</span>)</span>
-<span id="cb2-92"><a href="#cb2-92" aria-hidden="true" tabindex="-1"></a>ax.axhline(<span class="fl">0.56</span>, color<span class="op">=</span><span class="st">"tab:blue"</span>, lw<span class="op">=</span><span class="dv">1</span>, ls<span class="op">=</span><span class="st">":"</span>)</span>
-<span id="cb2-93"><a href="#cb2-93" aria-hidden="true" tabindex="-1"></a>ax.plot(<span class="dv">3</span> <span class="op">*</span> np.sqrt(<span class="dv">3</span>), <span class="dv">3</span> <span class="op">*</span> np.sqrt(<span class="dv">3</span>) <span class="op">/</span> <span class="dv">8</span>, <span class="st">"ro"</span>, label<span class="op">=</span><span class="st">"cusp"</span>)</span>
-<span id="cb2-94"><a href="#cb2-94" aria-hidden="true" tabindex="-1"></a>ax.text(<span class="dv">25</span>, <span class="fl">0.62</span>, <span class="st">"outbreak only"</span>)</span>
-<span id="cb2-95"><a href="#cb2-95" aria-hidden="true" tabindex="-1"></a>ax.text(<span class="dv">25</span>, <span class="fl">0.2</span>, <span class="st">"refuge only"</span>)</span>
-<span id="cb2-96"><a href="#cb2-96" aria-hidden="true" tabindex="-1"></a>ax.set_xlim(<span class="dv">0</span>, <span class="dv">40</span>)</span>
-<span id="cb2-97"><a href="#cb2-97" aria-hidden="true" tabindex="-1"></a>ax.set_ylim(<span class="dv">0</span>, <span class="fl">0.8</span>)</span>
-<span id="cb2-98"><a href="#cb2-98" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"k"</span>)</span>
-<span id="cb2-99"><a href="#cb2-99" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"r"</span>)</span>
-<span id="cb2-100"><a href="#cb2-100" aria-hidden="true" tabindex="-1"></a>ax.legend(loc<span class="op">=</span><span class="st">"upper right"</span>)</span>
-<span id="cb2-101"><a href="#cb2-101" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb2-102"><a href="#cb2-102" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb2-103"><a href="#cb2-103" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb2-104"><a href="#cb2-104" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-105"><a href="#cb2-105" aria-hidden="true" tabindex="-1"></a>As $k \to \infty$ the upper curve approaches $r = 1/2$. Ludwig et al. used this fact: for a large carrying capacity, outbreaks require $R &gt; 1/2$ in their notation <span class="co">[</span><span class="ot">@ludwig1978qualitative, p. 325</span><span class="co">]</span>.</span>
-<span id="cb2-106"><a href="#cb2-106" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-107"><a href="#cb2-107" aria-hidden="true" tabindex="-1"></a><span class="fu">## Consequences</span></span>
+<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a>r(x) = \frac{2x^3}{(1+x^2)^2}, \qquad k(x) = \frac{2x^3}{x^2 - 1}, \qquad x &gt; 1,</span>
+<span id="cb2-73"><a href="#cb2-73" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb2-74"><a href="#cb2-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-75"><a href="#cb2-75" aria-hidden="true" tabindex="-1"></a>bound the region of the $(k, r)$ plane with three positive fixed points <span class="co">[</span><span class="ot">@strogatz2024nonlinear, Section 3.7</span><span class="co">]</span>. The two branches meet at a cusp. Both $dr/dx$ and $dk/dx$ vanish at $x = \sqrt 3$, which gives the cusp point $(k, r) = (3\sqrt 3, 3\sqrt 3/8) \approx (5.20, 0.65)$.</span>
+<span id="cb2-76"><a href="#cb2-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-cusp</span></span>
+<span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Stability diagram of the budworm model in the (k, r) plane. Inside the shaded region there are two stable fixed points (bistability). The horizontal line r = 0.56 is the path of the loop above."</span></span>
+<span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 6</span></span>
+<span id="cb2-84"><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 4</span></span>
+<span id="cb2-85"><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.odes_1d.budworm_analysis <span class="im">import</span> bifurcation_curves</span>
+<span id="cb2-86"><a href="#cb2-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-87"><a href="#cb2-87" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.linspace(<span class="fl">1.001</span>, <span class="dv">60</span>, <span class="dv">4000</span>)</span>
+<span id="cb2-88"><a href="#cb2-88" aria-hidden="true" tabindex="-1"></a>k_c, r_c <span class="op">=</span> bifurcation_curves(x)</span>
+<span id="cb2-89"><a href="#cb2-89" aria-hidden="true" tabindex="-1"></a>upper <span class="op">=</span> x <span class="op">&lt;</span> np.sqrt(<span class="dv">3</span>)</span>
+<span id="cb2-90"><a href="#cb2-90" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">4</span>))</span>
+<span id="cb2-91"><a href="#cb2-91" aria-hidden="true" tabindex="-1"></a>ax.plot(k_c[upper], r_c[upper], <span class="st">"k"</span>)</span>
+<span id="cb2-92"><a href="#cb2-92" aria-hidden="true" tabindex="-1"></a>ax.plot(k_c[<span class="op">~</span>upper], r_c[<span class="op">~</span>upper], <span class="st">"k"</span>)</span>
+<span id="cb2-93"><a href="#cb2-93" aria-hidden="true" tabindex="-1"></a>kk <span class="op">=</span> np.linspace(<span class="dv">3</span> <span class="op">*</span> np.sqrt(<span class="dv">3</span>), <span class="dv">40</span>, <span class="dv">400</span>)</span>
+<span id="cb2-94"><a href="#cb2-94" aria-hidden="true" tabindex="-1"></a>ax.fill_between(kk, np.interp(kk, k_c[<span class="op">~</span>upper], r_c[<span class="op">~</span>upper]),</span>
+<span id="cb2-95"><a href="#cb2-95" aria-hidden="true" tabindex="-1"></a>                np.interp(kk, k_c[upper][::<span class="op">-</span><span class="dv">1</span>], r_c[upper][::<span class="op">-</span><span class="dv">1</span>]), alpha<span class="op">=</span><span class="fl">0.25</span>, label<span class="op">=</span><span class="st">"bistable"</span>)</span>
+<span id="cb2-96"><a href="#cb2-96" aria-hidden="true" tabindex="-1"></a>ax.axhline(<span class="fl">0.56</span>, color<span class="op">=</span><span class="st">"tab:blue"</span>, lw<span class="op">=</span><span class="dv">1</span>, ls<span class="op">=</span><span class="st">":"</span>)</span>
+<span id="cb2-97"><a href="#cb2-97" aria-hidden="true" tabindex="-1"></a>ax.plot(<span class="dv">3</span> <span class="op">*</span> np.sqrt(<span class="dv">3</span>), <span class="dv">3</span> <span class="op">*</span> np.sqrt(<span class="dv">3</span>) <span class="op">/</span> <span class="dv">8</span>, <span class="st">"ro"</span>, label<span class="op">=</span><span class="st">"cusp"</span>)</span>
+<span id="cb2-98"><a href="#cb2-98" aria-hidden="true" tabindex="-1"></a>ax.text(<span class="dv">25</span>, <span class="fl">0.62</span>, <span class="st">"outbreak only"</span>)</span>
+<span id="cb2-99"><a href="#cb2-99" aria-hidden="true" tabindex="-1"></a>ax.text(<span class="dv">25</span>, <span class="fl">0.2</span>, <span class="st">"refuge only"</span>)</span>
+<span id="cb2-100"><a href="#cb2-100" aria-hidden="true" tabindex="-1"></a>ax.set_xlim(<span class="dv">0</span>, <span class="dv">40</span>)</span>
+<span id="cb2-101"><a href="#cb2-101" aria-hidden="true" tabindex="-1"></a>ax.set_ylim(<span class="dv">0</span>, <span class="fl">0.8</span>)</span>
+<span id="cb2-102"><a href="#cb2-102" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"k"</span>)</span>
+<span id="cb2-103"><a href="#cb2-103" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"r"</span>)</span>
+<span id="cb2-104"><a href="#cb2-104" aria-hidden="true" tabindex="-1"></a>ax.legend(loc<span class="op">=</span><span class="st">"upper right"</span>)</span>
+<span id="cb2-105"><a href="#cb2-105" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb2-106"><a href="#cb2-106" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb2-107"><a href="#cb2-107" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb2-108"><a href="#cb2-108" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-109"><a href="#cb2-109" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>An outbreak is triggered by crossing one fold and ended only by crossing the other. Returning the parameter to its value just before the outbreak is not enough.</span>
-<span id="cb2-110"><a href="#cb2-110" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Near a fold the refuge state loses resilience: the decay rate $|f'(x^*)|$ tends to zero, so the system recovers more slowly from perturbations. Similar arguments are used for sudden shifts in lakes, coral reefs and forests <span class="co">[</span><span class="ot">@scheffer2001catastrophic</span><span class="co">]</span>.</span>
-<span id="cb2-111"><a href="#cb2-111" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-112"><a href="#cb2-112" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
-<span id="cb2-113"><a href="#cb2-113" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercise</span></span>
-<span id="cb2-114"><a href="#cb2-114" aria-hidden="true" tabindex="-1"></a>Fix $k = 10$ and vary $r$ instead. The folds are at $r \approx 0.384$ and $r \approx 0.560$. Describe what happens when $r$ increases from 0.3 to 0.7 and then decreases back to 0.3.</span>
-<span id="cb2-115"><a href="#cb2-115" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb2-116"><a href="#cb2-116" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-117"><a href="#cb2-117" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
-<span id="cb2-118"><a href="#cb2-118" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solution</span></span>
-<span id="cb2-119"><a href="#cb2-119" aria-hidden="true" tabindex="-1"></a>Starting on the refuge branch, the population stays low until $r \approx 0.560$, where the refuge fixed point disappears and the population jumps to the outbreak level. On the way back it stays high until $r \approx 0.384$, where the outbreak fixed point disappears and it drops to the refuge. Between 0.384 and 0.560 the state depends on the direction of change.</span>
-<span id="cb2-120"><a href="#cb2-120" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb2-121"><a href="#cb2-121" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-122"><a href="#cb2-122" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip}</span>
-<span id="cb2-123"><a href="#cb2-123" aria-hidden="true" tabindex="-1"></a><span class="fu">## Optional extension</span></span>
-<span id="cb2-124"><a href="#cb2-124" aria-hidden="true" tabindex="-1"></a><span class="in">`amlab/odes_1d/spruce_budworm_histeresis.py`</span> lets $k$ oscillate in time, $k(t) = k_0 + A(1 + \sin 2\pi f t)$, and animates $x$ against $k$. Run it locally:</span>
+<span id="cb2-109"><a href="#cb2-109" aria-hidden="true" tabindex="-1"></a>As $k \to \infty$ the upper curve approaches $r = 1/2$. Ludwig et al. used this fact: for a large carrying capacity, outbreaks require $R &gt; 1/2$ in their notation <span class="co">[</span><span class="ot">@ludwig1978qualitative, p. 325</span><span class="co">]</span>.</span>
+<span id="cb2-110"><a href="#cb2-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-111"><a href="#cb2-111" aria-hidden="true" tabindex="-1"></a><span class="fu">## Consequences</span></span>
+<span id="cb2-112"><a href="#cb2-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-113"><a href="#cb2-113" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>An outbreak is triggered by crossing one fold and ended only by crossing the other. Returning the parameter to its value just before the outbreak is not enough.</span>
+<span id="cb2-114"><a href="#cb2-114" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Near a fold the refuge state loses resilience: the decay rate $|f'(x^*)|$ tends to zero, so the system recovers more slowly from perturbations. Similar arguments are used for sudden shifts in lakes, coral reefs and forests <span class="co">[</span><span class="ot">@scheffer2001catastrophic</span><span class="co">]</span>.</span>
+<span id="cb2-115"><a href="#cb2-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-116"><a href="#cb2-116" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb2-117"><a href="#cb2-117" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercise</span></span>
+<span id="cb2-118"><a href="#cb2-118" aria-hidden="true" tabindex="-1"></a>Fix $k = 10$ and vary $r$ instead. The folds are at $r \approx 0.384$ and $r \approx 0.560$. Describe what happens when $r$ increases from 0.3 to 0.7 and then decreases back to 0.3.</span>
+<span id="cb2-119"><a href="#cb2-119" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb2-120"><a href="#cb2-120" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-121"><a href="#cb2-121" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb2-122"><a href="#cb2-122" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solution</span></span>
+<span id="cb2-123"><a href="#cb2-123" aria-hidden="true" tabindex="-1"></a>Starting on the refuge branch, the population stays low until $r \approx 0.560$, where the refuge fixed point disappears and the population jumps to the outbreak level. On the way back it stays high until $r \approx 0.384$, where the outbreak fixed point disappears and it drops to the refuge. Between 0.384 and 0.560 the state depends on the direction of change.</span>
+<span id="cb2-124"><a href="#cb2-124" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb2-125"><a href="#cb2-125" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-126"><a href="#cb2-126" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb2-127"><a href="#cb2-127" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.odes_1d.spruce_budworm_histeresis <span class="im">import</span> make_animation</span>
-<span id="cb2-128"><a href="#cb2-128" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-129"><a href="#cb2-129" aria-hidden="true" tabindex="-1"></a>make_animation()</span>
-<span id="cb2-130"><a href="#cb2-130" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb2-131"><a href="#cb2-131" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-132"><a href="#cb2-132" aria-hidden="true" tabindex="-1"></a>Change <span class="in">`r`</span> inside <span class="in">`make_animation`</span> to 0.56 and <span class="in">`k0`</span>, <span class="in">`amp`</span> so that $k$ spans the interval $<span class="co">[</span><span class="ot">6, 11</span><span class="co">]</span>$. Does a loop appear? What happens if you increase the frequency <span class="in">`freq`</span>?</span>
-<span id="cb2-133"><a href="#cb2-133" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb2-126"><a href="#cb2-126" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip}</span>
+<span id="cb2-127"><a href="#cb2-127" aria-hidden="true" tabindex="-1"></a><span class="fu">## Optional extension</span></span>
+<span id="cb2-128"><a href="#cb2-128" aria-hidden="true" tabindex="-1"></a><span class="in">`amlab/odes_1d/spruce_budworm_histeresis.py`</span> lets $k$ oscillate in time, $k(t) = k_0 + A(1 + \sin 2\pi f t)$, and animates $x$ against $k$. Run it locally:</span>
+<span id="cb2-129"><a href="#cb2-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-130"><a href="#cb2-130" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb2-131"><a href="#cb2-131" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.odes_1d.spruce_budworm_histeresis <span class="im">import</span> make_animation</span>
+<span id="cb2-132"><a href="#cb2-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-133"><a href="#cb2-133" aria-hidden="true" tabindex="-1"></a>make_animation()</span>
+<span id="cb2-134"><a href="#cb2-134" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-135"><a href="#cb2-135" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-136"><a href="#cb2-136" aria-hidden="true" tabindex="-1"></a>Change <span class="in">`r`</span> inside <span class="in">`make_animation`</span> to 0.56 and <span class="in">`k0`</span>, <span class="in">`amp`</span> so that $k$ spans the interval $<span class="co">[</span><span class="ot">6, 11</span><span class="co">]</span>$. Does a loop appear? What happens if you increase the frequency <span class="in">`freq`</span>?</span>
+<span id="cb2-137"><a href="#cb2-137" aria-hidden="true" tabindex="-1"></a>:::</span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

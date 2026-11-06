@@ -724,7 +724,8 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#compare-two-nearby-initial-conditions" id="toc-compare-two-nearby-initial-conditions" class="nav-link active" data-scroll-target="#compare-two-nearby-initial-conditions">Compare two nearby initial conditions</a></li>
+  <li><a href="#explore-sensitive-dependence" id="toc-explore-sensitive-dependence" class="nav-link active" data-scroll-target="#explore-sensitive-dependence">Explore sensitive dependence</a></li>
+  <li><a href="#compare-two-nearby-initial-conditions" id="toc-compare-two-nearby-initial-conditions" class="nav-link" data-scroll-target="#compare-two-nearby-initial-conditions">Compare two nearby initial conditions</a></li>
   <li><a href="#measure-the-separation" id="toc-measure-the-separation" class="nav-link" data-scroll-target="#measure-the-separation">Measure the separation</a></li>
   <li><a href="#what-chaos-means-here" id="toc-what-chaos-means-here" class="nav-link" data-scroll-target="#what-chaos-means-here">What chaos means here</a></li>
   <li><a href="#parameter-variation" id="toc-parameter-variation" class="nav-link" data-scroll-target="#parameter-variation">Parameter variation</a></li>
@@ -770,6 +771,21 @@ Figure&nbsp;1: Two nearby Lorenz trajectories and their separation over time.
 </div>
 </div>
 </div>
+<section id="explore-sensitive-dependence" class="level2">
+<h2 class="anchored" data-anchor-id="explore-sensitive-dependence">Explore sensitive dependence</h2>
+<p>The figure runs the same computation as the code on this page: forward Euler with <span class="math inline">\(dt = 0.01\)</span> for 3000 steps, run A from <span class="math inline">\((0, 1, 1.05)\)</span> and run B from the same point with <span class="math inline">\(z\)</span> increased by <span class="math inline">\(\delta\)</span>.</p>
+<div class="viz" data-viz="lorenz">
+<ol type="1">
+<li>With <span class="math inline">\(\delta = 10^{-5}\)</span>, when are the two runs 1 apart? Before that time, can you tell them apart in the left panel?</li>
+<li>Make <span class="math inline">\(\delta\)</span> a thousand times smaller, <span class="math inline">\(10^{-8}\)</span>. How much later do the runs separate? What does a thousandfold better measurement buy you?</li>
+<li>Compare the red curve with the dashed slope <span class="math inline">\(\lambda \approx 0.9\)</span>. Why does the separation stop growing at around 10 to 30?</li>
+<li>Set <span class="math inline">\(r = 10\)</span>. What happens to the separation now, and where do both runs end? Check against <span class="math inline">\(C^\pm = \bigl(\pm\sqrt{b(r-1)}, \pm\sqrt{b(r-1)}, r - 1\bigr)\)</span>.</li>
+</ol>
+</div>
+<div class="python-next">
+<p><strong>Build this in Python.</strong> In Lab 4 (Session 10) you write <code>lorenz()</code> and <code>simulate_lorenz()</code> with forward Euler, run two nearby initial conditions and plot their separation, which is exactly this figure: <a href="../../modules/low-dimensional-dynamics/practice-lorenz.html">Practice: Lorenz System</a>. The code on the rest of this page is your starting point.</p>
+</div>
+</section>
 <section id="compare-two-nearby-initial-conditions" class="level2">
 <h2 class="anchored" data-anchor-id="compare-two-nearby-initial-conditions">Compare two nearby initial conditions</h2>
 <p>To test sensitivity, keep the parameters fixed and change only the initial state by a tiny amount.</p>
@@ -1509,63 +1525,78 @@ Strogatz, Steven H. 2024. <em>Nonlinear Dynamics and Chaos: With Applications to
 <span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>plt.close()</span>
 <span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a><span class="fu">## Compare two nearby initial conditions</span></span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a><span class="fu">## Explore sensitive dependence</span></span>
 <span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>To test sensitivity, keep the parameters fixed and change only the initial state by a tiny amount.</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>The figure runs the same computation as the code on this page: forward Euler with $dt = 0.01$ for 3000 steps, run A from $(0, 1, 1.05)$ and run B from the same point with $z$ increased by $\delta$.</span>
 <span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>initial_state_a <span class="op">=</span> (<span class="fl">0.0</span>, <span class="fl">1.0</span>, <span class="fl">1.05</span>)</span>
-<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a>initial_state_b <span class="op">=</span> (<span class="fl">0.0</span>, <span class="fl">1.0</span>, <span class="fl">1.05001</span>)</span>
-<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>trajectory_a <span class="op">=</span> simulate_lorenz(initial_state<span class="op">=</span>initial_state_a, dt<span class="op">=</span><span class="fl">0.01</span>, num_steps<span class="op">=</span><span class="dv">3000</span>)</span>
-<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>trajectory_b <span class="op">=</span> simulate_lorenz(initial_state<span class="op">=</span>initial_state_b, dt<span class="op">=</span><span class="fl">0.01</span>, num_steps<span class="op">=</span><span class="dv">3000</span>)</span>
-<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a>At first, the two runs are nearly indistinguishable. Later, they separate enough that their detailed future motion no longer matches.</span>
-<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a><span class="fu">## Measure the separation</span></span>
-<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a>The most direct diagnostic is the Euclidean distance between the two trajectories at each time step:</span>
-<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a>d_n = \left<span class="sc">\|</span>\mathbf{x}_n^{(1)} - \mathbf{x}_n^{(2)}\right<span class="sc">\|</span>.</span>
-<span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb4-79"><a href="#cb4-79" aria-hidden="true" tabindex="-1"></a>separation <span class="op">=</span> np.linalg.norm(trajectory_a <span class="op">-</span> trajectory_b, axis<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb4-80"><a href="#cb4-80" aria-hidden="true" tabindex="-1"></a>times <span class="op">=</span> <span class="fl">0.01</span> <span class="op">*</span> np.arange(<span class="bu">len</span>(separation))</span>
-<span id="cb4-81"><a href="#cb4-81" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-82"><a href="#cb4-82" aria-hidden="true" tabindex="-1"></a>plt.semilogy(times, separation)</span>
-<span id="cb4-83"><a href="#cb4-83" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Time"</span>)</span>
-<span id="cb4-84"><a href="#cb4-84" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Separation"</span>)</span>
-<span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-88"><a href="#cb4-88" aria-hidden="true" tabindex="-1"></a>If the separation grows rapidly from a tiny initial perturbation, then the predictability horizon is short even though the equations themselves are deterministic.</span>
-<span id="cb4-89"><a href="#cb4-89" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-90"><a href="#cb4-90" aria-hidden="true" tabindex="-1"></a><span class="fu">## What chaos means here</span></span>
-<span id="cb4-91"><a href="#cb4-91" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-92"><a href="#cb4-92" aria-hidden="true" tabindex="-1"></a>In this context, chaos does not mean that the model is random.</span>
-<span id="cb4-93"><a href="#cb4-93" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-94"><a href="#cb4-94" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The update rule is fixed.</span>
-<span id="cb4-95"><a href="#cb4-95" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The same initial condition gives the same trajectory.</span>
-<span id="cb4-96"><a href="#cb4-96" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Small errors in the initial state can still lead to very different long-run outcomes.</span>
-<span id="cb4-97"><a href="#cb4-97" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-98"><a href="#cb4-98" aria-hidden="true" tabindex="-1"></a>This is why deterministic chaos matters in modeling. Exact equations do not guarantee exact long-term forecasts.</span>
-<span id="cb4-99"><a href="#cb4-99" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-100"><a href="#cb4-100" aria-hidden="true" tabindex="-1"></a><span class="fu">## Parameter variation</span></span>
-<span id="cb4-101"><a href="#cb4-101" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-102"><a href="#cb4-102" aria-hidden="true" tabindex="-1"></a>The parameter <span class="in">`r`</span> strongly influences the geometry of the trajectories. A useful first comparison is to simulate one run with a smaller value such as <span class="in">`r=10`</span> and another with the standard value <span class="in">`r=28`</span>.</span>
-<span id="cb4-103"><a href="#cb4-103" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-104"><a href="#cb4-104" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb4-105"><a href="#cb4-105" aria-hidden="true" tabindex="-1"></a>trajectory_low_r <span class="op">=</span> simulate_lorenz(dt<span class="op">=</span><span class="fl">0.01</span>, num_steps<span class="op">=</span><span class="dv">3000</span>, r<span class="op">=</span><span class="dv">10</span>)</span>
-<span id="cb4-106"><a href="#cb4-106" aria-hidden="true" tabindex="-1"></a>trajectory_standard <span class="op">=</span> simulate_lorenz(dt<span class="op">=</span><span class="fl">0.01</span>, num_steps<span class="op">=</span><span class="dv">3000</span>, r<span class="op">=</span><span class="dv">28</span>)</span>
-<span id="cb4-107"><a href="#cb4-107" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>::: {.viz data-viz="lorenz"}</span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>With $\delta = 10^{-5}$, when are the two runs 1 apart? Before that time, can you tell them apart in the left panel?</span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Make $\delta$ a thousand times smaller, $10^{-8}$. How much later do the runs separate? What does a thousandfold better measurement buy you?</span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Compare the red curve with the dashed slope $\lambda \approx 0.9$. Why does the separation stop growing at around 10 to 30?</span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Set $r = 10$. What happens to the separation now, and where do both runs end? Check against $C^\pm = \bigl(\pm\sqrt{b(r-1)}, \pm\sqrt{b(r-1)}, r - 1\bigr)$.</span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>::: {.python-next}</span>
+<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a>**Build this in Python.** In Lab 4 (Session 10) you write <span class="in">`lorenz()`</span> and <span class="in">`simulate_lorenz()`</span> with forward Euler, run two nearby initial conditions and plot their separation, which is exactly this figure: <span class="co">[</span><span class="ot">Practice: Lorenz System</span><span class="co">](practice-lorenz.qmd)</span>. The code on the rest of this page is your starting point.</span>
+<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a><span class="fu">## Compare two nearby initial conditions</span></span>
+<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a>To test sensitivity, keep the parameters fixed and change only the initial state by a tiny amount.</span>
+<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a>initial_state_a <span class="op">=</span> (<span class="fl">0.0</span>, <span class="fl">1.0</span>, <span class="fl">1.05</span>)</span>
+<span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a>initial_state_b <span class="op">=</span> (<span class="fl">0.0</span>, <span class="fl">1.0</span>, <span class="fl">1.05001</span>)</span>
+<span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-79"><a href="#cb4-79" aria-hidden="true" tabindex="-1"></a>trajectory_a <span class="op">=</span> simulate_lorenz(initial_state<span class="op">=</span>initial_state_a, dt<span class="op">=</span><span class="fl">0.01</span>, num_steps<span class="op">=</span><span class="dv">3000</span>)</span>
+<span id="cb4-80"><a href="#cb4-80" aria-hidden="true" tabindex="-1"></a>trajectory_b <span class="op">=</span> simulate_lorenz(initial_state<span class="op">=</span>initial_state_b, dt<span class="op">=</span><span class="fl">0.01</span>, num_steps<span class="op">=</span><span class="dv">3000</span>)</span>
+<span id="cb4-81"><a href="#cb4-81" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb4-82"><a href="#cb4-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-83"><a href="#cb4-83" aria-hidden="true" tabindex="-1"></a>At first, the two runs are nearly indistinguishable. Later, they separate enough that their detailed future motion no longer matches.</span>
+<span id="cb4-84"><a href="#cb4-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a><span class="fu">## Measure the separation</span></span>
+<span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a>The most direct diagnostic is the Euclidean distance between the two trajectories at each time step:</span>
+<span id="cb4-88"><a href="#cb4-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-89"><a href="#cb4-89" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb4-90"><a href="#cb4-90" aria-hidden="true" tabindex="-1"></a>d_n = \left<span class="sc">\|</span>\mathbf{x}_n^{(1)} - \mathbf{x}_n^{(2)}\right<span class="sc">\|</span>.</span>
+<span id="cb4-91"><a href="#cb4-91" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb4-92"><a href="#cb4-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-93"><a href="#cb4-93" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb4-94"><a href="#cb4-94" aria-hidden="true" tabindex="-1"></a>separation <span class="op">=</span> np.linalg.norm(trajectory_a <span class="op">-</span> trajectory_b, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb4-95"><a href="#cb4-95" aria-hidden="true" tabindex="-1"></a>times <span class="op">=</span> <span class="fl">0.01</span> <span class="op">*</span> np.arange(<span class="bu">len</span>(separation))</span>
+<span id="cb4-96"><a href="#cb4-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-97"><a href="#cb4-97" aria-hidden="true" tabindex="-1"></a>plt.semilogy(times, separation)</span>
+<span id="cb4-98"><a href="#cb4-98" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Time"</span>)</span>
+<span id="cb4-99"><a href="#cb4-99" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Separation"</span>)</span>
+<span id="cb4-100"><a href="#cb4-100" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb4-101"><a href="#cb4-101" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb4-102"><a href="#cb4-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-103"><a href="#cb4-103" aria-hidden="true" tabindex="-1"></a>If the separation grows rapidly from a tiny initial perturbation, then the predictability horizon is short even though the equations themselves are deterministic.</span>
+<span id="cb4-104"><a href="#cb4-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-105"><a href="#cb4-105" aria-hidden="true" tabindex="-1"></a><span class="fu">## What chaos means here</span></span>
+<span id="cb4-106"><a href="#cb4-106" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-107"><a href="#cb4-107" aria-hidden="true" tabindex="-1"></a>In this context, chaos does not mean that the model is random.</span>
 <span id="cb4-108"><a href="#cb4-108" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-109"><a href="#cb4-109" aria-hidden="true" tabindex="-1"></a>That comparison helps separate two ideas:</span>
-<span id="cb4-110"><a href="#cb4-110" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-111"><a href="#cb4-111" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>sensitivity to initial conditions at fixed parameters,</span>
-<span id="cb4-112"><a href="#cb4-112" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>and qualitative changes driven by the parameter regime.</span>
+<span id="cb4-109"><a href="#cb4-109" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The update rule is fixed.</span>
+<span id="cb4-110"><a href="#cb4-110" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The same initial condition gives the same trajectory.</span>
+<span id="cb4-111"><a href="#cb4-111" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Small errors in the initial state can still lead to very different long-run outcomes.</span>
+<span id="cb4-112"><a href="#cb4-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-113"><a href="#cb4-113" aria-hidden="true" tabindex="-1"></a>This is why deterministic chaos matters in modeling. Exact equations do not guarantee exact long-term forecasts.</span>
+<span id="cb4-114"><a href="#cb4-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-115"><a href="#cb4-115" aria-hidden="true" tabindex="-1"></a><span class="fu">## Parameter variation</span></span>
+<span id="cb4-116"><a href="#cb4-116" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-117"><a href="#cb4-117" aria-hidden="true" tabindex="-1"></a>The parameter <span class="in">`r`</span> strongly influences the geometry of the trajectories. A useful first comparison is to simulate one run with a smaller value such as <span class="in">`r=10`</span> and another with the standard value <span class="in">`r=28`</span>.</span>
+<span id="cb4-118"><a href="#cb4-118" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-119"><a href="#cb4-119" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb4-120"><a href="#cb4-120" aria-hidden="true" tabindex="-1"></a>trajectory_low_r <span class="op">=</span> simulate_lorenz(dt<span class="op">=</span><span class="fl">0.01</span>, num_steps<span class="op">=</span><span class="dv">3000</span>, r<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb4-121"><a href="#cb4-121" aria-hidden="true" tabindex="-1"></a>trajectory_standard <span class="op">=</span> simulate_lorenz(dt<span class="op">=</span><span class="fl">0.01</span>, num_steps<span class="op">=</span><span class="dv">3000</span>, r<span class="op">=</span><span class="dv">28</span>)</span>
+<span id="cb4-122"><a href="#cb4-122" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb4-123"><a href="#cb4-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-124"><a href="#cb4-124" aria-hidden="true" tabindex="-1"></a>That comparison helps separate two ideas:</span>
+<span id="cb4-125"><a href="#cb4-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-126"><a href="#cb4-126" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>sensitivity to initial conditions at fixed parameters,</span>
+<span id="cb4-127"><a href="#cb4-127" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>and qualitative changes driven by the parameter regime.</span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
