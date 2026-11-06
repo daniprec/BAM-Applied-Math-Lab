@@ -133,7 +133,8 @@
 /* ---- panels ---- */
 .viz__panels {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  /* at most two columns, one on narrow screens */
+  grid-template-columns: repeat(auto-fit, minmax(max(260px, calc(50% - 0.45rem)), 1fr));
   gap: 0.9rem;
 }
 
@@ -209,4 +210,51 @@
     grid-template-columns: auto 1fr 3.2em;
     width: 100%;
   }
+}
+
+/* ---- "Build this in Python" box, placed right after an interactive figure ----
+   In a .qmd:
+     ::: {.python-next}
+     **Build this in Python.** In Lab 1 (Session 4) you … [Page](page.qmd).
+     :::
+*/
+.python-next {
+  position: relative;
+  margin: -0.5rem 0 1.75rem;
+  padding: 0.8rem 1rem 0.8rem 3.6rem;
+  border: 1px dashed var(--ie-accent-strong);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--ie-accent) 10%, var(--ie-bg));
+}
+
+.python-next::before,
+.python-next::after {
+  content: "";
+  position: absolute;
+  left: 1rem;
+  top: 0.85rem;
+  width: 30px;
+  height: 30px;
+}
+
+.python-next::before {
+  border: 2px solid var(--ie-brand);
+  border-radius: 8px;
+}
+
+.python-next::after {            /* "</>" glyph in the brand colour */
+  background-color: var(--ie-brand);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath d='M12 10l-5 5 5 5M18 10l5 5-5 5' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath d='M12 10l-5 5 5 5M18 10l5 5-5 5' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+#quarto-document-content .python-next p {
+  margin: 0;
+  font-family: "Montserrat", Arial, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+#quarto-document-content .python-next p + p {
+  margin-top: 0.35rem;
 }

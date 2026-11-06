@@ -53,7 +53,7 @@
 
       const DT = 0.01;
       const loop = VIZ.loop(ui.el, (dt) => {
-        const speed = S.sweep ? 25 : 8;           // time units per second
+        const speed = S.sweep ? 60 : 8;           // time units per second
         const steps = Math.round((speed * dt) / DT);
         for (let s = 0; s < steps; s++) step();
         if (S.sweep) runSweep();
@@ -93,14 +93,14 @@
         draw();
       }
       function startSweep() {
-        S.meas = []; S.pending = false; S.sweep = { i: 0, Ks: VIZ.linspace(0, 4, 17), t0: null };
+        S.meas = []; S.pending = false; S.sweep = { i: 0, Ks: VIZ.linspace(0, 5, 20), t0: null };   // same K grid as the lab
         sweepBtn.setAttribute("aria-pressed", "true");
       }
       function runSweep() {
         const sw = S.sweep;
         if (sw.t0 === null) { S.K = sw.Ks[sw.i]; sK.set(S.K); sw.t0 = S.t; S.kAt = S.t; }
-        if (S.t - sw.t0 > 40) {                      // 20 units transient + 20 units average
-          S.meas.push([S.K, avgR(20)]);
+        if (S.t - sw.t0 >= 100) {                    // as in the lab: run to t = 100, average r over 90 ≤ t ≤ 100
+          S.meas.push([S.K, avgR(10)]);
           sw.i++; sw.t0 = null;
           if (sw.i >= sw.Ks.length) { S.sweep = null; sweepBtn.setAttribute("aria-pressed", "false"); }
         }
@@ -151,7 +151,7 @@
         const kr = S.K * S.r, locked = S.w.filter((w) => Math.abs(w) <= kr).length;
         const d = DIST[S.dist];
         ui.readout.textContent = `K = ${S.K.toFixed(2)} (K_c = ${d.Kc.toFixed(2)} for N → ∞) · r = ${S.r.toFixed(2)} · ` +
-          `${Math.round((100 * locked) / S.N)}% of oscillators locked` + (S.sweep ? ` · sweeping, step ${S.sweep.i + 1} of 17` : "") + (S.pending ? " · measuring once r has settled…" : "");
+          `${Math.round((100 * locked) / S.N)}% of oscillators locked` + (S.sweep ? ` · sweeping, step ${S.sweep.i + 1} of ${S.sweep.Ks.length}` : "") + (S.pending ? " · measuring once r has settled…" : "");
       }
 
       resample();

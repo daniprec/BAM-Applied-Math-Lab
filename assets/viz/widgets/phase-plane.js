@@ -1,6 +1,8 @@
 /* Phase plane explorer for planar systems.
    ::: {.viz data-viz="phase-plane" data-model="vdp"} :::   Van der Pol (Liénard form)
    ::: {.viz data-viz="phase-plane" data-model="fhn"} :::   FitzHugh-Nagumo (course version)
+   ::: {.viz data-viz="phase-plane" data-model="lv"} :::    Lotka-Volterra competition (Strogatz 6.4)
+   ::: {.viz data-viz="phase-plane" data-model="cdima"} ::: CDIMA reaction (Strogatz 8.3, amlab.odes_2d.cdima)
    Click anywhere in the plane to launch a trajectory. */
 (function () {
   "use strict";
@@ -35,6 +37,60 @@
       ],
       fixed: (p) => VIZ.roots((v) => v * (1 - v) * (v - 0.1) + p.I - v / 0.5, -2, 2, 4000).map((v) => [v, v / 0.5]),
       dt: 0.0004, speed: 1, tmax: 6, starts: [[0.2, 0]],
+    },
+    lv: {
+      title: "Rabbits against sheep: Lotka–Volterra competition",
+      xlabel: "x (rabbits)", ylabel: "y (sheep)", xlim: [0, 3.5], ylim: [0, 2.6], both: true,
+      params: [
+        { key: "b", label: "sheep → rabbits <i>b</i>", min: 0.2, max: 3, step: 0.05, value: 2 },
+        { key: "c", label: "rabbits → sheep <i>c</i>", min: 0.2, max: 3, step: 0.05, value: 1 },
+      ],
+      // x' = x(3 − x − b y),  y' = y(2 − c x − y);  b = 2, c = 1 is Strogatz's Example 6.4
+      f: (x, y, p) => [x * (3 - x - p.b * y), y * (2 - p.c * x - y)],
+      nullclines: (p) => [
+        { label: "x-nullclines  x = 0,  x + b y = 3", kind: "x", vertical: 0 },
+        { kind: "x", fn: (x) => (3 - x) / p.b },
+        { label: "y-nullclines  y = 0,  c x + y = 2", kind: "y", fn: () => 0 },
+        { kind: "y", fn: (x) => 2 - p.c * x },
+      ],
+      fixed: (p) => {
+        const out = [[0, 0], [3, 0], [0, 2]], den = p.b * p.c - 1;
+        if (Math.abs(den) > 1e-9) {
+          const y = (3 * p.c - 2) / den, x = 3 - p.b * y;
+          if (x > 1e-9 && y > 1e-9) out.push([x, y]);
+        }
+        return out;
+      },
+      // (3, 0) is stable iff c > 2/3 and (0, 2) is stable iff b > 3/2
+      note: (p) => {
+        const rab = p.c > 2 / 3, shp = p.b > 1.5;
+        if (rab && shp) return "Both one-species states are stable: one species always dies out, and which one depends on where you start.";
+        if (rab) return "Only the rabbits-only state (3, 0) is stable: rabbits win from every start with both species present.";
+        if (shp) return "Only the sheep-only state (0, 2) is stable: sheep win from every start with both species present.";
+        return "Neither one-species state is stable: the two species coexist.";
+      },
+      dt: 0.005, speed: 3, tmax: 20, starts: [[0.4, 2.2], [3.2, 0.6], [0.3, 0.25], [3.3, 2.4]],
+    },
+    cdima: {
+      title: "CDIMA reaction: through the Hopf bifurcation",
+      xlabel: "x", ylabel: "y", xlim: [0, 5], ylim: [0, 10],
+      params: [
+        { key: "a", label: "<i>a</i>", min: 5, max: 15, step: 0.1, value: 10 },
+        { key: "b", label: "<i>b</i>", min: 1, max: 8, step: 0.05, value: 4 },
+      ],
+      // x' = a − x − 4xy/(1 + x²),  y' = b x (1 − y/(1 + x²))   (amlab.odes_2d.cdima)
+      f: (x, y, p) => [p.a - x - (4 * x * y) / (1 + x * x), p.b * x * (1 - y / (1 + x * x))],
+      nullclines: (p) => [
+        { label: "x-nullcline  y = (a − x)(1 + x²)/(4x)", kind: "x", fn: (x) => (x > 0 ? ((p.a - x) * (1 + x * x)) / (4 * x) : NaN) },
+        { label: "y-nullcline  y = 1 + x²", kind: "y", fn: (x) => 1 + x * x },
+      ],
+      fixed: (p) => [[p.a / 5, 1 + (p.a / 5) ** 2]],
+      note: (p) => {
+        const bc = (3 * p.a) / 5 - 25 / p.a;
+        return `Hopf point b_c = 3a/5 − 25/a = ${bc.toFixed(2)}: ` + (p.b < bc ? "b < b_c, so expect a limit cycle." : "b > b_c, so trajectories spiral into the fixed point.");
+      },
+      dt: 0.002, speed: 4, tmax: 20, starts: [[0, 3], [0, 1.5], [2, 0]],
+      legendBottomRight: true,
     },
   };
 
@@ -71,7 +127,7 @@
           if (e.type !== "pointerdown" || !c.ax || !c.ax.inside(e.x, e.y)) return;
           add([c.ax.ix(e.x), c.ax.iy(e.y)]);
         } });
-      const series = ui.panel({ title: `Time series  ${m.xlabel}(t)  of the latest trajectory`, aspect: 1.25, minHeight: 280,
+      const series = ui.panel({ title: m.both ? "Time series of the latest trajectory" : `Time series  ${m.xlabel}(t)  of the latest trajectory`, aspect: 1.25, minHeight: 280,
         label: "Time series of the first variable for the most recent trajectory", onDraw: drawSeries });
 
       const loop = VIZ.loop(ui.el, (dt) => {
@@ -137,10 +193,11 @@
         }
         ctx.restore();
         // nullclines
-        const ncl = m.nullclines(p), cols = [T.c[0], T.c[1]];
+        const ncl = m.nullclines(p);
+        const col = (n, i) => (n.kind ? (n.kind === "x" ? T.c[0] : T.c[1]) : [T.c[0], T.c[1]][i]);
         ncl.forEach((n, i) => {
-          if (n.vertical != null) ax.line([n.vertical, n.vertical], m.ylim, { color: cols[i], width: 2, dash: [7, 4] });
-          else { const xs = VIZ.linspace(m.xlim[0], m.xlim[1], 400); ax.line(xs, xs.map(n.fn), { color: cols[i], width: 2, dash: [7, 4] }); }
+          if (n.vertical != null) ax.line([n.vertical, n.vertical], m.ylim, { color: col(n, i), width: 2, dash: [7, 4] });
+          else { const xs = VIZ.linspace(m.xlim[0], m.xlim[1], 600); ax.line(xs, xs.map(n.fn), { color: col(n, i), width: 2, dash: [7, 4] }); }
         });
         // trajectories
         trajs.forEach((tr) => {
@@ -151,14 +208,19 @@
         // fixed points
         m.fixed(p).forEach(([x, y]) => ax.fixed(x, y, classify(m, p, x, y).stable));
         ctx.restore();
-        VIZ.legend(c, ncl.map((n, i) => ({ label: n.label, color: cols[i], dash: [7, 4] })), ax.pad.l + 10, ax.pad.t + 14);
+        const items = ncl.map((n, i) => ({ label: n.label, color: col(n, i), dash: [7, 4] })).filter((it) => it.label);
+        if (m.legendBottomRight) VIZ.legend(c, items, ax.pad.l + ax.pw - 235, ax.pad.t + ax.ph - 16 * items.length);
+        else VIZ.legend(c, items, ax.pad.l + 10, ax.pad.t + 14);
       }
 
       function drawSeries(c) {
-        const ax = VIZ.axes(c, { xlim: [0, m.tmax], ylim: m.xlim, xlabel: "t", ylabel: m.xlabel });
+        const ylim = m.both ? [Math.min(m.xlim[0], m.ylim[0]), Math.max(m.xlim[1], m.ylim[1])] : m.xlim;
+        const ax = VIZ.axes(c, { xlim: [0, m.tmax], ylim, xlabel: "t", ylabel: m.both ? "x, y" : m.xlabel });
         ax.clip();
         if (latest) ax.line(latest.ts, latest.xs, { color: ax.T.c[0], width: 2 });
+        if (latest && m.both) ax.line(latest.ts, latest.ys, { color: ax.T.c[1], width: 2, dash: [6, 3] });
         c.ctx.restore();
+        if (latest && m.both) VIZ.legend(c, [{ label: m.xlabel, color: ax.T.c[0] }, { label: m.ylabel, color: ax.T.c[1], dash: [6, 3] }], ax.pad.l + ax.pw - 110, ax.pad.t + 14);
         if (!latest) ax.label("Click in the phase plane", m.tmax / 2, (m.xlim[0] + m.xlim[1]) / 2, { align: "center", size: 12 });
       }
 
@@ -167,7 +229,7 @@
           const k = classify(m, p, x, y);
           return `(${x.toFixed(2)}, ${y.toFixed(2)}): ${k.type}, tr J = ${k.tr.toFixed(2)}, det J = ${k.det.toFixed(2)}`;
         });
-        ui.readout.textContent = "Fixed point " + fps.join("; ") + ".";
+        ui.readout.textContent = (fps.length > 1 ? "Fixed points " : "Fixed point ") + fps.join("; ") + "." + (m.note ? " " + m.note(p) : "");
       }
 
       m.starts.forEach((s) => add(s));
