@@ -1,0 +1,26 @@
+<script>
+/* Interactive figures loader.
+   Any element  <div class="viz" data-viz="NAME">  (in a .qmd:  ::: {.viz data-viz="NAME"} :::)
+   loads assets/viz/core.js once and then assets/viz/widgets/NAME.js.
+   Paths are resolved from Quarto's quarto:offset meta, so this works at any page depth
+   and under the GitHub Pages sub-path. */
+(function () {
+  var nodes = document.querySelectorAll("[data-viz]");
+  if (!nodes.length) return;
+  var meta = document.querySelector('meta[name="quarto:offset"]');
+  var root = (meta ? meta.getAttribute("content") : "./") + "assets/viz/";
+  function load(src) {
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = src; s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+  var names = Array.from(new Set(Array.from(nodes, function (n) { return n.dataset.viz; })));
+  load(root + "core.js").then(function () {
+    return Promise.all(names.map(function (n) { return load(root + "widgets/" + n + ".js"); }));
+  }).then(function () {
+    nodes.forEach(function (el) { window.VIZ.mount(el); });
+  }).catch(function (e) { console.error("[viz] could not load", e); });
+})();
+</script>
