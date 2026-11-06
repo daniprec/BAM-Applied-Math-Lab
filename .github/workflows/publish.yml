@@ -18,9 +18,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      # Ensure Quarto picks up the correct Python for notebook execution
-      QUARTO_JUPYTER_PYTHON: /usr/bin/python3
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,15 +25,19 @@ jobs:
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
         with:
-          version: 1.4.549
+          version: release
 
-      - name: Ensure system python pip and install deps for Quarto execution
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Python dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-pip
-          /usr/bin/python3 -m pip install --upgrade pip setuptools wheel
-          /usr/bin/python3 -m pip install -r requirements.txt
-          /usr/bin/python3 -m pip install jupyter ipykernel pyyaml
+          python -m pip install -r requirements.txt
+          python -m pip install jupyter ipykernel pyyaml
+          echo "QUARTO_PYTHON=$(command -v python)" >> "$GITHUB_ENV"
 
       - name: Render Quarto website
         run: quarto render
