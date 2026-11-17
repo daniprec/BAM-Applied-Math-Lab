@@ -8,6 +8,7 @@ format: html
 ## Reading
 - **Compulsory:** @nagel1992cellular.
 - **Recommended:** @boccara2010modeling, Chapter 6.
+- **Guide to the paper:** [What Nagel and Schreckenberg Did](nagel-paper.qmd) reports what the paper defines, measures and finds, and checks its numbers by simulation.
 :::
 
 Nagel and Schreckenberg proposed a cellular automaton for single-lane freeway traffic [@nagel1992cellular]. The road is a ring of $L$ cells. Each cell is empty or holds one car. Each car $n$ has a position $x_n$ and an integer speed $v_n \in \{0, 1, \ldots, v_{\max}\}$, measured in cells per time step. The model is *agent-based*: every car carries its own state and reacts to the car in front.
@@ -37,6 +38,8 @@ Let $d_n$ be the number of empty cells between car $n$ and the car ahead. At eve
 
 Rule 2 guarantees that cars never collide. Cars never overtake, so their order on the ring never changes. The number of cars is conserved on the ring, and the density is $\rho = N/L$.
 
+The paper words the first rule as a condition: a car with $v < v_{\max}$ accelerates only if the distance to the next car, counted as the difference of site indices, is larger than $v + 1$. This gives the same new speed as the two-line form above. We checked it on 20 000 random configurations with shared random numbers (see [What Nagel and Schreckenberg Did](nagel-paper.qmd)). The paper also allows open boundaries and uses them in its bottleneck experiment.
+
 ## The role of the randomization step
 
 Without rule 3 ($p = 0$) the model is deterministic. From a random start it reaches a stationary state with flow
@@ -45,7 +48,7 @@ $$
 q(\rho) = \min\big(\rho\, v_{\max},\ 1 - \rho\big),
 $$
 
-so every car moves at $v_{\max}$ for $\rho < 1/(v_{\max}+1)$ and jams only appear above that density [@chowdhury2000statistical].
+so every car moves at $v_{\max}$ for $\rho < 1/(v_{\max}+1)$ and jams only appear above that density [@chowdhury2000statistical]. In the jammed regime the stationary pattern of cars is shifted one cell backwards per time step, against the traffic, as the paper observes [@nagel1992cellular]. In our simulations ($v_{\max} = 5$, $p = 0$, $\rho = 0.3$, $0.4$ and $0.5$) the occupancy after each step was exactly the previous occupancy shifted by one cell to the left. In free flow the pattern instead moves forward with the cars.
 
 With $p > 0$ three things change [@nagel1992cellular; @chowdhury2000statistical]:
 
@@ -77,7 +80,7 @@ plt.show()
 
 ## Scales
 
-In the original interpretation one cell corresponds to 7.5 m, the space a car occupies in a jam, and one time step to about 1 s. Then $v_{\max} = 5$ corresponds to $5 \times 7.5$ m/s $= 135$ km/h [@nagel1992cellular].
+In the original interpretation one cell corresponds to 7.5 m, the space a car occupies in a jam, and one time step to about 1 s. Then $v_{\max} = 5$ corresponds to $5 \times 7.5$ m/s $= 135$ km/h. The paper fixes the time step differently: free traffic moves at $4.5$ cells per step, which is $v_{\max} - p$ for $p = 0.5$ (the value of $p$ is inferred, see [What Nagel and Schreckenberg Did](nagel-paper.qmd)), and this should correspond to about 120 km/h. Then one step lasts $7.5 \times 4.5 / (120/3.6) \approx 1$ s [@nagel1992cellular].
 
 ::: {.callout-note}
 ## Exercise
@@ -88,5 +91,24 @@ Why must the braking rule come before the randomization rule? What could go wron
 ::: {.callout-tip collapse="true"}
 ## Solution
 
-If randomization comes first, a car whose speed is limited by the gap ($d_n < v_n - 1$) brakes to $d_n$ anyway, so the random slowdown has no effect on it. Fluctuations would then only act on cars with enough free road ahead, and cars in dense traffic would move deterministically. In the original order the random slowdown acts after braking, on every car, including cars that follow closely. This is what lets one random slowdown propagate backwards as a jam. Test it: swap the two rules in your code and compare the space-time diagrams.
+Let $v'$ be the speed after acceleration. If randomization comes first, a car whose gap is smaller than $v'$ is slowed down to $v' - 1 \ge d_n$ and then braked to $d_n$ anyway, so the random slowdown has no effect on it. Fluctuations then only act on cars with at least $v'$ empty cells ahead. In the original order the random slowdown acts after braking, on every moving car, including cars that follow closely. This is what lets one random slowdown propagate backwards as a jam. The effect is large. On a ring of 500 cells with $v_{\max} = 5$ and $p = 0.3$ we measured the flow for both orders (random start, 2000 burn-in steps, 4000 steps averaged, one seed):
+
+| $\rho$ | 0.1 | 0.2 | 0.3 | 0.5 |
+|---|---|---|---|---|
+| braking before randomization (paper) | 0.463 | 0.438 | 0.393 | 0.296 |
+| randomization before braking | 0.466 | 0.621 | 0.488 | 0.347 |
+
+At $\rho = 0.1$ cars rarely brake and the orders agree. At higher density the swapped order has a much higher flow. Test it yourself: swap the two rules in your code and compare the space-time diagrams.
+:::
+
+::: {.callout-note}
+## Exercise
+
+Show that for $v_{\max} = 1$ and $p = 0$ the model is the elementary Rule 184 with cars moving to the right.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+With $v_{\max} = 1$, a car has speed 1 after acceleration, and braking sets it to 0 only if the next cell is occupied. So a car moves exactly when the cell ahead is empty. Write the neighbourhood as (left, centre, right). A cell is occupied in the next step if (a) it is occupied and the cell to its right is occupied, since the car cannot move, or (b) it is empty and the cell to its left is occupied, since that car moves in. This gives the new states $1,0,1,1,1,0,0,0$ for the neighbourhoods $111,110,101,100,011,010,001,000$, which read $10111000_2 = 184$. A numerical check on 200 random rings of 50 cells found that one step of `nasch_step()` with $v_{\max} = 1$ and $p = 0$ equals one step of Rule 184 every time.
 :::

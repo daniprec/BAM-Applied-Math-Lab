@@ -4,7 +4,7 @@ subtitle: "Module 2: Synchronization and Collective Behaviour"
 format: html
 ---
 
-This is an **ungraded practice** page. Choose one option and work on it after the lab. It uses the code you wrote in Session 14 and the models of Session 13.
+This is an **ungraded practice** page. Choose one option and work on it after the lab. It uses the code you wrote in the [Vicsek animation lab](vicsek-animation.qmd) and the models of [Vicsek](vicsek-model.qmd) and [Couzin](couzin-model.qmd).
 
 ## Option A: Couzin model
 
@@ -33,16 +33,66 @@ The predator can be a fixed point, a random walker, or your mouse cursor. Partic
 - Add the predator avoidance rule and draw the predator.
 - Explore the parameter space. How does the predator affect the order parameter? Is there a regime where the group splits and later merges again? Can you find a regime where the particles escape the predator?
 
+## Option C: Confusion effect
+
+Theory: [The Confusion Effect](confusion-effect.qmd).
+
+- Start from your Couzin code (Option A) and add one predator that swims toward the nearest prey, faster than the prey.
+- Make the predator **lock** on the most isolated prey in its field of view. Break the lock whenever another prey enters a narrow window around the line of sight, and give up the pass after three broken locks.
+- When the predator reaches its target, capture it with probability $1/(1 + c\,\bar n)$, where $\bar n$ is the mean number of look-alikes in the window during the approach.
+- Measure the captures per attack for several widths of the zone of attraction $\Delta r_a$. Is a tight school safer?
+
+::: {.callout-tip}
+## Optional extension
+
+- Add an *odd* prey that cannot lose its lock, and see how the capture probability changes.
+- Measure the captures per unit time against the density of prey, and compare the curve with the Holling functional responses.
+:::
+
+A reference version is in [amlab/collective_motion/couzin_predator.py](../../amlab/collective_motion/couzin_predator.py), with an animation in [couzin_predator_animation.py](../../amlab/collective_motion/couzin_predator_animation.py).
+
+## Option D: Faster is slower
+
+Theory: [Faster Is Slower: Crowds at a Door](crowd-exit.qmd) and [The Social Force Model](social-force.qmd).
+
+- Implement pedestrians as discs with the wish-to-move term, the repulsion and the body force of the model. Add walls with one door.
+- Measure the evacuation time and the flow through the door for several desired speeds. Find the speed with the shortest evacuation.
+- Add a column in front of the door and move it. Does the flow change?
+
+::: {.callout-tip}
+## Optional extension
+
+- Add sliding friction between bodies, and compare the pressure at the door with and without it.
+- Give only 10% of the people a high desired speed. How many are needed to slow everybody down?
+:::
+
+A reference version is in [amlab/collective_motion/crowd_exit.py](../../amlab/collective_motion/crowd_exit.py), with an animation in [crowd_exit_animation.py](../../amlab/collective_motion/crowd_exit_animation.py).
+
+## Option E: Cucker–Smale flocking
+
+Theory: [Flocking Without Noise: The Cucker–Smale Model](cucker-smale.qmd).
+
+- Integrate the model with `scipy.integrate.solve_ivp` for $k = 20$ birds in the plane and reproduce the velocity spread $\Lambda(t)$ of the figure on that page.
+- Measure the flocking time, the first time at which $\Lambda < 10^{-6}$, as a function of $\beta$ and of the size of the starting square.
+- Compute the Fiedler number of the weight matrix at every saved time and compare $\Lambda(t)$ with the bound $\Lambda_0 e^{-2t\Phi_t}$.
+
+::: {.callout-tip}
+## Optional extension
+
+- Replace the weights $a_{ij}$ by the Vicsek weights ($a_{ij} = 1$ if $\|\mathbf{x}_i - \mathbf{x}_j\| \le r$ and $0$ otherwise). Does the flock still reach a common velocity from your initial conditions? How does it depend on $r$?
+- Add noise to the velocity equation and look at how $\Lambda$ behaves for small and large noise.
+:::
+
 ## Exit question
 
 ::: {.callout-note}
 ## Exercise
 
-In the Vicsek model you double both $N$ and $L^2$, keeping the density and the noise fixed. Which features of the order parameter curve $\varphi(\eta)$ should stay the same, and which should change?
+In the Vicsek model you double both $N$ and $L^2$, keeping the density and the noise fixed. Which features of the order parameter curve $v_a(\eta)$ should stay the same, and which should change?
 :::
 
 ::: {.callout-tip collapse="true"}
 ## Solution
 
-The density $\rho = N/L^2$ is unchanged, so in the ordered phase $\varphi$ should be about the same. At high noise, $\varphi$ is set by the finite-size floor of order $1/\sqrt{N}$, which decreases by a factor $\sqrt{2}$. The transition region should become sharper. This is the pattern in Figure 2(a) of @vicsek1995novel.
+The density $\rho = N/L^2$ is unchanged, so in the ordered phase $v_a$ should be about the same. At high noise, $v_a$ is set by the finite-size floor of order $1/\sqrt{N}$, which decreases by a factor $\sqrt{2}$. The transition region should become sharper. This is the pattern in Figure 2(a) of @vicsek1995novel.
 :::

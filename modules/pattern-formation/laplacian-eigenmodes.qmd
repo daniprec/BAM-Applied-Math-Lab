@@ -4,6 +4,12 @@ subtitle: "Module 4: Space and Pattern Formation"
 format: html
 ---
 
+::: {.callout-note}
+## Reading
+- **Compulsory:** @britton2003essential, Appendix C, Sections C.3 to C.5 (spectrum of the Laplacian, separation of variables, systems with linear kinetics).
+- **Recommended:** @britton2003essential, Chapter 7, Section 7.2 (pp. 207 to 210), where the spatial modes are introduced for the Turing problem.
+:::
+
 The linearized system $\partial_t \eta = D\,\Delta\eta + \gamma J\eta$ couples every point to its neighbours. You decouple it by expanding $\eta$ in eigenfunctions of the Laplacian, which depend on the domain and the boundary conditions [@murray2003mathematical, Section 2.3; @britton2003essential, Chapter 7].
 
 ## The Eigenvalue Problem
@@ -73,7 +79,41 @@ $$
 \dot c_n = A_n c_n, \qquad A_n = \gamma J - k_n^2 D.
 $$ {#eq-eig-mode-matrix}
 
-So $c_n(t) \propto e^{\sigma t}$, where $\sigma$ is an eigenvalue of $A_n$. The uniform state is linearly stable when every admissible mode has $\operatorname{Re}\sigma < 0$. The next session turns this into the Turing conditions and the dispersion relation.
+So $c_n(t) \propto e^{\sigma t}$, where $\sigma$ is an eigenvalue of $A_n$. Britton calls the $\sigma$ the temporal eigenvalues, to distinguish them from the spatial eigenvalues $\lambda_n = k_n^2$ of the Laplacian. He also records that the $\lambda_n$ are all positive for Dirichlet conditions and all positive except $\lambda_0 = 0$ for Neumann conditions [@britton2003essential, Section 7.2]. The uniform state is linearly stable when every admissible mode has $\operatorname{Re}\sigma < 0$. The next page turns this into the Turing conditions and the dispersion relation.
+
+## Other Domains and When the Method Applies
+
+The same separation of variables works on other domains. @britton2003essential [Appendix C, Sections C.3 and C.6] gives the following cases.
+
+- **Unbounded domain.** If the domain is the whole line or space and the function is only required to stay bounded, every $k \ge 0$ is an eigenvalue, with eigenfunctions $e^{i\mathbf{k}\cdot\mathbf{x}}$. The sum over modes becomes a Fourier integral. Turing instability is then a statement about a continuum of wavenumbers, so the unstable band alone decides the outcome on an infinite domain [@britton2003essential, Sections 7.3 and C.3].
+- **Mixed conditions on a rectangle.** With Dirichlet conditions on $x = 0, a$ and Neumann conditions on $y = 0, b$, the eigenfunctions are $\sin(m\pi x/a)\cos(n\pi y/b)$ with $m \ge 1$, $n \ge 0$ and $k^2 = m^2\pi^2/a^2 + n^2\pi^2/b^2$ [@britton2003essential, Example C.9].
+- **Surface of a cylinder.** Periodic in the angle and zero-flux along the axis, the eigenvalues are $m^2/r^2 + n^2\pi^2/h^2$ for a cylinder of radius $r$ and length $h$ [@britton2003essential, Example C.10]. This is the geometry used for the tail argument on [Animal Coat Patterns](animal-coat-patterns.qmd).
+
+Note a difference in indexing. Britton starts the Dirichlet modes of Example C.2 at $n = 0$ and writes $k_n = (n+1)\pi/L$, so that the list of wavenumbers is the same as the table above with $n \ge 1$. His periodic example uses the interval $(0, 2\pi)$, where $k_n = n$.
+
+The cylinder formula can be checked on a grid. The code builds the finite-difference Laplacian with periodic wrapping in the angle and zero flux in $z$, and compares its lowest eigenvalues with $m^2/r^2 + n^2\pi^2/h^2$. Eigenvalues with $m \ne 0$ appear twice, as the cosine and sine modes.
+
+```{python}
+import numpy as np
+
+r, h, n_phi, n_z = 2.0, 10.0, 32, 20
+dphi, dz = 2 * np.pi / n_phi, h / n_z
+shift = np.roll(np.eye(n_phi), 1, axis=0) + np.roll(np.eye(n_phi), -1, axis=0)
+lap_phi = (shift - 2 * np.eye(n_phi)) / (r * dphi) ** 2
+lap_z = -2 * np.eye(n_z) + np.eye(n_z, k=1) + np.eye(n_z, k=-1)
+lap_z[0, 0] = lap_z[-1, -1] = -1
+lap_z /= dz**2
+lap = np.kron(lap_phi, np.eye(n_z)) + np.kron(np.eye(n_phi), lap_z)
+
+numeric = np.sort(-np.linalg.eigvalsh(lap))[:9]
+exact = np.sort([(m / r) ** 2 + (n * np.pi / h) ** 2 for m in range(-4, 5) for n in range(5)])[:9]
+print(np.round(numeric, 4) + 0.0)
+print(np.round(exact, 4))
+```
+
+The two lists agree to within about 1%, and the remaining difference shrinks as the grid is refined.
+
+Separation of variables does not apply to every problem. @britton2003essential [Section C.4] lists three requirements: the linear operator must be separable, the initial and boundary conditions must be imposed on lines of constant time and constant space coordinate, and the boundary operator must be Neumann, Dirichlet, periodic or of Robin type ($\alpha u + \beta\,\partial u/\partial n = 0$ with $\alpha, \beta \ge 0$). He notes that a problem on a growing domain cannot be solved directly by separation of variables. This is why the argument on [Domain Size and Mode Selection](domain-size-mode-selection.qmd) compares fixed domains of different lengths and does not follow a single growing one.
 
 ::: {.callout-note}
 ## Exercise
@@ -87,4 +127,4 @@ On $(0, 40)$ with Neumann conditions, which mode $n$ has wavenumber closest to $
 $k_n = n\pi/40$, so $n = 40k/\pi \approx 5.09$. The closest mode is $n = 5$, with five half-wavelengths, which is two and a half full wavelengths.
 :::
 
-Next session: [Turing Conditions](turing-conditions.qmd).
+Next: [Turing Conditions](turing-conditions.qmd).

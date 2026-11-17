@@ -1,0 +1,377 @@
+---
+title: "PageRank"
+subtitle: "Module 5: Complex Networks"
+format: html
+---
+
+::: {.callout-note}
+## Reading
+- **Compulsory:** @page1999pagerank, the original description of the algorithm.
+- **Context:** the centrality measures of [Network Concepts](network-concepts.qmd) and [Centrality in NetworkX](networkx-centrality.qmd).
+:::
+
+Degree centrality counts the links that point to a node. It treats every link equally, whether it comes from a hub or from an isolated page. PageRank applies the opposite principle: **a node is important if it is linked by important nodes** [@page1999pagerank]. This looks circular, but it has a precise answer: the importance vector is the stationary distribution of a random walk on the directed graph. This page builds that answer step by step, computes it in three independent ways, and checks it against `networkx`.
+
+## The random surfer
+
+Take a directed graph with $n$ nodes (web pages) and an edge $j \to i$ for each hyperlink from page $j$ to page $i$. A surfer sits on page $j$ and follows one outgoing link chosen uniformly at random. If $\mathbf{p}^{(t)} \in \mathbb{R}^n$ is the probability vector of the surfer's position at step $t$, then
+
+$$
+\mathbf{p}^{(t+1)} = P\,\mathbf{p}^{(t)}, \qquad
+P_{ij} = \begin{cases} 1/\text{outdeg}(j) & \text{if } j \to i, \\ 0 & \text{otherwise.} \end{cases}
+$$ {#eq-pr-transition}
+
+Each column of $P$ is the distribution of the next page given the current page, so the columns sum to 1: $P$ is **column-stochastic**. If the chain has a stationary distribution $\boldsymbol{\pi}$, it satisfies
+
+$$
+\boldsymbol{\pi} = P\,\boldsymbol{\pi}, \qquad
+\pi_i = \sum_{j \to i} \frac{\pi_j}{\text{outdeg}(j)} .
+$$ {#eq-pr-fixed}
+
+The second form is the principle in equations: page $i$ receives rank from every page $j$ that links to it, and each page $j$ shares its own rank equally among its outgoing links. A link from a page with few outgoing links is worth more than a link from a page that links to everyone.
+
+## A five-page example
+
+The graph below is the five-page example: $A \to B$, $A \to C$, $B \to C$, $C \to A$, $D \to C$, $E \to C$ and $E \to D$. The out-degrees are 2, 1, 1, 1, 2 for $A, \dots, E$. In NetworkX the function `nx.to_numpy_array` returns the matrix with $A_{ij} = 1$ for an edge $i \to j$, so the matrix of @eq-pr-transition is $P = A^{\top} D_{\text{out}}^{-1}$.
+
+```{python}
+#| label: fig-pr-example
+#| fig-cap: "The five-page example. Node area is proportional to the PageRank with damping factor 0.85. Page C receives links from four pages and has the largest PageRank. Page A has a single incoming link, but it comes from C. Page E has no incoming links."
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
+
+SEED = 7
+alpha = 0.85
+
+nodes = list("ABCDE")
+G = nx.DiGraph([("A", "B"), ("A", "C"), ("B", "C"), ("C", "A"), ("D", "C"), ("E", "C"), ("E", "D")])
+n = len(nodes)
+
+A = nx.to_numpy_array(G, nodelist=nodes)          # A[i, j] = 1 if i -> j
+outdeg = A.sum(axis=1)
+P = (A / outdeg[:, None]).T                        # column-stochastic matrix
+print("out-degrees:", {v: int(d) for v, d in zip(nodes, outdeg)})
+print("column sums of P:", P.sum(axis=0))
+
+pos = {"A": (0, 1), "B": (1, 1), "D": (0, 0), "C": (1, 0), "E": (0.5, -0.8)}
+pr = nx.pagerank(G, alpha=alpha, tol=1e-12)
+fig, ax = plt.subplots(figsize=(5, 4))
+sizes = [6000 * pr[v] for v in nodes]
+reciprocal = [("A", "C"), ("C", "A")]
+nx.draw_networkx_edges(G, pos, ax=ax, edgelist=[("A", "C")], arrowsize=18, node_size=sizes,
+                       arrowstyle="<|-|>")   # A -> C and C -> A drawn as one double-headed arrow
+nx.draw_networkx_edges(G, pos, ax=ax, edgelist=[e for e in G.edges() if e not in reciprocal],
+                       arrowsize=18, node_size=sizes)
+nx.draw_networkx_nodes(G, pos, ax=ax, node_size=sizes, node_color="lightsteelblue")
+nx.draw_networkx_labels(G, pos, ax=ax)
+ax.set_axis_off()
+plt.tight_layout()
+plt.show()
+print({v: round(pr[v], 4) for v in nodes})
+```
+
+## Why we need damping
+
+On a real directed graph the chain of @eq-pr-transition can fail in three ways:
+
+- **Dangling nodes.** A page with no outgoing links has a column of zeros in $P$, so $P$ is not stochastic: the surfer has nowhere to go.
+- **Reducibility.** The graph can contain parts the surfer enters but never leaves, or parts that cannot be reached at all. The stationary distribution is then not unique.
+- **Periodicity.** In a directed cycle the surfer's position rotates forever and $\mathbf{p}^{(t)}$ never converges.
+
+The remedy is **teleportation**. With probability $\alpha$ the surfer follows a link, and with probability $1 - \alpha$ it jumps to a page chosen uniformly at random. The parameter $\alpha \in (0, 1)$ is the **damping factor**, often $\alpha = 0.85$. The transition matrix becomes
+
+$$
+P' = \alpha P + \frac{1-\alpha}{n}\,\mathbf{1}\mathbf{1}^{\top}, \qquad
+P'_{ij} = \alpha P_{ij} + \frac{1-\alpha}{n},
+$$ {#eq-pr-damped}
+
+where $\mathbf{1}$ is the vector of ones. Every entry of $P'$ is positive, so the chain is irreducible and aperiodic and has a **unique** stationary distribution. The PageRank vector is the probability vector with $\boldsymbol{\pi} = P'\boldsymbol{\pi}$ and $\sum_i \pi_i = 1$.
+
+::: {.callout-important}
+## Dangling nodes need an extra rule
+@eq-pr-damped is column-stochastic only if $P$ is. For a dangling node the standard rule is to replace its zero column by the uniform column $\mathbf{1}/n$: a surfer stuck on a page teleports at once. NetworkX does this by default. The graph of this page has no dangling nodes, but the exercises and the large example below do.
+:::
+
+### Three ways to compute $\boldsymbol{\pi}$
+
+**Eigenvector.** $\boldsymbol{\pi}$ is the eigenvector of $P'$ with eigenvalue 1, scaled to sum 1.
+
+**Linear system.** Since $\mathbf{1}^{\top}\boldsymbol{\pi} = 1$, we have $\mathbf{1}\mathbf{1}^{\top}\boldsymbol{\pi} = \mathbf{1}$, and $\boldsymbol{\pi} = P'\boldsymbol{\pi}$ becomes
+
+$$
+(I - \alpha P)\,\boldsymbol{\pi} = \frac{1-\alpha}{n}\,\mathbf{1}.
+$$ {#eq-pr-linear}
+
+The matrix $I - \alpha P$ is invertible because the eigenvalues of $\alpha P$ have modulus at most $\alpha < 1$.
+
+**Neumann series.** Expanding $(I - \alpha P)^{-1} = \sum_{k \ge 0} \alpha^k P^k$ gives
+
+$$
+\boldsymbol{\pi} = (1-\alpha)\sum_{k=0}^{\infty} \alpha^k P^k\,\frac{\mathbf{1}}{n}.
+$$ {#eq-pr-neumann}
+
+The term $P^k \mathbf{1}/n$ is the distribution of a surfer that has followed $k$ links without teleporting, and the weight $(1-\alpha)\alpha^k$ is the probability that the surfer teleported exactly $k$ steps ago. So $\boldsymbol{\pi}$ counts walks of all lengths, and $\alpha^k$ discounts the long ones.
+
+```{python}
+# 1. eigenvector of P'
+Pp = alpha * P + (1 - alpha) / n * np.ones((n, n))
+w, v = np.linalg.eig(Pp)
+i1 = np.argmax(w.real)
+pi_eig = np.real(v[:, i1])
+pi_eig /= pi_eig.sum()
+
+# 2. linear system
+pi_lin = np.linalg.solve(np.eye(n) - alpha * P, (1 - alpha) / n * np.ones(n))
+
+# 3. truncated Neumann series
+pi_neu, term = np.zeros(n), np.ones(n) / n
+for k in range(200):
+    pi_neu += (1 - alpha) * alpha**k * term
+    term = P @ term
+
+# 4. NetworkX
+pi_nx = np.array([pr[v] for v in nodes])
+
+for name, vec in [("eigenvector", pi_eig), ("linear system", pi_lin), ("Neumann series", pi_neu), ("networkx", pi_nx)]:
+    print(f"{name:>15}:", np.round(vec, 5), f" max |difference to eigenvector| = {np.abs(vec - pi_eig).max():.1e}")
+print("moduli of the eigenvalues of P':", np.round(np.sort(np.abs(w))[::-1][:3], 4))
+```
+
+All four vectors agree to rounding error. Page $C$ has the largest PageRank, and page $E$ has $\pi_E = (1-\alpha)/n = 0.03$, the minimum possible value: nobody links to it, so it receives only teleportation. Page $A$ comes second although only one page links to it, because that page is $C$, which has the largest rank and only one outgoing link. The moduli of the eigenvalues of $P'$ printed above show that $1$ is a simple eigenvalue and that all the others are smaller than $\alpha = 0.85$.
+
+::: {.callout-note}
+## Exercise 1: one update by hand
+
+Start from the uniform vector $\mathbf{p}^{(0)} = \mathbf{1}/5$ and compute one step $\mathbf{p}^{(1)} = P'\mathbf{p}^{(0)}$ for page $C$, using the damped formula,
+$$
+p^{(1)}_C = \alpha\left(\frac{p^{(0)}_A}{2} + p^{(0)}_B + p^{(0)}_D + \frac{p^{(0)}_E}{2}\right) + \frac{1-\alpha}{5}.
+$$
+Then compute the other four entries and check them in Python.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+For $C$: $0.85 \cdot 0.2 \cdot (0.5 + 1 + 1 + 0.5) + 0.03 = 0.51 + 0.03 = 0.54$. The same rule gives $p^{(1)}_A = 0.85 \cdot 0.2 \cdot 1 + 0.03 = 0.20$ (only $C$ links to $A$, with weight 1), $p^{(1)}_B = 0.85 \cdot 0.2 \cdot 0.5 + 0.03 = 0.115$, $p^{(1)}_D = 0.85 \cdot 0.2 \cdot 0.5 + 0.03 = 0.115$ and $p^{(1)}_E = 0.03$. The sum is 1.
+
+```python
+p0 = np.ones(5) / 5
+p1 = alpha * P @ p0 + (1 - alpha) / 5
+print(dict(zip(nodes, p1.round(3))))
+```
+:::
+
+::: {.callout-note}
+## Exercise 2: equal in-degree, different rank
+
+Pages $A$, $B$ and $D$ each have exactly one incoming link. Explain why their PageRanks differ so much, using @eq-pr-fixed.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+The values are $\pi_A \approx 0.358$, $\pi_B \approx 0.182$ and $\pi_D \approx 0.043$. By @eq-pr-fixed with damping, $\pi_i = \alpha \sum_{j \to i} \pi_j/\text{outdeg}(j) + (1-\alpha)/n$. The link into $A$ comes from $C$, which has a large rank and a single outgoing link, so $A$ receives $\alpha \pi_C$. The link into $B$ comes from $A$, which splits its rank over two links: $B$ receives $\alpha \pi_A / 2$. The link into $D$ comes from $E$, which has the minimum rank and also splits it over two links: $D$ receives $\alpha \pi_E/2$. In-degree sees none of these differences.
+:::
+
+## Power iteration
+
+For a web graph the matrix $P'$ is far too large to diagonalise or to factorise. The practical algorithm is **power iteration**: start from $\mathbf{p}^{(0)} = \mathbf{1}/n$ and repeat
+
+$$
+\mathbf{p}^{(k+1)} = P'\,\mathbf{p}^{(k)} = \alpha P\,\mathbf{p}^{(k)} + \frac{1-\alpha}{n}\,\mathbf{1}
+$$ {#eq-pr-power}
+
+until $\lVert \mathbf{p}^{(k+1)} - \mathbf{p}^{(k)} \rVert_1$ is small. The dense matrix $\mathbf{1}\mathbf{1}^{\top}/n$ is never formed: the teleportation term is a constant vector added after one sparse matrix-vector product. The function below also handles dangling nodes: their total probability mass is spread uniformly.
+
+```{python}
+import scipy.sparse as sp
+from scipy.sparse.linalg import spsolve
+
+
+def transition_matrix(G):
+    """Sparse column-stochastic matrix P, the node list and a mask of dangling nodes."""
+    nodes = list(G.nodes())
+    A = nx.to_scipy_sparse_array(G, nodelist=nodes, dtype=float, weight=None)  # A[i, j] = 1 if i -> j
+    out = np.asarray(A.sum(axis=1)).ravel()
+    dangling = out == 0
+    inv = np.where(dangling, 0.0, 1.0 / np.where(dangling, 1.0, out))
+    return nodes, sp.csr_array(A.T) @ sp.diags(inv), dangling
+
+
+def pagerank_power(P, dangling, alpha=0.85, tol=1e-10, max_iter=1000, p0=None):
+    """Power iteration for PageRank. Returns the vector and the list of l1 differences."""
+    n = P.shape[0]
+    p = np.ones(n) / n if p0 is None else p0.copy()
+    diffs = []
+    for _ in range(max_iter):
+        new = alpha * (P @ p + p[dangling].sum() / n) + (1 - alpha) / n
+        diffs.append(np.abs(new - p).sum())
+        p = new
+        if diffs[-1] < tol:
+            break
+    return p, diffs
+
+
+nodes5, P5, dang5 = transition_matrix(G)
+p_pow, diffs = pagerank_power(P5, dang5, alpha, tol=1e-12)
+print("iterations:", len(diffs))
+print("max |power iteration - networkx| =", np.abs(p_pow - pi_nx).max())
+```
+
+### How fast does it converge?
+
+The eigenvalues of $P'$ explain the speed. Because $\mathbf{1}^{\top} P' = \mathbf{1}^{\top}$, every eigenvector $\mathbf{v}$ with eigenvalue $\lambda \neq 1$ satisfies $\mathbf{1}^{\top}\mathbf{v} = 0$. For such a vector $\mathbf{1}\mathbf{1}^{\top}\mathbf{v} = 0$, hence $P'\mathbf{v} = \alpha P\mathbf{v}$ and $\lambda$ is $\alpha$ times an eigenvalue of $P$. Since $P$ is column-stochastic, its eigenvalues have modulus at most 1, and therefore
+
+$$
+|\lambda_2(P')| \le \alpha .
+$$ {#eq-pr-gap}
+
+The same argument in the $\ell_1$ norm gives the guarantee $\lVert \mathbf{p}^{(k)} - \boldsymbol{\pi} \rVert_1 \le 2\alpha^k$. A smaller $\alpha$ converges faster, but a smaller $\alpha$ also gives more weight to teleportation and less to the link structure. @fig-pr-convergence shows two cases. On a directed cycle the bound is attained, and with $\alpha = 1$ (no teleportation) the chain never converges, which is the periodicity problem. On a large directed graph with a heavy-tailed degree distribution, the error falls much faster than the bound.
+
+```{python}
+#| label: fig-pr-convergence
+#| fig-cap: "Distance in the l1 norm between the power iteration and the PageRank vector. Left: directed cycle of 6 nodes, surfer starting on node 0. Without teleportation (alpha = 1) the distance never decreases; with alpha = 0.85 it equals the bound 2(1 - 1/n) alpha^k exactly. Right: directed scale-free graph with 2000 nodes, uniform start; dashed lines are the bound 2 alpha^k."
+ring = nx.DiGraph([(i, (i + 1) % 6) for i in range(6)])
+_, Pr, dr = transition_matrix(ring)
+pi_ring = np.ones(6) / 6
+
+fig, axes = plt.subplots(1, 2, figsize=(9, 3.6))
+for a_ in (1.0, 0.85):
+    p = np.zeros(6)
+    p[0] = 1.0
+    errs = []
+    for _ in range(40):
+        p = a_ * (Pr @ p) + (1 - a_) / 6
+        errs.append(np.abs(p - pi_ring).sum())
+    axes[0].semilogy(errs, "o-", ms=3, label=f"alpha = {a_}")
+axes[0].semilogy(2 * (1 - 1 / 6) * 0.85 ** np.arange(1, 41), "k--", lw=1, label="bound, alpha = 0.85")
+axes[0].set_xlabel("iteration k")
+axes[0].set_ylabel(r"$\|p^{(k)} - \pi\|_1$")
+axes[0].set_title("directed cycle")
+axes[0].legend()
+
+SF = nx.DiGraph(nx.scale_free_graph(2000, seed=SEED))
+SF.remove_edges_from(nx.selfloop_edges(SF))
+nodes_sf, P_sf, dang_sf = transition_matrix(SF)
+for a_, c in [(0.5, "C0"), (0.85, "C1"), (0.99, "C2")]:
+    pi_ref, _ = pagerank_power(P_sf, dang_sf, a_, tol=1e-14, max_iter=5000)
+    p = np.ones(len(nodes_sf)) / len(nodes_sf)
+    errs = []
+    for _ in range(60):
+        p = a_ * (P_sf @ p + p[dang_sf].sum() / len(p)) + (1 - a_) / len(p)
+        errs.append(np.abs(p - pi_ref).sum())
+    axes[1].semilogy(errs, color=c, label=f"alpha = {a_}")
+    axes[1].semilogy(2 * a_ ** np.arange(1, 61), color=c, ls="--", lw=1)
+axes[1].set_ylim(1e-14, 3)
+axes[1].set_xlabel("iteration k")
+axes[1].set_title("scale-free digraph, N = 2000")
+axes[1].legend()
+plt.tight_layout()
+plt.show()
+print(f"dangling nodes in the scale-free digraph: {dang_sf.sum()} of {len(nodes_sf)}")
+```
+
+::: {.callout-note}
+## Exercise 3: the damping factor
+
+(a) Predict $\boldsymbol{\pi}$ for $\alpha \to 0$ and describe what happens to the ranking. (b) Compute the PageRank of the five-page example for $\alpha = 0.05, 0.5, 0.85, 0.99$ and check your prediction. (c) Which page changes rank most as $\alpha$ grows?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+For $\alpha \to 0$ the surfer teleports at every step, so $\boldsymbol{\pi} \to \mathbf{1}/n$ and the links have no influence on the ranking. As $\alpha \to 1$ the link structure dominates, but $\alpha = 1$ itself is not allowed in general because of dangling nodes, reducibility and periodicity.
+
+```python
+for a_ in (0.05, 0.5, 0.85, 0.99):
+    r = nx.pagerank(G, alpha=a_, tol=1e-12)
+    print(a_, {v: round(r[v], 3) for v in nodes})
+```
+
+At $\alpha = 0.05$ every value is within 0.02 of $0.2$. At $\alpha = 0.99$ pages $A$ and $C$ have about 0.40 each, $B$ has about 0.20, and $D$ and $E$ are below 0.01: the surfer circulates in the loops $A \to C \to A$ and $A \to B \to C \to A$, and nobody links to $E$. The pages that change most are $E$ and $D$, which lose almost everything, and $A$, which gains the most.
+:::
+
+## Dangling nodes and the normalisation shortcut
+
+If you drop the dangling nodes' columns, that is, leave them as zero columns in @eq-pr-linear, the solution is not a probability vector: its entries add up to less than 1. This still gives the right ranking after normalisation. Let $D$ be the set of dangling nodes and $\tilde{\boldsymbol{\pi}}$ the PageRank with the uniform rule for $D$. Then $\tilde{\boldsymbol{\pi}}$ solves $\tilde{\boldsymbol{\pi}} = \alpha P \tilde{\boldsymbol{\pi}} + c\,\mathbf{1}/n$ with the scalar $c = (1-\alpha) + \alpha \sum_{j \in D}\tilde\pi_j$, so $\tilde{\boldsymbol{\pi}}$ is proportional to the solution $\mathbf{x}$ of @eq-pr-linear, and $\tilde{\boldsymbol{\pi}} = \mathbf{x}/\sum_i x_i$. The check below uses a four-page graph in which page $D$ has no outgoing links.
+
+```{python}
+G_dang = nx.DiGraph([("A", "B"), ("B", "C"), ("C", "A"), ("C", "D")])
+nodes_d, P_d, dang_d = transition_matrix(G_dang)
+n_d = len(nodes_d)
+x = spsolve(sp.eye(n_d, format="csc") - alpha * sp.csc_array(P_d), (1 - alpha) / n_d * np.ones(n_d))
+pi_d_nx = nx.pagerank(G_dang, alpha=alpha, tol=1e-14)
+print("dangling mask:", dict(zip(nodes_d, dang_d)))
+print("solution of (I - alpha P) x = (1-alpha)/n 1:", np.round(x, 4), " sum =", round(x.sum(), 4))
+print("x / sum(x)                                :", np.round(x / x.sum(), 4))
+print("networkx.pagerank (uniform dangling rule) :", np.round([pi_d_nx[v] for v in nodes_d], 4))
+```
+
+## PageRank in practice: beyond the five-page example
+
+@fig-pr-indegree compares PageRank with in-degree on the directed scale-free graph of the previous figure. The two rankings are strongly correlated and most of the 20 largest nodes coincide. The scatter around the trend shows what in-degree misses: among the nodes with a single incoming link, the largest PageRank is about 20 times the smallest, as in Exercise 2.
+
+```{python}
+#| label: fig-pr-indegree
+#| fig-cap: "PageRank (alpha = 0.85) against in-degree for the directed scale-free graph with 2000 nodes. Each dot is a node; both axes are logarithmic. Nodes with the same in-degree can have PageRanks that differ by a factor of about 20."
+from scipy.stats import spearmanr
+
+p_sf, _ = pagerank_power(P_sf, dang_sf, 0.85, tol=1e-12)
+indeg = np.array([SF.in_degree(v) for v in nodes_sf])
+rho = spearmanr(p_sf, indeg)[0]
+top_pr, top_in = set(np.argsort(-p_sf)[:20]), set(np.argsort(-indeg)[:20])
+
+fig, ax = plt.subplots(figsize=(5.5, 4))
+ax.loglog(indeg + 0.5, p_sf, ".", alpha=0.5)
+ax.set_xlabel("in-degree (+0.5)")
+ax.set_ylabel("PageRank")
+plt.tight_layout()
+plt.show()
+print(f"Spearman correlation between PageRank and in-degree: {rho:.3f}")
+print(f"nodes in both top-20 lists: {len(top_pr & top_in)} of 20")
+```
+
+### Undirected graphs
+
+On an undirected graph every edge is traversed in both directions. The random walk without teleportation then has the stationary distribution $\pi_i = k_i / 2E$: the walker is found on a node in proportion to its degree. PageRank with damping interpolates between this limit ($\alpha \to 1$) and the uniform distribution ($\alpha \to 0$), which is why on an undirected network such as the Enron e-mail graph it adds little to degree centrality.
+
+```{python}
+H = nx.Graph(nx.read_edgelist("data/ia-enron-only/ia-enron-only.edges"))
+H = H.subgraph(max(nx.connected_components(H), key=len)).copy()
+nodes_h, P_h, dang_h = transition_matrix(H.to_directed())
+deg_h = np.array([H.degree(v) for v in nodes_h], dtype=float)
+stationary = deg_h / deg_h.sum()
+print(f"Enron graph (largest component): N = {H.number_of_nodes()}, E = {H.number_of_edges()}")
+for a_ in (0.85, 0.99, 0.999):
+    p_h, _ = pagerank_power(P_h, dang_h, a_, tol=1e-13, max_iter=100_000)
+    print(f"alpha = {a_}: l1 distance to k_i/2E = {np.abs(p_h - stationary).sum():.4f}, "
+          f"Spearman with degree = {spearmanr(p_h, deg_h)[0]:.3f}")
+```
+
+::: {.callout-note}
+## Exercise 4: PageRank on the networks of this module
+
+Compute the PageRank of the US flights network of [Practice: Flights and Other Networks](practice-flights-network.qmd) and compare its top 10 airports with the top 10 by degree and by betweenness. Which airports change position, and why can a smaller airport rank higher in PageRank than in degree?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Load the graph as in the practice page (`nx.read_graphml("data/openflights/openflights_usa.graphml.gz")`), convert it with `nx.Graph`, call `nx.pagerank(G, alpha=0.85)` and sort the three dictionaries. On this undirected graph (546 airports) PageRank is close to degree: 9 of the 10 airports coincide. The exception is Anchorage (ANC), which is 40th by degree (34 routes), 10th by PageRank and 1st by betweenness, while Philadelphia (PHL) is in the degree top 10 but not in the PageRank top 10. A neighbour $j$ passes on $\pi_j/k_j$, so small airports whose few routes go through Anchorage send it most of their rank: 12 of its 34 neighbours have degree at most 3, against 7 of the 88 neighbours of PHL. Betweenness has a different logic because it counts shortest paths, and it promotes bridges such as Anchorage, Bethel (BET) and Fairbanks (FAI) that connect a region to the rest of the network.
+:::
+
+## Where PageRank sits in a search engine
+
+PageRank sits inside a two-step pipeline. **Retrieval** finds a candidate set quickly: crawling discovers pages and links, and an *inverted index*, which maps each word to the list of documents that contain it, returns the candidates in milliseconds. **Ranking** then orders the candidates by combining text relevance with a link-based authority score such as PageRank. The argument is that on-page signals alone (keyword frequency, meta-tags) are easy to manipulate, while a score that depends on *who links to you* across the whole graph is harder to fake. PageRank is the ranking signal on this page; real search engines combine it with many other signals.
+
+## Summary
+
+- PageRank is the stationary distribution of a random surfer who follows links with probability $\alpha$ and teleports uniformly with probability $1-\alpha$.
+- It solves $\boldsymbol{\pi} = P'\boldsymbol{\pi}$, equivalently $(I - \alpha P)\boldsymbol{\pi} = \frac{1-\alpha}{n}\mathbf{1}$, and equals a discounted count of walks (@eq-pr-neumann).
+- Damping removes the three failure modes and makes the solution unique; dangling nodes need a uniform column.
+- Power iteration converges at least as fast as $\alpha^k$, and one sparse product per step is enough.
+
+## What's Next?
+
+The next pages return to models of network growth. The random walk of this page reappears in [Epidemic Threshold](epidemic-threshold.qmd), where the largest eigenvalue of the adjacency matrix controls spreading.

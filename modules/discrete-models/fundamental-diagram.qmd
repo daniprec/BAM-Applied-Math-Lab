@@ -4,6 +4,12 @@ subtitle: "Module 6: Explorables and Discrete Models"
 format: html
 ---
 
+::: {.callout-note}
+## Reading
+- **Compulsory:** @nagel1992cellular, Section 3 and Figures 4 to 6.
+- **Guide to the paper:** [What Nagel and Schreckenberg Did](nagel-paper.qmd).
+:::
+
 The fundamental diagram is the relation between traffic density and traffic flow in the stationary state. It is the main macroscopic observable of a traffic model and the one you compare with road measurements [@nagel1992cellular; @chowdhury2000statistical].
 
 ## Density, flow and speed
@@ -55,6 +61,12 @@ plt.show()
 
 The simulation for $p = 0$ lies on the exact triangle, which validates the code. For $p > 0$ the peak is lower and rounded.
 
+## What the paper measured
+
+Nagel and Schreckenberg obtained the diagram on a ring of $10^4$ cells with $v_{\max} = 5$ [@nagel1992cellular]. They started from random positions at rest and discarded $10L$ steps. Each dot in their Figure 4 averages the flow over only 100 steps, so that the scatter can be compared with detector data on real roads (their Figure 5). The line averages over $10^6$ steps. They report that the flow changes from laminar to jammed near $\rho \approx 0.08$, that the position and form of the maximum depend on the system size, and that this dependence is absent without randomization. The maximum flow in their open-road experiment and on the ring is about $0.32$ to $0.30$ cars per step. Real freeway data put the maximum at roughly twice that density, and at about $2000$ vehicles per hour and lane, which is $0.56$ vehicles per second.
+
+We reproduced these features with $p = 0.5$, a value that the text does not state and that we inferred from the mean free speed of $4.5$ cells per step quoted in the paper. The maximum lies at $\rho \approx 0.08$ to $0.10$ with $q \approx 0.32$ on a ring of $10^4$ cells. On a ring of 100 cells the maximum is higher, about $0.43$ at $\rho = 0.10$, and for $p = 0$ the flow on rings of 100, 1000 and $10^4$ cells is identical. The figure above uses a ring of 400 cells, so for $p > 0$ the exact height of its peak depends on that choice. The page [What Nagel and Schreckenberg Did](nagel-paper.qmd) contains the code and the figure.
+
 ## Explore the ring road
 
 The figure below runs the four Nagel-Schreckenberg rules in parallel on a ring of 200 cells. **Measure q at this ρ** repeats the procedure behind @fig-fundamental-diagram: a ring of 400 cells, random start at rest, 200 burn-in steps and an average over the next 400.
@@ -67,7 +79,7 @@ The figure below runs the four Nagel-Schreckenberg rules in parallel on a ring o
 :::
 
 ::: {.python-next}
-**Build this in Python.** In Lab 12 (Session 26) you write the code behind this figure: [Traffic Model](traffic.qmd) for the update rule and the space-time diagram, and [Flow and Congestion](traffic-analysis.qmd) for the fundamental diagram.
+**Build this in Python.** In the lab you write the code behind this figure: [Traffic Model](traffic.qmd) for the update rule and the space-time diagram, and [Flow and Congestion](traffic-analysis.qmd) for the fundamental diagram.
 :::
 
 ## Empirical evidence: jams without bottlenecks
@@ -85,5 +97,5 @@ Use the free-flow approximation $q \approx \rho (v_{\max} - p)$ and the congeste
 ::: {.callout-tip collapse="true"}
 ## Solution
 
-The two lines cross at $\rho (v_{\max} - p) = 1 - \rho$, so $\rho^* = 1/(v_{\max} - p + 1) = 1/5.7 \approx 0.175$ and $q^* \approx 0.82$. The simulated curve for $p = 0.3$ peaks near $\rho \approx 0.1$ with $q$ below 0.5, so at lower density and much lower flow. Randomization also lowers the congested branch below $1 - \rho$, because stopped cars restart with a delay. The crossing of the two straight lines is only an upper estimate.
+The two lines cross at $\rho (v_{\max} - p) = 1 - \rho$, so $\rho^* = 1/(v_{\max} - p + 1) = 1/5.7 \approx 0.175$ and $q^* \approx 0.82$. This is a poor estimate for the stochastic model. In simulations on a ring of 400 cells (600 steps, 200 burn-in) the flow for $p = 0.3$ rises along the free-flow line up to $\rho \approx 0.10$ and then stays near $0.46$ to $0.49$, with a maximum of about $0.49$ near $\rho \approx 0.12$. The sampling noise is about $0.02$. So the maximum is at a lower density than the crossing and its height is about 40 per cent lower. The same happens for the case in the paper, $p = 0.5$: the crossing gives $\rho^* \approx 0.18$ and $q^* \approx 0.82$, while the simulated maximum is $q \approx 0.32$ near $\rho \approx 0.08$. Jams form before the free-flow branch reaches the line $1 - \rho$, and the congested branch lies below $1 - \rho$, because stopped cars restart with a delay. The crossing of the two straight lines is therefore only an upper bound on the maximum flow.
 :::

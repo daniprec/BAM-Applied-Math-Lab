@@ -25,10 +25,12 @@ $$ {#eq-vicsek-periodic}
 To use @eq-vicsek-xi you first need the new heading $\theta_i(t + \Delta t)$:
 
 $$
-\theta_i(t + \Delta t) = \langle \theta_j(t) \rangle_{j \in \mathcal{N}_i} + \frac{\eta}{2} \xi_i(t),
+\theta_i(t + \Delta t) = \theta_i^{\text{avg}}(t) + \xi_i(t),
+\qquad
+\theta_i^{\text{avg}}(t) = \operatorname{atan2}\Big(\sum_{j \in \mathcal{N}_i}\sin\theta_j(t),\ \sum_{j \in \mathcal{N}_i}\cos\theta_j(t)\Big),
 $$ {#eq-vicsek-theta}
 
-where $\mathcal{N}_i$ is the set of neighbors within radius $r$ of particle $i$, including $i$ itself, $\langle \cdot \rangle$ denotes the average direction, computed as $\operatorname{atan2}(\langle\sin\theta\rangle, \langle\cos\theta\rangle)$, and $\xi_i(t)$ is a random variable uniformly distributed in $[-1, 1]$. @vicsek1995novel used $r = 1$ and noise values $\eta$ between $0$ and $5$ in their Figure 2.
+where $\mathcal{N}_i$ is the set of neighbors within radius $r$ of particle $i$, including $i$ itself, and $\xi_i(t)$ is a random variable uniformly distributed in $[-\eta/2, \eta/2]$, drawn independently for every particle and every step, as in [The Vicsek Model](vicsek-model.qmd). In code, `noise / 2 * np.random.uniform(-1, 1)` is such a variable. @vicsek1995novel used $r = 1$ and noise values $\eta$ between $0$ and $5$ in their Figure 2.
 
 ### Steps
 
@@ -46,6 +48,12 @@ For the first step you compare every particle with every other particle. You can
 ## Do not average angles directly
 
 The plain mean of $0.1$ and $2\pi - 0.1$ is $\pi$, the opposite direction. Average $\cos\theta_j$ and $\sin\theta_j$ separately and recover the angle with `np.arctan2`.
+:::
+
+::: {.callout-warning}
+## Periodic distances
+
+The loops below measure the plain Euclidean distance. With periodic boundaries, two particles near opposite edges of the box are close to each other, but this code does not see them as neighbors. The effect is small when $r \ll L$ and clearly visible in the small boxes of this lab. The correction, the minimum-image distance, is in [Vectorized Update](vicsek-vectorized.qmd).
 :::
 
 ::: {.callout-note}
@@ -165,7 +173,7 @@ xy = np.mod(xy_new, box_size)
 Put everything together in a function that takes the current positions and headings and returns them after one time step.
 
 ```python
-def vicsek_equations(xy, theta, dt=1.0, eta=0.1, box_size=10, radius_interaction=1, v0=0.03):
+def vicsek_equations(xy, theta, dt=1.0, noise=0.1, box_size=10, radius_interaction=1, v0=0.03):
     xy_new = xy.copy()
     theta_new = theta.copy()
     # TODO: new headings (loop over particles and neighbors)
@@ -181,7 +189,7 @@ def vicsek_equations(xy, theta, dt=1.0, eta=0.1, box_size=10, radius_interaction
 ## Solution
 
 ```python
-def vicsek_equations(xy, theta, dt=1.0, eta=0.1, box_size=10, radius_interaction=1, v0=0.03):
+def vicsek_equations(xy, theta, dt=1.0, noise=0.1, box_size=10, radius_interaction=1, v0=0.03):
     xy_new = xy.copy()
     theta_new = theta.copy()
     num_boids = len(theta)
@@ -195,7 +203,7 @@ def vicsek_equations(xy, theta, dt=1.0, eta=0.1, box_size=10, radius_interaction
         theta_new[i] = np.arctan2(
             np.mean(np.sin(ls_theta_neighbors)), np.mean(np.cos(ls_theta_neighbors))
         )
-        theta_new[i] += eta / 2 * np.random.uniform(-1, 1)
+        theta_new[i] += noise / 2 * np.random.uniform(-1, 1)
 
         v = v0 * np.array([np.cos(theta_new[i]), np.sin(theta_new[i])])
         xy_new[:, i] = xy_new[:, i] + dt * v

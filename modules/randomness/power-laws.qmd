@@ -4,6 +4,12 @@ subtitle: "Module 3: Modelling with Randomness"
 format: html
 ---
 
+::: {.callout-note}
+## Reading
+- **Compulsory:** @clauset2009power, Sections 1 to 3 and Box 1.
+- **Recommended:** @newman2005power. The tests of Sections 4 and 5 of the first paper are the subject of [Fitting Power Laws Properly](power-law-fitting.qmd).
+:::
+
 A distribution has a fat (heavy) tail when large values are much more likely than under a Gaussian. The simplest example is the power law. This page follows @newman2005power and @clauset2009power.
 
 ## Definition
@@ -30,11 +36,11 @@ Pareto's law is a statement about the CCDF: the fraction of people with wealth a
 
 On log-log axes @eq-power-law is a straight line with slope $-\alpha$. That suggests fitting a line by least squares. @clauset2009power show that this is a poor estimator:
 
-- A histogram with linear bins has very few counts in the tail, and its logarithm is noisy and biased.
-- The least-squares fit has no valid error estimate, because the points are not independent Gaussian errors.
-- A straight-looking stretch does not prove a power law. A log-normal, for instance, can look straight over several decades.
+- A histogram with linear bins has very few counts in the tail, and its logarithm is noisy and biased. For 10000 continuous samples with $\alpha = 2.5$ and $x_{\min} = 1$, @clauset2009power obtain $1.39 \pm 0.05$ from a least-squares fit to a histogram with constant-width bins and $1.19 \pm 0.02$ with logarithmic bins, against $2.50 \pm 0.02$ from maximum likelihood (their Table 3.1).
+- The least-squares fit has no valid error estimate. The noise in the logarithm of a count is not Gaussian, and for a fit to a cumulative distribution neighbouring points are strongly correlated. The error bar of a biased fit therefore gives no warning that the estimate is wrong.
+- A straight-looking stretch does not prove a power law, and a high $r^2$ is no evidence either. @clauset2009power show small samples from a power law, a log-normal and an exponential distribution that all look roughly straight on log-log axes (their Fig. 4.1a).
 
-Plot the CCDF instead, which needs no binning, and estimate $\alpha$ by maximum likelihood.
+A least-squares fit to the CCDF built without binning (a rank-frequency plot) does much better than a histogram fit. For the same continuous data it gives $2.4869 \pm 0.0003$. The paper still recommends maximum likelihood, because the least-squares error bars are not valid and the CCDF fit is biased for integer data (2.570 against a true value of 2.5). Plot the CCDF, which needs no binning, and estimate $\alpha$ by maximum likelihood.
 
 ```{python}
 #| label: fig-power-law-plots
@@ -76,7 +82,7 @@ $$
 \sigma_{\hat{\alpha}} = \frac{\hat{\alpha} - 1}{\sqrt{n}},
 $$ {#eq-power-law-mle}
 
-[@newman2005power; @clauset2009power]. In practice $x_{\min}$ is unknown. @clauset2009power choose it by minimizing the Kolmogorov-Smirnov distance between the data above $x_{\min}$ and the fitted law, and then test the fit with a bootstrap. You meet the same estimator again as the [Hill estimator](tail-exponent.qmd) in the lab.
+[@newman2005power; @clauset2009power]. The estimator is unbiased only asymptotically. Its bias decays as $1/n$, and the authors give $n \gtrsim 50$ as a rule of thumb for an estimate accurate to about 1 %. In practice $x_{\min}$ is unknown, and it matters. If it is too low, the fit includes data that do not follow the power law and $\hat{\alpha}$ is biased. If it is too high, data are thrown away and the error grows. @clauset2009power choose $x_{\min}$ by minimizing the Kolmogorov-Smirnov distance between the data above $x_{\min}$ and the fitted law. They then test the fit with a bootstrap p-value and compare the power law with alternative distributions (their Box 1). [Fitting Power Laws Properly](power-law-fitting.qmd) implements this procedure. You meet the same estimator again as the [Hill estimator](tail-exponent.qmd) in the lab. For integer data the estimator has to change: the paper gives an approximation that replaces $x_{\min}$ by $x_{\min} - 1/2$ inside the logarithm, accurate to about 1 % for $x_{\min} \gtrsim 6$.
 
 ```{python}
 alpha_hat, err = mle_power_law_exponent(x, xmin=1.0)
@@ -106,5 +112,5 @@ print(f"least squares: {np.mean(ls):.3f} +/- {np.std(ls):.3f}")
 print(f"MLE:           {np.mean(ml):.3f} +/- {np.std(ml):.3f}")
 ```
 
-The least-squares estimate is strongly biased because the sparse tail bins, many with a single count, flatten the line. The MLE is centred on 2.5 with a spread close to $(\alpha - 1)/\sqrt{n} \approx 0.02$.
+The least-squares estimate is strongly biased (about 1.6 with a spread of 0.17 in this run) because the sparse tail bins, many with a single count, flatten the line. The MLE is centred on 2.50 with a spread of 0.02, close to $(\alpha - 1)/\sqrt{n} \approx 0.021$.
 :::

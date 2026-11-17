@@ -4,6 +4,12 @@ subtitle: "Module 4: Space and Pattern Formation"
 format: html
 ---
 
+::: {.callout-note}
+## Reading
+- **Compulsory:** @murray1988leopard.
+- **Recommended:** @kondo2010reaction, the part on Turing patterns in vertebrate skin, and @britton2003essential, Appendix C, Example C.10 (eigenvalues on a cylinder).
+:::
+
 The classical biological application of Turing's mechanism is Murray's model of mammalian coat markings [@murray1981prepattern; @murray1988leopard; @murray2003mathematical, Section 3.1]. This page lists its main claims and uses your 1D tools to reproduce the central one: domain size controls the pattern.
 
 ## The Model in Brief
@@ -14,7 +20,52 @@ The classical biological application of Turing's mechanism is Murray's model of 
 
 ## The Tail Prediction
 
-A tail is close to a tapering cylinder. Near the body the circumference is large and 2D patterns such as spots can form. Near the tip the circumference is too small for any mode around the tail, so only bands along its length remain. The model therefore predicts that a spotted animal can have a striped tail, but a striped animal cannot have a spotted tail [@murray1988leopard; @murray2003mathematical, Section 3.1].
+A tail is close to a tapering cylinder. Its surface is periodic around the circumference and has zero flux at the two ends. The Laplacian eigenproblem on such a surface is solved by separation of variables, with eigenfunctions $\cos(n\pi z/h)\,e^{im\phi}$ and eigenvalues
+
+$$
+k_{m,n}^2 = \frac{m^2}{r^2} + \frac{n^2\pi^2}{h^2}, \qquad m, n = 0, 1, 2, \dots,
+$$ {#eq-coat-cylinder}
+
+where $r$ is the radius and $h$ the length of the cylinder [@britton2003essential, Appendix C, Example C.10]. Modes with $m = 0$ do not depend on the angle, so they are rings around the tail. Modes with $m \ge 1$ vary around the circumference, and the combinations with $n \ge 1$ give spots.
+
+A mode can grow only if $k_{m,n}^2$ lies in the unstable band. Because $k_{m,n}^2 \ge m^2/r^2$, no mode with $m \ge 1$ is unstable when $1/r$ exceeds the upper edge $k_2$ of the band, that is when $r < 1/k_2$. For Case A the band is $0.349 < k < 0.523$, so the critical radius is $1/k_2 \approx 1.91$. A thinner cylinder carries only ring-shaped bands. @fig-coat-cylinder shows this directly.
+
+```{python}
+#| label: fig-coat-cylinder
+#| fig-cap: 'Circumferential mode numbers $m$ that have at least one unstable axial partner $n$, as a function of the cylinder radius $r$, for Gierer-Meinhardt Case A on a cylinder of length $h = 40$ with zero flux at the ends. For $r$ below about $1.91$ only $m = 0$ is unstable (rings around the tail). The dashed line marks $r = 1/k_2$.'
+#| fig-width: 7
+#| fig-height: 3.5
+#| echo: false
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+from amlab.turing import dispersion_relation, gierer_meinhardt_jacobian, unstable_band
+
+jac = gierer_meinhardt_jacobian(0.40, 1.00)
+k1, k2 = np.sqrt(unstable_band(*jac, 30.0))
+height = 40.0
+m_all = np.arange(0, 13)
+n_all = np.arange(0, 61)
+radii = np.linspace(0.8, 6, 260)
+
+fig, ax = plt.subplots(figsize=(7, 3.5))
+for r in radii:
+    k_sq = (m_all[:, None] / r) ** 2 + (n_all[None, :] * np.pi / height) ** 2
+    rates = dispersion_relation(k_sq, *jac, 30.0)
+    rates[0, 0] = -1.0
+    m_unstable = m_all[(rates > 0).any(axis=1)]
+    ax.plot(np.full(m_unstable.shape, r), m_unstable, "k.", ms=3)
+ax.axvline(1 / k2, color="tab:red", ls="--", lw=1, label=r"$r = 1/k_2$")
+ax.set_xlabel("radius r")
+ax.set_ylabel("circumferential mode number m")
+ax.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
+ax.legend(loc="upper left")
+plt.show()
+plt.close()
+```
+
+The model therefore predicts that a spotted animal can have a striped tail, but a striped animal cannot have a spotted tail. The tail is striped near the tip, where $r$ is small, and the full pattern is possible only where the radius is large enough [@murray1988leopard; @murray2003mathematical, Section 3.1]. The argument is linear: it says which modes can start to grow at a given radius, not which pattern the nonlinear terms finally select.
 
 ## Domain Size in 1D
 
@@ -56,8 +107,8 @@ Below $L \approx 6$ and for $9 < L < 12$ nothing grows. As $L$ increases the lea
 
 ## Evidence and Limitations
 
-- In the angelfish *Pomacanthus*, stripes keep their spacing while the fish grows, and new stripes appear between old ones. @kondo1995reaction reproduced these rearrangements with a reaction-diffusion simulation.
-- @kondo2010reaction review later work and note that a pattern consistent with a Turing model does not identify the molecules involved. Testing the mechanism requires identifying the interacting components and their interactions.
+- @kondo2010reaction credit Kondo and Asai [@kondo1995reaction] with the first observation of the dynamic properties of a Turing pattern in nature, in the stripes of the angelfish *Pomacanthus imperator*. They report that this dynamic behaviour is shared by many fish species, including the zebrafish, where the stripes rearrange slowly after laser ablation of pigment cells and keep their spacing, as a simulation predicts. See [Evidence for Reaction-Diffusion in Real Systems](reaction-diffusion-evidence.qmd).
+- @kondo2010reaction stress that a simulation that reproduces a real pattern is not proof that the mechanism operates. One has to identify a dynamic property that the simulation predicts and test it, and to identify the interacting components.
 - Linear theory predicts the onset wavelength only. The final pattern also depends on nonlinear terms, domain growth, curvature, and timing [@murray2003mathematical, Sections 2.6 and 3.1].
 
 ::: {.callout-note}

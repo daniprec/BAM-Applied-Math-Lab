@@ -4,6 +4,13 @@ subtitle: "Module 5: Complex Networks"
 format: html
 ---
 
+::: {.callout-note}
+## Reading
+- **Compulsory:** @pastor2015epidemic, Sections IV.B (degree-based mean field), V.A (SIS) and V.B (SIR).
+- **Recommended:** @newman2002spread.
+- **What the review states:** For the SIS model, the degree-based mean-field theory gives the threshold $\lambda_c = \langle k \rangle / \langle k^2 \rangle$ (their Eq. 28), which tends to zero for degree exponents $2 < \gamma \le 3$ in the limit of infinite size. For SIR, the mapping to bond percolation gives for tree-like uncorrelated networks the exact threshold in transmissibility $T_c = \langle k \rangle / (\langle k^2 \rangle - \langle k \rangle)$ (their Eq. 60), and for exponentially distributed infectious periods, where the mean transmissibility is $\lambda/(1+\lambda)$, the threshold in the rate ratio $\lambda_c = \langle k \rangle / (\langle k^2 \rangle - 2\langle k \rangle)$ (their Eq. 62). The expression $\langle k \rangle / (\langle k^2 \rangle - \langle k \rangle)$ also appears in their Eq. 53 as a threshold in $\lambda$ from a modified degree-based mean field, which they call an approximation of the exact result. They warn that the individual-based mean-field threshold $1/\Lambda_1$, applied to SIR, is qualitatively wrong for $\gamma > 3$.
+:::
+
 In the well-mixed SIS model of [Compartmental Models](../low-dimensional-dynamics/compartmental-models.qmd), an infection persists only if $R_0 > 1$. On a network, the corresponding condition depends on the degree distribution. This page derives it and states exactly when the threshold vanishes.
 
 ## Setup
@@ -28,7 +35,7 @@ $$
 \lambda > \lambda_c = \frac{\langle k \rangle}{\langle k^2 \rangle}.
 $$
 
-For a Poisson degree distribution, $\langle k^2 \rangle = \langle k \rangle^2 + \langle k \rangle$ and $\lambda_c = 1/(\langle k \rangle + 1)$, close to the homogeneous result. For SIR the analogous result is a critical transmissibility $T_c = \langle k \rangle / (\langle k^2 \rangle - \langle k \rangle)$ [@newman2002spread].
+For a Poisson degree distribution, $\langle k^2 \rangle = \langle k \rangle^2 + \langle k \rangle$ and $\lambda_c = 1/(\langle k \rangle + 1)$, close to the homogeneous result. For SIR the analogous result is a critical transmissibility $T_c = \langle k \rangle / (\langle k^2 \rangle - \langle k \rangle)$ [@newman2002spread]. Note that this is a threshold in the transmissibility $T$, the probability that an infected node transmits to a given neighbour before recovering, and not in the rate ratio $\lambda$. With exponentially distributed infectious periods $T = \lambda/(1+\lambda)$, so $T_c = 1/(\kappa - 1)$ with $\kappa = \langle k^2 \rangle / \langle k \rangle$ corresponds to $\lambda_c = 1/(\kappa - 2) = \langle k \rangle / (\langle k^2 \rangle - 2\langle k \rangle)$ [@pastor2015epidemic, Eq. 62]. For a Poisson graph with $\langle k \rangle = 6$ this gives $T_c = 1/6$ and $\lambda_c = 1/5$. [SIR as Bond Percolation](sir-percolation.qmd) derives the relation.
 
 ## When does the threshold vanish?
 
@@ -92,7 +99,7 @@ The simulation uses the discrete-time update of the lab: a susceptible node with
 :::
 
 ::: {.python-next}
-**Build this in Python.** In Lab 14 (Session 34) you write the code behind this figure: [SIR Simulation](sir-network-simulation.qmd) and [Vaccination Strategies](vaccination-strategies.qmd). You will code the synchronous SIS/SIR update on a NetworkX graph, run it on generated and real networks, and compare random, acquaintance and targeted immunization.
+**Build this in Python.** In the lab you write the code behind this figure: [SIR Simulation](sir-network-simulation.qmd) and [Vaccination Strategies](vaccination-strategies.qmd). You will code the synchronous SIS/SIR update on a NetworkX graph, run it on generated and real networks, and compare random, acquaintance and targeted immunization.
 :::
 
 ::: {.callout-note}
@@ -145,3 +152,5 @@ plt.show()
 
 For this graph both predictions give $\lambda_c \approx 0.059$. The simulated prevalence is still zero at $\lambda = 0.08$ and becomes positive between $0.08$ and $0.10$. The mean-field theories ignore dynamical correlations: a newly infected node cannot pass the infection back to the neighbour that infected it while that neighbour is still infected, so part of the infection attempts are wasted and the true threshold is higher. On a finite graph, fluctuations also end outbreaks that are just above threshold within the simulated time.
 :::
+
+See also: [SIR as Bond Percolation](sir-percolation.qmd), which derives the threshold from the transmissibility of the epidemic.

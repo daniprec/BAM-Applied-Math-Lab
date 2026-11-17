@@ -1,6 +1,6 @@
 # Financial price data for Module 3
 
-The Session 18 laboratory (`modules/randomness/returns-data.qmd` and the
+The financial time series laboratory (`modules/randomness/returns-data.qmd` and the
 pages after it) reads daily closing prices through
 `amlab.finance.load_prices()`.
 

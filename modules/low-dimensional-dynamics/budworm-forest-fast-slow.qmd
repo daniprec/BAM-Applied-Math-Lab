@@ -10,6 +10,114 @@ With the forest fixed, an outbreak never ends. Ludwig, Jones and Holling let the
 
 Ludwig et al. estimate that the budworm density can change several hundredfold in a few years, so its characteristic time is of the order of months. Trees need 7 to 10 years to replace their foliage and live 100 to 150 years [@ludwig1978qualitative, p. 316]. The budworm is the fast variable; the forest is slow.
 
+## From a parameter to a variable: a two-variable slow-fast model
+
+The budworm equation of [The Spruce Budworm Model](budworm-model.qmd) contains the parameter $k$, which measures the foliage available to the insect. There the forest is an external input that the modeller turns up and down. Ecologically this is not possible: forest condition is not independent of the budworm population, because feeding removes foliage and the forest regrows. The one-dimensional model is better read as the *fast subsystem* of a larger system in which $k$ becomes a slowly changing variable $S$.
+
+Write $S(t)$ for the available foliage in the units of $k$. The budworm density $x$ and the forest $S$ then obey
+
+$$
+\begin{aligned}
+\frac{dx}{d\tau} &= r x\left(1 - \frac{x}{S}\right) - \frac{x^2}{1 + x^2},\\
+\frac{dS}{d\tau} &= \varepsilon\,\bigl[\,G(S) - H(x, S)\,\bigr], \qquad 0 < \varepsilon \ll 1 .
+\end{aligned}
+$$ {#eq-fast-slow}
+
+The small number $\varepsilon$ says that the forest changes much more slowly than the insect. $G(S)$ is forest regrowth without budworms and $H(x, S)$ is the foliage lost to feeding. The page does not fix the form of $H$, because the assumptions about how insects damage trees are ecological choices. Four are reasonable:
+
+| Defoliation $H(x, S)$ | Assumption | Comment |
+|---|---|---|
+| $a\,x$ | Each larva eats at a constant rate. | Simplest. Needs bounded forest growth so that $S$ stays positive. |
+| $a\,x\,S$ | Feeding is proportional to the foliage present. | Defoliation vanishes as $S \to 0$ and the forest feeds back strongly on the insect. |
+| $a\,S\,\dfrac{x}{1 + x}$ | Feeding saturates at high larval density. | Crowding or limited feeding time, as in many consumer-resource models. |
+| $a\,S\,\dfrac{x^2}{1 + x^2}$ | Holling type III, like the predation term. | Little defoliation at low density (refuge), strong during an outbreak. |
+
+### The geometry: hysteresis becomes a cycle
+
+For fixed $S$, the equilibria of the fast equation form the S-shaped curve of the hysteresis diagram: a lower branch (refuge), an upper branch (outbreak) and an unstable middle branch. This curve is called the *critical manifold*. Because $\varepsilon$ is small, $x$ relaxes quickly to a stable branch and then follows it while $S$ drifts slowly. When $S$ reaches a fold, the branch the system sits on disappears and $x$ jumps to the other branch. The hysteresis loop of the one-dimensional model has become a *relaxation oscillation* in time, a mechanism you will meet again in [Relaxation Oscillations](relaxation-oscillations.qmd).
+
+@fig-slow-fast shows this for the simplest choice, $G(S) = S\,(1 - S/S_{\max})$ and $H = a\,x$. The parameter values are chosen for the demonstration and are not fitted to data: $r = 0.55$, $\varepsilon = 0.02$, $S_{\max} = 30$, $a = 2$.
+
+```{python}
+#| echo: false
+#| label: fig-slow-fast
+#| fig-cap: "Slow-fast budworm and forest model with H = a x. Left: the critical manifold (stable branches blue, unstable red) and the trajectory, which follows the lower branch while the forest grows, jumps up at the fold, follows the upper branch while the forest is defoliated, and jumps down. Right: the same trajectory in time. Units are dimensionless."
+#| fig-width: 10
+#| fig-height: 4
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.integrate import solve_ivp
+
+r, eps, s_max, a = 0.55, 0.02, 30.0, 2.0
+
+
+def rhs(t, y):
+    x, s = y
+    s = max(s, 1e-6)
+    return [r * x * (1 - x / s) - x**2 / (1 + x**2),
+            eps * (s * (1 - s / s_max) - a * x)]
+
+
+sol = solve_ivp(rhs, (0, 1500), [0.5, 3.0], method="LSODA", rtol=1e-8, atol=1e-10,
+                dense_output=True, max_step=0.5)
+t = np.linspace(0, 1500, 6000)
+x, s = sol.sol(t)
+
+stable, unstable = [], []
+for sv in np.linspace(0.5, 30, 1500):
+    # r (1 - x/S)(1 + x^2) = x is a cubic in x (the nonzero equilibria)
+    for root in np.poly1d([-r / sv, r, -r / sv - 1, r]).roots:
+        if abs(root.imag) < 1e-9 and root.real > 0:
+            xr = root.real
+            slope = r * (1 - 2 * xr / sv) - 2 * xr / (1 + xr**2) ** 2
+            (stable if slope < 0 else unstable).append((sv, xr))
+stable, unstable = np.array(stable), np.array(unstable)
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4), gridspec_kw={"width_ratios": [1, 1.2]})
+ax1.plot(*stable.T, ".", ms=2, color="tab:blue", label="stable")
+ax1.plot(*unstable.T, ".", ms=2, color="tab:red", label="unstable")
+ax1.plot(s[t > 600], x[t > 600], "k", lw=1.2, label="trajectory")
+ax1.set_xlabel("forest S")
+ax1.set_ylabel("budworm x")
+ax1.set_ylim(0, 16)
+ax1.legend(markerscale=4, fontsize=8, loc="upper left")
+ax2.plot(t, x, "tab:red")
+ax2.set_xlabel("time")
+ax2.set_ylabel("budworm x", color="tab:red")
+ax3 = ax2.twinx()
+ax3.plot(t, s, "tab:green")
+ax3.set_ylabel("forest S", color="tab:green")
+plt.tight_layout()
+plt.show()
+```
+
+Read the cycle as an *endogenous* outbreak, one that needs no external forcing:
+
+1. The forest recovers slowly and $S$ increases while the budworm stays at the refuge level.
+2. $S$ crosses the fold at which the refuge disappears.
+3. The budworm jumps to the outbreak level.
+4. Defoliation $H$ now exceeds regrowth and $S$ falls.
+5. $S$ drops below the fold at which the outbreak branch disappears and the population collapses.
+6. The forest recovers and the cycle repeats.
+
+The oscillation is asymmetric, with a fast rise and a slow recovery, which is the geometry of a relaxation oscillation. The geometry of the original bifurcation diagram is unchanged; what changes is its interpretation, because hysteresis is now part of the dynamics instead of a property of a parameter sweep.
+
+::: {.callout-note}
+## The form of $H$ matters for the outcome, not for the geometry
+All four defoliation forms share the same critical manifold, but a cycle needs two things: the forest must be able to grow past the fold where the refuge disappears, and feeding during an outbreak must push $S$ below the fold where the outbreak disappears. If feeding is too weak the system settles to a steady state, and if it is too strong the forest never grows enough to reach the first fold. With $r = 0.55$, $\varepsilon = 0.02$ and $G = S(1 - S/30)$, we integrated the model from $x = 0.5$, $S = 3$ and found:
+
+| $H$ | $a$ with cycles | $a$ without cycles (settles to a steady state) |
+|---|---|---|
+| $a\,x$ | 2, 3 (period about 205) | 1.5 |
+| $a\,x\,S$ | 0.3, 0.5 (period about 200 to 280) | 0.15, 0.2 |
+| $a\,S\,x^2/(1 + x^2)$ | 1.0 (period about 390) | 0.8, 1.5, 2, 3 |
+| $a\,S\,x/(1 + x)$ | none of the values tried (1 to 4) | 1, 1.5, 2, 3, 4 |
+
+Times are in the dimensionless units of @eq-fast-slow. These runs sample only a few values of $a$ with the other parameters fixed, so they show that the outcome depends on $H$ and $a$ but do not map the boundaries between the two behaviours.
+:::
+
+The three-variable model of Ludwig et al. below is a more detailed version of this idea, with a separate variable for the condition of the trees.
+
 ## The three-variable model
 
 The state is the budworm density $B$ (larvae per acre), the total branch surface area $S$ (branches per acre) and an "energy reserve" $E$ that measures the condition of the trees, with maximum $K_E = 1$:
@@ -92,6 +200,21 @@ The budworm stays low for about three decades while the forest grows, then rises
 
 Ludwig et al. point out that if budworm densities are partially controlled, for example by spraying, the forest may stay at an equilibrium with high budworm, foliage and branch area. They link this to the "perpetual outbreak" observed in New Brunswick after insecticide spraying [@ludwig1978qualitative, pp. 322-323]. Keeping the budworm below the outbreak level also keeps the forest in the state where the next outbreak is possible.
 
+## Evidence from real outbreaks
+
+Slow-fast models predict long quiet phases punctuated by abrupt outbreaks and collapses. Forest insects are one of the few cases where long records exist to compare with this prediction.
+
+**Larch budmoth in the Alps.** The larch budmoth (*Zeiraphera diniana*) periodically defoliates larch, which leaves a growth reduction in the tree rings. From 47 513 wood-density measurements, Esper et al. reconstructed outbreaks over 1173 years and found remarkably regular peaks, on average every 9.3 years [@esper2007alpine]. Büntgen et al. later compiled more than 5000 tree-ring series from the Alps and the Tatra Mountains and found cyclic outbreaks recurring about every 8 to 9 years at the site level between AD 1700 and 2000 [@buntgen2009three]. Both studies also report a change in recent decades. The regular peaks stopped after 1981 in the first reconstruction, and the second finds that synchronized Alpine-wide defoliation has ceased even though local cycles persisted. Esper et al. relate this to exceptional regional warmth, so the regularity of the cycle is not guaranteed to continue.
+
+**Spruce budworm.** Ludwig et al. calibrate their model to an outbreak period of about 40 years [@ludwig1978qualitative]. Unlike the larch budmoth, outbreaks of the spruce budworm are not strictly periodic, with variable amplitude and spacing. Noise, spatial heterogeneity and climate are natural explanations for this variability, and a slow-fast mechanism does not require exact periodicity.
+
+**Other forest Lepidoptera.** Population cycles are common in forest moths, including the forest tent caterpillar and the gypsy moth, and the review of Myers and Cory covers what is known about their mechanisms [@myers2013population].
+
+::: {.callout-warning}
+## The mechanism is still debated
+The agreement between the cycle shape and the data does not prove that a slow-fast host-resource mechanism causes the cycles. Myers and Cory report that delayed density-dependent parasitism and reduced fecundity at peak density are common influences on forest Lepidoptera, that induced plant defences give inconsistent results, and that the hypothesis that sunspots explain cycles is rejected [@myers2013population]. The model on this page is one candidate mechanism, and it is useful because it is simple enough to analyse completely.
+:::
+
 ::: {.callout-note}
 ## Exercise
 Using the Level III values, compute $R$ for a mature forest ($S = K_S$). Is it above the value $1/2$ needed for outbreaks when $Q$ is large?
@@ -104,4 +227,4 @@ $R = \alpha' r_B K_S / \beta = 1.11 \times 1.52 \times 25\,440 / 43\,200 \approx
 
 ## Next
 
-Session 5 turns to epidemics.
+The next topic is epidemics, starting with [Compartmental Models](compartmental-models.qmd).

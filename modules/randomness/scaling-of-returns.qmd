@@ -4,6 +4,12 @@ subtitle: "Module 3: Modelling with Randomness"
 format: html
 ---
 
+::: {.callout-note}
+## Reading
+- **Compulsory:** @mantegna1995scaling, the whole letter (four pages).
+- **Recommended:** @mantegna1994stochastic, on the truncated Lévy flight.
+:::
+
 If log returns are independent draws from one stable law, their distribution at every time horizon is a rescaled copy of the one-step distribution. @mantegna1995scaling tested this idea on the S&P 500 index. This page states the prediction and their result.
 
 ## The scaling prediction
@@ -22,20 +28,43 @@ $$ {#eq-scaling-p0}
 
 On log-log axes $p_{\Delta t}(0)$ against $\Delta t$ is a straight line with slope $-1/\alpha$. For Gaussian returns $\alpha = 2$ and the slope is $-1/2$. The peak of the distribution is well sampled, so @eq-scaling-p0 is easier to measure than the tail.
 
-## What Mantegna and Stanley found
+@mantegna1995scaling write the symmetric stable law as $L_\alpha(Z, \Delta t) = \frac{1}{\pi}\int_0^\infty \exp(-\gamma \Delta t\, q^{\alpha}) \cos(qZ)\, dq$, so that their scale factor is $\gamma = c^{\alpha}$ in the notation of [Stable Distributions](stable-distributions.qmd). The probability of return then has the closed form
 
-@mantegna1995scaling used S&P 500 index values sampled every minute from 1984 to 1989. They report that:
+$$
+p_{\Delta t}(0) = \frac{\Gamma(1/\alpha)}{\pi\,\alpha\,(\gamma\,\Delta t)^{1/\alpha}} .
+$$ {#eq-scaling-p0-gamma}
 
-- $p_{\Delta t}(0)$ follows @eq-scaling-p0 for $\Delta t$ from 1 to 1000 minutes, three orders of magnitude.
-- The slope is about $-0.71$, which gives $\alpha \approx 1.4$ ($1.40 \pm 0.05$ in the paper). The exponent is stable over the six years of data.
-- After rescaling with @eq-scaling-density, the central part of the distributions at different $\Delta t$ matches a Lévy stable law.
-- The far tails fall off faster than a Lévy law, approximately exponentially, so the variance is finite.
+The check below compares this expression with the density at zero of `scipy.stats.levy_stable`.
 
-The last point led to the truncated Lévy flight: a Lévy flight whose largest steps are cut off. Sums of such steps look stable for a long range of $n$ and only converge to a Gaussian after very many steps [@mantegna1994stochastic]. Later work on the tails of individual US stocks found a power-law tail exponent close to 3, outside the stable range $0 < \alpha \le 2$ [@gopikrishnan1998inverse]. This is consistent with the heavy-tail and aggregational Gaussianity facts of [Stylized Facts of Returns](stylized-facts.qmd).
+```{python}
+import numpy as np
+from scipy import special, stats
+
+c = 0.7  # scale in the convention of the Stable Distributions page, gamma = c**alpha
+for alpha in [1.0, 1.4, 1.8, 2.0]:
+    formula = special.gamma(1 / alpha) / (np.pi * alpha * (c**alpha) ** (1 / alpha))
+    scipy_pdf0 = stats.levy_stable(alpha, 0, scale=c).pdf(0.0)
+    print(f"alpha = {alpha}: formula {formula:.6f}, scipy {scipy_pdf0:.6f}")
+```
+
+## What Mantegna and Stanley did and found
+
+@mantegna1995scaling analysed the S&P 500 cash index from January 1984 to December 1989. The data are 1,447,514 records from the Chicago Mercantile Exchange. The records are not equally spaced: the mean gap was close to one minute in 1984 and 1985 and close to 15 seconds from 1986 to 1989. The authors join the trading sessions into one continuous "trading time", select non-overlapping records separated by $\Delta t$ (within a small tolerance), and study the index variations $Z = y(t) - y(t - \Delta t)$, that is, differences of the index and not log returns. They report that returns give similar properties at high frequency and that the overnight difference does not change the scaling. The number of samples falls from 493,545 at $\Delta t = 1$ minute to 562 at $\Delta t = 1000$ minutes.
+
+Their results are:
+
+- $p_{\Delta t}(0)$ follows @eq-scaling-p0 for $\Delta t$ from 1 to 1000 minutes, three orders of magnitude. The slope of the log-log fit is $-0.712 \pm 0.025$, against $-0.5$ for a Gaussian. Inverting the slope gives $\alpha = 1.40 \pm 0.05$; the error follows from $\delta\alpha = \alpha^2\,\delta(\text{slope})$.
+- The distributions at different $\Delta t$, rescaled with @eq-scaling-density and $\alpha = 1.40$, collapse onto the one-minute distribution. The scale factor of the Lévy law is not fitted to the shape: it is computed from the measured $p_{\Delta t}(0)$. The one-minute distribution agrees with the symmetric Lévy law over almost three orders of magnitude of probability for $|Z|/\sigma \lesssim 6$, where $\sigma$ is the standard deviation.
+- For $|Z|/\sigma \gtrsim 6$ the tails fall off approximately exponentially, faster than the Lévy law. The variance is therefore finite, which the authors present as the resolution of the problem of the infinite variance of a stable law.
+- The exponent is roughly constant from year to year: the yearly curves of $p_{\Delta t}(0)$ are parallel to the curve for the whole period, and a monthly analysis gives $\alpha = 1.38 \pm 0.14$. The scale factor varies with the volatility.
+- Using the Berry-Esseen theorem with the measured third absolute moment and second moment at one minute, the authors estimate that the time needed to approach a Gaussian process is of the order of one month, and they point to an independent study of daily, weekly and monthly returns, which shows a gradual convergence to a Gaussian. I did not reproduce this estimate: it depends on the numerical constant used in the Berry-Esseen bound.
+- A GARCH(1,1) process with parameters chosen to mimic their one-minute distribution gives a slope of $-0.531 \pm 0.025$, hence $\alpha \approx 1.88 \pm 0.09$, about 43 % above the value found in the data. GARCH reproduces fat tails, but not this scaling.
+
+The exponentially truncated tails fit the idea of a truncated Lévy flight, a Lévy flight whose largest steps are cut off. @mantegna1994stochastic had introduced it a year earlier, and the 1995 letter cites it for the point that a process with finite variance can show Lévy scaling over a long range of $n$ before it converges to a Gaussian. The exercise below shows this crossover. Later work on the tails of individual US stocks found a power-law tail exponent close to 3, outside the stable range $0 < \alpha \le 2$ [@gopikrishnan1998inverse]. This is consistent with the heavy-tail and aggregational Gaussianity facts of [Stylized Facts of Returns](stylized-facts.qmd).
 
 ## A simulated check
 
-The figure applies the $p_{\Delta t}(0)$ method to two synthetic series of $10^6$ i.i.d. returns: symmetric stable with $\alpha = 1.4$ and Gaussian. The density at zero is estimated as the fraction of aggregated returns in a window $|r| < \varepsilon/2$ divided by $\varepsilon$, with $\varepsilon$ equal to one tenth of the interquartile range at that horizon.
+The figure applies the $p_{\Delta t}(0)$ method to two synthetic series of $10^6$ i.i.d. returns: symmetric stable with $\alpha = 1.4$ and Gaussian. The density at zero is estimated, as one simple choice, as the fraction of aggregated returns in a window $|r| < \varepsilon/2$ divided by $\varepsilon$, with $\varepsilon$ equal to one tenth of the interquartile range at that horizon.
 
 ```{python}
 #| label: fig-p0-scaling
@@ -94,5 +123,31 @@ for label, r in series.items():
     print(f"{name:18s} alpha (all) = {-1 / s_all:.2f}, alpha (dt >= 100) = {-1 / s_big:.2f}")
 ```
 
-With $10^6$ returns there are only 2000 non-overlapping blocks at $\Delta t = 500$, and few of them fall inside the small window around zero. Long horizons cost data, which is why @mantegna1995scaling needed minute-by-minute prices to span three decades of $\Delta t$.
+With $10^6$ returns there are only 2000 non-overlapping blocks at $\Delta t = 500$, and few of them fall inside the small window around zero. Long horizons cost data, which is why @mantegna1995scaling needed more than a million intraday records to span three decades of $\Delta t$.
+:::
+
+::: {.callout-note}
+## Exercise
+
+Build a truncated Lévy flight: draw symmetric stable steps with $\alpha = 1.4$ and discard those with $|x| > 50$ in units of the scale. Estimate the local slope of $\log p_{\Delta t}(0)$ against $\log \Delta t$ for short horizons ($\Delta t \le 10$) and for long horizons ($100 \le \Delta t \le 500$). What do you expect, and what does it say about reading $\alpha$ off a scaling window?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Truncated steps have finite variance, so for very long horizons the aggregated returns approach a Gaussian and the slope tends to $-1/2$. For short horizons the truncation is not felt and the slope stays close to $-1/1.4 \approx -0.71$.
+
+```{python}
+rng = np.random.default_rng(7)
+raw = sample_symmetric_stable(1.4, 3 * 10**6, rng=rng)
+steps = raw[np.abs(raw) < 50.0][: 2 * 10**6]
+print(f"fraction of steps kept: {np.mean(np.abs(raw) < 50.0):.4f}")
+for lo, hi in [(1, 10), (100, 500)]:
+    sel = (horizons >= lo) & (horizons <= hi)
+    p0_steps = np.array([p_zero(aggregate_returns(steps, h)) for h in horizons[sel]])
+    slope = np.polyfit(np.log(horizons[sel]), np.log(p0_steps), 1)[0]
+    print(f"dt in [{lo}, {hi}]: slope {slope:.2f}, effective alpha {-1 / slope:.2f}")
+```
+
+Only about 0.2 % of the steps are removed, yet the apparent index moves from about 1.4 at short horizons towards 2 at long horizons. A straight line over a limited window therefore gives an effective index that depends on the window, and a Lévy-like scaling over a finite range does not prove infinite variance.
 :::

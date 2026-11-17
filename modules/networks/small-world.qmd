@@ -4,12 +4,21 @@ subtitle: "Module 5: Complex Networks"
 format: html
 ---
 
+::: {.callout-note}
+## Reading
+- **Compulsory:** @watts1998collective (the two-column letter, up to Figure 2).
+- **Recommended:** @newman2003structure, Section 6.
+- **What the paper did and found:** Watts and Strogatz start from a ring lattice with $n$ vertices and $k$ edges per vertex and rewire each edge with probability $p$ to a vertex chosen uniformly at random, forbidding duplicate edges. They work in the regime $n \gg k \gg \ln n \gg 1$ and find $L \approx n/2k$ and $C \approx 3/4$ as $p \to 0$, against $L \approx \ln n/\ln k$ and $C \approx k/n$ as $p \to 1$. Plotted on a logarithmic axis for $p$ (Figure 2, averages over 20 realisations, normalised by the values at $p = 0$), $L(p)$ drops rapidly while $C(p)$ stays almost constant, which defines the small-world regime. Their Table 1 shows that three real networks are small-world: the film-actor graph ($L = 3.65$ against $2.99$ for a random graph, $C = 0.79$ against $0.00027$), the western US power grid ($L = 18.7$ against $12.4$, $C = 0.080$ against $0.005$) and the neural network of *C. elegans* ($L = 2.65$ against $2.25$, $C = 0.28$ against $0.05$).
+:::
+
 A random graph has short paths but almost no clustering. A regular lattice has high clustering but long paths. Watts and Strogatz built a one-parameter model that interpolates between the two [@watts1998collective].
 
 ## The model
 
 1. Place $N$ nodes on a ring and join each node to its $k$ nearest neighbours ($k/2$ on each side, $k$ even).
 2. Visit every edge $(u, v)$. With probability $p$, replace it by $(u, w)$, where $w$ is chosen uniformly among the nodes that are not already neighbours of $u$.
+
+**Notation.** Some texts call the rewiring probability $\beta$ and keep $p$ for the edge probability of the random graph. The original paper uses $p$ for the rewiring probability, as NetworkX does (`nx.watts_strogatz_graph(n, k, p)`), and so does this page; read $p$ here as $\beta$ in those texts. Rewiring introduces shortcuts that reduce distances while the clustering stays high, and that the result is $L \sim \log N$. This holds for any fixed $p > 0$ only once $N$ is large enough that the shortcuts dominate: for smaller $N$ the path length is still of the lattice type. [Scaling of Path Length and Clustering](model-scaling.qmd) measures that crossover.
 
 At $p = 0$ you have the ring lattice. At $p = 1$ you have a graph close to a random graph with the same number of edges. The degree distribution stays narrow for every $p$: every node keeps at least $k/2$ edges.
 
@@ -91,3 +100,7 @@ At $p = 0.08$ the clustering is still close to the lattice value ($C(0) = 0.6$),
 :::
 
 The model explains short paths together with high clustering. It does not produce hubs: for that you need [preferential attachment](preferential-attachment.qmd).
+
+See also: [Scaling of Path Length and Clustering](model-scaling.qmd) for the dependence of $L$ and $C$ on $N$ in the ER, WS and BA models.
+
+In the summary table, the Watts-Strogatz model gets ticks for short paths and for high clustering, and a cross for the degree distribution, which stays narrow. [Comparing Graph Models](comparing-models.qmd) reproduces the whole table.

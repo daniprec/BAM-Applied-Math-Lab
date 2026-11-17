@@ -4,6 +4,11 @@ subtitle: "Module 3: Modelling with Randomness"
 format: html
 ---
 
+::: {.callout-note}
+## Reading
+- **Compulsory:** @mantegna1995scaling, the whole letter (four pages). Note that the letter analyses intraday S&P 500 index differences, not daily returns.
+:::
+
 In [Scaling of Returns](scaling-of-returns.qmd) you saw the prediction $p_{\Delta t}(0) \propto \Delta t^{-1/\alpha}$ and the result $\alpha \approx 1.4$ of @mantegna1995scaling for minute data. Here you aggregate daily returns over longer horizons and test how the distribution changes with $\Delta t$.
 
 ```{python}
@@ -101,6 +106,8 @@ rng = np.random.default_rng(32)
 table_shuffled = scaling_table(rng.permutation(r))
 slope_sd = np.polyfit(np.log(horizons), np.log(table_shuffled[:, 0]), 1)[0]
 print(f"shuffled: slope of log std vs log dt = {slope_sd:.3f} (theory 0.5)")
+slope_p0_shuffled = np.polyfit(np.log(horizons), np.log(table_shuffled[:, 2]), 1)[0]
+print(f"shuffled: slope of log p(0) vs log dt = {slope_p0_shuffled:.3f} (about -0.5 for i.i.d. returns with finite variance)")
 ```
 
 ## Experiment: three scaling plots
@@ -134,6 +141,7 @@ print(f"p(0) slope, original data: {slope_p0:.3f}  ->  effective alpha = {-1 / s
 
 - The standard deviation grows close to $\sqrt{\Delta t}$ because daily returns are nearly uncorrelated. This is the part of the random walk model that survives.
 - The excess kurtosis falls with $\Delta t$: the distribution becomes more Gaussian at longer horizons, which is the aggregational Gaussianity of @cont2001empirical. If it falls more slowly for the original data than for the shuffled data, the difference comes from volatility clustering, since that is the only thing the shuffle removed.
+- @mantegna1995scaling also simulated a GARCH(1,1) process with parameters chosen to mimic their one-minute distribution. Its $p_{\Delta t}(0)$ has a slope of $-0.531 \pm 0.025$, hence an effective $\alpha \approx 1.88$, far from the value 1.40 of their data. Compare this with the effective $\alpha$ that you obtain for the original and for the shuffled series: the shuffled series should give the Gaussian benchmark of about $-0.5$.
 - The effective $\alpha$ from $p_{\Delta t}(0)$ tells you whether the centre of the distribution rescales like a Lévy law or like a Gaussian over these horizons. @mantegna1995scaling found $\alpha \approx 1.4$ for horizons of 1 to 1000 minutes on the S&P 500; daily and longer horizons are a different regime.
 
 ## Limitations
@@ -182,5 +190,5 @@ Suppose that on the same daily series the $p_{\Delta t}(0)$ method gives an effe
 ::: {.callout-tip collapse="true"}
 ## Solution
 
-No. The two methods look at different parts of the distribution. The Hill estimator measures the far tail of one-day returns. The $p_{\Delta t}(0)$ method measures how the height of the centre changes under aggregation, which depends on the whole distribution and on the dependence between days. @mantegna1995scaling found exactly this combination for the S&P 500: a Lévy-like centre with $\alpha \approx 1.4$ and tails that fall off faster than a Lévy law, so the variance is finite. The truncated Lévy flight of @mantegna1994stochastic is one model with both properties.
+No. The two methods look at different parts of the distribution. The Hill estimator measures the far tail of one-day returns. The $p_{\Delta t}(0)$ method measures how the height of the centre changes under aggregation, which depends on the whole distribution and on the dependence between days. @mantegna1995scaling found a similar combination for intraday S&P 500 data: a Lévy-like centre with $\alpha \approx 1.4$ and tails that fall off approximately exponentially, faster than a Lévy law, so the variance is finite. (They did not fit a power-law tail with exponent 3; that value comes from later work on individual stocks [@gopikrishnan1998inverse].) The truncated Lévy flight of @mantegna1994stochastic is one model with both properties.
 :::

@@ -1,0 +1,131 @@
+---
+title: "From Cars to a Continuum"
+subtitle: "Module 6: Explorables and Discrete Models"
+format: html
+---
+
+::: {.callout-note}
+## Reading
+- **Compulsory:** the introduction and Section 3 of @nagel1992cellular.
+- **Related pages of the course:** [Social Force Model](../collective-behaviour/social-force.qmd) and [Faster Is Slower: Crowds at a Door](../collective-behaviour/crowd-exit.qmd) in Module 2.
+:::
+
+The Nagel-Schreckenberg model describes every car. Traffic engineers often describe the road with a density field instead. The introduction of the paper recalls that fluid-dynamical approaches to traffic have existed since the 1950s, and that methods of nonlinear dynamics applied to them stressed the notion of a phase transition from laminar flow to start-stop waves [@nagel1992cellular]. In its conclusion, the paper argues that the discrete model contains the transition from laminar to start-stop traffic of the fluid approach and keeps more elements of individual behaviour. This page connects the two descriptions, and then compares the traffic automaton with the continuous social force model that you met in Module 2.
+
+## Conservation of cars and kinematic waves
+
+On a ring no car enters or leaves, so the number of cars is conserved. For a density $\rho(x,t)$ averaged over a few cells and the corresponding flow $q(x,t)$, conservation reads
+
+$$
+\frac{\partial \rho}{\partial t} + \frac{\partial q}{\partial x} = 0 .
+$$ {#eq-conservation}
+
+This statement is exact for the number of cars. It is not yet a closed model. A closure assumes that the flow adjusts at once to the local density, $q = Q(\rho)$, where $Q$ is the fundamental diagram of the page [The Fundamental Diagram](fundamental-diagram.qmd). This is an approximation: it ignores the time that cars need to accelerate and the fluctuations of the random slowdown. With the closure, @eq-conservation becomes $\partial_t \rho + Q'(\rho)\,\partial_x \rho = 0$, so a small disturbance of density travels with the speed
+
+$$
+c(\rho) = Q'(\rho) .
+$$ {#eq-kinematic-speed}
+
+For the deterministic model, $Q(\rho) = \min(\rho\, v_{\max},\ 1 - \rho)$, so $c = v_{\max}$ in free flow and $c = -1$ in the congested phase. In free flow a disturbance moves with the cars. In the congested phase it moves backwards by one cell per step, against the traffic. The claim of the paper that the deterministic stationary pattern moves backwards by one site per step is exactly this statement [@nagel1992cellular].
+
+```{python}
+#| echo: false
+#| label: fig-continuum
+#| fig-cap: 'Left: space-time diagram of the deterministic model (v_max = 5, p = 0, ring of 100 cells, density 0.3, cars move to the right, time runs downward) after the transient. The dashed line moves one cell to the left per step and stays on an occupied cell: the pattern is carried backwards at the kinematic speed c = -1. Right: flow Q against density for p = 0 (exact) and p = 0.5 (simulation, ring of 1000 cells), with straight lines whose slope is the kinematic speed at density 0.3 for p = 0 (-1) and the fitted slope for p = 0.5 (about -0.30).'
+#| fig-width: 8
+#| fig-height: 3.8
+
+import numpy as np
+import matplotlib.pyplot as plt
+from amlab.cellular_automata.traffic_models import space_time, fundamental_diagram, deterministic_flow
+
+L, T0, T = 100, 300, 360
+grid = space_time(length=L, density=0.3, steps=T, p=0.0, seed=4)[T0:]
+x0 = int(np.flatnonzero(grid[0])[-1])
+t = np.arange(grid.shape[0])
+ray = (x0 - t) % L
+assert grid[t, ray].all()                      # the pattern moves left by one cell per step
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 3.8))
+ax1.imshow(grid, cmap="binary", interpolation="nearest", aspect="auto")
+xs = ray.astype(float)
+xs[np.r_[False, np.diff(ray) > 0]] = np.nan     # break the line where it wraps around the ring
+ax1.plot(xs, t, "r--", linewidth=1.5)
+ax1.set_xlabel("Road cell")
+ax1.set_ylabel("Time after transient")
+
+d = np.linspace(0.02, 0.6, 30)
+ax2.plot(d, deterministic_flow(d), "k-", label=r"$p=0$ (exact)")
+dd = np.linspace(0.04, 0.6, 15)
+q5 = fundamental_diagram(dd, length=1000, steps=6000, burn_in=2000, p=0.5, seed=1)
+ax2.plot(dd, q5, "o", markersize=4, label=r"$p=0.5$ (simulation)")
+r = np.array([0.2, 0.4])
+ax2.plot(r, deterministic_flow(np.array([0.3])) - 1.0 * (r - 0.3), "r--", linewidth=1)
+ax2.plot(r, np.interp(0.3, dd, q5) - 0.30 * (r - 0.3), "r--", linewidth=1)
+ax2.set_xlabel(r"Density $\rho$")
+ax2.set_ylabel(r"Flow $Q$")
+ax2.legend()
+plt.tight_layout()
+plt.show()
+```
+
+For $p = 0.5$ the slope of $Q$ on the congested branch is still negative, so jams again travel backwards. A straight-line fit through simulated flows on a ring of 2000 cells at $\rho = 0.20, 0.25, 0.30, 0.35, 0.40$ gives $Q' \approx -0.30$, and the free-flow branch has slope $v_{\max} - p = 4.5$ (a flow of $0.09$ at $\rho = 0.02$). A direct measurement of the speed of the back-travelling pattern of stopped cars gave $-0.35$ at $\rho = 0.2$ and $-0.40$ at $\rho = 0.3$ and $0.4$. Both are of the same order and have the same sign, but they are not equal. The local slope of $Q$ varies between $-0.25$ and $-0.34$ over this range, the closure ignores the internal structure of a jam, and the measurement has a resolution of about $0.05$ cells per step. We do not claim that @eq-kinematic-speed predicts the jam speed of the stochastic model quantitatively.
+
+::: {.callout-note}
+## Exercise
+
+(a) Use @eq-kinematic-speed to find the kinematic speed of the deterministic model with $v_{\max} = 3$ at $\rho = 0.1$ and at $\rho = 0.5$. (b) Check the second value by simulation: start from random positions on a ring of 100 cells, run 500 steps, and find the shift $s$ for which the occupancy after the next step equals the previous occupancy shifted by $s$ cells.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+(a) The density of maximum flow is $1/(v_{\max}+1) = 0.25$. At $\rho = 0.1$ the flow is $3\rho$, so $c = 3$. At $\rho = 0.5$ it is $1 - \rho$, so $c = -1$.
+
+(b) The code below returns the shift $-1$ in every step, which means that the pattern moves one cell to the left.
+
+```{python}
+import numpy as np
+from amlab.cellular_automata.traffic_models import nasch_step, ring_initial
+
+L, vmax = 100, 3
+rng = np.random.default_rng(1)
+x, v = ring_initial(L, 50, "random", vmax, rng)
+for _ in range(500):
+    x, v = nasch_step(x, v, L, vmax, 0.0, None, rng)
+before = np.zeros(L, dtype=int); before[x] = 1
+x, v = nasch_step(x, v, L, vmax, 0.0, None, rng)
+after = np.zeros(L, dtype=int); after[x] = 1
+print([s for s in range(-L // 2, L // 2) if np.array_equal(np.roll(before, s), after)])
+```
+:::
+
+## Two ways to model crowds and traffic
+
+The traffic automaton and the social force model of Module 2 are both models of agents that obstruct each other, and both produce jams. They differ in nearly every modelling choice. @tbl-ca-vs-social-force lists the choices as defined on the pages of the course and in the paper.
+
+| | Nagel-Schreckenberg automaton | Social force model with contact forces |
+|---|---|---|
+| Space | one-dimensional lattice of cells | continuous plane |
+| Time | discrete steps, synchronous update | continuous time, integrated with a small time step |
+| State of an agent | cell and integer speed | position and velocity vectors, disc radius and mass |
+| Interaction | the gap to the car ahead | repulsion and, in contact, a body force and friction |
+| Randomness | slowdown with probability $p$ | random initial placement of the pedestrians |
+| Where jams come from | random slowdowns, also on a homogeneous ring | the door as a bottleneck and the arches that form there |
+| Main observable | flow against density | flow through the door and evacuation time |
+
+: Modelling choices of the traffic automaton and of the social force model. {#tbl-ca-vs-social-force}
+
+The rows on the social force model follow the page [Faster Is Slower: Crowds at a Door](../collective-behaviour/crowd-exit.qmd). The two models answer different questions. The automaton is built for the density-flow relation of a lane of identical cars, while the social force model is built for geometry: walls, doors and the shape of the room. A one-dimensional automaton has no way to represent an arch across a door, and a social force model of a ring road would be a costly way to obtain the fundamental diagram that the automaton gives cheaply.
+
+::: {.callout-note}
+## Exercise
+
+For each question, say whether you would use the traffic automaton, the social force model, or a continuum equation such as @eq-conservation, and give one reason. (i) How many cars per hour can one lane of a freeway carry? (ii) How long does it take to evacuate a lecture hall through two doors? (iii) How fast does the tail of a jam move upstream over several kilometres of road?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+(i) The automaton. The fundamental diagram is its main output and it needs only cars on a lane. (ii) The social force model. The question is set by the geometry of the doors and by contact between bodies, which a lane model does not have. (iii) The continuum equation. Over several kilometres the individual cars do not matter and the kinematic speed of @eq-kinematic-speed is the relevant quantity, with $Q$ taken from measurements or from the automaton.
+:::

@@ -7,7 +7,8 @@ format: html
 ::: {.callout-note}
 ## Reading
 - **Compulsory:** @murray2002mathematical, Chapter 11 (Reaction Diffusion, Chemotaxis, and Nonlocal Mechanisms).
-- **Recommended:** @britton2003essential, Chapter 5 (Biological Motion) and Chapter 7 (Pattern Formation).
+- **Recommended:** @britton2003essential, Chapter 5 (Biological Motion) and Chapter 7 (Pattern Formation), in particular Sections 7.1 and 7.2 (pp. 205 to 210).
+- **Original idea:** @turing1952chemical, Summary and Section 1: morphogens that react and diffuse can turn a homogeneous state into a pattern. Kondo and Miura [@kondo2010reaction] give a modern, non-mathematical account.
 :::
 
 In Module 3 you derived the diffusion equation $\partial_t c = D\,\partial_{xx} c$ as the continuum limit of a random walk ([From random walks to diffusion](../randomness/diffusion-equation.qmd)). A reaction-diffusion equation adds local production and decay to that transport term [@murray2002mathematical, Chapter 11].
@@ -38,6 +39,19 @@ $$
 $$ {#eq-rd-scaled}
 
 Here $d = D_v / D_u$ is the ratio of diffusion coefficients and $\gamma$ measures the strength of the reactions relative to diffusion. In Murray's scaling $\gamma$ is proportional to the square of the domain length, so increasing $\gamma$ at fixed domain is equivalent to enlarging the domain [@murray2003mathematical, Section 2.3]. The Gierer-Meinhardt code in `amlab.pdes_1d` and `amlab.pdes_2d` uses exactly these symbols.
+
+### Where $\gamma$ Comes From
+
+Start from dimensional variables with a length scale $\ell$ (for instance the domain length), a typical reaction rate $r$ and diffusion coefficients $D_u$, $D_v$. The substitution $\bar x = \ell x$, $\bar t = (\ell^2/D_u)\,t$ turns the dimensional system into @eq-rd-scaled with
+
+$$
+d = \frac{D_v}{D_u}, \qquad \gamma = \frac{r\,\ell^2}{D_u}.
+$$ {#eq-rd-gamma}
+
+So $\gamma$ grows with the square of the length, which is the sense in which "increasing $\gamma$ is equivalent to enlarging the domain". @britton2003essential [Section 7.2] makes the same rescaling on a standard domain, $x = \gamma_B X$, $t = \gamma_B^2 T$, and obtains $u_t = \gamma_B^2 f(u) + D\nabla^2 u$ with $D = \operatorname{diag}(D_1, D_2)$ not normalised. His $\gamma_B$ is a length scale and his $\alpha = \gamma_B^2$ plays the role of the $\gamma$ used here. The [notation dictionary](turing-original-analysis.qmd) on the page about Turing's original analysis compares these symbols with Turing's own.
+
+The single-equation case explains why two species are needed. For $\partial_t u = \gamma f(u) + \Delta u$ the mode with wavenumber $k$ grows like $e^{\sigma t}$ with $\sigma = \gamma f'(u_*) - k^2$. Diffusion only subtracts $k^2$, so a state that is stable for the flat mode is stable for all modes. @britton2003essential [Sections 7.2 and 7.4] describes this as the stabilising effect of diffusion in a single equation, and notes that Turing instability needs at least two.
+
 
 ## Examples
 

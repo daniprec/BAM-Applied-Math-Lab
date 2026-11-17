@@ -1,0 +1,255 @@
+---
+title: "SIR Extensions: Vaccination and Herd Immunity"
+subtitle: "Module 1: Low-Dimensional Dynamics"
+format: html
+---
+
+::: {.callout-note}
+## Reading
+- **Recommended:** @hethcote2000mathematics, the sections on vaccination and on SEIR and SIRS models.
+- **Background:** @keeling2008modeling.
+:::
+
+The SIR model rests on several assumptions: all individuals start susceptible, vaccinated individuals are fully protected, infection makes people infectious at once, immunity is permanent and the population is closed and well mixed. This page follows a simple rule: **break one assumption at a time and change the model as little as possible**. Each change gives a new behaviour and often a new mathematical object, such as a higher-dimensional system of ODEs, a PDE or a network.
+
+We use the normalized SIR model of [Compartmental Models](compartmental-models.qmd) with $S + I + R = 1$,
+
+$$
+\dot S = -\beta S I, \qquad \dot I = \beta S I - \gamma I, \qquad \dot R = \gamma I,
+\qquad R_0 = \frac{\beta}{\gamma}.
+$$
+
+## Vaccination with a perfect vaccine
+
+Suppose a fraction $v$ of the population is vaccinated and fully protected at $t = 0$. The equations do not change; only the initial condition does,
+
+$$
+S(0) = 1 - v - I_0, \qquad I(0) = I_0, \qquad R(0) = v .
+$$
+
+An outbreak grows if $\beta S(0) > \gamma$, that is if the effective reproduction number $R_{\text{eff}}(0) = R_0(1 - v)$ exceeds $1$. The *herd immunity threshold* is
+
+$$
+v_c = 1 - \frac{1}{R_0},
+$$ {#eq-vc}
+
+the same expression as the herd immunity formula in [The Reproduction Number](reproduction-number.qmd). Two points are easy to misread:
+
+- $v_c$ is a threshold for *growth*. Above $v_c$ an introduced case does not start an epidemic in the deterministic model, but a few cases can still occur.
+- It assumes homogeneous mixing and a vaccine that gives complete protection.
+
+## How large is the threshold for real diseases?
+
+@eq-vc grows quickly with $R_0$. The table uses typical $R_0$ ranges, published estimates vary between studies and populations, so treat the ranges as orders of magnitude. The thresholds are computed from @eq-vc.
+
+| Disease | Typical $R_0$ | $v_c = 1 - 1/R_0$ |
+|---|---|---|
+| Seasonal influenza | 1.2 to 1.6 | 0.17 to 0.38 |
+| COVID-19 (original strain) | 2 to 3 | 0.50 to 0.67 |
+| Smallpox | 5 to 7 | 0.80 to 0.86 |
+| Polio | 5 to 7 | 0.80 to 0.86 |
+| Measles | 12 to 18 | 0.92 to 0.94 |
+
+For measles, a drop of a few percentage points in coverage below about 94% is enough for epidemics to be possible again, which is why measles elimination is fragile.
+
+## An imperfect ("leaky") vaccine
+
+Now relax the assumption that vaccinated people are fully protected. A leaky vaccine reduces susceptibility by a factor $\varepsilon$ with $0 \le \varepsilon \le 1$. Split the susceptibles into unvaccinated $S_u$ and vaccinated-but-still-susceptible $S_v$:
+
+$$
+\dot S_u = -\beta S_u I, \qquad
+\dot S_v = -\varepsilon \beta S_v I, \qquad
+\dot I = \beta (S_u + \varepsilon S_v) I - \gamma I, \qquad
+\dot R = \gamma I .
+$$ {#eq-leaky}
+
+With coverage $v$, we have $S_u(0) \approx 1 - v$ and $S_v(0) \approx v$, so $R_{\text{eff}}(0) = R_0\,(1 - v + \varepsilon v)$. Setting this below $1$ gives
+
+$$
+v_c^{\text{leaky}} = \frac{1 - 1/R_0}{1 - \varepsilon} .
+$$ {#eq-vc-leaky}
+
+For $\varepsilon = 0$ we recover @eq-vc. For $\varepsilon > 0$ the threshold is higher, and if $\varepsilon > 1/R_0$ then $v_c^{\text{leaky}} > 1$: even vaccinating everyone does not prevent an epidemic. Coverage and efficacy are two separate quantities.
+
+@fig-leaky integrates @eq-leaky with $R_0 = 3$ and checks @eq-vc-leaky. The fraction ever infected falls to zero at the predicted thresholds.
+
+```{python}
+#| echo: false
+#| label: fig-leaky
+#| fig-cap: "Fraction of the population ever infected as a function of vaccine coverage v, for R0 = 3. Dashed lines mark the thresholds from the formula. With eps = 0.6 the threshold is above 1, so vaccination alone cannot prevent an epidemic."
+#| fig-width: 6.5
+#| fig-height: 3.8
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.integrate import solve_ivp
+
+beta, gamma = 0.3, 0.1
+r0 = beta / gamma
+i0 = 1e-4
+
+
+def ever_infected(v, eps):
+    def rhs(t, y):
+        su, sv, i, r = y
+        return [-beta * su * i, -eps * beta * sv * i,
+                beta * (su + eps * sv) * i - gamma * i, gamma * i]
+
+    y0 = [(1 - v) * (1 - i0), v * (1 - i0), i0, 0.0]
+    sol = solve_ivp(rhs, (0, 800), y0, method="LSODA", rtol=1e-9, atol=1e-12)
+    su, sv = sol.y[0, -1], sol.y[1, -1]
+    return y0[0] + y0[1] - su - sv  # susceptibles lost to infection
+
+
+vs = np.linspace(0, 1, 41)
+fig, ax = plt.subplots(figsize=(6.5, 3.8))
+for eps, colour in [(0.0, "tab:blue"), (0.3, "tab:orange"), (0.6, "tab:red")]:
+    ax.plot(vs, [ever_infected(v, eps) for v in vs], color=colour, label=f"eps = {eps}")
+    vc = (1 - 1 / r0) / (1 - eps)
+    if vc < 1:
+        ax.axvline(vc, color=colour, ls="--", lw=1)
+ax.set_xlabel("vaccine coverage v")
+ax.set_ylabel("fraction infected")
+ax.set_xlim(0, 1)
+ax.set_ylim(0, 1)
+ax.grid(alpha=0.3)
+ax.legend()
+plt.tight_layout()
+plt.show()
+```
+
+## Why smallpox could be eradicated
+
+Smallpox is the standard case where the SIR assumptions hold well. It has no animal reservoir, so transmission is only between humans. Infection and vaccination both give long-lasting immunity, and the disease is easy to recognize. With $R_0$ about 5 to 7 the threshold is about 80 to 86%. The WHO declared smallpox eradicated in 1980, after the last natural case in 1977.
+
+Other diseases break one or more assumptions, so the SIR model is not enough for them:
+
+| Disease | Why the plain SIR model fails or is fragile |
+|---|---|
+| Measles | SIR-like, but a very high $R_0$ means a threshold above 90%. |
+| Influenza | Waning immunity, antigenic drift and animal reservoirs. |
+| Tuberculosis | Long latent periods, partial immunity and chronic infection. |
+
+In modelling terms, eradication requires the disease-free equilibrium to be reachable and globally stable, not merely locally stable.
+
+## A menu of extensions
+
+Each row breaks one assumption and gives the smallest model change that does so. You have already seen the first rows above.
+
+| Assumption broken | Model change | New behaviour |
+|---|---|---|
+| All start susceptible | $S(0) = 1 - v$ | Herd immunity threshold $v_c$. |
+| Vaccine fully protective | Two susceptible classes, factor $\varepsilon$ (@eq-leaky) | Higher threshold, coverage separated from efficacy. |
+| Infection means infectious at once | Add an exposed class $E$ with latent period $1/\sigma$ (SEIR) | Delay between infection and cases, later and lower peak. |
+| Immunity is permanent | Waning at rate $\omega$ (SIRS) | Endemic equilibrium in a closed population, possible recurrent outbreaks. |
+| Closed population | Births and deaths at rate $\mu$ | Endemic equilibria, vaccination as a steady-state control problem. |
+| Homogeneous mixing | Groups with a contact matrix $\beta_{ij}$ | $R_0$ is the spectral radius of a next-generation matrix, targeted vaccination. |
+| Space is irrelevant | Diffusion terms (reaction-diffusion SIR, a PDE) | Spatial waves and hotspots. |
+| A single population | Patches coupled by a mobility matrix | Importation, exportation and staggered regional waves. |
+| Risk depends only on fractions | Contacts on a network (Module 5) | Superspreading, different thresholds, targeted vaccination of high-degree nodes. |
+| Constant infectiousness | Infectiousness depending on time since infection (renewal equation) | Direct link to generation-interval data. |
+| Constant $\beta$ | $\beta(t)$ or $\beta(I) = \beta_0/(1 + kI)$ | Multiple waves without waning immunity. |
+| We observe infections directly | Observation model: reported cases $\approx \rho\, i(t - \tau)$ | Explains mismatches between model and reported data. |
+
+The last row connects to [Fitting an Epidemic to Data](fitting-epidemic-data.qmd) and [Predicting the Peak](peak-prediction.qmd), where reporting noise is the reason the peak is hard to predict.
+
+### Two extensions in simulation
+
+The SEIR model adds one equation and one time scale,
+
+$$
+\dot S = -\beta S I, \quad \dot E = \beta S I - \sigma E, \quad \dot I = \sigma E - \gamma I, \quad \dot R = \gamma I,
+$$
+
+and the SIRS model returns recovered individuals to the susceptible class,
+
+$$
+\dot S = -\beta S I + \omega R, \quad \dot I = \beta S I - \gamma I, \quad \dot R = \gamma I - \omega R .
+$$
+
+In SIRS, the endemic equilibrium has $S^* = 1/R_0$ and $I^* = \dfrac{\omega}{\gamma + \omega}\left(1 - \dfrac{1}{R_0}\right)$, which exists for $R_0 > 1$.
+
+```{python}
+#| echo: false
+#| label: fig-seir-sirs
+#| fig-cap: "Left: SIR and SEIR with the same beta, gamma and initial infectious fraction 0.001 (sigma = 0.2 per day). The latent period delays and lowers the peak. Right: SIRS with omega = 0.01 per day settles to the endemic level given by the formula."
+#| fig-width: 10
+#| fig-height: 3.8
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.integrate import solve_ivp
+
+beta, gamma, sigma, omega = 0.3, 0.1, 0.2, 0.01
+r0 = beta / gamma
+
+
+def sir(t, y):
+    s, i, r = y
+    return [-beta * s * i, beta * s * i - gamma * i, gamma * i]
+
+
+def seir(t, y):
+    s, e, i, r = y
+    return [-beta * s * i, beta * s * i - sigma * e, sigma * e - gamma * i, gamma * i]
+
+
+def sirs(t, y):
+    s, i, r = y
+    return [-beta * s * i + omega * r, beta * s * i - gamma * i, gamma * i - omega * r]
+
+
+kw = dict(method="LSODA", rtol=1e-9, atol=1e-12, dense_output=True, max_step=0.5)
+t1 = np.linspace(0, 200, 2000)
+a = solve_ivp(sir, (0, 200), [0.999, 0.001, 0.0], **kw).sol(t1)
+b = solve_ivp(seir, (0, 200), [0.999, 0.0, 0.001, 0.0], **kw).sol(t1)
+t2 = np.linspace(0, 1500, 3000)
+c = solve_ivp(sirs, (0, 1500), [0.999, 0.001, 0.0], **kw).sol(t2)
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 3.8))
+ax1.plot(t1, a[1], label="SIR: I")
+ax1.plot(t1, b[2], label="SEIR: I")
+ax1.plot(t1, b[1], "--", color="tab:green", label="SEIR: E")
+ax1.set_xlabel("days")
+ax1.set_ylabel("fraction of the population")
+ax1.legend()
+ax1.grid(alpha=0.3)
+ax2.plot(t2, c[1], label="SIRS: I")
+ax2.axhline(omega / (gamma + omega) * (1 - 1 / r0), color="k", ls="--", lw=1, label="I* (formula)")
+ax2.set_xlabel("days")
+ax2.legend()
+ax2.grid(alpha=0.3)
+plt.tight_layout()
+plt.show()
+```
+
+## Choosing the right model
+
+Extend the SIR model only as far as the question and the data require. More realism is not more truth: every extension adds parameters and uncertainty. Use these models to understand mechanisms and thresholds and to compare intervention scenarios, not to produce a perfect forecast.
+
+::: {.callout-note}
+## Exercise 1
+For measles with $R_0 = 15$, compute the herd immunity threshold. A vaccine reduces susceptibility by a factor $\varepsilon = 0.05$ (95% efficacy). What coverage is needed?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+$v_c = 1 - 1/15 \approx 0.933$. With a leaky vaccine, @eq-vc-leaky gives $v_c^{\text{leaky}} = 0.933/(1 - 0.05) \approx 0.98$. Almost the whole population must be vaccinated, which shows why measles elimination is fragile.
+:::
+
+::: {.callout-note}
+## Exercise 2
+Use @fig-seir-sirs as a starting point. Increase the latent period (reduce $\sigma$) and describe how the peak time and the height of the peak change. Does the final size change?
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+A longer latent period delays the peak and lowers it. The final size does not change, because it depends only on $R_0$ and the initial condition.
+:::
+
+::: {.callout-note}
+## Optional project
+Consider a hypothetical human-only disease with $R_0$ between 5 and 7 and fatality ratio about 0.3, with outbreaks starting in five regions at once. Choose a model structure (SEIR, single population or metapopulation), model a vaccination campaign with a start delay and a daily dose capacity, estimate cumulative infections and deaths until you declare control, and identify the two or three assumptions that most affect your estimate.
+:::
+
+## Next
+
+[Simulating the SIR Model](sir-simulation.qmd) implements the SIR and SIS models, and [Fitting an Epidemic to Data](fitting-epidemic-data.qmd) fits them to data.

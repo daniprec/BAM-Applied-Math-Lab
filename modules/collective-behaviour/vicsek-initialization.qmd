@@ -12,6 +12,18 @@ In this lab you implement the Vicsek model [@vicsek1995novel], validate it, and 
 The core of this lab is five pages: this one, [Update Rule](vicsek-update.qmd), [Order Parameter](vicsek-order-parameter.qmd), [Validation](vicsek-validation.qmd) and [Animation](vicsek-animation.qmd). [Vectorized Update](vicsek-vectorized.qmd), [Interactive Animation](vicsek-animation-interactive.qmd) and [Predator Avoidance](vicsek-predator.qmd) are optional extensions. [Practice: Collective Motion](practice-collective-motion.qmd) closes the session.
 :::
 
+::: {.callout-note}
+## Checklist
+
+To reproduce the main plot of $\langle v_a \rangle$ against $\eta$:
+
+1. Initialize random positions and random headings.
+2. At each time step, find the neighbors within radius $r$ (with periodic distances), compute the average direction with `atan2` of the sums of sines and cosines, add noise uniform in $[-\eta/2, \eta/2]$, and update the positions with the new headings.
+3. Discard the transient (burn-in), then time-average $v_a(t)$.
+
+The common pitfalls are the wrong noise convention, forgetting the periodic distances and averaging angles incorrectly. See [the checklist in The Vicsek Model](vicsek-model.qmd#implementation-checklist).
+:::
+
 ## Why not `solve_ivp`?
 
 In Module 1 you used ODE solvers like `scipy.integrate.solve_ivp()` for continuous-time systems. The Vicsek model is a discrete-time, agent-based model. At each step all particles update their heading and position from their neighbours and some noise. There is no differential equation to integrate, so you implement it with a loop over time steps.

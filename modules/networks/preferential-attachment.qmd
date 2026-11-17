@@ -4,6 +4,13 @@ subtitle: "Module 5: Complex Networks"
 format: html
 ---
 
+::: {.callout-note}
+## Reading
+- **Compulsory:** @barabasi1999emergence.
+- **Recommended:** @newman2003structure, Section 7.2.
+- **What the paper did and found:** Barabási and Albert measured the degree distribution of three real networks and found power-law tails $P(k) \sim k^{-\gamma}$: the film-actor collaboration graph with $\gamma_{\text{actor}} = 2.3 \pm 0.1$, the World-Wide Web, and the western US power grid, whose distribution they fit with $\gamma_{\text{power}} \simeq 4$ (the network has only 4941 vertices, so the scaling region is short). Their model combines growth with preferential attachment $\Pi(k_i) = k_i / \sum_j k_j$, and simulations give $\gamma_{\text{model}} = 2.9 \pm 0.1$. To show that both ingredients are needed, they studied two variants: model A (growth with uniform attachment) gives an exponential distribution, and model B (a fixed number of vertices and preferential attachment) shows power-law scaling only at early times, because it is not stationary and after $T \simeq N^2$ steps all vertices are connected.
+:::
+
 Neither the random graph nor the small-world model produces hubs. Many real networks have heavy-tailed degree distributions, sometimes close to a power law $p_k \sim k^{-\gamma}$ [@barabasi1999emergence; @newman2003structure, Section 3.3]. Barabási and Albert proposed that two ingredients generate such a distribution: **growth** and **preferential attachment** [@barabasi1999emergence].
 
 ## The Barabási-Albert model
@@ -30,6 +37,66 @@ The mean degree tends to $\langle k \rangle = 2m$.
 - The average path length is small, and the clustering is low and decreases with $N$ [@newman2003structure, Section 7.2].
 
 The divergence of $\langle k^2 \rangle$ drives two results of this module: the robustness to random failure in [Robustness and Percolation](robustness-percolation.qmd) and the vanishing epidemic threshold in [Epidemic Threshold](epidemic-threshold.qmd). Keep in mind that the divergence is slow: at realistic sizes $\langle k^2 \rangle$ is large but finite.
+
+## Why the exponent is 3: the continuum argument
+
+The exponent follows with a continuum (mean-field) argument. Add one node per time step, each with $m$ edges, so that the total degree at time $t$ is $\sum_j k_j = 2mt$. A node $i$ born at time $t_i$ receives each of the $m$ new edges with probability $\Pi_i = k_i/2mt$, hence
+
+$$
+\frac{dk_i}{dt} = m\,\frac{k_i}{2mt} = \frac{k_i}{2t}
+\quad\Longrightarrow\quad
+k_i(t) = m\left(\frac{t}{t_i}\right)^{1/2}.
+$$ {#eq-ba-growth}
+
+Older nodes therefore have larger degree. A node has degree below $k$ when $t_i > m^2 t/k^2$, and the nodes are born uniformly in time, so the fraction of nodes with degree at least $k$ is $P(K \ge k) \approx m^2/k^2$ and $p(k) \approx 2m^2/k^3 \sim k^{-3}$.
+
+The argument is an approximation, and it is worth checking how good it is. The chunk compares the degree history of nodes born at different times with @eq-ba-growth and the tail of the degree distribution with $m^2/k^2$ and with the exact formula $m(m+1)/\big(k(k+1)\big)$ obtained by summing the exact $p_k$ above.
+
+```{python}
+#| label: fig-ba-continuum
+#| fig-cap: "Test of the continuum argument for the Barabási-Albert model (m = 3, N = 10000, averages over 10 graphs). Left: mean degree at the final time of the nodes born in a window of times, against the prediction m sqrt(t / t_i) averaged over the same nodes. Right: complementary cumulative degree distribution, against the continuum approximation m^2 / k^2 and the exact discrete formula m(m+1) / (k(k+1))."
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
+
+m, N_ba, runs = 3, 10_000, 10
+windows = [(20, 40), (100, 200), (500, 1000), (2000, 4000)]
+growth = {w: [] for w in windows}
+ccdf = []
+kmax_grid = np.unique(np.concatenate([np.logspace(np.log10(m), 2.3, 25).astype(int), [20, 40, 80]]))
+for s in range(runs):
+    G = nx.barabasi_albert_graph(N_ba, m, seed=s)
+    for a, b in windows:
+        k_final = G.degree(range(a, b))
+        growth[(a, b)].append((np.mean([d for _, d in k_final]), np.mean([m * np.sqrt((N_ba - 1) / i) for i in range(a, b)])))
+    deg = np.array([d for _, d in G.degree()])
+    ccdf.append([(deg >= k).mean() for k in kmax_grid])
+
+fig, axes = plt.subplots(1, 2, figsize=(9.5, 3.8))
+meas = np.array([np.mean(growth[w], axis=0) for w in windows])
+axes[0].loglog(meas[:, 1], meas[:, 0], "o", label="simulation")
+lim = [meas.min() * 0.8, meas.max() * 1.2]
+axes[0].loglog(lim, lim, "k--", lw=1, label="identity")
+axes[0].set_xlabel(r"prediction $m\sqrt{t/t_i}$")
+axes[0].set_ylabel("mean degree of the cohort")
+axes[0].legend()
+axes[1].loglog(kmax_grid, np.mean(ccdf, axis=0), "o", ms=4, label="simulation")
+axes[1].loglog(kmax_grid, m**2 / kmax_grid**2, "--", label=r"$m^2/k^2$")
+axes[1].loglog(kmax_grid, m * (m + 1) / (kmax_grid * (kmax_grid + 1)), "-", label=r"$m(m+1)/(k(k+1))$")
+axes[1].set_xlabel("k")
+axes[1].set_ylabel(r"$P(K \geq k)$")
+axes[1].legend()
+plt.tight_layout()
+plt.show()
+
+for w, (obs, pred) in zip(windows, meas):
+    print(f"nodes born in {w}: mean degree {obs:.1f}, prediction {pred:.1f}")
+for k in (20, 40, 80):
+    i = list(kmax_grid).index(k)
+    print(f"k = {k}: P(K >= k) = {np.mean(ccdf, axis=0)[i]:.5f}, m^2/k^2 = {m**2 / k**2:.5f}, exact = {m * (m + 1) / (k * (k + 1)):.5f}")
+```
+
+The growth law holds well: the mean degree of each cohort is within a few per cent of $m\sqrt{t/t_i}$ (for the oldest cohort the prediction is 5% low), as the printed values show. The tail is a different matter. The continuum prefactor $m^2$ underestimates the tail probability, by about 20 to 30% at $m = 3$, while the exact formula with $m(m+1)$ follows the simulation. The exponent is therefore right, and the amplitude of the continuum argument is only approximate: it replaces $k(k+1)(k+2)$ by $k^3$ and $m(m+1)$ by $m^2$.
 
 ## Implementation
 
@@ -123,9 +190,11 @@ Generate the three models of this section with the parameters used in [Comparing
 :::
 
 ::: {.python-next}
-**Build this in Python.** In Lab 13 (Session 32) you write the code behind this figure: [Comparing Graph Models](comparing-models.qmd). You will generate the three models with `nx.erdos_renyi_graph`, `nx.watts_strogatz_graph` and `nx.barabasi_albert_graph` and summarise each with the same metrics. [Practice: Real Networks](practice-real-networks.qmd) applies the same metrics to the Enron email and US flight networks.
+**Build this in Python.** In the lab you write the code behind this figure: [Comparing Graph Models](comparing-models.qmd). You will generate the three models with `nx.erdos_renyi_graph`, `nx.watts_strogatz_graph` and `nx.barabasi_albert_graph` and summarise each with the same metrics. [Practice: Real Networks](practice-real-networks.qmd) applies the same metrics to the Enron email and US flight networks.
 :::
 
 ## What's Next?
 
 The next page compares the three models with the same summary metrics.
+
+See also: [Triadic Closure (Holme-Kim)](triadic-closure.qmd), a growth model that keeps preferential attachment but adds tunable clustering.

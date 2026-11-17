@@ -8,27 +8,80 @@ format: html
 ## Reading
 - **Compulsory:** @vicsek1995novel.
 - **Recommended:** @couzin2002collective; @helbing1995social.
+- **Further reading:** @gregoire2004onset and @chate2008collective on the order of the transition; [Flocking Without Noise](cucker-smale.qmd) (optional) for a flocking model with a convergence theorem.
 :::
 
-The Kuramoto model synchronizes phases in time. The Vicsek model aligns headings in space. It describes $N$ self-propelled particles that move at constant speed and copy the average heading of their neighbours, with some noise [@vicsek1995novel]. There is no leader and no global signal, yet the whole group can move in one direction.
+Many systems show coherent motion without a leader: birds, fish, bacteria, pedestrians, robots. The modelling question is how local rules can generate global order. The strategy is to propose the simplest agent-based rule that can flock. The result is the Vicsek model [@vicsek1995novel]: $N$ self-propelled particles that move at constant speed and copy the average heading of their neighbours, with some noise. There is no leader and no global signal, yet the whole group can move in one direction.
+
+## From Kuramoto to flocking
+
+The Kuramoto model synchronizes phases in time. The Vicsek model aligns headings in space. Recall the [Kuramoto equations](kuramoto-model.qmd),
+
+$$
+\dot\theta_i = \omega_i + \frac{K}{N}\sum_{j=1}^N \sin(\theta_j - \theta_i),
+\qquad
+r e^{i\psi} = \frac{1}{N}\sum_{j=1}^N e^{i\theta_j}.
+$$ {#eq-vicsek-kuramoto}
+
+(Other papers write $R$ for the order parameter. These notes write $r$ as in @strogatz2000kuramoto, and on this page $r$ is the interaction radius.) The Vicsek model keeps the idea of an angle that is pulled toward the mean angle of the others, but changes four things.
+
+| | Kuramoto | Vicsek |
+|---|---|---|
+| Unit | phase $\theta_i$ of an oscillator that stays in place | heading $\theta_i$ of a particle that moves, with position $\mathbf{x}_i$ |
+| Time | continuous | discrete steps |
+| What opposes order | spread of the natural frequencies $\omega_i$ | random noise added to each heading |
+| Who interacts | all pairs, with weight $K/N$ | neighbours within a radius $r$ |
+| Order parameter | $r = \left\lvert\frac1N\sum_j e^{i\theta_j}\right\rvert$ | $v_a$, the same formula applied to the headings |
+
+The key difference is the last-but-one row. Neighbours are local in space, and because the particles move, the set of neighbours changes in time: the interaction network is dynamic.
+
+## State variables and parameters
+
+Consider $N$ particles in a two-dimensional box of side $L$ with periodic boundary conditions.
+
+- Position: $\mathbf{x}_i(t) \in [0, L)^2$.
+- Heading angle: $\theta_i(t) \in (-\pi, \pi]$.
+- Constant speed $v_0$, so that $\mathbf{v}_i(t) = v_0(\cos\theta_i(t), \sin\theta_i(t))$. (Other papers call the speed $v$. Here it is $v_0$, to keep it apart from the velocity vectors $\mathbf{v}_i$.)
+
+The parameters, in the notation of @vicsek1995novel, are the interaction radius $r$, the noise amplitude $\eta$ and the density $\rho = N/L^2$.
 
 ## Rules
 
-Each particle $i$ has a position $\mathbf{x}_i(t)$ in a square box of side $L$ with periodic boundaries, and a heading $\theta_i(t)$. At every time step $\Delta t$ all particles update at the same time:
+The neighbours of particle $i$ at time $t$ (@eq-vicsek-neighbours) are all particles within distance $r$, including $i$ itself:
 
 $$
-\theta_i(t + \Delta t) = \langle \theta(t) \rangle_{r,i} + \Delta\theta_i,
+\mathcal{N}_i(t) = \{\, j : \lVert \mathbf{x}_j(t) - \mathbf{x}_i(t) \rVert \le r \,\}.
+$$ {#eq-vicsek-neighbours}
+
+Distances are measured on the periodic box, that is, to the nearest periodic copy of $\mathbf{x}_j$. The local average direction (@eq-vicsek-average) is the argument of the sum of the unit vectors,
+
+$$
+\theta_i^{\text{avg}}(t) = \operatorname{Arg}\Big(\sum_{j \in \mathcal{N}_i(t)} e^{i\theta_j(t)}\Big)
+= \operatorname{atan2}\Big(\sum_{j \in \mathcal{N}_i(t)} \sin\theta_j(t),\ \sum_{j \in \mathcal{N}_i(t)} \cos\theta_j(t)\Big),
+$$ {#eq-vicsek-average}
+
+and the noise $\xi_i(t)$ is drawn independently for every particle and every step, uniformly from $[-\eta/2, \eta/2]$. At every time step $\Delta t$ all particles update at the same time:
+
+$$
+\theta_i(t + \Delta t) = \theta_i^{\text{avg}}(t) + \xi_i(t),
 $$ {#eq-vicsek-theta-rule}
 
 $$
-\mathbf{x}_i(t + \Delta t) = \mathbf{x}_i(t) + v_0 \Delta t \begin{bmatrix} \cos\theta_i(t + \Delta t) \\ \sin\theta_i(t + \Delta t) \end{bmatrix}.
+\mathbf{x}_i(t + \Delta t) = \mathbf{x}_i(t) + v_0 \Delta t \begin{bmatrix} \cos\theta_i(t + \Delta t) \\ \sin\theta_i(t + \Delta t) \end{bmatrix} \pmod{L}.
 $$ {#eq-vicsek-x-rule}
 
-- $\langle \theta \rangle_{r,i}$ is the mean direction of all particles within distance $r$ of particle $i$, including $i$ itself. It is computed as $\arctan\big(\langle\sin\theta\rangle / \langle\cos\theta\rangle\big)$, using the quadrant of the vector $(\langle\cos\theta\rangle, \langle\sin\theta\rangle)$.
-- $\Delta\theta_i$ is drawn uniformly from $[-\eta/2, \eta/2]$. The noise amplitude $\eta$ runs from $0$ (no noise) to $2\pi$ (a random heading every step).
-- The speed $v_0$ is the same for all particles.
+In one sentence: *align with the neighbours, add noise, move forward.* The noise amplitude $\eta$ runs from $0$ (no noise) to $2\pi$ (a random heading every step). We take $\Delta t = 1$. @vicsek1995novel used $r = 1$, $\Delta t = 1$ and $v_0 = 0.03$, and measured all distances in units of $r$. The two control parameters are the noise $\eta$ and the density $\rho = N/L^2$.
 
-@vicsek1995novel used $r = 1$, $\Delta t = 1$ and $v_0 = 0.03$. The two control parameters are the noise $\eta$ and the density $\rho = N/L^2$.
+## Noise as temperature
+
+Noise competes with alignment. For large $\eta$ the headings are randomized and the motion is disordered. For small $\eta$ alignment wins and the motion is coherent. @vicsek1995novel describe the noise as a temperature-like variable: the alignment rule plays the role of the ferromagnetic interaction in a spin model, and the particles are the "spins". Two limits of the speed are instructive [@vicsek1995novel]:
+
+- For $v_0 \to 0$ the particles do not move, and the model becomes an analogue of the XY model of a ferromagnet.
+- For $v_0 \to \infty$ the particles are completely mixed between two updates, which corresponds to the mean-field behaviour of a ferromagnet.
+
+The authors used $v_0 = 0.03$, so that particles always interact with their actual neighbours and move enough to change the configuration after a few updates. In their simulations the results did not depend on $v_0$ in the range $0.003 < v_0 < 0.3$.
+
+The analogy has a limit. The particles are self-driven, with constant speed, so the net momentum is not conserved in a collision. The model is a **non-equilibrium** system, which is what makes the transition "novel" [@vicsek1995novel].
 
 ## Order parameter
 
@@ -40,7 +93,109 @@ $$ {#eq-vicsek-va}
 
 which is the Kuramoto order parameter applied to headings. $v_a \approx 1$ when all particles move the same way and $v_a \approx 0$ when headings are random.
 
-## Kinetic phase transition
+## What do simulations show?
+
+Vary the density, the noise and the speed, and look at the particles. The chunk below defines a vectorized update with periodic distances and a function that returns the state after a number of steps from a random start. Nothing in it is specific to the figures that follow.
+
+```{python}
+#| label: vicsek-helper
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def vicsek_step(xy, theta, eta, L, r=1.0, v0=0.03, rng=np.random):
+    """One synchronous Vicsek update with periodic (minimum-image) distances."""
+    dx = xy[:, :, None] - xy[:, None, :]            # displacements, shape (2, N, N)
+    dx -= L * np.round(dx / L)                      # nearest periodic copy
+    nbr = (dx**2).sum(axis=0) <= r**2               # N_i(t), includes i itself
+    theta_avg = np.arctan2(nbr @ np.sin(theta), nbr @ np.cos(theta))
+    theta_new = theta_avg + eta * (rng.uniform(size=theta.size) - 0.5)
+    xy_new = (xy + v0 * np.array([np.cos(theta_new), np.sin(theta_new)])) % L
+    return xy_new, theta_new
+
+
+def order_parameter(theta):
+    return abs(np.exp(1j * theta).mean())
+
+
+def run(N, L, eta, steps, seed):
+    rng = np.random.RandomState(seed)
+    xy = rng.uniform(0, L, (2, N))
+    theta = rng.uniform(0, 2 * np.pi, N)
+    for _ in range(steps):
+        xy, theta = vicsek_step(xy, theta, eta, L, rng=rng)
+    return xy, theta
+```
+
+```{python}
+#| label: fig-vicsek-regimes
+#| fig-cap: "Four snapshots of the Vicsek model with $N = 300$ particles, $v_0 = 0.03$, $r = 1$. Arrows show the headings, coloured by angle. (a) Random initial state. (b) Low density and low noise after 200 steps: local groups with different headings. (c) High noise after 2000 steps: no collective direction. (d) High density and low noise after 2000 steps: one global flock. The title of each panel gives $v_a$."
+#| fig-alt: "Four square panels of arrows. Panel a: arrows in random directions. Panel b: several small clusters of arrows, each cluster pointing a different way. Panel c: arrows in random directions with weak local similarity. Panel d: all arrows point in the same direction."
+#| fig-width: 11
+#| fig-height: 3.2
+#| echo: false
+cases = [("(a) random start, $L=7$", 7, 5.0, 0),
+         ("(b) $L=25$, $\\eta=0.1$, $t=200$", 25, 0.1, 200),
+         ("(c) $L=7$, $\\eta=5$, $t=2000$", 7, 5.0, 2000),
+         ("(d) $L=5$, $\\eta=0.1$, $t=2000$", 5, 0.1, 2000)]
+fig, axes = plt.subplots(1, 4, figsize=(11, 3.2))
+for ax, (title, L, eta, steps) in zip(axes, cases):
+    xy, theta = run(300, L, eta, steps, seed=3)
+    ax.quiver(xy[0], xy[1], np.cos(theta), np.sin(theta), theta % (2 * np.pi),
+              cmap="hsv", clim=(0, 2 * np.pi), angles="xy", scale_units="xy",
+              scale=2.5 / (L / 7), width=0.006)
+    ax.set_xlim(0, L)
+    ax.set_ylim(0, L)
+    ax.set_aspect("equal")
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_title(f"{title}\n$v_a={order_parameter(theta):.2f}$", fontsize=9)
+plt.tight_layout()
+plt.show()
+```
+
+Reading @fig-vicsek-regimes:
+
+- **Low density or high noise:** disordered motion, panel (c). With $N = 300$ the value of $v_a$ is of the order of $1/\sqrt{N} \approx 0.06$.
+- **Moderate settings:** clusters and moving groups, panel (b). In the runs behind this figure the groups are a transient. For the seed shown, $v_a$ grows from $0.41$ at $t = 200$ to $0.96$ at $t = 1500$ and is $1.00$ from $t = 3000$ on, because the groups wrap around the periodic box and merge. A second seed gives the same sequence ($0.17$, $0.98$, $1.00$ at the same times).
+- **High density and low noise:** global flocking, panel (d).
+
+### Spontaneous symmetry breaking
+
+The rules are invariant under a rotation of all headings by the same angle, so the model has no preferred direction. In the ordered phase, however, the flock does move in one direction, and which one is decided by the random initial condition and the noise. @fig-vicsek-symmetry repeats the same experiment $300$ times ($N = 100$, $L = 5$, $\eta = 0.5$, $300$ steps) and records the direction $\psi = \arg\big(\sum_j e^{i\theta_j}\big)$ of the flock.
+
+```{python}
+#| label: fig-vicsek-symmetry
+#| fig-cap: "Spontaneous symmetry breaking in the Vicsek model: 300 independent runs with $N = 100$, $L = 5$, $\\eta = 0.5$ after 300 steps. Left: histogram of the direction $\\psi$ of the flock, which is spread over the whole circle. Right: histogram of the order parameter $v_a$, which is close to one in every run."
+#| fig-alt: "Left, a polar histogram with bars of similar height in all directions. Right, a histogram of the order parameter with all values between 0.98 and 0.99."
+#| fig-width: 6.5
+#| fig-height: 3.2
+#| echo: false
+psi, va = [], []
+for seed in range(300):
+    xy, theta = run(100, 5, 0.5, 300, seed)
+    z = np.exp(1j * theta).mean()
+    psi.append(np.angle(z))
+    va.append(abs(z))
+fig = plt.figure(figsize=(6.5, 3.2))
+ax1 = fig.add_subplot(1, 2, 1, projection="polar")
+ax1.hist(psi, bins=24, range=(-np.pi, np.pi))
+ax1.set_title(r"Flock direction $\psi$", fontsize=9)
+ax2 = fig.add_subplot(1, 2, 2)
+ax2.hist(va, bins=20, color="C1")
+ax2.set_xlabel("$v_a$")
+ax2.set_ylabel("number of runs")
+plt.tight_layout()
+plt.show()
+```
+
+Every run is ordered ($v_a$ between about $0.98$ and $0.99$), but the directions are uniformly spread: the modulus of the average of $e^{i\psi}$ over the $300$ runs is $0.04$, which is what you expect from $300$ independent random angles ($1/\sqrt{300} \approx 0.06$). Order in each run, no order across runs.
+
+## Central numerical experiment
+
+Fix the density $\rho$ (that is, $N$ and $L$) and vary the noise. The expected result is $\langle v_a \rangle \approx 1$ for small $\eta$, a transition region around a critical noise $\eta_c$, and $\langle v_a \rangle \approx 0$ for large $\eta$, where $\langle\cdot\rangle$ is a time average after the transient. This is the plot of Figure 2(a) of @vicsek1995novel, discussed next. Finite-size effects are an essential part of the discussion.
+
+### Kinetic phase transition
 
 @vicsek1995novel found that $v_a$ falls from near $1$ to near $0$ as the noise increases, and rises as the density increases. Near the transition they reported the scaling laws
 
@@ -49,6 +204,15 @@ v_a \sim \big(\eta_c(\rho) - \eta\big)^{\beta}, \qquad v_a \sim \big(\rho - \rho
 $$
 
 with $\beta = 0.45 \pm 0.07$ and $\delta = 0.35 \pm 0.06$. They interpreted it as a continuous transition. Later simulations of much larger systems by @gregoire2004onset and @chate2008collective found that the onset of collective motion is discontinuous. Near the threshold, the ordered phase organizes into dense travelling bands. Small simulations like the ones in this course cannot distinguish the two scenarios.
+
+::: {.callout-note}
+## A note on the figures of the original paper
+
+Two details of @vicsek1995novel do not match each other, and it is worth knowing them when you reproduce the figures.
+
+- **The density.** The text writes $\rho = N/L$, and Figure 3 and the quoted critical noise $\eta_c(\infty) = 2.9 \pm 0.05$ refer to $\rho = 0.4$. The system sizes in the caption of Figure 2 ($N = 40$, $L = 3.1$; $N = 100$, $L = 5$; $N = 400$, $L = 10$; $N = 4000$, $L = 31.6$; $N = 10000$, $L = 50$) all correspond to $N/L^2 \approx 4$. A check with $N = 400$, $L = 10$ ($\rho = 4$), averaged over the last 1000 of 3000 steps, gives $v_a = 0.79$, $0.54$ and $0.19$ at $\eta = 2$, $3$ and $4$: the curve crosses the middle of its range near $\eta = 3$, as in Figure 2(a) and in the quoted $\eta_c$. We therefore read the density as $\rho = 4$ in Figures 2(a) and 3(a), and the printed $0.4$ as a misprint. The paper itself does not settle this.
+- **Figure 1(c).** The caption describes the motion for $L = 7$, $\eta = 2.0$ and $N = 300$ as random with some correlation. In our runs the same parameters give $v_a \approx 0.8$ at all times from $t = 50$ to $t = 5000$, comparable to the $v_a \approx 0.8$ of Figure 2(a) at $\eta = 2$. Panel (c) of @fig-vicsek-regimes uses $\eta = 5$ to show the disordered phase.
+:::
 
 ![Order parameter against noise at density $\rho = 4$ for $N = 40$ and $N = 100$, one realization each, generated with `amlab.collective_motion.vicsek`. Compare with Figure 2(a) of @vicsek1995novel.](../../img/s04_order_parameter_vs_noise.png){#fig-vicsek-noise width=80%}
 
@@ -61,7 +225,7 @@ In @fig-vicsek-noise, $v_a$ stays around $0.1$ to $0.2$ at the largest noise, in
 ::: {.callout-tip collapse="true"}
 ## Solution
 
-At high noise the headings are close to independent and uniform. Then $v_a$ is the modulus of the mean of $N$ random unit vectors, so $\mathbb{E}[v_a^2] = 1/N$ ([The Order Parameter](order-parameter.qmd)). For $N = 40$ and $N = 100$ this gives typical values of $0.16$ and $0.1$, which is what the figure shows.
+At high noise the headings are close to independent and uniform. Then $v_a$ is the modulus of the mean of $N$ random unit vectors, so $\mathbb{E}[v_a^2] = 1/N$ ([The Order Parameter](order-parameter.qmd)). The root-mean-square value is $1/\sqrt{N}$, that is $0.16$ for $N = 40$ and $0.10$ for $N = 100$. The mean of $v_a$ is $\sqrt{\pi/(4N)}$, that is $0.14$ and $0.09$. This is the size of the values in the figure.
 :::
 
 ::: {.callout-note}
@@ -76,6 +240,60 @@ Compare the Vicsek model with the mean-field Kuramoto model. Name one analogue o
 Alignment plays the role of coupling. Its effective strength grows with the number of neighbours inside radius $r$, so the density $\rho$ (or $r$ itself) acts like $K$. The noise $\eta$ plays the role of the disorder that opposes alignment, like $\sigma$. One important difference: in the Vicsek model the neighbours change as particles move, so the interaction network is itself dynamic.
 :::
 
+## Implementation checklist
+
+To reproduce the plot of $\langle v_a \rangle$ against $\eta$, follow these steps ([Vicsek: the Update Rule](vicsek-update.qmd) onwards implements them one by one):
+
+1. Initialize random positions in the box and random headings.
+2. At each time step, for all particles at the same time:
+    - find the neighbours within radius $r$, using **periodic** distances;
+    - compute the average direction with $\operatorname{atan2}$ of the sums of sines and cosines;
+    - add the uniform noise on $[-\eta/2, \eta/2]$;
+    - update the positions with the new headings.
+3. Discard the transient (burn-in), then time-average $v_a(t)$.
+
+::: {.callout-warning}
+## Common pitfalls
+
+- **Noise convention.** $\eta$ is the full width of the interval. The noise lies in $[-\eta/2, \eta/2]$, not in $[-\eta, \eta]$.
+- **Periodic distances.** With periodic boundaries, two particles on opposite edges of the box are close. The distance must be to the nearest periodic copy, as in `vicsek_step` above. The basic loop of [Update Rule](vicsek-update.qmd) uses plain Euclidean distances, and [Vectorized Update](vicsek-vectorized.qmd) shows the correction and its effect on $v_a$.
+- **Averaging angles.** The plain mean of $0.1$ and $2\pi - 0.1$ is $\pi$. Average the unit vectors and recover the angle with $\operatorname{atan2}$.
+- **Transient.** The ordering takes hundreds to thousands of steps, as the groups of panel (b) above show. Measure $v_a$ only after it has stopped drifting.
+:::
+
+## Modelling choices
+
+Every term of the model encodes a modelling choice. Asking how to change each one leads to the other models of this module.
+
+| Assumption | What it represents | Natural variation |
+|---|---|---|
+| Constant speed $v_0$ | self-propulsion, no stopping | free speed with inertia, as in the social force model ([The Social Force Model](social-force.qmd)) and in [Flocking Without Noise](cucker-smale.qmd) |
+| Metric interaction radius $r$ | who influences whom | weights that decay with distance (Cucker–Smale), or several zones (Couzin) |
+| Alignment by averaging | imitation of the neighbours | add repulsion and attraction ([The Couzin Model](couzin-model.qmd)) |
+| Uniform noise $\eta$ on the heading | imperfect sensing or decision | Gaussian noise, as in the Couzin model |
+| Periodic box | no walls, no goals | walls, obstacles and exits ([Faster Is Slower: Crowds at a Door](crowd-exit.qmd)) |
+
+@vicsek1995novel list some of these variations themselves: velocities that do not have a fixed modulus, further kinds of particle interaction, lattice versions, hard-core repulsion, and semi-periodic or open boundaries.
+
+::: {.callout-note}
+## Exercise
+
+Choose one assumption of the table and change it in `vicsek_step`. Predict first, then check by simulation, what happens to $v_a$ at a fixed noise.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+One possible choice is to let the speed depend on the number of neighbours, for example $v = v_0 / |\mathcal{N}_i|$ (crowded particles slow down). The alignment is unchanged, so the order–disorder transition remains, but the ordered phase becomes less mobile in dense groups, and the mixing that carries information between groups slows down. This is a prediction to test, not a result: run `vicsek_step` with the modified speed for $\eta = 1$ and compare the time to order and the final $v_a$ with the original model.
+:::
+
+## Take-home messages
+
+- A minimal local rule can generate global coherent motion.
+- Flocking can be measured with a simple order parameter, $v_a$.
+- The model has an order–disorder transition as the noise or the density varies.
+- Collective motion is a modelling playground: assumptions lead to mechanisms, and mechanisms to patterns.
+
 ## Explore the model
 
 The figure runs the update rules @eq-vicsek-theta-rule and @eq-vicsek-x-rule in your browser with the parameters of the lab: $r = 1$, $v_0 = 0.03$, $\Delta t = 1$, and by default $N = 100$, $L = 10$, $\eta = 0.5$. Colour encodes the heading.
@@ -88,5 +306,5 @@ The figure runs the update rules @eq-vicsek-theta-rule and @eq-vicsek-x-rule in 
 :::
 
 ::: {.python-next}
-**Build this in Python.** In Lab 7 (Session 16) you write the code behind this figure: the update rule and animation in [Vicsek Lab: Animation](vicsek-animation.qmd), and the curve of $v_a$ against $\eta$ in [Vicsek Lab: Order Parameter](vicsek-order-parameter.qmd).
+**Build this in Python.** In the lab you write the code behind this figure: the update rule and animation in [Vicsek Lab: Animation](vicsek-animation.qmd), and the curve of $v_a$ against $\eta$ in [Vicsek Lab: Order Parameter](vicsek-order-parameter.qmd).
 :::
