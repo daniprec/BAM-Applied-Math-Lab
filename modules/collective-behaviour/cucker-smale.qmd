@@ -1,0 +1,186 @@
+---
+title: "Flocking Without Noise: The Cucker–Smale Model"
+subtitle: "Module 2: Synchronization and Collective Behaviour"
+format: html
+---
+
+::: {.callout-note}
+## Reading
+- **Compulsory:** @cucker2007emergent, Section I and the statement of Theorem 2 in Section III.
+- **Recommended:** @vicsek1995novel, for the model that Cucker and Smale take as their starting point.
+:::
+
+This page is optional. The [Vicsek model](vicsek-model.qmd) and the [Couzin model](couzin-model.qmd) are studied by simulation. @cucker2007emergent propose a flocking model for which one can *prove* that the birds end up with a common velocity. The price is a different structure: every bird listens to every other bird, with a weight that decays with distance, and the birds have inertia.
+
+## The model
+
+Take $k$ birds with positions $\mathbf{x}_i(t) \in \mathbb{R}^d$ and velocities $\mathbf{v}_i(t) \in \mathbb{R}^d$. Each bird accelerates toward the velocities of the others, weighted by how close they are [@cucker2007emergent]:
+
+$$
+\dot{\mathbf{x}}_i = \mathbf{v}_i, \qquad
+\dot{\mathbf{v}}_i = \sum_{j=1}^{k} a_{ij}\,(\mathbf{v}_j - \mathbf{v}_i),
+$$ {#eq-cs-model}
+
+$$
+a_{ij} = \frac{K}{\left(\sigma^2 + \|\mathbf{x}_i - \mathbf{x}_j\|^2\right)^{\beta}},
+\qquad K, \sigma > 0,\ \beta \ge 0.
+$$ {#eq-cs-weights}
+
+The exponent $\beta$ controls how fast the influence decays with distance. Three differences with the Vicsek model are worth noting.
+
+| | Vicsek | Cucker–Smale |
+|---|---|---|
+| Speed | constant, only the heading changes | free, the birds have inertia |
+| Interaction graph | $a_{ij} \in \{0, 1\}$ (within radius $r$), changes in time | all pairs, weights $a_{ij} > 0$ that decay with distance |
+| Noise | yes, with strength $\eta$ | none |
+| Time | discrete | continuous (a discrete version is also given in the paper) |
+| Result | simulation, order–disorder transition | theorem: flocking for every initial condition if $\beta < 1/2$ |
+
+The paper makes the contrast explicit: the Vicsek weights correspond to the step function $\eta(y) = 1$ for $y \le r^2$ and $0$ otherwise, whereas @eq-cs-weights decreases continuously. In the Vicsek case, convergence depends on the connectivity of the whole sequence of interaction graphs. In the Cucker–Smale case the graph is always complete, so one can work directly with the initial state [@cucker2007emergent].
+
+## Flocking and the two spreads
+
+Measure the spread of the flock in velocity and in position by
+
+$$
+\Lambda(t) = \frac12 \sum_{i \ne j} \|\mathbf{v}_i - \mathbf{v}_j\|^2,
+\qquad
+\Gamma(t) = \frac12 \sum_{i \ne j} \|\mathbf{x}_i - \mathbf{x}_j\|^2 .
+$$ {#eq-cs-spreads}
+
+The flock has reached a common velocity when $\Lambda(t) \to 0$, and it stays together when $\Gamma(t)$ remains bounded. Theorem 2 of @cucker2007emergent gives sufficient conditions on the initial values $\Gamma_0$ and $\Lambda_0$:
+
+- if $\beta < 1/2$, the flock converges for **every** initial condition;
+- if $\beta = 1/2$, it converges when $\Lambda_0$ is small enough compared with $K$;
+- if $\beta > 1/2$, it converges when an explicit inequality linking $\Gamma_0$, $\Lambda_0$, $K$, $\sigma$ and $\beta$ holds. Roughly, the flock must start compact enough for its members to feel each other.
+
+These conditions are sufficient, not necessary. The key step of the proof is an energy inequality. Let $\phi_t$ be the Fiedler number (the second smallest eigenvalue) of the weighted graph Laplacian $L_{\mathbf{x}} = D - A$ of the weights $a_{ij}(t)$, and $\Phi_t = \min_{0 \le \tau \le t} \phi_\tau$. Then
+
+$$
+\Lambda(t) \le \Lambda_0\, e^{-2 t \Phi_t}.
+$$ {#eq-cs-decay}
+
+Because all the weights are positive, $\phi_t > 0$, and the velocities contract. The difficulty is that $\phi_t$ shrinks when the flock spreads out, and the spread $\Gamma$ in turn grows with the velocity differences. The proof closes this loop, which is possible for every initial condition when $\beta < 1/2$ [@cucker2007emergent].
+
+## Numerical experiment
+
+The code below integrates @eq-cs-model with $k = 20$ birds in the plane, $K = 0.5$, $\sigma = 1$, and initial velocities uniform in $[-0.5, 0.5]^2$. It compares two exponents ($\beta = 0.25 < 1/2$ and $\beta = 2 > 1/2$) and two initial regions for the positions, a compact square of side $3$ and a wide square of side $30$.
+
+```{python}
+#| label: cs-model
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+
+
+def cucker_smale_rhs(t, state, k, K, sigma, beta):
+    x = state[:2 * k].reshape(k, 2)
+    v = state[2 * k:].reshape(k, 2)
+    d2 = ((x[:, None, :] - x[None, :, :]) ** 2).sum(axis=2)
+    a = K / (sigma**2 + d2) ** beta                   # weights a_ij
+    dv = a @ v - a.sum(axis=1)[:, None] * v           # sum_j a_ij (v_j - v_i)
+    return np.concatenate([v.ravel(), dv.ravel()])
+
+
+def simulate(beta, spread, k=20, K=0.5, sigma=1.0, T=60.0, seed=1, vmax=0.5):
+    rng = np.random.RandomState(seed)
+    x0 = rng.uniform(0, spread, (k, 2))
+    v0 = rng.uniform(-vmax, vmax, (k, 2))
+    t_eval = np.linspace(0, T, 601)
+    sol = solve_ivp(cucker_smale_rhs, (0, T), np.concatenate([x0.ravel(), v0.ravel()]),
+                    t_eval=t_eval, args=(k, K, sigma, beta), rtol=1e-9, atol=1e-11)
+    x = sol.y[:2 * k].T.reshape(-1, k, 2)
+    v = sol.y[2 * k:].T.reshape(-1, k, 2)
+    return sol.t, x, v
+
+
+def spreads(x, v):
+    """Gamma and Lambda of the spreads equation, for every saved time."""
+    gamma = 0.5 * ((x[:, :, None, :] - x[:, None, :, :]) ** 2).sum(axis=(1, 2, 3))
+    lam = 0.5 * ((v[:, :, None, :] - v[:, None, :, :]) ** 2).sum(axis=(1, 2, 3))
+    return gamma, lam
+```
+
+```{python}
+#| label: fig-cs
+#| fig-cap: "Cucker–Smale flocks with $k = 20$ birds. Left: velocity spread $\\Lambda(t)$ on a logarithmic scale; the black line is the bound of @eq-cs-decay for the first case, computed from the Fiedler number of the weight matrix. Right: position spread $\\Gamma(t)^{1/2}$. With $\\beta = 0.25$ both starting regions flock. With $\\beta = 2$ the compact start flocks, while the wide start does not within the simulated time."
+#| fig-alt: "Two panels. Left, velocity spread against time on a log axis: three curves fall steeply to the numerical floor, a fourth (beta equal to 2, wide start) stays near its initial value. Right, position spread against time on a log axis: three curves stay flat, the fourth increases."
+#| fig-width: 9.5
+#| fig-height: 3.6
+#| echo: false
+cases = [(0.25, 3.0, r"$\beta=0.25$, start in $3\times3$", "-"),
+         (0.25, 30.0, r"$\beta=0.25$, start in $30\times30$", "--"),
+         (2.0, 3.0, r"$\beta=2$, start in $3\times3$", "-."),
+         (2.0, 30.0, r"$\beta=2$, start in $30\times30$", ":")]
+fig, axes = plt.subplots(1, 2, figsize=(9.5, 3.6))
+for beta, spread, label, ls in cases:
+    t, x, v = simulate(beta, spread)
+    gamma, lam = spreads(x, v)
+    axes[0].semilogy(t, np.maximum(lam, 1e-14), ls, label=label)
+    axes[1].semilogy(t, np.sqrt(gamma), ls, label=label)
+    if (beta, spread) == (0.25, 3.0):
+        phi = []
+        for xt in x:
+            d2 = ((xt[:, None, :] - xt[None, :, :]) ** 2).sum(axis=2)
+            a = 0.5 / (1.0 + d2) ** beta
+            laplacian = np.diag(a.sum(axis=1)) - a
+            phi.append(np.linalg.eigvalsh(laplacian)[1])    # Fiedler number
+        bound = lam[0] * np.exp(-2 * t * np.minimum.accumulate(np.array(phi)))
+        ok = lam > 1e-12                                     # above the integrator tolerance
+        axes[0].semilogy(t[ok], bound[ok], "k", lw=0.8, label=r"bound $\Lambda_0e^{-2t\Phi_t}$")
+axes[0].set_ylim(1e-12, 1e3)
+axes[0].set_xlabel("$t$")
+axes[0].set_ylabel(r"velocity spread $\Lambda(t)$")
+axes[1].set_xlabel("$t$")
+axes[1].set_ylabel(r"position spread $\Gamma(t)^{1/2}$")
+axes[0].legend(fontsize=7)
+plt.tight_layout()
+plt.show()
+```
+
+What the experiment shows, for this seed:
+
+- With $\beta = 0.25$, $\Lambda$ falls below $10^{-12}$ at $t \approx 2.4$ from the compact start and at $t \approx 6.9$ from the wide start, and $\Gamma^{1/2}$ stays at its initial value. Both flock, as Theorem 2(i) predicts.
+- With $\beta = 2$ and the compact start, the flock also forms, more slowly ($\Lambda < 10^{-12}$ at $t \approx 23.8$).
+- With $\beta = 2$ and the wide start, the weights $a_{ij}$ are tiny at the initial distances. After $t = 60$ the velocity spread has only dropped from $66$ to $29$, and $\Gamma^{1/2}$ has grown from $240$ to $393$: the flock is spreading out instead of aligning. No theorem guarantees flocking here, and the simulation shows none within the time simulated.
+- The black curve in @fig-cs is the bound @eq-cs-decay. The measured $\Lambda(t)$ stays below it at every saved time where $\Lambda > 10^{-12}$ (below that value the integrator tolerance dominates). The measured decay is slightly faster than the bound.
+
+::: {.callout-note}
+## Exercise
+
+Show that the mean velocity $\bar{\mathbf{v}} = \frac1k \sum_i \mathbf{v}_i$ is constant along solutions of @eq-cs-model. What does this say about the direction in which a Cucker–Smale flock ends up moving? Compare with the Vicsek model.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Since $a_{ij} = a_{ji}$,
+
+$$
+\sum_i \dot{\mathbf{v}}_i = \sum_{i,j} a_{ij}(\mathbf{v}_j - \mathbf{v}_i) = \sum_{i,j} a_{ij}\mathbf{v}_j - \sum_{i,j} a_{ij}\mathbf{v}_i = 0,
+$$
+
+because exchanging the names $i$ and $j$ turns the first sum into the second. If the velocities converge to a common limit $\hat{\mathbf{v}}$, then $\hat{\mathbf{v}} = \bar{\mathbf{v}}(0)$. The final direction is fixed by the initial data. In the experiment above, the velocity of every bird at $t = 60$ agrees with $\bar{\mathbf{v}}(0)$ to about $10^{-11}$ in the three flocking runs.
+
+In the Vicsek model there is no conserved momentum, because the speed is fixed and only the heading is averaged and perturbed. The direction of the flock is selected spontaneously, by symmetry breaking ([The Vicsek Model](vicsek-model.qmd)).
+:::
+
+::: {.callout-note}
+## Exercise
+
+For $\beta = 2$, repeat the experiment with starting squares of side $3$, $4$, $5$, $8$ and $12$, using the same seed. How does the time needed for $\Lambda$ to fall below $10^{-12}$ depend on the side? Explain it with @eq-cs-weights.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+```python
+for side in [3, 4, 5, 8, 12]:
+    t, x, v = simulate(2.0, float(side))
+    gamma, lam = spreads(x, v)
+    below = np.where(lam < 1e-12)[0]
+    print(side, t[below[0]] if len(below) else None, lam[-1])
+```
+
+For this seed the time is $23.8$ for side $3$ and $54.5$ for side $4$. For side $5$ it is not reached within $t = 60$ ($\Lambda(60) \approx 3 \times 10^{-5}$, still decaying), and for sides $8$ and $12$ the final values are $\Lambda(60) \approx 1.1$ and $6.0$. The weights scale like $(\sigma^2 + d^2)^{-\beta}$, so for $\beta = 2$ a modest increase of the typical distance $d$ reduces the coupling by a large factor, and the contraction rate $\phi_t$ of @eq-cs-decay drops with it. This is the mechanism behind the condition on $\Gamma_0$ for $\beta > 1/2$.
+:::

@@ -94,6 +94,138 @@ or
 quarto render modules/discrete-models/cellular-1d.qmd
 ```
 
+## Collective Motion: Confusion Effect and Crowd Evacuation
+
+Two extensions of the Module 2 labs (the Couzin model and the social force model). Each one has a **model** (Python), a **local animation**, an **interactive web figure** and a **lesson page**.
+
+|                 | Confusion effect (predator and prey)                               | Crowd evacuation (faster is slower)                                                            |
+| --------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| Question        | Does blending into a school protect you from a predator?           | Does pushing harder get a crowd out of a door sooner? Does a column in front of the door help? |
+| Lesson page     | `modules/collective-behaviour/confusion-effect.qmd`                | `modules/collective-behaviour/crowd-exit.qmd`                                                  |
+| Model           | `amlab/collective_motion/couzin_predator.py` (extends `couzin.py`) | `amlab/collective_motion/crowd_exit.py` (extends the social force model)                       |
+| Local animation | `amlab/collective_motion/couzin_predator_animation.py`             | `amlab/collective_motion/crowd_exit_animation.py`                                              |
+| Web figure      | `assets/viz/widgets/confusion.js` (`data-viz="confusion"`)         | `assets/viz/widgets/crowd-exit.js` (`data-viz="crowd-exit"`)                                   |
+
+Shared files: `amlab/collective_motion/ie_style.py` (IE palette and Matplotlib theme), `amlab/collective_motion/run_experiments.py` (parameter sweeps), `data/*.csv` and `img/*.png` (their results).
+
+No new packages are needed: `numpy`, `scipy`, `matplotlib` and `pillow` from `requirements.txt` are enough.
+
+### 1. Run the animations on your computer
+
+Activate your environment (`conda activate amlab`) and run every command **from the repository root**, the folder that contains `requirements.txt`.
+
+**Confusion effect**
+
+```bash
+python amlab/collective_motion/couzin_predator_animation.py
+```
+
+A window opens with the hunt on the left and a scoreboard on the right. The camera follows the school.
+
+| Option                | Meaning                                                       | Default |
+| --------------------- | ------------------------------------------------------------- | ------- |
+| `--theme dark\|light` | IE Tech-black stage, or white background for slides and print | `dark`  |
+| `--n 100`             | number of prey                                                | 60      |
+| `--odd 2`             | number of "odd" prey (marked fish)                            | 0       |
+| `--cohesion 4`        | width of the zone of attraction: the cohesion dial            | 10      |
+| `--speed 2`           | simulation steps per frame (faster playback)                  | 1       |
+| `--seed 7`            | random seed                                                   | 3       |
+
+In the window: the sliders change the cohesion and the confusion strength _c_ live. School size and the number of odd prey restart the hunt. **New hunt** restarts with a new random school, **Pause / play** (or the space bar) pauses.
+
+**Crowd evacuation**
+
+```bash
+python amlab/collective_motion/crowd_exit_animation.py
+```
+
+| Option                | Meaning                                                                    | Default |
+| --------------------- | -------------------------------------------------------------------------- | ------- |
+| `--theme dark\|light` | as above                                                                   | `dark`  |
+| `--v0 6`              | desired speed in m/s (how much in a hurry)                                 | 3       |
+| `--door 1.5`          | door width in m                                                            | 1.0     |
+| `--column 0.8`        | distance in m from the door to a column in front of it (0 means no column) | 0       |
+| `--n 100`             | number of people                                                           | 150     |
+| `--speed 8`           | playback speed (1 is real time)                                            | 4       |
+| `--seed 2`            | random seed                                                                | 1       |
+
+In the window: the desired speed and the playback speed change live. The door width, the column distance and the number of people restart the evacuation. People are coloured by the pressure they feel. An evacuation takes roughly half a minute to a minute of real time at the default speed.
+
+If no window opens (for example in a remote session), your Matplotlib backend has no display. Use the `--save` option below.
+
+### 2. Save a GIF or a video
+
+```bash
+python amlab/collective_motion/couzin_predator_animation.py --save hunt.gif --frames 300
+python amlab/collective_motion/crowd_exit_animation.py --save exit.gif --frames 300 --v0 4 --column 0.8
+python amlab/collective_motion/crowd_exit_animation.py --save exit.mp4 --frames 600   # needs ffmpeg
+```
+
+A GIF is written with Pillow and needs nothing else. An `.mp4` needs [ffmpeg](https://ffmpeg.org) on your `PATH`. Rendering a few hundred frames takes about a minute.
+
+### 3. Run the models without graphics
+
+```bash
+python amlab/collective_motion/couzin_predator.py
+python amlab/collective_motion/crowd_exit.py
+```
+
+The first checks that the vectorised Couzin step agrees with `couzin_equations` when the noise is off (the difference should be about `1e-13`) and prints the capture probability for five values of the cohesion. The second runs four evacuations at different desired speeds and prints the evacuation time, flow and pressure of each (about a minute).
+
+You can use both models from your own code:
+
+```python
+from amlab.collective_motion.couzin_predator import HuntParams, ConfusionSim, sweep
+from amlab.collective_motion.crowd_exit import CrowdParams, CrowdSim, run_evacuation
+
+res = sweep("d_attract", [0, 4, 8, 12], base=HuntParams(), n_seeds=8)   # captures per attack
+print(res["values"], res["capture_prob"])
+
+r = run_evacuation(CrowdParams(v0=4.0, obstacle=True, obs_gap=0.8), seed=0)
+print(r["evac_time"], r["flow"], r["door_pressure"])
+```
+
+### 4. Reproduce the figures of the lessons
+
+```bash
+python amlab/collective_motion/run_experiments.py confusion          # about 2 minutes
+python amlab/collective_motion/run_experiments.py crowd              # about 20 minutes
+python amlab/collective_motion/run_experiments.py all --seeds 3      # a faster draft
+python amlab/collective_motion/run_experiments.py crowd --plot-only  # redraw from data/*.csv
+```
+
+The numbers are written to `data/` (CSV) and the figures to `img/`. Every point is an average over independent random runs, set with `--seeds`.
+
+### 5. The interactive web figures
+
+The same two models run in the browser, as part of the Quarto site. To see them while you edit:
+
+```bash
+quarto preview modules/collective-behaviour/confusion-effect.qmd
+quarto preview modules/collective-behaviour/crowd-exit.qmd
+```
+
+They are drawn by `assets/viz/widgets/*.js` through the figure framework in `assets/viz/core.js`. To put one on another page, add this block to the `.qmd` file (the text inside becomes the "Try this" guide):
+
+```markdown
+::: {.viz data-viz="crowd-exit"}
+
+1. First thing to try.
+   :::
+```
+
+The physics of the crowd widget can also be run from the command line, without a browser, with Node.js:
+
+```bash
+node -e "const {createSim}=require('./assets/viz/widgets/crowd-exit.js'); const s=createSim({v0:4},1); while(!s.done()&&s.t<300)s.step(); console.log('evacuated in', s.exits[s.exits.length-1].toFixed(0), 's')"
+```
+
+### Troubleshooting
+
+- `ModuleNotFoundError: No module named 'amlab'`: run the command from the repository root, not from inside `amlab/`.
+- The window is slow: lower `--n`, or use `--speed 1` for the hunt and `--speed 2` for the crowd.
+- Text looks different from the website: the IE font Montserrat is used if it is installed, and Arial otherwise.
+
 ## Running Streamlit
 
 If you only want to explore the live app, use the hosted version: [bam-applied-math-lab.streamlit.app](https://bam-applied-math-lab.streamlit.app/).
