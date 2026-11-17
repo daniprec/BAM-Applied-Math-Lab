@@ -1,0 +1,2339 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.11.9">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Squid Ink: Hiding in a Cloud – Mathematical Modeling</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../slide-library.html" rel="next">
+<link href="../../modules/combining-ideas/index.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/scrollable-regions/scrollable-regions.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-e2b0d26dc907153b9b7d894772c108f8.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-12151da8aa05cf07c534364deb97e4e4.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-e2b0d26dc907153b9b7d894772c108f8.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-8bf4d1fb4905e12d728b14f6d437560a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-b420c83aa8650c36abcd9e9e7016d1f8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-8bf4d1fb4905e12d728b14f6d437560a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&amp;family=PT+Serif:ital,wght@0,400;0,700;1,400&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../theme/ie.css">
+<link rel="stylesheet" href="../../assets/styles.css">
+<link rel="stylesheet" href="../../assets/viz/viz.css">
+</head>
+
+<body class="nav-sidebar docked quarto-light"><a id="quarto-skip-link" class="visually-hidden-focusable" href="#quarto-document-content">Skip to main content</a><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          toggle.setAttribute("aria-checked", alternate ? "true" : "false");
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455).
+    // Not run on load: stylesheets are set before first paint there, and
+    // scrolling would undo the scroll to a URL fragment (#14973).
+    // The one pixel nudge keeps the reader where they were.
+    const refreshSafariScrollbar = () => {
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        const scrollY = window.scrollY;
+        window.scrollTo(0, scrollY > 0 ? scrollY - 1 : 1);
+        setTimeout(() => {
+          window.scrollTo(0, scrollY);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      refreshSafariScrollbar();
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      refreshSafariScrollbar();
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" aria-label="Toolbar">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="Breadcrumbs"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../modules/combining-ideas/index.html">Module 7: Combining Ideas</a></li><li class="breadcrumb-item"><a href="../../modules/combining-ideas/squid-ink.html">Squid Ink: Hiding in a Cloud</a></li></ol></nav>
+        <a class="flex-grow-1" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto" aria-label="Site">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">Mathematical Modeling</a> 
+        <div class="sidebar-tools-main">
+  <button type="button" role="switch" aria-checked="false" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode" aria-label="Toggle dark mode"><i class="bi"></i></button>
+</div>
+    </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <button type="button" class="sidebar-item-text sidebar-item-toggle sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-controls="quarto-sidebar-section-1" aria-expanded="false">
+ <span class="menu-text" id="quarto-sidebar-section-1-label">Getting Started</span><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+      </div>
+      <ul id="quarto-sidebar-section-1" aria-labelledby="quarto-sidebar-section-1-label" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../syllabus.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Syllabus</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/low-dimensional-dynamics/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text" id="quarto-sidebar-section-2-label">Module 1: Low-Dimensional Dynamics</span></a>
+            <button type="button" class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-controls="quarto-sidebar-section-2" aria-expanded="false" aria-label="Toggle section: Module 1: Low-Dimensional Dynamics">
+              <i class="bi bi-chevron-right ms-2" aria-hidden="true"></i>
+            </button> 
+      </div>
+      <ul id="quarto-sidebar-section-2" aria-labelledby="quarto-sidebar-section-2-label" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/what-is-a-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">What Is a Mathematical Model?</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/modeling-workflow.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Modelling Workflow</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/budworm-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Spruce Budworm Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/michaelis-menten.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Michaelis-Menten Kinetics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/compartmental-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Compartmental Models: SIR and SIS</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/sir-extensions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SIR Extensions: Vaccination and Herd Immunity</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/cdima-phase-plane.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">CDIMA: Phase Plane</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/van-der-pol.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Van der Pol Oscillator</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/fitzhugh-nagumo.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FitzHugh-Nagumo Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/lorenz.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Lorenz Attractor</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/collective-behaviour/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text" id="quarto-sidebar-section-3-label">Module 2: Synchronization and Collective Behaviour</span></a>
+            <button type="button" class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-controls="quarto-sidebar-section-3" aria-expanded="false" aria-label="Toggle section: Module 2: Synchronization and Collective Behaviour">
+              <i class="bi bi-chevron-right ms-2" aria-hidden="true"></i>
+            </button> 
+      </div>
+      <ul id="quarto-sidebar-section-3" aria-labelledby="quarto-sidebar-section-3-label" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/synchronization-examples.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Synchronization in Nature</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/kuramoto-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Kuramoto Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/order-parameter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Order Parameter</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/millennium-bridge.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Millennium Bridge</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/vicsek-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Vicsek Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/couzin-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Couzin Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/cucker-smale.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Flocking Without Noise: Cucker-Smale</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/confusion-effect.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Confusion Effect</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/crowd-exit.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Faster Is Slower: Crowds at a Door</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/practice-collective-motion.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Practice: Collective Motion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/randomness/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text" id="quarto-sidebar-section-4-label">Module 3: Modelling with Randomness</span></a>
+            <button type="button" class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-controls="quarto-sidebar-section-4" aria-expanded="false" aria-label="Toggle section: Module 3: Modelling with Randomness">
+              <i class="bi bi-chevron-right ms-2" aria-hidden="true"></i>
+            </button> 
+      </div>
+      <ul id="quarto-sidebar-section-4" aria-labelledby="quarto-sidebar-section-4-label" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/random-walk.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Random Walk</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/diffusion-equation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Diffusion Equation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/central-limit-theorem.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Central Limit Theorem</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/power-laws.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Power Laws</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/power-law-fitting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Fitting Power Laws</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/levy-foraging.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Lévy Foraging</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/efficient-markets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Returns and Efficient Markets</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/returns-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Loading Prices and Computing Returns</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/pattern-formation/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text" id="quarto-sidebar-section-5-label">Module 4: Space and Pattern Formation</span></a>
+            <button type="button" class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-controls="quarto-sidebar-section-5" aria-expanded="false" aria-label="Toggle section: Module 4: Space and Pattern Formation">
+              <i class="bi bi-chevron-right ms-2" aria-hidden="true"></i>
+            </button> 
+      </div>
+      <ul id="quarto-sidebar-section-5" aria-labelledby="quarto-sidebar-section-5-label" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/reaction-diffusion.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reaction-Diffusion Equations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/turing-conditions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Turing Conditions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/turing-original-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Turing’s Original Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/domain-size-mode-selection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Domain Size and Mode Selection</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/gierer-meinhardt-1d-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gierer-Meinhardt Model in 1D</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/gierer-meinhardt-2d-solver.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gierer-Meinhardt Solver in 2D</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/gray-scott.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gray-Scott Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/reaction-diffusion-evidence.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Evidence for Reaction-Diffusion</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/assignment-patterns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Assignment: Pattern Formation</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/networks/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text" id="quarto-sidebar-section-6-label">Module 5: Complex Networks</span></a>
+            <button type="button" class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-controls="quarto-sidebar-section-6" aria-expanded="false" aria-label="Toggle section: Module 5: Complex Networks">
+              <i class="bi bi-chevron-right ms-2" aria-hidden="true"></i>
+            </button> 
+      </div>
+      <ul id="quarto-sidebar-section-6" aria-labelledby="quarto-sidebar-section-6-label" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/network-concepts.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Network Concepts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/networkx-basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">NetworkX Basics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/iberian-blackout.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Iberian Blackout</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/erdos-renyi.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Erdos-Renyi Random Graphs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/sis-network-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SIS Model on Networks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/sir-network.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SIR on Networks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/pagerank.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">PageRank</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/model-scaling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model Scaling Laws</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/triadic-closure.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Triadic Closure</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/configuration-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Configuration Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/sir-percolation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SIR and Percolation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/metapopulation-epidemics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Metapopulation Epidemics</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/discrete-models/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text" id="quarto-sidebar-section-7-label">Module 6: Explorables and Discrete Models</span></a>
+            <button type="button" class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-controls="quarto-sidebar-section-7" aria-expanded="false" aria-label="Toggle section: Module 6: Explorables and Discrete Models">
+              <i class="bi bi-chevron-right ms-2" aria-hidden="true"></i>
+            </button> 
+      </div>
+      <ul id="quarto-sidebar-section-7" aria-labelledby="quarto-sidebar-section-7-label" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/explorables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Explorables Presentations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/cellular-automata.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cellular Automata</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/cellular-1d.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1D Cellular Automata</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/game-of-life.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Game of Life</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/nagel-schreckenberg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Nagel-Schreckenberg Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/nagel-paper.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Nagel and Schreckenberg (1992)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/traffic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Traffic Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/traffic-continuum.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Traffic as a Continuum</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/combining-ideas/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text" id="quarto-sidebar-section-8-label">Module 7: Combining Ideas</span></a>
+            <button type="button" class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" aria-controls="quarto-sidebar-section-8" aria-expanded="true" aria-label="Toggle section: Module 7: Combining Ideas">
+              <i class="bi bi-chevron-right ms-2" aria-hidden="true"></i>
+            </button> 
+      </div>
+      <ul id="quarto-sidebar-section-8" aria-labelledby="quarto-sidebar-section-8-label" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/combining-ideas/squid-ink.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Squid Ink: Hiding in a Cloud</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../slide-library.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Slide Library</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" aria-labelledby="toc-title" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-model" id="toc-the-model" class="nav-link active" data-scroll-target="#the-model">The model</a>
+  <ul>
+  <li><a href="#the-ink-spread-dilute-disappear" id="toc-the-ink-spread-dilute-disappear" class="nav-link" data-scroll-target="#the-ink-spread-dilute-disappear">The ink: spread, dilute, disappear</a></li>
+  <li><a href="#vision-a-beer-lambert-law" id="toc-vision-a-beer-lambert-law" class="nav-link" data-scroll-target="#vision-a-beer-lambert-law">Vision: a Beer-Lambert law</a></li>
+  </ul></li>
+  <li><a href="#explore-the-hunt" id="toc-explore-the-hunt" class="nav-link" data-scroll-target="#explore-the-hunt">Explore the hunt</a></li>
+  <li><a href="#run-it-on-your-computer" id="toc-run-it-on-your-computer" class="nav-link" data-scroll-target="#run-it-on-your-computer">Run it on your computer</a></li>
+  <li><a href="#how-the-code-works" id="toc-how-the-code-works" class="nav-link" data-scroll-target="#how-the-code-works">How the code works</a></li>
+  <li><a href="#experiment-how-much-does-the-ink-help" id="toc-experiment-how-much-does-the-ink-help" class="nav-link" data-scroll-target="#experiment-how-much-does-the-ink-help">Experiment: how much does the ink help?</a></li>
+  <li><a href="#biological-reality-check" id="toc-biological-reality-check" class="nav-link" data-scroll-target="#biological-reality-check">Biological reality check</a></li>
+  <li><a href="#waves-instead-of-ink" id="toc-waves-instead-of-ink" class="nav-link" data-scroll-target="#waves-instead-of-ink">Waves instead of ink</a></li>
+  <li><a href="#what-this-model-does-not-do" id="toc-what-this-model-does-not-do" class="nav-link" data-scroll-target="#what-this-model-does-not-do">What this model does not do</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/combining-ideas/squid-ink.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content" tabindex="-1">
+
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="Breadcrumbs"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../modules/combining-ideas/index.html">Module 7: Combining Ideas</a></li><li class="breadcrumb-item"><a href="../../modules/combining-ideas/squid-ink.html">Squid Ink: Hiding in a Cloud</a></li></ol></nav>
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">Squid Ink: Hiding in a Cloud</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+<p class="subtitle lead">Module 7: Combining Ideas</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Optional extension
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This page combines two ideas from earlier modules, <strong>agents that move and interact</strong> (Module 2) and <strong>a field that spreads and fades</strong> (Module 4). It extends the <a href="../../modules/collective-behaviour/confusion-effect.html">confusion effect</a>. There a school defends itself against one predator. Here the roles are reversed: <strong>one prey, a squid, is hunted by a school of fish</strong> and defends itself with a chemical and optical weapon. The question is: <strong>can a squid defeat a whole school by hiding in its own ink?</strong></p>
+</div>
+</div>
+<p>A squid cannot outswim a school of fast fish for long. It has one trick that the fish do not: it can release a cloud of ink and leave. The ink has been proposed to work in several ways, as a chemical irritant, as a decoy shaped like the squid (a <em>pseudomorph</em>), and as a <strong>smoke screen</strong> that hides the squid from the eyes of the predator <span class="citation" data-cites="derby2014cephalopod">(<a href="#ref-derby2014cephalopod" role="doc-biblioref">Derby 2014</a>)</span>. Experiments with live predators support at least the optical and the decoy effects: ink delayed food capture by French grunts <span class="citation" data-cites="wood2010caribbean">(<a href="#ref-wood2010caribbean" role="doc-biblioref"><span class="nocase">Wood et al.</span> 2010</a>)</span>, and the visual effect of squid ink delayed the approach of summer flounder <span class="citation" data-cites="derby2013ink">(<a href="#ref-derby2013ink" role="doc-biblioref">Derby et al. 2013</a>)</span>.</p>
+<p>We model only the <strong>smoke screen</strong>. The model has three ingredients that you know from earlier pages: agents that move and interact locally (the fish follow Vicsek-type rules, as in the <a href="../../modules/collective-behaviour/vicsek-model.html">Vicsek model</a>), a field that changes in time (the ink, as in the <a href="../../modules/pattern-formation/reaction-diffusion.html">reaction-diffusion</a> module) and a coupling between the two (the fish pursue the squid only as well as they can see it). Coupling moving agents to a field is a common modelling pattern. A related one is the chemotactic predator and prey of Sengupta, Kruppa and Löwen <span class="citation" data-cites="sengupta2011chemotactic">(<a href="#ref-sengupta2011chemotactic" role="doc-biblioref">Sengupta et al. 2011</a>)</span>, where each animal follows the gradient of a chemical released by the other.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>What is and is not claimed
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This is a <strong>teaching model</strong>. The parameters are chosen so that the mechanisms are visible and are not fitted to squid data. In a first literature search I did not find a model that combines a single inking prey, a schooling predator and a concentration-dependent loss of vision, but a first search is not a proof of novelty. Treat the combination as a question worth exploring, not as an established result.</p>
+</div>
+</div>
+<section id="the-model" class="level2">
+<h2 class="anchored" data-anchor-id="the-model">The model</h2>
+<p>Lengths are in body lengths (BL) and time in arbitrary time units (t.u.). All animals live on a periodic square of side <span class="math inline">\(L = 40\)</span> BL.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Ingredient</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Fish</strong> (predators)</td>
+<td>Align with neighbours, move toward the school, keep a minimum distance, and <strong>pursue the squid</strong> with a weight that depends on how well they see it. They are noticeably faster than the squid.</td>
+</tr>
+<tr class="even">
+<td><strong>Squid</strong> (prey)</td>
+<td>Cruises slowly. When the nearest fish comes within 8 BL it turns away and swims faster. If it still has ink and has not inked too recently, it releases a bolus at its position. Each release spends a share of the ink that is left in the sac.</td>
+</tr>
+<tr class="odd">
+<td><strong>Ink</strong></td>
+<td>A field <span class="math inline">\(c\)</span> on a <span class="math inline">\(100 \times 100\)</span> grid. In every step it spreads to the neighbouring cells, and cells with very little ink are reset to 0. The sac is <strong>finite</strong>: it starts full, and every release spends a share of what is left, so later clouds are thinner.</td>
+</tr>
+<tr class="even">
+<td><strong>Vision</strong></td>
+<td>The pursuit weight of a fish is multiplied by the <strong>transmission</strong> along the line from the fish to the squid: the more ink on the way, the less it sees.</td>
+</tr>
+<tr class="odd">
+<td><strong>Capture</strong></td>
+<td>A fish within 0.8 BL of the squid catches it. A hunt that lasts 250 t.u. without a capture counts as an escape.</td>
+</tr>
+</tbody>
+</table>
+<section id="the-ink-spread-dilute-disappear" class="level3">
+<h3 class="anchored" data-anchor-id="the-ink-spread-dilute-disappear">The ink: spread, dilute, disappear</h3>
+<p>The ink follows a simple local rule in every step. Each cell keeps a fraction <span class="math inline">\(1 - s\)</span> of its ink and gives <span class="math inline">\(s/4\)</span> to each of its four neighbours. Afterwards any cell with less than a threshold <span class="math inline">\(\theta\)</span> of ink is reset to exactly zero:</p>
+<p><span id="eq-spread"><span class="math display">\[
+c_{ij}' = (1 - s)\,c_{ij} + \frac{s}{4}\left(c_{i+1,j} + c_{i-1,j} + c_{i,j+1} + c_{i,j-1}\right),
+\qquad
+c_{ij}' \leftarrow 0 \ \text{ if } \ c_{ij}' &lt; \theta .
+\tag{1}\]</span></span></p>
+<p>With <span class="math inline">\(s = 1/2\)</span>, half of the ink of a cell stays and half goes to its neighbours. The first part of the rule conserves the total amount of ink, and the second part removes it. A thick bolus (a large peak value) spreads farther and lasts longer before the threshold erases it, so the <strong>thickness</strong> of the ink is a parameter we can play with.</p>
+<p>This rule is a discrete diffusion. Expanding it to second order in the grid spacing <span class="math inline">\(\Delta x\)</span> gives <span class="math inline">\(c' - c \approx \tfrac{s}{4}\,\Delta x^2\,\nabla^2 c\)</span> per step, which is the diffusion equation with an effective diffusion coefficient</p>
+<p><span id="eq-deff"><span class="math display">\[
+D_\text{eff} = \frac{s\,\Delta x^2}{4\,\Delta t_\text{ink}} .
+\tag{2}\]</span></span></p>
+<p>With <span class="math inline">\(s = 0.5\)</span>, <span class="math inline">\(\Delta x = 0.4\)</span> BL and three ink steps per time step of <span class="math inline">\(0.12\)</span> (so <span class="math inline">\(\Delta t_\text{ink} = 0.04\)</span>) this is <span class="math inline">\(D_\text{eff} = 0.5\)</span> BL<span class="math inline">\(^2\)</span>/t.u. The next figure shows one bolus spreading, and the numbers check <a href="#eq-deff" class="quarto-xref">Equation&nbsp;2</a>: the variance of the cloud must grow as <span class="math inline">\(\sigma^2(t) = \sigma_0^2 + 2 D_\text{eff}\, t\)</span> while no cell is cut off.</p>
+<div id="cell-fig-ink-spread" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> replace</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.collective_motion.squid_ink <span class="im">import</span> InkParams, SquidInkSimulation</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> InkParams()</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>sim <span class="op">=</span> SquidInkSimulation(p, seed<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>sim.squid <span class="op">=</span> np.array([<span class="fl">20.0</span>, <span class="fl">20.0</span>])</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>sim._release_ink()</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>total0 <span class="op">=</span> sim.ink.<span class="bu">sum</span>()</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>snapshots <span class="op">=</span> {}</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> step <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">251</span>):</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    sim._spread_ink()</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> step <span class="kw">in</span> (<span class="dv">1</span>, <span class="dv">25</span>, <span class="dv">83</span>, <span class="dv">250</span>):</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>        snapshots[step] <span class="op">=</span> sim.ink.copy()</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">4</span>, figsize<span class="op">=</span>(<span class="dv">11</span>, <span class="fl">3.1</span>), constrained_layout<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>half <span class="op">=</span> <span class="bu">int</span>(<span class="dv">15</span> <span class="op">/</span> sim.dx)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, (step, ink) <span class="kw">in</span> <span class="bu">zip</span>(axs, snapshots.items()):</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    window <span class="op">=</span> ink[<span class="dv">50</span> <span class="op">-</span> half : <span class="dv">50</span> <span class="op">+</span> half, <span class="dv">50</span> <span class="op">-</span> half : <span class="dv">50</span> <span class="op">+</span> half]</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    ax.imshow(window, origin<span class="op">=</span><span class="st">"lower"</span>, cmap<span class="op">=</span><span class="st">"Blues"</span>, vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span>window.<span class="bu">max</span>(),</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>              extent<span class="op">=</span>(<span class="op">-</span><span class="dv">15</span>, <span class="dv">15</span>, <span class="op">-</span><span class="dv">15</span>, <span class="dv">15</span>))</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="ss">f"t = </span><span class="sc">{</span>step <span class="op">*</span> p<span class="sc">.</span>dt<span class="sc">:.1f}</span><span class="ch">\n</span><span class="ss">peak </span><span class="sc">{</span>ink<span class="sc">.</span><span class="bu">max</span>()<span class="sc">:.2f}</span><span class="ss">, ink left </span><span class="sc">{</span><span class="dv">100</span> <span class="op">*</span> ink<span class="sc">.</span><span class="bu">sum</span>() <span class="op">/</span> total0<span class="sc">:.0f}</span><span class="ss"> %"</span>, fontsize<span class="op">=</span><span class="dv">9</span>)</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    ax.set_xticks([<span class="op">-</span><span class="dv">10</span>, <span class="dv">0</span>, <span class="dv">10</span>])</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    ax.set_yticks([<span class="op">-</span><span class="dv">10</span>, <span class="dv">0</span>, <span class="dv">10</span>])</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_ylabel(<span class="st">"BL"</span>)</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="co"># check of the effective diffusion coefficient (no cut-off)</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>free <span class="op">=</span> SquidInkSimulation(replace(p, threshold<span class="op">=</span><span class="fl">0.0</span>), seed<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>free.squid <span class="op">=</span> np.array([<span class="fl">20.0</span>, <span class="fl">20.0</span>])</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>free._release_ink()</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.arange(p.grid) <span class="op">*</span> free.dx</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> variance_x(s):</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> s.ink.<span class="bu">sum</span>(axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> w <span class="op">/</span> w.<span class="bu">sum</span>()</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>    mu <span class="op">=</span> (w <span class="op">*</span> x).<span class="bu">sum</span>()</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ((x <span class="op">-</span> mu) <span class="op">**</span> <span class="dv">2</span> <span class="op">*</span> w).<span class="bu">sum</span>()</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>v0 <span class="op">=</span> variance_x(free)</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">250</span>):</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>    free._spread_ink()</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> <span class="dv">250</span> <span class="op">*</span> p.dt</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>d_eff <span class="op">=</span> p.spread <span class="op">*</span> free.dx<span class="op">**</span><span class="dv">2</span> <span class="op">/</span> (<span class="dv">4</span> <span class="op">*</span> p.dt <span class="op">/</span> p.ink_steps)</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"D_eff = </span><span class="sc">{</span>d_eff<span class="sc">:.2f}</span><span class="ss">; variance after t = </span><span class="sc">{</span>t<span class="sc">:.0f}</span><span class="ss">: measured </span><span class="sc">{</span>variance_x(free)<span class="sc">:.2f}</span><span class="ss">, predicted </span><span class="sc">{</span>v0 <span class="op">+</span> <span class="dv">2</span> <span class="op">*</span> d_eff <span class="op">*</span> t<span class="sc">:.2f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div id="fig-ink-spread" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Four heat maps of an ink cloud around the same point. The cloud widens from a small dark disc to a faint disc about thirteen body lengths across, while the peak falls from 2.6 to 0.05 and the ink left falls from 100 percent to 22 percent.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-ink-spread-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="squid-ink_files/figure-html/fig-ink-spread-output-1.png" alt="Four heat maps of an ink cloud around the same point. The cloud widens from a small dark disc to a faint disc about thirteen body lengths across, while the peak falls from 2.6 to 0.05 and the ink left falls from 100 percent to 22 percent." width="1067" height="287" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ink-spread-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: One bolus of ink after 0.1, 3, 10 and 30 time units. The cloud spreads and its peak falls, and the cut-off gives it a sharp edge. Each panel has its own colour scale. The numbers above each panel are the peak amount of ink in a cell and the share of the released ink still in the grid.
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>D_eff = 0.50; variance after t = 30: measured 30.78, predicted 30.81</code></pre>
+</div>
+</div>
+</section>
+<section id="vision-a-beer-lambert-law" class="level3">
+<h3 class="anchored" data-anchor-id="vision-a-beer-lambert-law">Vision: a Beer-Lambert law</h3>
+<p>Light that travels through a medium that absorbs it fades exponentially with the amount of absorber on the way. For the fish <span class="math inline">\(i\)</span> at distance <span class="math inline">\(d_i\)</span> from the squid, let <span class="math inline">\(\bar c_i\)</span> be the mean ink concentration along the straight line between them. The transmission is</p>
+<p><span id="eq-transmission"><span class="math display">\[
+\tau_i = \exp\!\left[-\left(a + \kappa\, \bar c_i\right) d_i\right],
+\tag{3}\]</span></span></p>
+<p>where <span class="math inline">\(\kappa\)</span> is the <strong>opacity</strong> of the ink and <span class="math inline">\(a = 0.05\)</span> BL<span class="math inline">\(^{-1}\)</span> is the small absorption of clear water, so that even without ink a distant squid is a little harder to see. In a dense cloud <span class="math inline">\(\tau_i \approx 0\)</span>. The heading of the fish is steered by</p>
+<p><span id="eq-pursuit"><span class="math display">\[
+\mathbf{v}_i = w_\text{a}\,\mathbf{a}_i + w_\text{c}\,\mathbf{c}_i + w_\text{s}\,\mathbf{s}_i + w_\text{p}\,\tau_i\,\hat{\mathbf{p}}_i ,
+\tag{4}\]</span></span></p>
+<p>where <span class="math inline">\(\mathbf{a}_i\)</span>, <span class="math inline">\(\mathbf{c}_i\)</span> and <span class="math inline">\(\mathbf{s}_i\)</span> are the alignment, cohesion and separation terms of the school, and <span class="math inline">\(\hat{\mathbf{p}}_i\)</span> is the unit vector toward the squid. A fish that has lost the squid does not stop: it keeps moving with the school, so the school drifts on instead of turning around.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Value</th>
+<th></th>
+<th>Parameter</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>fish speed</td>
+<td>0.70</td>
+<td></td>
+<td>squid speed (cruise, flight)</td>
+<td>0.30, 0.45</td>
+</tr>
+<tr class="even">
+<td>turning rate of a fish</td>
+<td>0.20 rad/step</td>
+<td></td>
+<td>flight distance</td>
+<td>8 BL</td>
+</tr>
+<tr class="odd">
+<td>weights <span class="math inline">\(w_\text{a}, w_\text{c}, w_\text{s}, w_\text{p}\)</span></td>
+<td>1.1, 0.35, 1.4, 1.9</td>
+<td></td>
+<td>minimum time between releases</td>
+<td>5 t.u.</td>
+</tr>
+<tr class="even">
+<td>spreading fraction <span class="math inline">\(s\)</span></td>
+<td>0.5</td>
+<td></td>
+<td>ink threshold <span class="math inline">\(\theta\)</span></td>
+<td>0.002</td>
+</tr>
+<tr class="odd">
+<td>ink steps per time step</td>
+<td>3</td>
+<td></td>
+<td>bolus peak (thickness)</td>
+<td>3 (default)</td>
+</tr>
+<tr class="even">
+<td>opacity <span class="math inline">\(\kappa\)</span></td>
+<td>2.8 (default)</td>
+<td></td>
+<td>time step <span class="math inline">\(\Delta t\)</span></td>
+<td>0.12</td>
+</tr>
+<tr class="odd">
+<td>clear-water absorption <span class="math inline">\(a\)</span></td>
+<td>0.05</td>
+<td></td>
+<td>share of the remaining ink used per release</td>
+<td>0.6 (default)</td>
+</tr>
+<tr class="even">
+<td>ink sac is empty below</td>
+<td>5 % of a full sac</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="explore-the-hunt" class="level2">
+<h2 class="anchored" data-anchor-id="explore-the-hunt">Explore the hunt</h2>
+<p>The figure is the same model, ported to JavaScript. The camera follows the squid by default; the <strong>Camera</strong> button fixes the view on the whole sea. Fish are red arrows: a <strong>filled</strong> arrow can still see the squid, a <strong>hollow</strong> arrow has lost it in the ink. A white ring around the squid means that it has just inked and must wait before it can ink again; the label in the corner shows how much of the ink sac is left, and the squid itself turns from green to grey as the sac empties. <strong>Recharge ink</strong> refills it to 100%. The plot shows the mean visibility of the squid and the distance of the closest fish.</p>
+<div class="viz" data-viz="squid-ink">
+<ol type="1">
+<li>Press <strong>Ink: off</strong> and watch about ten hunts. How long does the squid survive? Then switch the ink on again and compare the capture probability shown in the readout.</li>
+<li>Set the opacity <span class="math inline">\(\kappa\)</span> to 0. Why does a cloud that does not absorb light give no protection, although the squid still releases ink?</li>
+<li>Set <strong>ink used per release</strong> to 0.2 and then to 0.8. With 0.2 the squid releases many thin clouds, with 0.8 it releases two thick ones and then runs dry. Which survives longer? Then set it to 0 (unlimited ink). Is that realistic? Press <strong>Recharge ink</strong> during a hunt: how much does one refill buy?</li>
+<li>Reduce the <strong>thickness</strong> to 1 and then raise it to 8. How does the shape of the cloud change, and how long does it hide the squid?</li>
+<li>Compare a school of 12 with a school of 40 at the default ink. Does a bigger school find the squid more easily?</li>
+</ol>
+</div>
+</section>
+<section id="run-it-on-your-computer" class="level2">
+<h2 class="anchored" data-anchor-id="run-it-on-your-computer">Run it on your computer</h2>
+<p>From the repository root:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># the animation with sliders (IE dark theme)</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> amlab/collective_motion/squid_ink_animation.py</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># options: light theme, a bigger school, thicker ink, a control without ink</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> amlab/collective_motion/squid_ink_animation.py <span class="at">--theme</span> light <span class="at">--fish</span> 40 <span class="at">--thickness</span> 5</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> amlab/collective_motion/squid_ink_animation.py <span class="at">--no-ink</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># save a GIF or an MP4 instead of opening a window (MP4 needs ffmpeg)</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> amlab/collective_motion/squid_ink_animation.py <span class="at">--save</span> squid-ink.gif <span class="at">--frames</span> 300</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co"># self-test and a short comparison with and without ink, without graphics</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> amlab/collective_motion/squid_ink.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>In the window the sliders change the opacity, the thickness and the share of ink used per release live, and the school size restarts the hunt. <strong>Ink on/off</strong> switches the ink off, <strong>Camera</strong> (or <strong>C</strong>) switches between following the squid and a fixed view of the whole sea, <strong>New hunt</strong> starts again and <strong>Space</strong> pauses. The animation redraws only the moving parts, which keeps it smooth; use <code>--speed 1</code> on a slow computer.</p>
+</section>
+<section id="how-the-code-works" class="level2">
+<h2 class="anchored" data-anchor-id="how-the-code-works">How the code works</h2>
+<p>The model is in <code>amlab/collective_motion/squid_ink.py</code>. The ink rule of <a href="#eq-spread" class="quarto-xref">Equation&nbsp;1</a> is four array shifts:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>nb <span class="op">=</span> np.roll(c, <span class="dv">1</span>, <span class="dv">0</span>) <span class="op">+</span> np.roll(c, <span class="op">-</span><span class="dv">1</span>, <span class="dv">0</span>) <span class="op">+</span> np.roll(c, <span class="dv">1</span>, <span class="dv">1</span>) <span class="op">+</span> np.roll(c, <span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> (<span class="fl">1.0</span> <span class="op">-</span> spread) <span class="op">*</span> c <span class="op">+</span> (spread <span class="op">/</span> <span class="fl">4.0</span>) <span class="op">*</span> nb      <span class="co"># keep a fraction, give the rest away</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>c[c <span class="op">&lt;</span> threshold] <span class="op">=</span> <span class="fl">0.0</span>                            <span class="co"># the cut-off</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>and the transmission of <a href="#eq-transmission" class="quarto-xref">Equation&nbsp;3</a> samples the field at points along each line of sight:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>rays <span class="op">=</span> wrap_delta(squid <span class="op">-</span> fish, domain)                    <span class="co"># fish -&gt; squid, on the torus</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>points <span class="op">=</span> fish[:, <span class="va">None</span>, :] <span class="op">+</span> rays[:, <span class="va">None</span>, :] <span class="op">*</span> fractions[<span class="va">None</span>, :, <span class="va">None</span>]</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>mean_c <span class="op">=</span> sample_ink(points).mean(axis<span class="op">=</span><span class="dv">1</span>)                   <span class="co"># mean ink on each sightline</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>tau <span class="op">=</span> np.exp(<span class="op">-</span>kappa <span class="op">*</span> mean_c <span class="op">*</span> distance)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>self_test()</code> checks that the same seed gives the same hunt, that the spreading rule conserves ink when the threshold is 0, that it is symmetric, that a cloud disappears, that the transmission falls as the opacity grows, that the squid never releases ink twice within the minimum interval and that the ink sac only ever empties.</p>
+<p>To run your own experiment:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> replace</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.collective_motion.squid_ink <span class="im">import</span> InkParams, hunt, sweep</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>res <span class="op">=</span> sweep(<span class="st">"kappa"</span>, [<span class="fl">0.0</span>, <span class="fl">1.0</span>, <span class="fl">3.0</span>], base<span class="op">=</span>InkParams(), n_seeds<span class="op">=</span><span class="dv">10</span>, t_max<span class="op">=</span><span class="fl">250.0</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(res[<span class="st">"values"</span>], res[<span class="st">"capture_prob"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>sweep</code> runs <code>n_seeds</code> independent hunts for every value and returns the fraction in which the squid was caught within <code>t_max</code>. The next chunk compares a squid with and without ink on six random schools.</p>
+<div id="tbl-ink-vs-none" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="2">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl quarto-uncaptioned" id="tbl-ink-vs-none-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1
+</figcaption>
+<div aria-describedby="tbl-ink-vs-none-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> replace</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.collective_motion.squid_ink <span class="im">import</span> InkParams, hunt</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>base <span class="op">=</span> InkParams()</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> label, par <span class="kw">in</span> [(<span class="st">"no ink"</span>, replace(base, ink<span class="op">=</span><span class="va">False</span>)), (<span class="st">"with ink"</span>, base)]:</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    res <span class="op">=</span> [hunt(par, seed, t_max<span class="op">=</span><span class="fl">250.0</span>) <span class="cf">for</span> seed <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">6</span>)]</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    caught <span class="op">=</span> <span class="bu">int</span>(<span class="bu">sum</span>(r[<span class="st">"captured"</span>] <span class="cf">for</span> r <span class="kw">in</span> res))</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>label<span class="sc">:9s}</span><span class="ss"> caught </span><span class="sc">{</span>caught<span class="sc">}</span><span class="ss"> of 6 hunts, "</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>          <span class="ss">f"mean time </span><span class="sc">{</span>np<span class="sc">.</span>mean([r[<span class="st">'time'</span>] <span class="cf">for</span> r <span class="kw">in</span> res])<span class="sc">:5.1f}</span><span class="ss">, "</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>          <span class="ss">f"mean ink releases </span><span class="sc">{</span>np<span class="sc">.</span>mean([r[<span class="st">'releases'</span>] <span class="cf">for</span> r <span class="kw">in</span> res])<span class="sc">:4.1f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>no ink    caught 6 of 6 hunts, mean time  31.3, mean ink releases  0.0
+with ink  caught 6 of 6 hunts, mean time  60.9, mean ink releases  4.0</code></pre>
+</div>
+</div>
+</figure>
+</div>
+</section>
+<section id="experiment-how-much-does-the-ink-help" class="level2">
+<h2 class="anchored" data-anchor-id="experiment-how-much-does-the-ink-help">Experiment: how much does the ink help?</h2>
+<p><code>run_experiments.py squid</code> reproduces the figure below. For each value of one parameter it runs <strong>60 independent hunts</strong> of at most 250 t.u. and records the time at which the squid is caught. The line is the mean, the band is a 95% confidence interval for the mean, and the dashed line is the same hunt without ink.</p>
+<div id="fig-squid-sweeps" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Four panels sharing one vertical axis, the mean time until capture in time units. A dashed line at about 32 is the squid without ink. Top left: the time rises from 32 at zero opacity to about 67 at opacity 5.6 and then stays flat. Top right: it rises from 39 to 77 as the ink thickness goes from 1 to 10. Bottom left: it falls from 98 to 53 as the share of ink used per release goes from 0.2 to 0.8. Bottom right: it falls slowly from 62 to 46 as the school grows from 8 to 60 fish.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-squid-sweeps-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../../img/squid_ink_sweeps.png" class="img-fluid figure-img" alt="Four panels sharing one vertical axis, the mean time until capture in time units. A dashed line at about 32 is the squid without ink. Top left: the time rises from 32 at zero opacity to about 67 at opacity 5.6 and then stays flat. Top right: it rises from 39 to 77 as the ink thickness goes from 1 to 10. Bottom left: it falls from 98 to 53 as the share of ink used per release goes from 0.2 to 0.8. Bottom right: it falls slowly from 62 to 46 as the school grows from 8 to 60 fish.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-squid-sweeps-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Mean time until the squid is caught, against the opacity of the ink, the ink thickness, the share of the remaining ink used per release and the size of the school.
+</figcaption>
+</figure>
+</div>
+<p>What the figure shows:</p>
+<ul>
+<li><strong>The squid is delayed, not saved.</strong> In all 60 hunts of the default setting the squid is caught: after 60 t.u. on average, against 32 t.u. without ink. The ink buys roughly a factor of two in time.</li>
+<li><strong>Opacity saturates.</strong> The mean time grows from 32 at <span class="math inline">\(\kappa = 0\)</span> to about 67 at <span class="math inline">\(\kappa = 5.6\)</span> and then stays flat, as Exercise 3 explains.</li>
+<li><strong>Thicker ink helps for longer</strong>, because a thicker cloud is wider and lasts longer (39 t.u. at thickness 1, 77 at thickness 10).</li>
+<li><strong>Spending the sac in many small clouds is better than in two large ones</strong>: the mean time falls from 98 t.u. when the squid uses 20% of what is left per release to 53 t.u. when it uses 80%. Thin clouds are enough to confuse the fish, and the squid keeps something in reserve.</li>
+<li><strong>Bigger schools find the squid sooner</strong> (62 t.u. for 8 fish, 46 for 60), but only moderately: the fish pursue the same squid whatever the school size.</li>
+<li><strong>Unlimited ink is a different model.</strong> With an endless supply the squid was caught in only 23 of 60 hunts within 250 t.u. (mean time 198 t.u., which is cut off at 250 t.u. and therefore too low). The limited sac is what turns an escape into a delay.</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Exercise 1: a cloud that does not absorb
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>With <span class="math inline">\(\kappa = 0\)</span> the squid still releases ink, and the cloud spreads exactly as before. Why does the squid get no protection? What does the figure say about the <strong>cost</strong> of releasing ink in the model?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The ink acts only through the transmission <span class="math inline">\(\tau = \exp[-(a + \kappa \bar c) d]\)</span> of <a href="#eq-transmission" class="quarto-xref">Equation&nbsp;3</a>. At <span class="math inline">\(\kappa = 0\)</span> only the weak clear-water term <span class="math inline">\(a\)</span> is left, whatever the concentration, so the fish pursue at full weight and the capture probability equals that of a squid without ink. The bottom-left panel of the figure and the unlimited-ink control show what ink costs in the model: a finite sac. With unlimited ink the squid would be caught in only 23 of 60 hunts; with the realistic sac it is always caught.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Exercise 2: the diffusion coefficient of the rule
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use the expansion of <a href="#eq-spread" class="quarto-xref">Equation&nbsp;1</a> to derive <a href="#eq-deff" class="quarto-xref">Equation&nbsp;2</a>. Then compute how long it takes the variance of a cloud to reach 36 BL<span class="math inline">\(^2\)</span> (<span class="math inline">\(\sigma = 6\)</span> BL) from an initial 0.8 BL<span class="math inline">\(^2\)</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>A cell gets <span class="math inline">\(\tfrac{s}{4}\)</span> of the ink of each neighbour and keeps <span class="math inline">\(1 - s\)</span>, so <span class="math inline">\(c_{ij}' - c_{ij} = \tfrac{s}{4}\,(c_{i+1,j} + c_{i-1,j} + c_{i,j+1} + c_{i,j-1} - 4 c_{ij})\)</span>. The bracket is <span class="math inline">\(\Delta x^2\,\nabla^2 c\)</span> to leading order, so one step changes <span class="math inline">\(c\)</span> by <span class="math inline">\(\tfrac{s}{4}\Delta x^2\,\nabla^2 c\)</span>. Dividing by the duration <span class="math inline">\(\Delta t_\text{ink}\)</span> of the step gives <span class="math inline">\(\partial_t c = D_\text{eff}\,\nabla^2 c\)</span> with <span class="math inline">\(D_\text{eff} = s\,\Delta x^2 / (4\,\Delta t_\text{ink})\)</span>. In one dimension the variance of a diffusing cloud grows as <span class="math inline">\(\sigma^2 = \sigma_0^2 + 2 D_\text{eff}\,t\)</span>, so <span class="math inline">\(t = (36 - 0.8) / (2 \times 0.5) = 35.2\)</span> t.u. The cut-off makes the real cloud smaller than this and finally erases it.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Exercise 3: thick or thin ink
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A thicker bolus covers a larger area for longer. Why can the benefit of thicker ink still saturate? Think about the transmission of <a href="#eq-transmission" class="quarto-xref">Equation&nbsp;3</a> when <span class="math inline">\(\bar c\, d\)</span> is already large.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The transmission depends on the product <span class="math inline">\(\kappa\,\bar c\,d\)</span> in an exponential. Once the optical depth <span class="math inline">\(\kappa\,\bar c\,d\)</span> is a few units, <span class="math inline">\(\tau\)</span> is already close to 0, and more ink only makes a very small number even smaller. The extra ink then helps only through its <strong>extent</strong>: a wider cloud takes more time to cross and to leave. Compare the plateau of the opacity curve in <a href="#fig-squid-sweeps" class="quarto-xref">Figure&nbsp;2</a> with the thickness curve, which keeps rising.</p>
+</div>
+</div>
+</div>
+<div class="python-next">
+<p><strong>Build this in Python.</strong> Use <code>sweep</code> to vary the <strong>ink thickness</strong> and the <strong>spreading fraction</strong> <code>spread</code> of <a href="#eq-spread" class="quarto-xref">Equation&nbsp;1</a>. Which of the two controls the capture probability, and why? Then add a <strong>decoy</strong>: let fish within 3 BL of the ink maximum steer toward it for a few time units. Does a decoy help more than a smoke screen alone?</p>
+</div>
+</section>
+<section id="biological-reality-check" class="level2">
+<h2 class="anchored" data-anchor-id="biological-reality-check">Biological reality check</h2>
+<p>How well does the model match what is known about cephalopod inking? The points below separate what the model keeps from what it leaves out.</p>
+<p><strong>What matches.</strong></p>
+<ul>
+<li><em>Ink delays, it does not guarantee escape.</em> Live predators were slowed, not stopped, by ink <span class="citation" data-cites="wood2010caribbean derby2013ink">(<a href="#ref-wood2010caribbean" role="doc-biblioref"><span class="nocase">Wood et al.</span> 2010</a>; <a href="#ref-derby2013ink" role="doc-biblioref">Derby et al. 2013</a>)</span>, and Derby’s review lists decoy, smoke screen and chemical effects as complementary roles <span class="citation" data-cites="derby2014cephalopod">(<a href="#ref-derby2014cephalopod" role="doc-biblioref">Derby 2014</a>)</span>. Our default squid is delayed by about a factor of two.</li>
+<li><em>The ink sac is finite and refills slowly.</em> In the cuttlefish <em>Sepia pharaonis</em> a full sac held about 765 mg of ink, and three inkings in a row released about 498, 178 and 38 mg; refilling took about 30 days <span class="citation" data-cites="jiang2019continuous">(<a href="#ref-jiang2019continuous" role="doc-biblioref">Jiang et al. 2019</a>)</span>. Each release therefore spent roughly half or more of what was left, which is the rule of our model with a share of 0.6 per release. The default value is a round number inspired by these data, not a fit.</li>
+<li><em>Spreading and dilution.</em> A real cloud expands and thins out in seconds to minutes, and a <strong>smoke screen</strong> and a <strong>pseudomorph</strong> (a compact, squid-sized blob of mucus-rich ink) are different tactics <span class="citation" data-cites="derby2014cephalopod">(<a href="#ref-derby2014cephalopod" role="doc-biblioref">Derby 2014</a>)</span>. The model has only the first.</li>
+</ul>
+<p><strong>What is simplified or missing.</strong></p>
+<ul>
+<li><em>The squid is not stealthy afterwards.</em> Real cephalopods often blanch, change colour and jet away <em>in the shadow of the cloud</em>, so the predator searches the wrong place. In the model the squid simply keeps its heading and speed, and the fish lose it only because the cloud blocks the line of sight.</li>
+<li><em>Vision is the only channel.</em> Fish also sense the pressure and flow wake of a jetting squid with the lateral line, and the ink has chemical effects on taste and smell <span class="citation" data-cites="derby2014cephalopod">(<a href="#ref-derby2014cephalopod" role="doc-biblioref">Derby 2014</a>)</span>. Both are ignored. This makes the model pessimistic for the fish side in one respect and optimistic in another, and we do not know which wins.</li>
+<li><em>The box has no far away.</em> On a periodic square the squid cannot escape by distance, so ink can only delay the end. In open water a squid that breaks the line of sight may simply never be found.</li>
+<li><em>Fish and squid speeds are chosen, not measured.</em> The fish are faster than the squid by assumption; the result depends on this ratio.</li>
+<li><em>Ink is released as a Gaussian blob at rest.</em> In reality it is ejected in a jet, so the first shape of the cloud is set by the water flow.</li>
+</ul>
+<p>The honest summary is this: the model captures the <em>logic</em> of a finite, optical smoke screen, and its qualitative message (ink buys time, and how the sac is spent matters) is consistent with the experiments cited. It does not support quantitative statements about real squid.</p>
+</section>
+<section id="waves-instead-of-ink" class="level2">
+<h2 class="anchored" data-anchor-id="waves-instead-of-ink">Waves instead of ink</h2>
+<p>Fish and other aquatic animals do not rely on sight alone. A predator that moves through water disturbs it, and other animals can sense the disturbance with mechanoreceptors: copepods detect the flow produced by an approaching fish and escape in a direction away from it <span class="citation" data-cites="tuttle2019going">(<a href="#ref-tuttle2019going" role="doc-biblioref">Tuttle et al. 2019</a>)</span>, and killifish use a hydrodynamic sensory antenna to hunt at night <span class="citation" data-cites="schwarz2011hydrodynamic">(<a href="#ref-schwarz2011hydrodynamic" role="doc-biblioref">Schwarz et al. 2011</a>)</span>. This suggests a different field-plus-agents model. A moving predator produces a damped flow field. The prey estimates the direction of the predator from a local spatial gradient of that field, and the school changes its motion in response. The field could be a diffusion-like decay, as here, or a wave equation with a propagation speed and a damping that are separate from the local response of the receptor.</p>
+<p>This is a better-grounded use of the word <strong>wave</strong> than forcing a chemical Turing pattern onto squid ink: the ink field here only spreads and fades, and it cannot produce a traveling or a self-organized pattern. A pattern-forming ink would need a reaction term, which the real ink does not have.</p>
+</section>
+<section id="what-this-model-does-not-do" class="level2">
+<h2 class="anchored" data-anchor-id="what-this-model-does-not-do">What this model does not do</h2>
+<ul>
+<li>It is a <strong>teaching model</strong>. The parameters are not fitted to data, and the numbers in <a href="#fig-squid-sweeps" class="quarto-xref">Figure&nbsp;2</a> should not be read as predictions for real squid.</li>
+<li>The ink supply is finite, but the refill is not modelled (a real sac needs about a month) and the ink has chemical effects (irritation, disruption of smell) that we do not model.</li>
+<li>The squid does not use the ink strategically. A real squid changes colour, jets away and sometimes releases the ink as a decoy rather than a screen.</li>
+<li>The fish see the squid through a single number, the transmission of the line between them. Real vision is limited by contrast, by the angle and by the size of the target.</li>
+<li>The ink spreads by a diffusion-like rule. Real ink is carried by the flow and by the jet of the squid.</li>
+</ul>
+
+
+<!-- -->
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-derby2014cephalopod" class="csl-entry" role="listitem">
+Derby, Charles D. 2014. <span>“Cephalopod Ink: Production, Chemistry, Functions and Applications.”</span> <em>Marine Drugs</em> 12 (5): 2700–2730. <a href="https://doi.org/10.3390/md12052700">https://doi.org/10.3390/md12052700</a>.
+</div>
+<div id="ref-derby2013ink" class="csl-entry" role="listitem">
+Derby, Charles D., Mihika Tottempudi, Tiffany Love-Chezem, and Lanna S. Wolfe. 2013. <span>“Ink from Longfin Inshore Squid, <em>Doryteuthis Pealeii</em>, as a Chemical and Visual Defense Against Two Predatory Fishes, Summer Flounder, <em>Paralichthys Dentatus</em>, and Sea Catfish, <em>Ariopsis Felis</em>.”</span> <em>The Biological Bulletin</em> 225: 152–60.
+</div>
+<div id="ref-jiang2019continuous" class="csl-entry" role="listitem">
+Jiang, Maowang, Chenxi Zhao, Runxuan Yan, et al. 2019. <span>“Continuous Inking Affects the Biological and Biochemical Responses of Cuttlefish <span class="nocase">Sepia pharaonis</span>.”</span> <em>Frontiers in Physiology</em> 10. <a href="https://doi.org/10.3389/fphys.2019.01429">https://doi.org/10.3389/fphys.2019.01429</a>.
+</div>
+<div id="ref-schwarz2011hydrodynamic" class="csl-entry" role="listitem">
+Schwarz, Jeremy S., Tobias Reichenbach, and A. J. Hudspeth. 2011. <span>“A Hydrodynamic Sensory Antenna Used by Killifish for Nocturnal Hunting.”</span> <em>Journal of Experimental Biology</em>, ahead of print. <a href="https://doi.org/10.1242/jeb.051714">https://doi.org/10.1242/jeb.051714</a>.
+</div>
+<div id="ref-sengupta2011chemotactic" class="csl-entry" role="listitem">
+Sengupta, Ankush, Tobias Kruppa, and Hartmut Löwen. 2011. <span>“Chemotactic Predator-Prey Dynamics.”</span> <em>Physical Review E</em> 83: 031914. <a href="https://doi.org/10.1103/PhysRevE.83.031914">https://doi.org/10.1103/PhysRevE.83.031914</a>.
+</div>
+<div id="ref-tuttle2019going" class="csl-entry" role="listitem">
+Tuttle, Lillian J., H. Eve Robinson, Daisuke Takagi, J. Rudi Strickler, Petra H. Lenz, and Daniel K. Hartline. 2019. <span>“Going with the Flow: Hydrodynamic Cues Trigger Directed Escapes from a Stalking Predator.”</span> <em>Journal of the Royal Society Interface</em> 16: 20180776. <a href="https://doi.org/10.1098/rsif.2018.0776">https://doi.org/10.1098/rsif.2018.0776</a>.
+</div>
+<div id="ref-wood2010caribbean" class="csl-entry" role="listitem">
+<span class="nocase">Wood, James B. et al.</span> 2010. <span>“Caribbean Reef Squid, <em>Sepioteuthis Sepioidea</em>, Use Ink as a Defense Against Predatory French Grunts, <em>Haemulon Flavolineatum</em>.”</span> <em>Journal of Experimental Marine Biology and Ecology</em> 388.
+</div>
+</div></section></div></main> <!-- /main -->
+<button type="button" class="ie-theme-toggle" id="ie-theme-toggle">
+  <svg class="ie-theme-toggle__moon" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+  <svg class="ie-theme-toggle__sun" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+</button>
+<script>
+/* Light/dark switch in the top-right corner (moon in light mode, sun in dark mode).
+   It drives Quarto's own toggle, so the choice is remembered across pages and
+   shared with the interactive pages (they read the same "quarto-color-scheme" key). */
+(function () {
+  var btn = document.getElementById("ie-theme-toggle");
+  if (!btn) return;
+  function sync() {
+    var dark = document.body.classList.contains("quarto-dark");
+    var label = dark ? "Switch to light mode" : "Switch to dark mode";
+    btn.setAttribute("aria-label", label);
+    btn.title = label;
+  }
+  btn.addEventListener("click", function () {
+    if (window.quartoToggleColorScheme) window.quartoToggleColorScheme();
+    sync();
+  });
+  new MutationObserver(sync).observe(document.body, { attributes: true, attributeFilter: ["class"] });
+  sync();
+})();
+</script>
+<script>
+/* Interactive figures loader.
+   Any element  <div class="viz" data-viz="NAME">  (in a .qmd:  ::: {.viz data-viz="NAME"} :::)
+   loads assets/viz/core.js once and then assets/viz/widgets/NAME.js.
+   Paths are resolved from Quarto's quarto:offset meta, so this works at any page depth
+   and under the GitHub Pages sub-path. */
+(function () {
+  var nodes = document.querySelectorAll("[data-viz]");
+  if (!nodes.length) return;
+  var meta = document.querySelector('meta[name="quarto:offset"]');
+  var root = (meta ? meta.getAttribute("content") : "./") + "assets/viz/";
+  function load(src) {
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = src; s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+  var names = Array.from(new Set(Array.from(nodes, function (n) { return n.dataset.viz; })));
+  load(root + "core.js").then(function () {
+    return Promise.all(names.map(function (n) { return load(root + "widgets/" + n + ".js"); }));
+  }).then(function () {
+    nodes.forEach(function (el) { window.VIZ.mount(el); });
+  }).catch(function (e) { console.error("[viz] could not load", e); });
+})();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const toggle = window.document.createElement('button');
+      toggle.type = "button";
+      toggle.setAttribute("role", "switch");
+      toggle.setAttribute("aria-checked", "false");
+      toggle.classList.add('top-right');
+      toggle.classList.add('quarto-color-scheme-toggle');
+      toggle.setAttribute("aria-label", "Toggle dark mode");
+      toggle.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      toggle.appendChild(i);
+      // Put the toggle in a landmark of its own, so that landmark navigation
+      // can reach it.
+      //
+      // The container is always a fresh direct child of body, and the toggle is
+      // never moved into page furniture that the theme or the author controls.
+      // The toggle is positioned against the page, so any ancestor that
+      // establishes a containing block captures it: a positioned element or a
+      // grid for position: absolute, and transform, filter, will-change or
+      // contain for position: fixed. A direct child of body has none of these
+      // to inherit, and the shift when one appears is silent and visual.
+      //
+      // ARIA says a document should have at most one banner, and axe reports a
+      // duplicate whether or not the banners carry distinct labels. So use a
+      // header when the page has no banner yet, and a named region otherwise.
+      //
+      // A header is a banner wherever it sits, unless it is inside sectioning
+      // content, so this cannot just look at the children of body: a custom
+      // page layout wraps the title block header in a plain div. An explicit
+      // role="banner" always counts.
+      const sectioning = 'article, aside, main, nav, section, [role="article"], [role="complementary"], [role="main"], [role="navigation"], [role="region"]';
+      const hasBanner = Array.from(
+        window.document.querySelectorAll('header:not([role]), [role="banner"]')
+      ).some(function(el) {
+        return el.hasAttribute("role") || el.closest(sectioning) === null;
+      });
+      const container = window.document.createElement(hasBanner ? "div" : "header");
+      if (hasBanner) {
+        container.setAttribute("role", "region");
+        container.setAttribute("aria-label", "Toggle dark mode");
+      }
+      container.classList.add('quarto-color-scheme-toggle-container');
+      container.appendChild(toggle);
+      window.document.body.appendChild(container);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const cellDetails = window.document.querySelectorAll(".cell details.code-fold");
+        for (let i=0; i<cellDetails.length; i++) {
+          const details = cellDetails[i];
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell div.sourceCode.cell-code");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/daniprec\.github\.io\/BAM-Applied-Math-Lab");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+      window.quartoDecorateExternalLinks = function (root) {
+     var links = (root || window.document).querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+          if (!link.classList.contains('no-external-icon')) {
+          }
+        }
+      }
+      };
+      window.quartoDecorateExternalLinks(window.document);
+    // Esc closes the popup (WCAG 1.4.13) and focus leaving both trigger and
+    // popup closes it (WCAG 2.4.11); tippy handles neither for interactive popups.
+    const hideOnEscAndFocusOut = {
+      name: 'hideOnEscAndFocusOut',
+      defaultValue: true,
+      fn(instance) {
+        const dismiss = () => {
+          // A show scheduled by the trigger delay would otherwise reopen it
+          instance.clearDelayTimeouts();
+          instance.hide();
+        };
+        const onKeyDown = (event) => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+          // Keep Esc from also reaching page handlers (e.g. reveal.js overview),
+          // except an open reveal.js slide menu, which Esc should close too.
+          // The menu handles keys only when its keyboard option is on.
+          const menuHandlesEsc = window.Reveal?.getPlugin?.('menu')?.isOpen() &&
+            window.Reveal.getConfig().menu?.keyboard !== false;
+          if (!menuHandlesEsc) {
+            event.stopPropagation();
+          }
+          if (instance.popper.contains(window.document.activeElement)) {
+            // Disabled while refocusing so the focus trigger does not reopen it
+            instance.disable();
+            instance.reference.focus();
+            instance.enable();
+          }
+          dismiss();
+        };
+        const onFocusOut = (event) => {
+          const target = event.relatedTarget;
+          if (target && !instance.reference.contains(target) &&
+              !instance.popper.contains(target)) {
+            dismiss();
+          }
+        };
+        // On the trigger too: a click trigger (code-annotations: select) has no
+        // blur handling. Attached for the instance's lifetime so leaving the
+        // trigger also cancels a show still pending on the trigger delay.
+        instance.reference.addEventListener('focusout', onFocusOut);
+        return {
+          onShow() {
+            window.document.addEventListener('keydown', onKeyDown, true);
+            instance.popper.addEventListener('focusout', onFocusOut);
+          },
+          onHide() {
+            window.document.removeEventListener('keydown', onKeyDown, true);
+            instance.popper.removeEventListener('focusout', onFocusOut);
+          },
+          onDestroy() {
+            instance.reference.removeEventListener('focusout', onFocusOut);
+          },
+        };
+      },
+    };
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+        plugins: [hideOnEscAndFocusOut],
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          // Each band is positioned against its own containing block, which is
+          // not the offsetParent of the lines, so place it from client rects.
+          const placeBand = (band, firstEl, lastEl, codeBlock) => {
+            const container = band.offsetParent;
+            if (container === null) {
+              return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            // Reveal.js scales slides with a transform, so convert client
+            // pixels back to the CSS pixels of the container.
+            const scale = containerRect.height / container.offsetHeight || 1;
+            const firstRect = firstEl.getBoundingClientRect();
+            const lastRect = lastEl.getBoundingClientRect();
+            const top = (firstRect.top - containerRect.top) / scale - container.clientTop + container.scrollTop;
+            const height = (lastRect.bottom - firstRect.top) / scale;
+            band.style.top = top - 2 + "px";
+            band.style.height = height + 4 + "px";
+            if (codeBlock) {
+              // Without the copy button wrapper, the containing block is wider
+              // than the code block, so span the code block explicitly.
+              const blockRect = codeBlock.getBoundingClientRect();
+              band.style.left = (blockRect.left - containerRect.left) / scale - container.clientLeft + container.scrollLeft + "px";
+              band.style.width = blockRect.width / scale + "px";
+            }
+          };
+          if (lineIds.length > 0) {
+            const el = window.document.getElementById(lineIds[0]);
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const parent = el.parentElement.parentElement;
+            // cook up a div (if necessary) and position it
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            placeBand(div, el, lastEl, parent.closest("div.sourceCode") || parent);
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            placeBand(gutterDiv, el, lastEl);
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+  <script type="application/javascript">
+  window.quartoScrollableRegionsLabels = {"code":"Scrollable code","output":"Scrollable output"};
+  </script>
+<nav class="page-navigation" aria-label="Page">
+  <div class="nav-page nav-page-previous">
+      <a href="../../modules/combining-ideas/index.html" class="pagination-link" aria-label="Module 7: Combining Ideas">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Module 7: Combining Ideas</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../slide-library.html" class="pagination-link" aria-label="Slide Library">
+        <span class="nav-page-text">Slide Library</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Squid Ink: Hiding in a Cloud"</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Module 7: Combining Ideas"</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip}</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="fu">## Optional extension</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>This page combines two ideas from earlier modules, **agents that move and interact** (Module 2) and **a field that spreads and fades** (Module 4). It extends the [confusion effect](../collective-behaviour/confusion-effect.qmd). There a school defends itself against one predator. Here the roles are reversed: **one prey, a squid, is hunted by a school of fish** and defends itself with a chemical and optical weapon. The question is: **can a squid defeat a whole school by hiding in its own ink?**</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>A squid cannot outswim a school of fast fish for long. It has one trick that the fish do not: it can release a cloud of ink and leave. The ink has been proposed to work in several ways, as a chemical irritant, as a decoy shaped like the squid (a *pseudomorph*), and as a **smoke screen** that hides the squid from the eyes of the predator <span class="co">[</span><span class="ot">@derby2014cephalopod</span><span class="co">]</span>. Experiments with live predators support at least the optical and the decoy effects: ink delayed food capture by French grunts <span class="co">[</span><span class="ot">@wood2010caribbean</span><span class="co">]</span>, and the visual effect of squid ink delayed the approach of summer flounder <span class="co">[</span><span class="ot">@derby2013ink</span><span class="co">]</span>.</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>We model only the **smoke screen**. The model has three ingredients that you know from earlier pages: agents that move and interact locally (the fish follow Vicsek-type rules, as in the <span class="co">[</span><span class="ot">Vicsek model</span><span class="co">](../collective-behaviour/vicsek-model.qmd)</span>), a field that changes in time (the ink, as in the <span class="co">[</span><span class="ot">reaction-diffusion</span><span class="co">](../pattern-formation/reaction-diffusion.qmd)</span> module) and a coupling between the two (the fish pursue the squid only as well as they can see it). Coupling moving agents to a field is a common modelling pattern. A related one is the chemotactic predator and prey of Sengupta, Kruppa and Löwen <span class="co">[</span><span class="ot">@sengupta2011chemotactic</span><span class="co">]</span>, where each animal follows the gradient of a chemical released by the other.</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="fu">## What is and is not claimed</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>This is a **teaching model**. The parameters are chosen so that the mechanisms are visible and are not fitted to squid data. In a first literature search I did not find a model that combines a single inking prey, a schooling predator and a concentration-dependent loss of vision, but a first search is not a proof of novelty. Treat the combination as a question worth exploring, not as an established result.</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="fu">## The model</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>Lengths are in body lengths (BL) and time in arbitrary time units (t.u.). All animals live on a periodic square of side $L = 40$ BL.</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Ingredient <span class="pp">|</span> Rule <span class="pp">|</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Fish** (predators) | Align with neighbours, move toward the school, keep a minimum distance, and **pursue the squid** with a weight that depends on how well they see it. They are noticeably faster than the squid. <span class="pp">|</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Squid** (prey) <span class="pp">|</span> Cruises slowly. When the nearest fish comes within 8 BL it turns away and swims faster. If it still has ink and has not inked too recently, it releases a bolus at its position. Each release spends a share of the ink that is left in the sac. <span class="pp">|</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Ink** | A field $c$ on a $100 \times 100$ grid. In every step it spreads to the neighbouring cells, and cells with very little ink are reset to 0. The sac is **finite**: it starts full, and every release spends a share of what is left, so later clouds are thinner. <span class="pp">|</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Vision** | The pursuit weight of a fish is multiplied by the **transmission** along the line from the fish to the squid: the more ink on the way, the less it sees. <span class="pp">|</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Capture** <span class="pp">|</span> A fish within 0.8 BL of the squid catches it. A hunt that lasts 250 t.u. without a capture counts as an escape. <span class="pp">|</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="fu">### The ink: spread, dilute, disappear</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>The ink follows a simple local rule in every step. Each cell keeps a fraction $1 - s$ of its ink and gives $s/4$ to each of its four neighbours. Afterwards any cell with less than a threshold $\theta$ of ink is reset to exactly zero:</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>c_{ij}' = (1 - s)\,c_{ij} + \frac{s}{4}\left(c_{i+1,j} + c_{i-1,j} + c_{i,j+1} + c_{i,j-1}\right),</span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>\qquad</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>c_{ij}' \leftarrow 0 \ \text{ if } \ c_{ij}' &lt; \theta .</span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>$$ {#eq-spread}</span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>With $s = 1/2$, half of the ink of a cell stays and half goes to its neighbours. The first part of the rule conserves the total amount of ink, and the second part removes it. A thick bolus (a large peak value) spreads farther and lasts longer before the threshold erases it, so the **thickness** of the ink is a parameter we can play with.</span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>This rule is a discrete diffusion. Expanding it to second order in the grid spacing $\Delta x$ gives $c' - c \approx \tfrac{s}{4}\,\Delta x^2\,\nabla^2 c$ per step, which is the diffusion equation with an effective diffusion coefficient</span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>D_\text{eff} = \frac{s\,\Delta x^2}{4\,\Delta t_\text{ink}} .</span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>$$ {#eq-deff}</span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>With $s = 0.5$, $\Delta x = 0.4$ BL and three ink steps per time step of $0.12$ (so $\Delta t_\text{ink} = 0.04$) this is $D_\text{eff} = 0.5$ BL$^2$/t.u. The next figure shows one bolus spreading, and the numbers check @eq-deff: the variance of the cloud must grow as $\sigma^2(t) = \sigma_0^2 + 2 D_\text{eff}\, t$ while no cell is cut off.</span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-ink-spread</span></span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "One bolus of ink after 0.1, 3, 10 and 30 time units. The cloud spreads and its peak falls, and the cut-off gives it a sharp edge. Each panel has its own colour scale. The numbers above each panel are the peak amount of ink in a cell and the share of the released ink still in the grid."</span></span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-alt: "Four heat maps of an ink cloud around the same point. The cloud widens from a small dark disc to a faint disc about thirteen body lengths across, while the peak falls from 2.6 to 0.05 and the ink left falls from 100 percent to 22 percent."</span></span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> replace</span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.collective_motion.squid_ink <span class="im">import</span> InkParams, SquidInkSimulation</span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> InkParams()</span>
+<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a>sim <span class="op">=</span> SquidInkSimulation(p, seed<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a>sim.squid <span class="op">=</span> np.array([<span class="fl">20.0</span>, <span class="fl">20.0</span>])</span>
+<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a>sim._release_ink()</span>
+<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a>total0 <span class="op">=</span> sim.ink.<span class="bu">sum</span>()</span>
+<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a>snapshots <span class="op">=</span> {}</span>
+<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> step <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">251</span>):</span>
+<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a>    sim._spread_ink()</span>
+<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> step <span class="kw">in</span> (<span class="dv">1</span>, <span class="dv">25</span>, <span class="dv">83</span>, <span class="dv">250</span>):</span>
+<span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a>        snapshots[step] <span class="op">=</span> sim.ink.copy()</span>
+<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">4</span>, figsize<span class="op">=</span>(<span class="dv">11</span>, <span class="fl">3.1</span>), constrained_layout<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb9-79"><a href="#cb9-79" aria-hidden="true" tabindex="-1"></a>half <span class="op">=</span> <span class="bu">int</span>(<span class="dv">15</span> <span class="op">/</span> sim.dx)</span>
+<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, (step, ink) <span class="kw">in</span> <span class="bu">zip</span>(axs, snapshots.items()):</span>
+<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a>    window <span class="op">=</span> ink[<span class="dv">50</span> <span class="op">-</span> half : <span class="dv">50</span> <span class="op">+</span> half, <span class="dv">50</span> <span class="op">-</span> half : <span class="dv">50</span> <span class="op">+</span> half]</span>
+<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a>    ax.imshow(window, origin<span class="op">=</span><span class="st">"lower"</span>, cmap<span class="op">=</span><span class="st">"Blues"</span>, vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span>window.<span class="bu">max</span>(),</span>
+<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a>              extent<span class="op">=</span>(<span class="op">-</span><span class="dv">15</span>, <span class="dv">15</span>, <span class="op">-</span><span class="dv">15</span>, <span class="dv">15</span>))</span>
+<span id="cb9-84"><a href="#cb9-84" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="ss">f"t = </span><span class="sc">{</span>step <span class="op">*</span> p<span class="sc">.</span>dt<span class="sc">:.1f}</span><span class="ch">\n</span><span class="ss">peak </span><span class="sc">{</span>ink<span class="sc">.</span><span class="bu">max</span>()<span class="sc">:.2f}</span><span class="ss">, ink left </span><span class="sc">{</span><span class="dv">100</span> <span class="op">*</span> ink<span class="sc">.</span><span class="bu">sum</span>() <span class="op">/</span> total0<span class="sc">:.0f}</span><span class="ss"> %"</span>, fontsize<span class="op">=</span><span class="dv">9</span>)</span>
+<span id="cb9-85"><a href="#cb9-85" aria-hidden="true" tabindex="-1"></a>    ax.set_xticks([<span class="op">-</span><span class="dv">10</span>, <span class="dv">0</span>, <span class="dv">10</span>])</span>
+<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a>    ax.set_yticks([<span class="op">-</span><span class="dv">10</span>, <span class="dv">0</span>, <span class="dv">10</span>])</span>
+<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_ylabel(<span class="st">"BL"</span>)</span>
+<span id="cb9-88"><a href="#cb9-88" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb9-89"><a href="#cb9-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-90"><a href="#cb9-90" aria-hidden="true" tabindex="-1"></a><span class="co"># check of the effective diffusion coefficient (no cut-off)</span></span>
+<span id="cb9-91"><a href="#cb9-91" aria-hidden="true" tabindex="-1"></a>free <span class="op">=</span> SquidInkSimulation(replace(p, threshold<span class="op">=</span><span class="fl">0.0</span>), seed<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb9-92"><a href="#cb9-92" aria-hidden="true" tabindex="-1"></a>free.squid <span class="op">=</span> np.array([<span class="fl">20.0</span>, <span class="fl">20.0</span>])</span>
+<span id="cb9-93"><a href="#cb9-93" aria-hidden="true" tabindex="-1"></a>free._release_ink()</span>
+<span id="cb9-94"><a href="#cb9-94" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.arange(p.grid) <span class="op">*</span> free.dx</span>
+<span id="cb9-95"><a href="#cb9-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-96"><a href="#cb9-96" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> variance_x(s):</span>
+<span id="cb9-97"><a href="#cb9-97" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> s.ink.<span class="bu">sum</span>(axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb9-98"><a href="#cb9-98" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> w <span class="op">/</span> w.<span class="bu">sum</span>()</span>
+<span id="cb9-99"><a href="#cb9-99" aria-hidden="true" tabindex="-1"></a>    mu <span class="op">=</span> (w <span class="op">*</span> x).<span class="bu">sum</span>()</span>
+<span id="cb9-100"><a href="#cb9-100" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ((x <span class="op">-</span> mu) <span class="op">**</span> <span class="dv">2</span> <span class="op">*</span> w).<span class="bu">sum</span>()</span>
+<span id="cb9-101"><a href="#cb9-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-102"><a href="#cb9-102" aria-hidden="true" tabindex="-1"></a>v0 <span class="op">=</span> variance_x(free)</span>
+<span id="cb9-103"><a href="#cb9-103" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">250</span>):</span>
+<span id="cb9-104"><a href="#cb9-104" aria-hidden="true" tabindex="-1"></a>    free._spread_ink()</span>
+<span id="cb9-105"><a href="#cb9-105" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> <span class="dv">250</span> <span class="op">*</span> p.dt</span>
+<span id="cb9-106"><a href="#cb9-106" aria-hidden="true" tabindex="-1"></a>d_eff <span class="op">=</span> p.spread <span class="op">*</span> free.dx<span class="op">**</span><span class="dv">2</span> <span class="op">/</span> (<span class="dv">4</span> <span class="op">*</span> p.dt <span class="op">/</span> p.ink_steps)</span>
+<span id="cb9-107"><a href="#cb9-107" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"D_eff = </span><span class="sc">{</span>d_eff<span class="sc">:.2f}</span><span class="ss">; variance after t = </span><span class="sc">{</span>t<span class="sc">:.0f}</span><span class="ss">: measured </span><span class="sc">{</span>variance_x(free)<span class="sc">:.2f}</span><span class="ss">, predicted </span><span class="sc">{</span>v0 <span class="op">+</span> <span class="dv">2</span> <span class="op">*</span> d_eff <span class="op">*</span> t<span class="sc">:.2f}</span><span class="ss">"</span>)</span>
+<span id="cb9-108"><a href="#cb9-108" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-109"><a href="#cb9-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-110"><a href="#cb9-110" aria-hidden="true" tabindex="-1"></a><span class="fu">### Vision: a Beer-Lambert law</span></span>
+<span id="cb9-111"><a href="#cb9-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-112"><a href="#cb9-112" aria-hidden="true" tabindex="-1"></a>Light that travels through a medium that absorbs it fades exponentially with the amount of absorber on the way. For the fish $i$ at distance $d_i$ from the squid, let $\bar c_i$ be the mean ink concentration along the straight line between them. The transmission is</span>
+<span id="cb9-113"><a href="#cb9-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-114"><a href="#cb9-114" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb9-115"><a href="#cb9-115" aria-hidden="true" tabindex="-1"></a>\tau_i = \exp<span class="sc">\!</span>\left<span class="co">[</span><span class="ot">-\left(a + \kappa\, \bar c_i\right) d_i\right</span><span class="co">]</span>,</span>
+<span id="cb9-116"><a href="#cb9-116" aria-hidden="true" tabindex="-1"></a>$$ {#eq-transmission}</span>
+<span id="cb9-117"><a href="#cb9-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-118"><a href="#cb9-118" aria-hidden="true" tabindex="-1"></a>where $\kappa$ is the **opacity** of the ink and $a = 0.05$ BL$^{-1}$ is the small absorption of clear water, so that even without ink a distant squid is a little harder to see. In a dense cloud $\tau_i \approx 0$. The heading of the fish is steered by</span>
+<span id="cb9-119"><a href="#cb9-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-120"><a href="#cb9-120" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb9-121"><a href="#cb9-121" aria-hidden="true" tabindex="-1"></a>\mathbf{v}_i = w_\text{a}\,\mathbf{a}_i + w_\text{c}\,\mathbf{c}_i + w_\text{s}\,\mathbf{s}_i + w_\text{p}\,\tau_i\,\hat{\mathbf{p}}_i ,</span>
+<span id="cb9-122"><a href="#cb9-122" aria-hidden="true" tabindex="-1"></a>$$ {#eq-pursuit}</span>
+<span id="cb9-123"><a href="#cb9-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-124"><a href="#cb9-124" aria-hidden="true" tabindex="-1"></a>where $\mathbf{a}_i$, $\mathbf{c}_i$ and $\mathbf{s}_i$ are the alignment, cohesion and separation terms of the school, and $\hat{\mathbf{p}}_i$ is the unit vector toward the squid. A fish that has lost the squid does not stop: it keeps moving with the school, so the school drifts on instead of turning around.</span>
+<span id="cb9-125"><a href="#cb9-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-126"><a href="#cb9-126" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Parameter <span class="pp">|</span> Value <span class="pp">|</span> <span class="pp">|</span> Parameter <span class="pp">|</span> Value <span class="pp">|</span></span>
+<span id="cb9-127"><a href="#cb9-127" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|---|</span></span>
+<span id="cb9-128"><a href="#cb9-128" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> fish speed <span class="pp">|</span> 0.70 <span class="pp">|</span> <span class="pp">|</span> squid speed (cruise, flight) <span class="pp">|</span> 0.30, 0.45 <span class="pp">|</span></span>
+<span id="cb9-129"><a href="#cb9-129" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> turning rate of a fish <span class="pp">|</span> 0.20 rad/step <span class="pp">|</span> <span class="pp">|</span> flight distance <span class="pp">|</span> 8 BL <span class="pp">|</span></span>
+<span id="cb9-130"><a href="#cb9-130" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> weights $w_\text{a}, w_\text{c}, w_\text{s}, w_\text{p}$ <span class="pp">|</span> 1.1, 0.35, 1.4, 1.9 <span class="pp">|</span> <span class="pp">|</span> minimum time between releases <span class="pp">|</span> 5 t.u. <span class="pp">|</span></span>
+<span id="cb9-131"><a href="#cb9-131" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> spreading fraction $s$ <span class="pp">|</span> 0.5 <span class="pp">|</span> <span class="pp">|</span> ink threshold $\theta$ <span class="pp">|</span> 0.002 <span class="pp">|</span></span>
+<span id="cb9-132"><a href="#cb9-132" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ink steps per time step <span class="pp">|</span> 3 <span class="pp">|</span> <span class="pp">|</span> bolus peak (thickness) <span class="pp">|</span> 3 (default) <span class="pp">|</span></span>
+<span id="cb9-133"><a href="#cb9-133" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> opacity $\kappa$ <span class="pp">|</span> 2.8 (default) <span class="pp">|</span> <span class="pp">|</span> time step $\Delta t$ <span class="pp">|</span> 0.12 <span class="pp">|</span></span>
+<span id="cb9-134"><a href="#cb9-134" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> clear-water absorption $a$ <span class="pp">|</span> 0.05 <span class="pp">|</span> <span class="pp">|</span> share of the remaining ink used per release <span class="pp">|</span> 0.6 (default) <span class="pp">|</span></span>
+<span id="cb9-135"><a href="#cb9-135" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ink sac is empty below <span class="pp">|</span> 5 % of a full sac <span class="pp">|</span> <span class="pp">|</span> <span class="pp">|</span> <span class="pp">|</span></span>
+<span id="cb9-136"><a href="#cb9-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-137"><a href="#cb9-137" aria-hidden="true" tabindex="-1"></a><span class="fu">## Explore the hunt</span></span>
+<span id="cb9-138"><a href="#cb9-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-139"><a href="#cb9-139" aria-hidden="true" tabindex="-1"></a>The figure is the same model, ported to JavaScript. The camera follows the squid by default; the **Camera** button fixes the view on the whole sea. Fish are red arrows: a **filled** arrow can still see the squid, a **hollow** arrow has lost it in the ink. A white ring around the squid means that it has just inked and must wait before it can ink again; the label in the corner shows how much of the ink sac is left, and the squid itself turns from green to grey as the sac empties. **Recharge ink** refills it to 100%. The plot shows the mean visibility of the squid and the distance of the closest fish.</span>
+<span id="cb9-140"><a href="#cb9-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-141"><a href="#cb9-141" aria-hidden="true" tabindex="-1"></a>::: {.viz data-viz="squid-ink"}</span>
+<span id="cb9-142"><a href="#cb9-142" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Press **Ink: off** and watch about ten hunts. How long does the squid survive? Then switch the ink on again and compare the capture probability shown in the readout.</span>
+<span id="cb9-143"><a href="#cb9-143" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Set the opacity $\kappa$ to 0. Why does a cloud that does not absorb light give no protection, although the squid still releases ink?</span>
+<span id="cb9-144"><a href="#cb9-144" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Set **ink used per release** to 0.2 and then to 0.8. With 0.2 the squid releases many thin clouds, with 0.8 it releases two thick ones and then runs dry. Which survives longer? Then set it to 0 (unlimited ink). Is that realistic? Press **Recharge ink** during a hunt: how much does one refill buy?</span>
+<span id="cb9-145"><a href="#cb9-145" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Reduce the **thickness** to 1 and then raise it to 8. How does the shape of the cloud change, and how long does it hide the squid?</span>
+<span id="cb9-146"><a href="#cb9-146" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>Compare a school of 12 with a school of 40 at the default ink. Does a bigger school find the squid more easily?</span>
+<span id="cb9-147"><a href="#cb9-147" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb9-148"><a href="#cb9-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-149"><a href="#cb9-149" aria-hidden="true" tabindex="-1"></a><span class="fu">## Run it on your computer</span></span>
+<span id="cb9-150"><a href="#cb9-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-151"><a href="#cb9-151" aria-hidden="true" tabindex="-1"></a>From the repository root:</span>
+<span id="cb9-152"><a href="#cb9-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-153"><a href="#cb9-153" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
+<span id="cb9-154"><a href="#cb9-154" aria-hidden="true" tabindex="-1"></a><span class="co"># the animation with sliders (IE dark theme)</span></span>
+<span id="cb9-155"><a href="#cb9-155" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> amlab/collective_motion/squid_ink_animation.py</span>
+<span id="cb9-156"><a href="#cb9-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-157"><a href="#cb9-157" aria-hidden="true" tabindex="-1"></a><span class="co"># options: light theme, a bigger school, thicker ink, a control without ink</span></span>
+<span id="cb9-158"><a href="#cb9-158" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> amlab/collective_motion/squid_ink_animation.py <span class="at">--theme</span> light <span class="at">--fish</span> 40 <span class="at">--thickness</span> 5</span>
+<span id="cb9-159"><a href="#cb9-159" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> amlab/collective_motion/squid_ink_animation.py <span class="at">--no-ink</span></span>
+<span id="cb9-160"><a href="#cb9-160" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-161"><a href="#cb9-161" aria-hidden="true" tabindex="-1"></a><span class="co"># save a GIF or an MP4 instead of opening a window (MP4 needs ffmpeg)</span></span>
+<span id="cb9-162"><a href="#cb9-162" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> amlab/collective_motion/squid_ink_animation.py <span class="at">--save</span> squid-ink.gif <span class="at">--frames</span> 300</span>
+<span id="cb9-163"><a href="#cb9-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-164"><a href="#cb9-164" aria-hidden="true" tabindex="-1"></a><span class="co"># self-test and a short comparison with and without ink, without graphics</span></span>
+<span id="cb9-165"><a href="#cb9-165" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> amlab/collective_motion/squid_ink.py</span>
+<span id="cb9-166"><a href="#cb9-166" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-167"><a href="#cb9-167" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-168"><a href="#cb9-168" aria-hidden="true" tabindex="-1"></a>In the window the sliders change the opacity, the thickness and the share of ink used per release live, and the school size restarts the hunt. **Ink on/off** switches the ink off, **Camera** (or **C**) switches between following the squid and a fixed view of the whole sea, **New hunt** starts again and **Space** pauses. The animation redraws only the moving parts, which keeps it smooth; use <span class="in">`--speed 1`</span> on a slow computer.</span>
+<span id="cb9-169"><a href="#cb9-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-170"><a href="#cb9-170" aria-hidden="true" tabindex="-1"></a><span class="fu">## How the code works</span></span>
+<span id="cb9-171"><a href="#cb9-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-172"><a href="#cb9-172" aria-hidden="true" tabindex="-1"></a>The model is in <span class="in">`amlab/collective_motion/squid_ink.py`</span>. The ink rule of @eq-spread is four array shifts:</span>
+<span id="cb9-173"><a href="#cb9-173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-174"><a href="#cb9-174" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb9-175"><a href="#cb9-175" aria-hidden="true" tabindex="-1"></a>nb <span class="op">=</span> np.roll(c, <span class="dv">1</span>, <span class="dv">0</span>) <span class="op">+</span> np.roll(c, <span class="op">-</span><span class="dv">1</span>, <span class="dv">0</span>) <span class="op">+</span> np.roll(c, <span class="dv">1</span>, <span class="dv">1</span>) <span class="op">+</span> np.roll(c, <span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb9-176"><a href="#cb9-176" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> (<span class="fl">1.0</span> <span class="op">-</span> spread) <span class="op">*</span> c <span class="op">+</span> (spread <span class="op">/</span> <span class="fl">4.0</span>) <span class="op">*</span> nb      <span class="co"># keep a fraction, give the rest away</span></span>
+<span id="cb9-177"><a href="#cb9-177" aria-hidden="true" tabindex="-1"></a>c[c <span class="op">&lt;</span> threshold] <span class="op">=</span> <span class="fl">0.0</span>                            <span class="co"># the cut-off</span></span>
+<span id="cb9-178"><a href="#cb9-178" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-179"><a href="#cb9-179" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-180"><a href="#cb9-180" aria-hidden="true" tabindex="-1"></a>and the transmission of @eq-transmission samples the field at points along each line of sight:</span>
+<span id="cb9-181"><a href="#cb9-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-182"><a href="#cb9-182" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb9-183"><a href="#cb9-183" aria-hidden="true" tabindex="-1"></a>rays <span class="op">=</span> wrap_delta(squid <span class="op">-</span> fish, domain)                    <span class="co"># fish -&gt; squid, on the torus</span></span>
+<span id="cb9-184"><a href="#cb9-184" aria-hidden="true" tabindex="-1"></a>points <span class="op">=</span> fish[:, <span class="va">None</span>, :] <span class="op">+</span> rays[:, <span class="va">None</span>, :] <span class="op">*</span> fractions[<span class="va">None</span>, :, <span class="va">None</span>]</span>
+<span id="cb9-185"><a href="#cb9-185" aria-hidden="true" tabindex="-1"></a>mean_c <span class="op">=</span> sample_ink(points).mean(axis<span class="op">=</span><span class="dv">1</span>)                   <span class="co"># mean ink on each sightline</span></span>
+<span id="cb9-186"><a href="#cb9-186" aria-hidden="true" tabindex="-1"></a>tau <span class="op">=</span> np.exp(<span class="op">-</span>kappa <span class="op">*</span> mean_c <span class="op">*</span> distance)</span>
+<span id="cb9-187"><a href="#cb9-187" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-188"><a href="#cb9-188" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-189"><a href="#cb9-189" aria-hidden="true" tabindex="-1"></a><span class="in">`self_test()`</span> checks that the same seed gives the same hunt, that the spreading rule conserves ink when the threshold is 0, that it is symmetric, that a cloud disappears, that the transmission falls as the opacity grows, that the squid never releases ink twice within the minimum interval and that the ink sac only ever empties.</span>
+<span id="cb9-190"><a href="#cb9-190" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-191"><a href="#cb9-191" aria-hidden="true" tabindex="-1"></a>To run your own experiment:</span>
+<span id="cb9-192"><a href="#cb9-192" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-193"><a href="#cb9-193" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb9-194"><a href="#cb9-194" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> replace</span>
+<span id="cb9-195"><a href="#cb9-195" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.collective_motion.squid_ink <span class="im">import</span> InkParams, hunt, sweep</span>
+<span id="cb9-196"><a href="#cb9-196" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-197"><a href="#cb9-197" aria-hidden="true" tabindex="-1"></a>res <span class="op">=</span> sweep(<span class="st">"kappa"</span>, [<span class="fl">0.0</span>, <span class="fl">1.0</span>, <span class="fl">3.0</span>], base<span class="op">=</span>InkParams(), n_seeds<span class="op">=</span><span class="dv">10</span>, t_max<span class="op">=</span><span class="fl">250.0</span>)</span>
+<span id="cb9-198"><a href="#cb9-198" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(res[<span class="st">"values"</span>], res[<span class="st">"capture_prob"</span>])</span>
+<span id="cb9-199"><a href="#cb9-199" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-200"><a href="#cb9-200" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-201"><a href="#cb9-201" aria-hidden="true" tabindex="-1"></a><span class="in">`sweep`</span> runs <span class="in">`n_seeds`</span> independent hunts for every value and returns the fraction in which the squid was caught within <span class="in">`t_max`</span>. The next chunk compares a squid with and without ink on six random schools.</span>
+<span id="cb9-202"><a href="#cb9-202" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-205"><a href="#cb9-205" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb9-206"><a href="#cb9-206" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: tbl-ink-vs-none</span></span>
+<span id="cb9-207"><a href="#cb9-207" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb9-208"><a href="#cb9-208" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> replace</span>
+<span id="cb9-209"><a href="#cb9-209" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.collective_motion.squid_ink <span class="im">import</span> InkParams, hunt</span>
+<span id="cb9-210"><a href="#cb9-210" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-211"><a href="#cb9-211" aria-hidden="true" tabindex="-1"></a>base <span class="op">=</span> InkParams()</span>
+<span id="cb9-212"><a href="#cb9-212" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> label, par <span class="kw">in</span> [(<span class="st">"no ink"</span>, replace(base, ink<span class="op">=</span><span class="va">False</span>)), (<span class="st">"with ink"</span>, base)]:</span>
+<span id="cb9-213"><a href="#cb9-213" aria-hidden="true" tabindex="-1"></a>    res <span class="op">=</span> [hunt(par, seed, t_max<span class="op">=</span><span class="fl">250.0</span>) <span class="cf">for</span> seed <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">6</span>)]</span>
+<span id="cb9-214"><a href="#cb9-214" aria-hidden="true" tabindex="-1"></a>    caught <span class="op">=</span> <span class="bu">int</span>(<span class="bu">sum</span>(r[<span class="st">"captured"</span>] <span class="cf">for</span> r <span class="kw">in</span> res))</span>
+<span id="cb9-215"><a href="#cb9-215" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>label<span class="sc">:9s}</span><span class="ss"> caught </span><span class="sc">{</span>caught<span class="sc">}</span><span class="ss"> of 6 hunts, "</span></span>
+<span id="cb9-216"><a href="#cb9-216" aria-hidden="true" tabindex="-1"></a>          <span class="ss">f"mean time </span><span class="sc">{</span>np<span class="sc">.</span>mean([r[<span class="st">'time'</span>] <span class="cf">for</span> r <span class="kw">in</span> res])<span class="sc">:5.1f}</span><span class="ss">, "</span></span>
+<span id="cb9-217"><a href="#cb9-217" aria-hidden="true" tabindex="-1"></a>          <span class="ss">f"mean ink releases </span><span class="sc">{</span>np<span class="sc">.</span>mean([r[<span class="st">'releases'</span>] <span class="cf">for</span> r <span class="kw">in</span> res])<span class="sc">:4.1f}</span><span class="ss">"</span>)</span>
+<span id="cb9-218"><a href="#cb9-218" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-219"><a href="#cb9-219" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-220"><a href="#cb9-220" aria-hidden="true" tabindex="-1"></a><span class="fu">## Experiment: how much does the ink help?</span></span>
+<span id="cb9-221"><a href="#cb9-221" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-222"><a href="#cb9-222" aria-hidden="true" tabindex="-1"></a><span class="in">`run_experiments.py squid`</span> reproduces the figure below. For each value of one parameter it runs **60 independent hunts** of at most 250 t.u. and records the time at which the squid is caught. The line is the mean, the band is a 95% confidence interval for the mean, and the dashed line is the same hunt without ink.</span>
+<span id="cb9-223"><a href="#cb9-223" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-224"><a href="#cb9-224" aria-hidden="true" tabindex="-1"></a><span class="al">![Mean time until the squid is caught, against the opacity of the ink, the ink thickness, the share of the remaining ink used per release and the size of the school.](../../img/squid_ink_sweeps.png)</span>{#fig-squid-sweeps fig-alt="Four panels sharing one vertical axis, the mean time until capture in time units. A dashed line at about 32 is the squid without ink. Top left: the time rises from 32 at zero opacity to about 67 at opacity 5.6 and then stays flat. Top right: it rises from 39 to 77 as the ink thickness goes from 1 to 10. Bottom left: it falls from 98 to 53 as the share of ink used per release goes from 0.2 to 0.8. Bottom right: it falls slowly from 62 to 46 as the school grows from 8 to 60 fish."}</span>
+<span id="cb9-225"><a href="#cb9-225" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-226"><a href="#cb9-226" aria-hidden="true" tabindex="-1"></a>What the figure shows:</span>
+<span id="cb9-227"><a href="#cb9-227" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-228"><a href="#cb9-228" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**The squid is delayed, not saved.** In all 60 hunts of the default setting the squid is caught: after 60 t.u. on average, against 32 t.u. without ink. The ink buys roughly a factor of two in time.</span>
+<span id="cb9-229"><a href="#cb9-229" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Opacity saturates.** The mean time grows from 32 at $\kappa = 0$ to about 67 at $\kappa = 5.6$ and then stays flat, as Exercise 3 explains.</span>
+<span id="cb9-230"><a href="#cb9-230" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Thicker ink helps for longer**, because a thicker cloud is wider and lasts longer (39 t.u. at thickness 1, 77 at thickness 10).</span>
+<span id="cb9-231"><a href="#cb9-231" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Spending the sac in many small clouds is better than in two large ones**: the mean time falls from 98 t.u. when the squid uses 20% of what is left per release to 53 t.u. when it uses 80%. Thin clouds are enough to confuse the fish, and the squid keeps something in reserve.</span>
+<span id="cb9-232"><a href="#cb9-232" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Bigger schools find the squid sooner** (62 t.u. for 8 fish, 46 for 60), but only moderately: the fish pursue the same squid whatever the school size.</span>
+<span id="cb9-233"><a href="#cb9-233" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Unlimited ink is a different model.** With an endless supply the squid was caught in only 23 of 60 hunts within 250 t.u. (mean time 198 t.u., which is cut off at 250 t.u. and therefore too low). The limited sac is what turns an escape into a delay.</span>
+<span id="cb9-234"><a href="#cb9-234" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-235"><a href="#cb9-235" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb9-236"><a href="#cb9-236" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercise 1: a cloud that does not absorb</span></span>
+<span id="cb9-237"><a href="#cb9-237" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-238"><a href="#cb9-238" aria-hidden="true" tabindex="-1"></a>With $\kappa = 0$ the squid still releases ink, and the cloud spreads exactly as before. Why does the squid get no protection? What does the figure say about the **cost** of releasing ink in the model?</span>
+<span id="cb9-239"><a href="#cb9-239" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-240"><a href="#cb9-240" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb9-241"><a href="#cb9-241" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-242"><a href="#cb9-242" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb9-243"><a href="#cb9-243" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solution</span></span>
+<span id="cb9-244"><a href="#cb9-244" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-245"><a href="#cb9-245" aria-hidden="true" tabindex="-1"></a>The ink acts only through the transmission $\tau = \exp<span class="co">[</span><span class="ot">-(a + \kappa \bar c) d</span><span class="co">]</span>$ of @eq-transmission. At $\kappa = 0$ only the weak clear-water term $a$ is left, whatever the concentration, so the fish pursue at full weight and the capture probability equals that of a squid without ink. The bottom-left panel of the figure and the unlimited-ink control show what ink costs in the model: a finite sac. With unlimited ink the squid would be caught in only 23 of 60 hunts; with the realistic sac it is always caught.</span>
+<span id="cb9-246"><a href="#cb9-246" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb9-247"><a href="#cb9-247" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-248"><a href="#cb9-248" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb9-249"><a href="#cb9-249" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercise 2: the diffusion coefficient of the rule</span></span>
+<span id="cb9-250"><a href="#cb9-250" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-251"><a href="#cb9-251" aria-hidden="true" tabindex="-1"></a>Use the expansion of @eq-spread to derive @eq-deff. Then compute how long it takes the variance of a cloud to reach 36 BL$^2$ ($\sigma = 6$ BL) from an initial 0.8 BL$^2$.</span>
+<span id="cb9-252"><a href="#cb9-252" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-253"><a href="#cb9-253" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb9-254"><a href="#cb9-254" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-255"><a href="#cb9-255" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb9-256"><a href="#cb9-256" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solution</span></span>
+<span id="cb9-257"><a href="#cb9-257" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-258"><a href="#cb9-258" aria-hidden="true" tabindex="-1"></a>A cell gets $\tfrac{s}{4}$ of the ink of each neighbour and keeps $1 - s$, so $c_{ij}' - c_{ij} = \tfrac{s}{4}\,(c_{i+1,j} + c_{i-1,j} + c_{i,j+1} + c_{i,j-1} - 4 c_{ij})$. The bracket is $\Delta x^2\,\nabla^2 c$ to leading order, so one step changes $c$ by $\tfrac{s}{4}\Delta x^2\,\nabla^2 c$. Dividing by the duration $\Delta t_\text{ink}$ of the step gives $\partial_t c = D_\text{eff}\,\nabla^2 c$ with $D_\text{eff} = s\,\Delta x^2 / (4\,\Delta t_\text{ink})$. In one dimension the variance of a diffusing cloud grows as $\sigma^2 = \sigma_0^2 + 2 D_\text{eff}\,t$, so $t = (36 - 0.8) / (2 \times 0.5) = 35.2$ t.u. The cut-off makes the real cloud smaller than this and finally erases it.</span>
+<span id="cb9-259"><a href="#cb9-259" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb9-260"><a href="#cb9-260" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-261"><a href="#cb9-261" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb9-262"><a href="#cb9-262" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercise 3: thick or thin ink</span></span>
+<span id="cb9-263"><a href="#cb9-263" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-264"><a href="#cb9-264" aria-hidden="true" tabindex="-1"></a>A thicker bolus covers a larger area for longer. Why can the benefit of thicker ink still saturate? Think about the transmission of @eq-transmission when $\bar c\, d$ is already large.</span>
+<span id="cb9-265"><a href="#cb9-265" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-266"><a href="#cb9-266" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb9-267"><a href="#cb9-267" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-268"><a href="#cb9-268" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb9-269"><a href="#cb9-269" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solution</span></span>
+<span id="cb9-270"><a href="#cb9-270" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-271"><a href="#cb9-271" aria-hidden="true" tabindex="-1"></a>The transmission depends on the product $\kappa\,\bar c\,d$ in an exponential. Once the optical depth $\kappa\,\bar c\,d$ is a few units, $\tau$ is already close to 0, and more ink only makes a very small number even smaller. The extra ink then helps only through its **extent**: a wider cloud takes more time to cross and to leave. Compare the plateau of the opacity curve in @fig-squid-sweeps with the thickness curve, which keeps rising.</span>
+<span id="cb9-272"><a href="#cb9-272" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb9-273"><a href="#cb9-273" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-274"><a href="#cb9-274" aria-hidden="true" tabindex="-1"></a>::: {.python-next}</span>
+<span id="cb9-275"><a href="#cb9-275" aria-hidden="true" tabindex="-1"></a>**Build this in Python.** Use `sweep` to vary the **ink thickness** and the **spreading fraction** `spread` of @eq-spread. Which of the two controls the capture probability, and why? Then add a **decoy**: let fish within 3 BL of the ink maximum steer toward it for a few time units. Does a decoy help more than a smoke screen alone?</span>
+<span id="cb9-276"><a href="#cb9-276" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb9-277"><a href="#cb9-277" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-278"><a href="#cb9-278" aria-hidden="true" tabindex="-1"></a><span class="fu">## Biological reality check</span></span>
+<span id="cb9-279"><a href="#cb9-279" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-280"><a href="#cb9-280" aria-hidden="true" tabindex="-1"></a>How well does the model match what is known about cephalopod inking? The points below separate what the model keeps from what it leaves out.</span>
+<span id="cb9-281"><a href="#cb9-281" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-282"><a href="#cb9-282" aria-hidden="true" tabindex="-1"></a>**What matches.**</span>
+<span id="cb9-283"><a href="#cb9-283" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-284"><a href="#cb9-284" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>*Ink delays, it does not guarantee escape.* Live predators were slowed, not stopped, by ink <span class="co">[</span><span class="ot">@wood2010caribbean; @derby2013ink</span><span class="co">]</span>, and Derby's review lists decoy, smoke screen and chemical effects as complementary roles <span class="co">[</span><span class="ot">@derby2014cephalopod</span><span class="co">]</span>. Our default squid is delayed by about a factor of two.</span>
+<span id="cb9-285"><a href="#cb9-285" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>*The ink sac is finite and refills slowly.* In the cuttlefish *Sepia pharaonis* a full sac held about 765 mg of ink, and three inkings in a row released about 498, 178 and 38 mg; refilling took about 30 days <span class="co">[</span><span class="ot">@jiang2019continuous</span><span class="co">]</span>. Each release therefore spent roughly half or more of what was left, which is the rule of our model with a share of 0.6 per release. The default value is a round number inspired by these data, not a fit.</span>
+<span id="cb9-286"><a href="#cb9-286" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>*Spreading and dilution.* A real cloud expands and thins out in seconds to minutes, and a **smoke screen** and a **pseudomorph** (a compact, squid-sized blob of mucus-rich ink) are different tactics <span class="co">[</span><span class="ot">@derby2014cephalopod</span><span class="co">]</span>. The model has only the first.</span>
+<span id="cb9-287"><a href="#cb9-287" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-288"><a href="#cb9-288" aria-hidden="true" tabindex="-1"></a>**What is simplified or missing.**</span>
+<span id="cb9-289"><a href="#cb9-289" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-290"><a href="#cb9-290" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>*The squid is not stealthy afterwards.* Real cephalopods often blanch, change colour and jet away *in the shadow of the cloud*, so the predator searches the wrong place. In the model the squid simply keeps its heading and speed, and the fish lose it only because the cloud blocks the line of sight.</span>
+<span id="cb9-291"><a href="#cb9-291" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>*Vision is the only channel.* Fish also sense the pressure and flow wake of a jetting squid with the lateral line, and the ink has chemical effects on taste and smell <span class="co">[</span><span class="ot">@derby2014cephalopod</span><span class="co">]</span>. Both are ignored. This makes the model pessimistic for the fish side in one respect and optimistic in another, and we do not know which wins.</span>
+<span id="cb9-292"><a href="#cb9-292" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>*The box has no far away.* On a periodic square the squid cannot escape by distance, so ink can only delay the end. In open water a squid that breaks the line of sight may simply never be found.</span>
+<span id="cb9-293"><a href="#cb9-293" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>*Fish and squid speeds are chosen, not measured.* The fish are faster than the squid by assumption; the result depends on this ratio.</span>
+<span id="cb9-294"><a href="#cb9-294" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>*Ink is released as a Gaussian blob at rest.* In reality it is ejected in a jet, so the first shape of the cloud is set by the water flow.</span>
+<span id="cb9-295"><a href="#cb9-295" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-296"><a href="#cb9-296" aria-hidden="true" tabindex="-1"></a>The honest summary is this: the model captures the *logic* of a finite, optical smoke screen, and its qualitative message (ink buys time, and how the sac is spent matters) is consistent with the experiments cited. It does not support quantitative statements about real squid.</span>
+<span id="cb9-297"><a href="#cb9-297" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-298"><a href="#cb9-298" aria-hidden="true" tabindex="-1"></a><span class="fu">## Waves instead of ink</span></span>
+<span id="cb9-299"><a href="#cb9-299" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-300"><a href="#cb9-300" aria-hidden="true" tabindex="-1"></a>Fish and other aquatic animals do not rely on sight alone. A predator that moves through water disturbs it, and other animals can sense the disturbance with mechanoreceptors: copepods detect the flow produced by an approaching fish and escape in a direction away from it <span class="co">[</span><span class="ot">@tuttle2019going</span><span class="co">]</span>, and killifish use a hydrodynamic sensory antenna to hunt at night <span class="co">[</span><span class="ot">@schwarz2011hydrodynamic</span><span class="co">]</span>. This suggests a different field-plus-agents model. A moving predator produces a damped flow field. The prey estimates the direction of the predator from a local spatial gradient of that field, and the school changes its motion in response. The field could be a diffusion-like decay, as here, or a wave equation with a propagation speed and a damping that are separate from the local response of the receptor.</span>
+<span id="cb9-301"><a href="#cb9-301" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-302"><a href="#cb9-302" aria-hidden="true" tabindex="-1"></a>This is a better-grounded use of the word **wave** than forcing a chemical Turing pattern onto squid ink: the ink field here only spreads and fades, and it cannot produce a traveling or a self-organized pattern. A pattern-forming ink would need a reaction term, which the real ink does not have.</span>
+<span id="cb9-303"><a href="#cb9-303" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-304"><a href="#cb9-304" aria-hidden="true" tabindex="-1"></a><span class="fu">## What this model does not do</span></span>
+<span id="cb9-305"><a href="#cb9-305" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-306"><a href="#cb9-306" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>It is a **teaching model**. The parameters are not fitted to data, and the numbers in @fig-squid-sweeps should not be read as predictions for real squid.</span>
+<span id="cb9-307"><a href="#cb9-307" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The ink supply is finite, but the refill is not modelled (a real sac needs about a month) and the ink has chemical effects (irritation, disruption of smell) that we do not model.</span>
+<span id="cb9-308"><a href="#cb9-308" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The squid does not use the ink strategically. A real squid changes colour, jets away and sometimes releases the ink as a decoy rather than a screen.</span>
+<span id="cb9-309"><a href="#cb9-309" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The fish see the squid through a single number, the transmission of the line between them. Real vision is limited by contrast, by the angle and by the size of the target.</span>
+<span id="cb9-310"><a href="#cb9-310" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The ink spreads by a diffusion-like rule. Real ink is carried by the flow and by the jet of the squid.</span>
+</code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Mathematical Modeling · David Gómez-Ullate and Daniel Precioso · IE University</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/combining-ideas/squid-ink.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/daniprec/BAM-Applied-Math-Lab">
+      <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
