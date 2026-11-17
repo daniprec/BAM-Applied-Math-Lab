@@ -51,6 +51,9 @@ def avg_path_length(G, n_src=300, seed=0):
     H = G.subgraph(max(nx.connected_components(G), key=len))
     nodes = list(H)
     A = nx.to_scipy_sparse_array(H, nodelist=nodes, format="csr")
+    # SciPy's csgraph routines require int32 CSR index buffers in this environment.
+    A.indices = A.indices.astype(np.int32)
+    A.indptr = A.indptr.astype(np.int32)
     n = len(nodes)
     rng = np.random.default_rng(seed)
     src = np.arange(n, dtype=np.int32) if n <= n_src else rng.choice(n, n_src, replace=False).astype(np.int32)
