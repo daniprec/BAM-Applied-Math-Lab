@@ -94,9 +94,9 @@ or
 quarto render modules/discrete-models/cellular-1d.qmd
 ```
 
-## Collective Motion: Confusion Effect and Crowd Evacuation
+## Collective Motion: Confusion Effect, Crowd Evacuation and Squid Ink
 
-Two extensions of the Module 2 labs (the Couzin model and the social force model). Each one has a **model** (Python), a **local animation**, an **interactive web figure** and a **lesson page**.
+Three extensions of the Module 2 labs (the Couzin model, the social force model and the Vicsek-type school). Each one has a **model** (Python), a **local animation**, an **interactive web figure** and a **lesson page**.
 
 |                 | Confusion effect (predator and prey)                               | Crowd evacuation (faster is slower)                                                            |
 | --------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
@@ -105,6 +105,15 @@ Two extensions of the Module 2 labs (the Couzin model and the social force model
 | Model           | `amlab/collective_motion/couzin_predator.py` (extends `couzin.py`) | `amlab/collective_motion/crowd_exit.py` (extends the social force model)                       |
 | Local animation | `amlab/collective_motion/couzin_predator_animation.py`             | `amlab/collective_motion/crowd_exit_animation.py`                                              |
 | Web figure      | `assets/viz/widgets/confusion.js` (`data-viz="confusion"`)         | `assets/viz/widgets/crowd-exit.js` (`data-viz="crowd-exit"`)                                   |
+
+**Squid ink** (one prey against a school of fish): _can a squid hide from a school in its own ink?_
+
+| Item            | File                                                                          |
+| --------------- | ----------------------------------------------------------------------------- |
+| Lesson page     | `modules/combining-ideas/squid-ink.qmd`                                  |
+| Model           | `amlab/collective_motion/squid_ink.py` (ink spreading rule, vision, capture)  |
+| Local animation | `amlab/collective_motion/squid_ink_animation.py`                              |
+| Web figure      | `assets/viz/widgets/squid-ink.js` (`data-viz="squid-ink"`)                    |
 
 Shared files: `amlab/collective_motion/ie_style.py` (IE palette and Matplotlib theme), `amlab/collective_motion/run_experiments.py` (parameter sweeps), `data/*.csv` and `img/*.png` (their results).
 
@@ -133,6 +142,27 @@ A window opens with the hunt on the left and a scoreboard on the right. The came
 
 In the window: the sliders change the cohesion and the confusion strength _c_ live. School size and the number of odd prey restart the hunt. **New hunt** restarts with a new random school, **Pause / play** (or the space bar) pauses.
 
+**Squid ink**
+
+```bash
+python amlab/collective_motion/squid_ink_animation.py
+```
+
+| Option                | Meaning                                              | Default |
+| --------------------- | ---------------------------------------------------- | ------- |
+| `--theme dark\|light` | as above                                             | `dark`  |
+| `--fish 40`           | number of fish                                       | 24      |
+| `--kappa 2.8`         | opacity of the ink                                   | 2.8     |
+| `--thickness 5`       | peak amount of ink in a bolus                        | 3       |
+| `--ink-use 0.3`       | share of the remaining ink used per release (0 = unlimited) | 0.6 |
+| `--reload 10`         | minimum time between two releases                    | 5       |
+| `--fixed`             | start with a fixed camera on the whole sea           | off     |
+| `--no-ink`            | control: a squid without ink                         | off     |
+| `--speed 1`           | simulation steps per frame (lower is lighter)        | 2       |
+| `--seed 7`            | random seed                                          | 4       |
+
+In the window: the opacity, thickness and ink-use sliders change live. The school size restarts the hunt. **Ink on/off**, **New hunt** and **Pause** (or the space bar) do what they say. **Camera** (or the C key) switches between following the squid and a fixed view of the whole sea.
+
 **Crowd evacuation**
 
 ```bash
@@ -158,6 +188,7 @@ If no window opens (for example in a remote session), your Matplotlib backend ha
 ```bash
 python amlab/collective_motion/couzin_predator_animation.py --save hunt.gif --frames 300
 python amlab/collective_motion/crowd_exit_animation.py --save exit.gif --frames 300 --v0 4 --column 0.8
+python amlab/collective_motion/squid_ink_animation.py --save squid-ink.gif --frames 300
 python amlab/collective_motion/crowd_exit_animation.py --save exit.mp4 --frames 600   # needs ffmpeg
 ```
 
@@ -168,6 +199,7 @@ A GIF is written with Pillow and needs nothing else. An `.mp4` needs [ffmpeg](ht
 ```bash
 python amlab/collective_motion/couzin_predator.py
 python amlab/collective_motion/crowd_exit.py
+python amlab/collective_motion/squid_ink.py     # self-test and a short comparison with and without ink
 ```
 
 The first checks that the vectorised Couzin step agrees with `couzin_equations` when the noise is off (the difference should be about `1e-13`) and prints the capture probability for five values of the cohesion. The second runs four evacuations at different desired speeds and prints the evacuation time, flow and pressure of each (about a minute).
@@ -190,6 +222,7 @@ print(r["evac_time"], r["flow"], r["door_pressure"])
 ```bash
 python amlab/collective_motion/run_experiments.py confusion          # about 2 minutes
 python amlab/collective_motion/run_experiments.py crowd              # about 20 minutes
+python amlab/collective_motion/run_experiments.py squid --seeds 60   # about 15 minutes
 python amlab/collective_motion/run_experiments.py all --seeds 3      # a faster draft
 python amlab/collective_motion/run_experiments.py crowd --plot-only  # redraw from data/*.csv
 ```
@@ -198,11 +231,12 @@ The numbers are written to `data/` (CSV) and the figures to `img/`. Every point 
 
 ### 5. The interactive web figures
 
-The same two models run in the browser, as part of the Quarto site. To see them while you edit:
+The same models run in the browser, as part of the Quarto site. To see them while you edit:
 
 ```bash
 quarto preview modules/collective-behaviour/confusion-effect.qmd
 quarto preview modules/collective-behaviour/crowd-exit.qmd
+quarto preview modules/combining-ideas/squid-ink.qmd
 ```
 
 They are drawn by `assets/viz/widgets/*.js` through the figure framework in `assets/viz/core.js`. To put one on another page, add this block to the `.qmd` file (the text inside becomes the "Try this" guide):

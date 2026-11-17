@@ -1,10 +1,12 @@
-"""Numerical experiments for the confusion effect and the crowd exit.
+"""Numerical experiments for the confusion effect, the crowd exit and the squid ink.
 
-Runs the parameter sweeps used in ``confusion-effect.qmd`` and ``crowd-exit.qmd``,
+Runs the parameter sweeps used in ``confusion-effect.qmd``, ``crowd-exit.qmd`` and
+``squid-ink.qmd``,
 saves the numbers as CSV files in ``data/`` and the figures in ``img/``.
 
     python amlab/collective_motion/run_experiments.py confusion          # about 2 min
     python amlab/collective_motion/run_experiments.py crowd              # about 15 min
+    python amlab/collective_motion/run_experiments.py squid --seeds 40   # about 5 min
     python amlab/collective_motion/run_experiments.py all --seeds 3      # fewer repeats, faster
     python amlab/collective_motion/run_experiments.py crowd --plot-only  # redraw from the saved CSV files
 
@@ -29,6 +31,7 @@ import numpy as np
 
 from amlab.collective_motion import couzin_predator as cp
 from amlab.collective_motion import crowd_exit as ce
+from amlab.collective_motion import squid_ink as si
 from amlab.collective_motion.ie_style import apply_theme
 
 DATA, IMG = Path("data"), Path("img")
@@ -234,11 +237,80 @@ def crowd(seeds: int, plot_only: bool) -> None:
     print("wrote", IMG / "crowd_column.png")
 
 
+# ---------------------------------------------------------------------------
+# Squid ink
+# ---------------------------------------------------------------------------
+def squid(seeds: int, plot_only: bool) -> None:
+    """Time to capture of the squid against opacity, thickness, ink use and school size."""
+    keys = ["values", "k", "n", "capture_prob", "mean_time", "sem_time", "releases"]
+    t_max = 250.0
+    base = si.InkParams()
+    out = DATA / "squid_ink_sweeps.csv"
+    if not plot_only:
+        runs = {
+            "noink": ("n_fish", [base.n_fish], si.InkParams(ink=False)),
+            "unlimited": ("n_fish", [base.n_fish], si.InkParams(use_fraction=0.0)),
+            "opacity": ("kappa", [0.0, 0.7, 1.4, 2.8, 5.6, 8.0], base),
+            "thickness": ("thickness", [1.0, 2.0, 3.0, 6.0, 10.0], base),
+            "inkuse": ("use_fraction", [0.2, 0.4, 0.6, 0.8], base),
+            "school": ("n_fish", [8, 16, 24, 40, 60], base),
+        }
+        DATA.mkdir(exist_ok=True)
+        with open(out, "w", newline="") as f:
+            w = csv.writer(f)
+            w.writerow(["sweep", *keys])
+            for name, (param, values, b) in runs.items():
+                print(f"squid: {name}")
+                res = si.sweep(param, values, base=b, n_seeds=seeds, t_max=t_max)
+                for row in zip(*[res[k] for k in keys]):
+                    w.writerow([name, *[f"{v:.6g}" for v in row]])
+    with open(out) as f:
+        rows = list(csv.DictReader(f))
+
+    def load_sweep(name):
+        sel = [r for r in rows if r["sweep"] == name]
+        return {k: np.array([float(r[k]) for r in sel]) for k in keys}
+
+    r0, ru = load_sweep("noink"), load_sweep("unlimited")
+
+    P = apply_theme("light")
+    IMG.mkdir(exist_ok=True)
+    fig, axs = plt.subplots(2, 2, figsize=(9.5, 6.4), constrained_layout=True, sharey=True)
+    top = 0.0
+    for ax, name, xl in [
+        (axs[0, 0], "opacity", "ink opacity \u03ba"),
+        (axs[0, 1], "thickness", "ink thickness (peak of the first bolus)"),
+        (axs[1, 0], "inkuse", "share of the remaining ink used per release"),
+        (axs[1, 1], "school", "school size"),
+    ]:
+        r = load_sweep(name)
+        ax.fill_between(
+            r["values"], r["mean_time"] - 1.96 * r["sem_time"], r["mean_time"] + 1.96 * r["sem_time"],
+            color=P["accent"], alpha=0.18, lw=0,
+        )  # fmt: skip
+        ax.plot(r["values"], r["mean_time"], "o-", color=P["prey"], lw=2.2, ms=6, label="squid with ink")
+        ax.axhline(r0["mean_time"][0], color=P["bad"], lw=1.6, ls="--", label="no ink")
+        top = max(top, float((r["mean_time"] + 1.96 * r["sem_time"]).max()))
+        ax.set_xlabel(xl)
+    for ax in axs.flat:
+        ax.set_ylim(0, 1.08 * top)
+    for ax in axs[:, 0]:
+        ax.set_ylabel("mean time to capture (t.u.)")
+    k_u, n_u = int(ru["k"][0]), int(ru["n"][0])
+    axs[1, 0].text(
+        0.98, 0.04, f"Unlimited ink (not shown): only {k_u} of {n_u} squid\ncaught within 250 t.u.",
+        transform=axs[1, 0].transAxes, ha="right", va="bottom", fontsize=8, color=P["muted"],
+    )  # fmt: skip
+    axs[1, 0].legend(loc="upper right", fontsize=8)
+    fig.savefig(IMG / "squid_ink_sweeps.png", dpi=160)
+    print("wrote", IMG / "squid_ink_sweeps.png")
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    ap.add_argument("which", choices=["confusion", "crowd", "all"])
+    ap.add_argument("which", choices=["confusion", "crowd", "squid", "all"])
     ap.add_argument(
         "--seeds", type=int, default=6, help="independent runs per parameter value"
     )
@@ -252,3 +324,5 @@ if __name__ == "__main__":
         confusion(a.seeds, a.plot_only)
     if a.which in ("crowd", "all"):
         crowd(a.seeds, a.plot_only)
+    if a.which in ("squid", "all"):
+        squid(a.seeds, a.plot_only)
