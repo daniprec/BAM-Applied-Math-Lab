@@ -1,0 +1,2163 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.11.9">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Configuration Model – Mathematical Modeling</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../modules/networks/sir-percolation.html" rel="next">
+<link href="../../modules/networks/triadic-closure.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/scrollable-regions/scrollable-regions.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-e2b0d26dc907153b9b7d894772c108f8.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-12151da8aa05cf07c534364deb97e4e4.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-e2b0d26dc907153b9b7d894772c108f8.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-8bf4d1fb4905e12d728b14f6d437560a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-b420c83aa8650c36abcd9e9e7016d1f8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-8bf4d1fb4905e12d728b14f6d437560a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&amp;family=PT+Serif:ital,wght@0,400;0,700;1,400&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../theme/ie.css">
+<link rel="stylesheet" href="../../assets/styles.css">
+<link rel="stylesheet" href="../../assets/viz/viz.css">
+</head>
+
+<body class="nav-sidebar docked quarto-light"><a id="quarto-skip-link" class="visually-hidden-focusable" href="#quarto-document-content">Skip to main content</a><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          toggle.setAttribute("aria-checked", alternate ? "true" : "false");
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455).
+    // Not run on load: stylesheets are set before first paint there, and
+    // scrolling would undo the scroll to a URL fragment (#14973).
+    // The one pixel nudge keeps the reader where they were.
+    const refreshSafariScrollbar = () => {
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        const scrollY = window.scrollY;
+        window.scrollTo(0, scrollY > 0 ? scrollY - 1 : 1);
+        setTimeout(() => {
+          window.scrollTo(0, scrollY);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      refreshSafariScrollbar();
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      refreshSafariScrollbar();
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" aria-label="Toolbar">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="Breadcrumbs"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../modules/networks/index.html">Module 5: Complex Networks</a></li><li class="breadcrumb-item"><a href="../../modules/networks/configuration-model.html">Configuration Model</a></li></ol></nav>
+        <a class="flex-grow-1" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto" aria-label="Site">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">Mathematical Modeling</a> 
+        <div class="sidebar-tools-main">
+  <button type="button" role="switch" aria-checked="false" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode" aria-label="Toggle dark mode"><i class="bi"></i></button>
+</div>
+    </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <button type="button" class="sidebar-item-text sidebar-item-toggle sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-controls="quarto-sidebar-section-1" aria-expanded="false">
+ <span class="menu-text" id="quarto-sidebar-section-1-label">Getting Started</span><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+      </div>
+      <ul id="quarto-sidebar-section-1" aria-labelledby="quarto-sidebar-section-1-label" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../syllabus.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Syllabus</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/low-dimensional-dynamics/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text" id="quarto-sidebar-section-2-label">Module 1: Low-Dimensional Dynamics</span></a>
+            <button type="button" class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-controls="quarto-sidebar-section-2" aria-expanded="false" aria-label="Toggle section: Module 1: Low-Dimensional Dynamics">
+              <i class="bi bi-chevron-right ms-2" aria-hidden="true"></i>
+            </button> 
+      </div>
+      <ul id="quarto-sidebar-section-2" aria-labelledby="quarto-sidebar-section-2-label" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/what-is-a-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">What Is a Mathematical Model?</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/modeling-workflow.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Modelling Workflow</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/budworm-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Spruce Budworm Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/michaelis-menten.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Michaelis-Menten Kinetics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/compartmental-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Compartmental Models: SIR and SIS</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/sir-extensions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SIR Extensions: Vaccination and Herd Immunity</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/cdima-phase-plane.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">CDIMA: Phase Plane</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/van-der-pol.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Van der Pol Oscillator</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/fitzhugh-nagumo.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FitzHugh-Nagumo Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/lorenz.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Lorenz Attractor</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/collective-behaviour/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text" id="quarto-sidebar-section-3-label">Module 2: Synchronization and Collective Behaviour</span></a>
+            <button type="button" class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-controls="quarto-sidebar-section-3" aria-expanded="false" aria-label="Toggle section: Module 2: Synchronization and Collective Behaviour">
+              <i class="bi bi-chevron-right ms-2" aria-hidden="true"></i>
+            </button> 
+      </div>
+      <ul id="quarto-sidebar-section-3" aria-labelledby="quarto-sidebar-section-3-label" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/synchronization-examples.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Synchronization in Nature</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/kuramoto-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Kuramoto Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/order-parameter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Order Parameter</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/millennium-bridge.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Millennium Bridge</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/vicsek-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Vicsek Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/couzin-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Couzin Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/cucker-smale.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Flocking Without Noise: Cucker-Smale</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/confusion-effect.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Confusion Effect</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/crowd-exit.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Faster Is Slower: Crowds at a Door</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/practice-collective-motion.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Practice: Collective Motion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/randomness/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text" id="quarto-sidebar-section-4-label">Module 3: Modelling with Randomness</span></a>
+            <button type="button" class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-controls="quarto-sidebar-section-4" aria-expanded="false" aria-label="Toggle section: Module 3: Modelling with Randomness">
+              <i class="bi bi-chevron-right ms-2" aria-hidden="true"></i>
+            </button> 
+      </div>
+      <ul id="quarto-sidebar-section-4" aria-labelledby="quarto-sidebar-section-4-label" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/random-walk.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Random Walk</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/diffusion-equation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Diffusion Equation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/central-limit-theorem.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Central Limit Theorem</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/power-laws.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Power Laws</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/power-law-fitting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Fitting Power Laws</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/levy-foraging.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Lévy Foraging</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/efficient-markets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Returns and Efficient Markets</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/returns-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Loading Prices and Computing Returns</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/pattern-formation/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text" id="quarto-sidebar-section-5-label">Module 4: Space and Pattern Formation</span></a>
+            <button type="button" class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-controls="quarto-sidebar-section-5" aria-expanded="false" aria-label="Toggle section: Module 4: Space and Pattern Formation">
+              <i class="bi bi-chevron-right ms-2" aria-hidden="true"></i>
+            </button> 
+      </div>
+      <ul id="quarto-sidebar-section-5" aria-labelledby="quarto-sidebar-section-5-label" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/reaction-diffusion.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reaction-Diffusion Equations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/turing-conditions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Turing Conditions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/turing-original-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Turing’s Original Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/domain-size-mode-selection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Domain Size and Mode Selection</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/gierer-meinhardt-1d-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gierer-Meinhardt Model in 1D</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/gierer-meinhardt-2d-solver.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gierer-Meinhardt Solver in 2D</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/gray-scott.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gray-Scott Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/reaction-diffusion-evidence.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Evidence for Reaction-Diffusion</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/assignment-patterns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Assignment: Pattern Formation</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/networks/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text" id="quarto-sidebar-section-6-label">Module 5: Complex Networks</span></a>
+            <button type="button" class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-controls="quarto-sidebar-section-6" aria-expanded="true" aria-label="Toggle section: Module 5: Complex Networks">
+              <i class="bi bi-chevron-right ms-2" aria-hidden="true"></i>
+            </button> 
+      </div>
+      <ul id="quarto-sidebar-section-6" aria-labelledby="quarto-sidebar-section-6-label" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/network-concepts.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Network Concepts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/networkx-basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">NetworkX Basics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/iberian-blackout.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Iberian Blackout</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/erdos-renyi.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Erdos-Renyi Random Graphs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/sis-network-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SIS Model on Networks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/sir-network.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SIR on Networks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/pagerank.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">PageRank</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/model-scaling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model Scaling Laws</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/triadic-closure.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Triadic Closure</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/configuration-model.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Configuration Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/sir-percolation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SIR and Percolation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/metapopulation-epidemics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Metapopulation Epidemics</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/discrete-models/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text" id="quarto-sidebar-section-7-label">Module 6: Explorables and Discrete Models</span></a>
+            <button type="button" class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-controls="quarto-sidebar-section-7" aria-expanded="false" aria-label="Toggle section: Module 6: Explorables and Discrete Models">
+              <i class="bi bi-chevron-right ms-2" aria-hidden="true"></i>
+            </button> 
+      </div>
+      <ul id="quarto-sidebar-section-7" aria-labelledby="quarto-sidebar-section-7-label" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/explorables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Explorables Presentations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/cellular-automata.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cellular Automata</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/cellular-1d.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1D Cellular Automata</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/game-of-life.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Game of Life</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/nagel-schreckenberg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Nagel-Schreckenberg Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/nagel-paper.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Nagel and Schreckenberg (1992)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/traffic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Traffic Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/traffic-continuum.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Traffic as a Continuum</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../slide-library.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Slide Library</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" aria-labelledby="toc-title" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#definition" id="toc-definition" class="nav-link active" data-scroll-target="#definition">Definition</a></li>
+  <li><a href="#degree-preserving-randomisation" id="toc-degree-preserving-randomisation" class="nav-link" data-scroll-target="#degree-preserving-randomisation">Degree-preserving randomisation</a></li>
+  <li><a href="#how-much-of-the-clustering-is-explained-by-the-degrees" id="toc-how-much-of-the-clustering-is-explained-by-the-degrees" class="nav-link" data-scroll-target="#how-much-of-the-clustering-is-explained-by-the-degrees">How much of the clustering is explained by the degrees?</a></li>
+  <li><a href="#a-formula-for-the-clustering-of-the-configuration-model" id="toc-a-formula-for-the-clustering-of-the-configuration-model" class="nav-link" data-scroll-target="#a-formula-for-the-clustering-of-the-configuration-model">A formula for the clustering of the configuration model</a></li>
+  <li><a href="#does-clustering-matter-for-spreading" id="toc-does-clustering-matter-for-spreading" class="nav-link" data-scroll-target="#does-clustering-matter-for-spreading">Does clustering matter for spreading?</a></li>
+  <li><a href="#whats-next" id="toc-whats-next" class="nav-link" data-scroll-target="#whats-next">What’s Next?</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/networks/configuration-model.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content" tabindex="-1">
+
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="Breadcrumbs"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../modules/networks/index.html">Module 5: Complex Networks</a></li><li class="breadcrumb-item"><a href="../../modules/networks/configuration-model.html">Configuration Model</a></li></ol></nav>
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">Configuration Model</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+<p class="subtitle lead">Module 5: Complex Networks</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Reading
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>Compulsory:</strong> <span class="citation" data-cites="newman2003structure">Newman (<a href="#ref-newman2003structure" role="doc-biblioref">2003</a>)</span>, Section 4.2 (generalized random graphs and the configuration model), up to the clustering coefficient of Eq. (31).</li>
+<li><strong>Recommended:</strong> <span class="citation" data-cites="molloy1995critical">Molloy and Reed (<a href="#ref-molloy1995critical" role="doc-biblioref">1995</a>)</span> for the giant component criterion, <span class="citation" data-cites="motter2002cascade">Motter and Lai (<a href="#ref-motter2002cascade" role="doc-biblioref">2002</a>)</span> for an example of networks generated from a prescribed degree distribution.</li>
+</ul>
+</div>
+</div>
+<p>The Erdős-Rényi model fixes only the mean degree. Real networks have a degree distribution of their own, and many of the quantities of this module depend on it: the giant component after failures, the epidemic threshold and the cascade size all contain <span class="math inline">\(\langle k^2 \rangle\)</span>. To study the effect of the degree distribution <strong>alone</strong>, we need a random graph in which the degrees are exactly those of a given network and everything else is random. This is the <strong>configuration model</strong>, and its sampling by <em>degree-preserving randomisation</em> is the standard null model of network science <span class="citation" data-cites="newman2003structure">(<a href="#ref-newman2003structure" role="doc-biblioref">Newman 2003, sec. 4.2</a>)</span>.</p>
+<section id="definition" class="level2">
+<h2 class="anchored" data-anchor-id="definition">Definition</h2>
+<p>Given a degree sequence <span class="math inline">\((k_1, \dots, k_N)\)</span> with an even sum, give node <span class="math inline">\(i\)</span> exactly <span class="math inline">\(k_i\)</span> “stubs” (half-edges). Pair all the stubs uniformly at random. Every graph with this degree sequence appears with the same probability, as a multigraph, that is, a graph that may contain self-loops and parallel edges <span class="citation" data-cites="newman2003structure">(<a href="#ref-newman2003structure" role="doc-biblioref">Newman 2003, sec. 4.2</a>)</span>. Two consequences are used throughout the module:</p>
+<ul>
+<li>Follow a random edge to the node at its other end. That node has degree <span class="math inline">\(k\)</span> with probability <span class="math inline">\(k p_k / \langle k \rangle\)</span>, and so <span class="math inline">\(\langle k^2 \rangle / \langle k \rangle\)</span> neighbours on average, counting the edge we arrived by. Its <em>excess degree</em> (the number of other edges) has mean <span class="math inline">\(\kappa - 1\)</span> with <span class="math inline">\(\kappa = \langle k^2 \rangle / \langle k \rangle\)</span>.</li>
+<li>A branching process with mean offspring <span class="math inline">\(\kappa - 1\)</span> grows if <span class="math inline">\(\kappa &gt; 2\)</span>, which is the criterion of Molloy and Reed <span class="citation" data-cites="molloy1995critical">(<a href="#ref-molloy1995critical" role="doc-biblioref">Molloy and Reed 1995</a>)</span> used in <a href="../../modules/networks/robustness-percolation.html">Robustness and Percolation</a>.</li>
+</ul>
+<p>The function below implements the definition in three lines. NetworkX has the same model as <code>nx.configuration_model(degree_sequence)</code>, which returns a <code>MultiGraph</code>.</p>
+<div id="ad72c9f2" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.sparse.csgraph <span class="im">import</span> shortest_path</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>SEED <span class="op">=</span> <span class="dv">7</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> stub_matching(degrees, rng):</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Edge list of the configuration model: shuffle the stubs and pair them."""</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    stubs <span class="op">=</span> np.repeat(np.arange(<span class="bu">len</span>(degrees)), degrees)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    rng.shuffle(stubs)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">list</span>(<span class="bu">zip</span>(stubs[::<span class="dv">2</span>], stubs[<span class="dv">1</span>::<span class="dv">2</span>]))</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> avg_path_length(G, n_src<span class="op">=</span><span class="dv">600</span>, seed<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Average distance in the largest component, from at most n_src random sources."""</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    H <span class="op">=</span> G.subgraph(<span class="bu">max</span>(nx.connected_components(G), key<span class="op">=</span><span class="bu">len</span>))</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    nodes <span class="op">=</span> <span class="bu">list</span>(H)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    A <span class="op">=</span> nx.to_scipy_sparse_array(H, nodelist<span class="op">=</span>nodes, <span class="bu">format</span><span class="op">=</span><span class="st">"csr"</span>)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># SciPy's csgraph routines require int32 CSR index buffers in this environment.</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    A.indices <span class="op">=</span> A.indices.astype(np.int32)</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    A.indptr <span class="op">=</span> A.indptr.astype(np.int32)</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> <span class="bu">len</span>(nodes)</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.default_rng(seed)</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    src <span class="op">=</span> np.arange(n, dtype<span class="op">=</span>np.int32) <span class="cf">if</span> n <span class="op">&lt;=</span> n_src <span class="cf">else</span> rng.choice(n, n_src, replace<span class="op">=</span><span class="va">False</span>).astype(np.int32)</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> shortest_path(A, unweighted<span class="op">=</span><span class="va">True</span>, indices<span class="op">=</span>src).<span class="bu">sum</span>() <span class="op">/</span> (<span class="bu">len</span>(src) <span class="op">*</span> (n <span class="op">-</span> <span class="dv">1</span>))</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>enron <span class="op">=</span> nx.Graph(nx.read_edgelist(<span class="st">"data/ia-enron-only/ia-enron-only.edges"</span>))</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>flights <span class="op">=</span> nx.Graph(nx.read_graphml(<span class="st">"data/openflights/openflights_usa.graphml.gz"</span>))</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> G <span class="kw">in</span> (enron, flights):</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>    G.remove_edges_from(nx.selfloop_edges(G))</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(SEED)</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>sequences <span class="op">=</span> {</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Poisson, &lt;k&gt; = 6 (N = 5000)"</span>: np.random.default_rng(<span class="dv">1</span>).poisson(<span class="dv">6</span>, <span class="dv">5000</span>),</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Barabási-Albert, m = 3 (N = 5000)"</span>: np.array([d <span class="cf">for</span> _, d <span class="kw">in</span> nx.barabasi_albert_graph(<span class="dv">5000</span>, <span class="dv">3</span>, seed<span class="op">=</span><span class="dv">1</span>).degree()]),</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Enron e-mail (N = 143)"</span>: np.array([d <span class="cf">for</span> _, d <span class="kw">in</span> enron.degree()]),</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>    <span class="st">"US flights (N = 546)"</span>: np.array([d <span class="cf">for</span> _, d <span class="kw">in</span> flights.degree()]),</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="st">'degree sequence'</span><span class="sc">:&lt;36}{</span><span class="st">'E'</span><span class="sc">:&gt;7}{</span><span class="st">'loops'</span><span class="sc">:&gt;7}{</span><span class="st">'parallel'</span><span class="sc">:&gt;10}{</span><span class="st">'lost (%)'</span><span class="sc">:&gt;10}</span><span class="ss">"</span>)</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, degs <span class="kw">in</span> sequences.items():</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>    degs <span class="op">=</span> degs.copy()</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> degs.<span class="bu">sum</span>() <span class="op">%</span> <span class="dv">2</span>:</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>        degs[<span class="dv">0</span>] <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>    edges <span class="op">=</span> stub_matching(degs, rng)</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>    M <span class="op">=</span> nx.MultiGraph()</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>    M.add_nodes_from(<span class="bu">range</span>(<span class="bu">len</span>(degs)))</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>    M.add_edges_from(edges)</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> [M.degree(i) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(degs))] <span class="op">==</span> <span class="bu">list</span>(degs)   <span class="co"># degrees are exact (a loop counts twice)</span></span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>    loops <span class="op">=</span> nx.number_of_selfloops(M)</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>    S <span class="op">=</span> nx.Graph(M)</span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>    S.remove_edges_from(nx.selfloop_edges(S))</span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>    parallel <span class="op">=</span> M.number_of_edges() <span class="op">-</span> loops <span class="op">-</span> S.number_of_edges()   <span class="co"># edges merged into an existing one</span></span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>name<span class="sc">:&lt;36}{</span><span class="bu">len</span>(edges)<span class="sc">:&gt;7}{</span>loops<span class="sc">:&gt;7}{</span>parallel<span class="sc">:&gt;10}{</span><span class="dv">100</span> <span class="op">*</span> (loops <span class="op">+</span> parallel) <span class="op">/</span> <span class="bu">len</span>(edges)<span class="sc">:&gt;10.1f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>degree sequence                           E  loops  parallel  lost (%)
+Poisson, &lt;k&gt; = 6 (N = 5000)           14973      1        11       0.1
+Barabási-Albert, m = 3 (N = 5000)     14991      6        56       0.4
+Enron e-mail (N = 143)                  623      1        44       7.2
+US flights (N = 546)                   2781     20       446      16.8</code></pre>
+</div>
+</div>
+<p>The degrees are exact. Every degree sequence produces some self-loops and parallel edges, and their share grows with the heterogeneity of the sequence: two hubs <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> are expected to be joined by <span class="math inline">\(k_i k_j / 2E\)</span> edges, which is larger than one when both degrees are large. Removing the loops and merging parallel edges (“erasing”) gives a simple graph, but it no longer has the original degrees. For a sparse and homogeneous sequence the loss is small; for the flights sequence it is a sizeable fraction of the edges.</p>
+</section>
+<section id="degree-preserving-randomisation" class="level2">
+<h2 class="anchored" data-anchor-id="degree-preserving-randomisation">Degree-preserving randomisation</h2>
+<p>To sample <strong>simple</strong> graphs with exactly the degrees of an observed network, start from the network and repeat a <strong>double-edge swap</strong>: pick two edges <span class="math inline">\((u,v)\)</span> and <span class="math inline">\((x,y)\)</span> and replace them by <span class="math inline">\((u,x)\)</span> and <span class="math inline">\((v,y)\)</span>, unless one of these edges already exists. Each swap keeps every degree, so after many swaps the graph is a sample of the simple-graph version of the configuration model. In NetworkX the function is <code>nx.double_edge_swap(G, nswap, max_tries)</code>. How many swaps are enough? <a href="#fig-swap-convergence" class="quarto-xref">Figure&nbsp;1</a> follows the clustering of the two data networks as a function of the number of swaps in units of <span class="math inline">\(E\)</span>.</p>
+<div id="cell-fig-swap-convergence" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">9</span>, <span class="fl">3.5</span>))</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>swaps_E <span class="op">=</span> np.array([<span class="dv">0</span>, <span class="fl">0.1</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">5</span>, <span class="dv">10</span>])</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, (name, G) <span class="kw">in</span> <span class="bu">zip</span>(axes, [(<span class="st">"Enron e-mail"</span>, enron), (<span class="st">"US flights"</span>, flights)]):</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    E <span class="op">=</span> G.number_of_edges()</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    curves <span class="op">=</span> []</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> r <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>):</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        H <span class="op">=</span> G.copy()</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        values, done <span class="op">=</span> [], <span class="dv">0</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> s <span class="kw">in</span> swaps_E:</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>            todo <span class="op">=</span> <span class="bu">int</span>(s <span class="op">*</span> E) <span class="op">-</span> done</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> todo <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>                nx.double_edge_swap(H, nswap<span class="op">=</span>todo, max_tries<span class="op">=</span><span class="dv">100</span> <span class="op">*</span> E, seed<span class="op">=</span>SEED <span class="op">+</span> r <span class="op">+</span> done)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>                done <span class="op">+=</span> todo</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>            values.append(nx.average_clustering(H))</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> <span class="bu">sorted</span>(d <span class="cf">for</span> _, d <span class="kw">in</span> H.degree()) <span class="op">==</span> <span class="bu">sorted</span>(d <span class="cf">for</span> _, d <span class="kw">in</span> G.degree())</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>        curves.append(values)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    ax.semilogx(np.maximum(swaps_E, <span class="fl">0.03</span>), np.mean(curves, axis<span class="op">=</span><span class="dv">0</span>), <span class="st">"o-"</span>)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">"swaps / E"</span>)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    ax.set_ylabel(<span class="st">"average clustering C"</span>)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    ax.set_title(name)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"the assertion inside the loop checks that the degree sequence never changes"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div id="fig-swap-convergence" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-swap-convergence-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="configuration-model_files/figure-html/fig-swap-convergence-output-1.png" width="854" height="324" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-swap-convergence-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Average clustering coefficient of the Enron and US flights networks during degree-preserving randomisation, against the number of double-edge swaps in units of the number of edges E. Lines are averages over 3 runs; the starting values (plotted at 0.03) are the clustering of the original networks. The Enron curve flattens after about E swaps. The flights curve drops in the first 0.1E swaps, then recovers slowly and is flat from about 2E swaps on.
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>the assertion inside the loop checks that the degree sequence never changes</code></pre>
+</div>
+</div>
+<p>The Enron clustering levels off after about <span class="math inline">\(E\)</span> swaps. The flights clustering is not monotone: the first swaps remove the triangles, and then it recovers slowly as the hubs rearrange, to a plateau from about <span class="math inline">\(2E\)</span> swaps on. We use <span class="math inline">\(10E\)</span> swaps below. (The plot checks only one quantity; other properties may need more swaps.)</p>
+</section>
+<section id="how-much-of-the-clustering-is-explained-by-the-degrees" class="level2">
+<h2 class="anchored" data-anchor-id="how-much-of-the-clustering-is-explained-by-the-degrees">How much of the clustering is explained by the degrees?</h2>
+<p>A standard question compares the clustering of a real network with that of a random graph. The answer depends on which random graph. The table compares each data network with two nulls: the Erdős-Rényi graph <span class="math inline">\(G(N, E)\)</span>, which keeps only the number of nodes and edges, and the degree-preserving randomisation, which also keeps every degree. It shows the average of the local clustering coefficients, the <em>transitivity</em> (three times the number of triangles divided by the number of connected triples <span class="citation" data-cites="newman2003structure">(<a href="#ref-newman2003structure" role="doc-biblioref">Newman 2003</a>, Eq. (3))</span>, <code>nx.transitivity</code>), the average path length and the degree assortativity coefficient <span class="math inline">\(r\)</span> (the correlation between the degrees at the two ends of an edge).</p>
+<div id="tbl-null-models" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="3">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-null-models-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Real networks against two null models, averaged over 5 realisations of each null. C is the average local clustering, T the transitivity, L the average path length in the largest component and r the degree assortativity coefficient. Enron: 143 nodes and 623 edges; US flights: 546 nodes and 2781 edges.
+</figcaption>
+<div aria-describedby="tbl-null-models-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> profile(G):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">dict</span>(C<span class="op">=</span>nx.average_clustering(G), T<span class="op">=</span>nx.transitivity(G), L<span class="op">=</span>avg_path_length(G),</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>                r<span class="op">=</span>nx.degree_assortativity_coefficient(G))</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="st">'network / null'</span><span class="sc">:&lt;28}{</span><span class="st">'C'</span><span class="sc">:&gt;8}{</span><span class="st">'T'</span><span class="sc">:&gt;8}{</span><span class="st">'L'</span><span class="sc">:&gt;7}{</span><span class="st">'r'</span><span class="sc">:&gt;8}</span><span class="ss">"</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, G <span class="kw">in</span> [(<span class="st">"Enron"</span>, enron), (<span class="st">"US flights"</span>, flights)]:</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    N, E <span class="op">=</span> G.number_of_nodes(), G.number_of_edges()</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    er <span class="op">=</span> [profile(nx.gnm_random_graph(N, E, seed<span class="op">=</span>SEED <span class="op">+</span> s)) <span class="cf">for</span> s <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">5</span>)]</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    sw <span class="op">=</span> []</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> s <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">5</span>):</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        H <span class="op">=</span> G.copy()</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        nx.double_edge_swap(H, nswap<span class="op">=</span><span class="dv">10</span> <span class="op">*</span> E, max_tries<span class="op">=</span><span class="dv">100</span> <span class="op">*</span> E, seed<span class="op">=</span>SEED <span class="op">+</span> s)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        sw.append(profile(H))</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> label, rows <span class="kw">in</span> [(<span class="st">"real"</span>, [profile(G)]), (<span class="st">"G(N, E)"</span>, er), (<span class="st">"degree-preserving"</span>, sw)]:</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>        m <span class="op">=</span> {key: np.mean([row[key] <span class="cf">for</span> row <span class="kw">in</span> rows]) <span class="cf">for</span> key <span class="kw">in</span> rows[<span class="dv">0</span>]}</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>name <span class="op">+</span> <span class="st">' '</span> <span class="op">+</span> label<span class="sc">:&lt;28}{</span>m[<span class="st">'C'</span>]<span class="sc">:&gt;8.3f}{</span>m[<span class="st">'T'</span>]<span class="sc">:&gt;8.3f}{</span>m[<span class="st">'L'</span>]<span class="sc">:&gt;7.2f}{</span>m[<span class="st">'r'</span>]<span class="sc">:&gt;8.2f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>network / null                     C       T      L       r
+Enron real                     0.434   0.359   2.97   -0.02
+Enron G(N, E)                  0.062   0.063   2.52   -0.02
+Enron degree-preserving        0.107   0.114   2.55   -0.05
+US flights real                0.493   0.313   3.20   -0.34
+US flights G(N, E)             0.018   0.018   2.96   -0.01
+US flights degree-preserving   0.428   0.229   2.67   -0.40</code></pre>
+</div>
+</div>
+</figure>
+</div>
+<p>Two lessons follow.</p>
+<ul>
+<li><strong>The conclusion depends on the null.</strong> The Enron network has <span class="math inline">\(C = 0.43\)</span> against <span class="math inline">\(0.06\)</span> for <span class="math inline">\(G(N,E)\)</span> and <span class="math inline">\(0.11\)</span> for the degree-preserving null: the clustering is high even after the degrees are taken into account, which is consistent with a triadic-closure mechanism. The flights network has <span class="math inline">\(C = 0.49\)</span> against <span class="math inline">\(0.02\)</span> for <span class="math inline">\(G(N,E)\)</span>, but <span class="math inline">\(0.43\)</span> for the degree-preserving null: most of the local clustering comes from the degree sequence. The airports of degree 2 or 3 have a mean local clustering of 0.79 in the data; when such a small node is attached to two large hubs, the hubs are very likely to be linked to each other, even in a random graph with the same degrees. The transitivity tells a more cautious story, with a smaller excess over the null.</li>
+<li><strong>Simple graphs with hubs are disassortative.</strong> The degree-preserving null of the flights network has <span class="math inline">\(r \approx -0.4\)</span>, close to the real value, because hubs cannot have many parallel edges and so are joined mostly to small nodes. The assortativity of the flights network is largely explained by the degree sequence as well.</li>
+</ul>
+</section>
+<section id="a-formula-for-the-clustering-of-the-configuration-model" class="level2">
+<h2 class="anchored" data-anchor-id="a-formula-for-the-clustering-of-the-configuration-model">A formula for the clustering of the configuration model</h2>
+<p>For the configuration model, the transitivity is</p>
+<p><span id="eq-cm-clustering"><span class="math display">\[
+T = \frac{1}{N}\,\frac{\big(\langle k^2 \rangle - \langle k \rangle\big)^2}{\langle k \rangle^3},
+\tag{1}\]</span></span></p>
+<p>the value <span class="math inline">\(\langle k \rangle / N\)</span> of the Poisson random graph times a factor that grows with the width of the degree distribution <span class="citation" data-cites="newman2003structure">(<a href="#ref-newman2003structure" role="doc-biblioref">Newman 2003</a>, Eq. (31))</span>. It goes to zero as <span class="math inline">\(1/N\)</span> for a fixed distribution, unless <span class="math inline">\(\langle k^2 \rangle\)</span> grows with <span class="math inline">\(N\)</span>. The next chunk tests the formula on random power-law sequences (<span class="math inline">\(p_k \propto k^{-\gamma}\)</span>, minimum degree <span class="math inline">\(k_{\min}\)</span>, maximum degree <span class="math inline">\(\sqrt{3N}\)</span>) and on the two data networks.</p>
+<div id="2d15bce9" class="cell" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> power_law_sequence(N, gamma, kmin, kmax, rng):</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    ks <span class="op">=</span> np.arange(kmin, kmax <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> ks <span class="op">**</span> (<span class="op">-</span>gamma)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> rng.choice(ks, N, p<span class="op">=</span>p <span class="op">/</span> p.<span class="bu">sum</span>())</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> s.<span class="bu">sum</span>() <span class="op">%</span> <span class="dv">2</span>:</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        s[<span class="dv">0</span>] <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> s</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> eq_cm(degs):</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    k <span class="op">=</span> np.asarray(degs, dtype<span class="op">=</span><span class="bu">float</span>)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ((k<span class="op">**</span><span class="dv">2</span>).mean() <span class="op">-</span> k.mean()) <span class="op">**</span> <span class="dv">2</span> <span class="op">/</span> (<span class="bu">len</span>(k) <span class="op">*</span> k.mean() <span class="op">**</span> <span class="dv">3</span>)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(SEED)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="st">'sequence'</span><span class="sc">:&lt;26}{</span><span class="st">'N'</span><span class="sc">:&gt;7}{</span><span class="st">'k_max'</span><span class="sc">:&gt;7}{</span><span class="st">'formula'</span><span class="sc">:&gt;9}{</span><span class="st">'measured'</span><span class="sc">:&gt;10}</span><span class="ss">"</span>)</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> gamma, kmin <span class="kw">in</span> [(<span class="fl">3.0</span>, <span class="dv">3</span>), (<span class="fl">2.5</span>, <span class="dv">2</span>)]:</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> N <span class="kw">in</span> (<span class="dv">2000</span>, <span class="dv">8000</span>, <span class="dv">32000</span>):</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>        s <span class="op">=</span> power_law_sequence(N, gamma, kmin, <span class="bu">int</span>(np.sqrt(<span class="dv">3</span> <span class="op">*</span> N)), rng)</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>        T <span class="op">=</span> []</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> r <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>):</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>            G <span class="op">=</span> nx.Graph(nx.configuration_model(<span class="bu">list</span>(s), seed<span class="op">=</span>SEED <span class="op">+</span> r))</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>            G.remove_edges_from(nx.selfloop_edges(G))</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>            T.append(nx.transitivity(G))</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="ss">f'gamma = </span><span class="sc">{</span>gamma<span class="sc">}</span><span class="ss">, kmin = </span><span class="sc">{</span>kmin<span class="sc">}</span><span class="ss">'</span><span class="sc">:&lt;26}{</span>N<span class="sc">:&gt;7}{</span>s<span class="sc">.</span><span class="bu">max</span>()<span class="sc">:&gt;7}{</span>eq_cm(s)<span class="sc">:&gt;9.4f}{</span>np<span class="sc">.</span>mean(T)<span class="sc">:&gt;10.4f}</span><span class="ss">"</span>)</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, G <span class="kw">in</span> [(<span class="st">"Enron e-mail"</span>, enron), (<span class="st">"US flights"</span>, flights)]:</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>    degs <span class="op">=</span> [d <span class="cf">for</span> _, d <span class="kw">in</span> G.degree()]</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>    H <span class="op">=</span> G.copy()</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>    nx.double_edge_swap(H, nswap<span class="op">=</span><span class="dv">10</span> <span class="op">*</span> G.number_of_edges(), max_tries<span class="op">=</span><span class="dv">10</span><span class="op">**</span><span class="dv">7</span>, seed<span class="op">=</span>SEED)</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>name<span class="sc">:&lt;26}{</span><span class="bu">len</span>(G)<span class="sc">:&gt;7}{</span><span class="bu">max</span>(degs)<span class="sc">:&gt;7}{</span>eq_cm(degs)<span class="sc">:&gt;9.4f}{</span>nx<span class="sc">.</span>transitivity(H)<span class="sc">:&gt;10.4f}</span><span class="ss">"</span></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>          <span class="ss">f"   (sqrt(2E) = </span><span class="sc">{</span>np<span class="sc">.</span>sqrt(<span class="dv">2</span> <span class="op">*</span> G.number_of_edges())<span class="sc">:.0f}</span><span class="ss">)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>sequence                        N  k_max  formula  measured
+gamma = 3.0, kmin = 3        2000     63   0.0054    0.0049
+gamma = 3.0, kmin = 3        8000    125   0.0020    0.0018
+gamma = 3.0, kmin = 3       32000    219   0.0007    0.0007
+gamma = 2.5, kmin = 2        2000     68   0.0098    0.0089
+gamma = 2.5, kmin = 2        8000    148   0.0071    0.0059
+gamma = 2.5, kmin = 2       32000    304   0.0031    0.0027
+Enron e-mail                  143     42   0.1141    0.1167   (sqrt(2E) = 35)
+US flights                    546    153   0.5141    0.2277   (sqrt(2E) = 75)</code></pre>
+</div>
+</div>
+<p>For the synthetic sequences the formula is accurate to within about 20%. For the Enron network it agrees closely with the degree-preserving null. For the flights network it overestimates by a factor of more than two. In that network the largest degree (153) is twice <span class="math inline">\(\sqrt{2E} \approx 75\)</span>: hubs of that size would need parallel edges, which a simple graph does not allow, so the simple null has fewer triangles around them than the multigraph formula assumes. The formula is a result for <span class="math inline">\(N \to \infty\)</span> with bounded <span class="math inline">\(k_{\max}/\sqrt{N}\)</span>; use the numerical null whenever the largest degrees are comparable to <span class="math inline">\(\sqrt{2E}\)</span>.</p>
+</section>
+<section id="does-clustering-matter-for-spreading" class="level2">
+<h2 class="anchored" data-anchor-id="does-clustering-matter-for-spreading">Does clustering matter for spreading?</h2>
+<p>The heterogeneous mean-field threshold of <a href="../../modules/networks/epidemic-threshold.html">Epidemic Threshold</a> uses only <span class="math inline">\(p_k\)</span>. The configuration model lets us test the effect of everything else. Take a clustered scale-free graph from <a href="../../modules/networks/triadic-closure.html">Triadic Closure</a> (<span class="math inline">\(N = 3000\)</span>, <span class="math inline">\(m = 3\)</span>, <span class="math inline">\(p_t = 0.9\)</span>), randomise it with <span class="math inline">\(10E\)</span> double-edge swaps, and run the discrete-time SIR model of <a href="../../modules/networks/sir-network.html">SIR on Networks</a> on both. The swapped graph has the same degrees and almost no triangles; it also loses any degree correlations of the original, so the comparison measures the effect of all the structure beyond the degrees.</p>
+<div id="cell-fig-sir-clustering" class="cell" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.networks_spreading <span class="im">import</span> run_sir_fast</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>G_hk <span class="op">=</span> nx.powerlaw_cluster_graph(<span class="dv">3000</span>, <span class="dv">3</span>, <span class="fl">0.9</span>, seed<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>G_sw <span class="op">=</span> G_hk.copy()</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>nx.double_edge_swap(G_sw, nswap<span class="op">=</span><span class="dv">10</span> <span class="op">*</span> G_sw.number_of_edges(), max_tries<span class="op">=</span><span class="dv">10</span><span class="op">**</span><span class="dv">7</span>, seed<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"C: clustered = </span><span class="sc">{</span>nx<span class="sc">.</span>average_clustering(G_hk)<span class="sc">:.2f}</span><span class="ss">, randomised = </span><span class="sc">{</span>nx<span class="sc">.</span>average_clustering(G_sw)<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">5</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>betas <span class="op">=</span> [<span class="fl">0.02</span>, <span class="fl">0.03</span>, <span class="fl">0.04</span>]</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="fl">5.5</span>, <span class="fl">3.8</span>))</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> G, label <span class="kw">in</span> [(G_hk, <span class="st">"clustered (Holme-Kim)"</span>), (G_sw, <span class="st">"degree-preserving randomisation"</span>)]:</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    means, errs <span class="op">=</span> [], []</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> beta <span class="kw">in</span> betas:</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>        sizes <span class="op">=</span> np.array([run_sir_fast(G, beta, <span class="fl">0.2</span>, initial_infected<span class="op">=</span><span class="dv">5</span>, rng<span class="op">=</span>rng) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">400</span>)])</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>        means.append(sizes.mean())</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>        errs.append(sizes.std() <span class="op">/</span> np.sqrt(<span class="bu">len</span>(sizes)))</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    ax.errorbar(betas, means, yerr<span class="op">=</span>errs, fmt<span class="op">=</span><span class="st">"o-"</span>, capsize<span class="op">=</span><span class="dv">3</span>, label<span class="op">=</span>label)</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(label, np.<span class="bu">round</span>(means, <span class="dv">3</span>))</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="vs">r"infection probability </span><span class="dv">$\b</span><span class="vs">eta</span><span class="dv">$</span><span class="vs">"</span>)</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"final epidemic size"</span>)</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>ax.legend()</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>C: clustered = 0.52, randomised = 0.013
+clustered (Holme-Kim) [0.012 0.07  0.2  ]
+degree-preserving randomisation [0.027 0.134 0.268]</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-sir-clustering" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-sir-clustering-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="configuration-model_files/figure-html/fig-sir-clustering-output-2.png" width="517" height="353" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-sir-clustering-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Mean final epidemic size (fraction of nodes ever infected) of the discrete-time SIR model with recovery probability 0.2 and 5 initial infected nodes, on a clustered Holme-Kim graph (N = 3000, m = 3, p_t = 0.9, C = 0.52) and on its degree-preserving randomisation (C = 0.01). 400 runs per point; error bars are one standard error.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>At <span class="math inline">\(\beta = 0.02\)</span> and <span class="math inline">\(0.03\)</span>, close to the threshold, the clustered network has a final size that is 0.4 to 0.5 times that of its degree-preserving randomisation; at <span class="math inline">\(\beta = 0.04\)</span> the ratio is 0.75. Clustering wastes infection attempts: when two neighbours of an infected node are themselves neighbours, one of them may already have been infected through the other. The effect shrinks as the infection probability grows. The mean-field formula for <span class="math inline">\(\lambda_c\)</span> has no term for it <span class="citation" data-cites="pastor2015epidemic">(<a href="#ref-pastor2015epidemic" role="doc-biblioref">Pastor-Satorras et al. 2015</a>)</span>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Exercise
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ol type="a">
+<li>Using the table of this page, compute for each data network the ratio between the real transitivity and the transitivity of the degree-preserving null. (b) A student states that “the flights network is clustered like a social network, so triadic closure must be at work”. Evaluate the statement with the two nulls.</li>
+</ol>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="a">
+<li>Enron: <span class="math inline">\(0.359/0.114 \approx 3.1\)</span>. Flights: <span class="math inline">\(0.313/0.229 \approx 1.4\)</span>. (b) Against <span class="math inline">\(G(N,E)\)</span> the average clustering of the flights network is 27 times larger, which looks like strong evidence. Against the degree-preserving null the local clustering is only 1.15 times larger (<span class="math inline">\(0.49\)</span> against <span class="math inline">\(0.43\)</span>) and the transitivity 1.4 times larger. Most of the apparent clustering is a consequence of the hubs, so the evidence for a triadic-closure mechanism is weak; the Enron network, with a factor of 3 in transitivity, is much stronger evidence. The right null for a statement about a mechanism is the one that keeps everything the mechanism is not supposed to explain.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Exercise
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use <code>nx.configuration_model</code> on the degree sequence of the flights network and convert the result to a simple graph with <code>nx.Graph(M)</code> and <code>M.remove_edges_from(nx.selfloop_edges(M))</code>. How many edges are lost? How do the clustering and the largest degree of the simple graph compare with the original?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>degs <span class="op">=</span> [d <span class="cf">for</span> _, d <span class="kw">in</span> flights.degree()]</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> nx.configuration_model(degs, seed<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>S <span class="op">=</span> nx.Graph(M)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>S.remove_edges_from(nx.selfloop_edges(S))</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(flights.number_of_edges(), S.number_of_edges(), <span class="bu">max</span>(d <span class="cf">for</span> _, d <span class="kw">in</span> S.degree()))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>With <code>seed=1</code> the simple graph keeps 2293 of the 2781 edges (82%), because self-loops and merged parallel edges are lost, its largest degree is 95 instead of 153, and its average clustering is 0.19 against 0.49 for the original. This is why the degree-preserving swap is the better null for heterogeneous sequences.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="whats-next" class="level2">
+<h2 class="anchored" data-anchor-id="whats-next">What’s Next?</h2>
+<p>The configuration model is the setting in which the Molloy-Reed criterion and the heterogeneous mean-field threshold hold exactly. <a href="../../modules/networks/sir-percolation.html">SIR and Percolation</a> uses it to connect epidemic outbreaks to the robustness results of <a href="../../modules/networks/robustness-percolation.html">Robustness and Percolation</a>.</p>
+
+
+<!-- -->
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-molloy1995critical" class="csl-entry" role="listitem">
+Molloy, Michael, and Bruce Reed. 1995. <span>“A Critical Point for Random Graphs with a Given Degree Sequence.”</span> <em>Random Structures &amp; Algorithms</em> 6 (2–3): 161–80. <a href="https://doi.org/10.1002/rsa.3240060204">https://doi.org/10.1002/rsa.3240060204</a>.
+</div>
+<div id="ref-motter2002cascade" class="csl-entry" role="listitem">
+Motter, Adilson E., and Ying-Cheng Lai. 2002. <span>“Cascade-Based Attacks on Complex Networks.”</span> <em>Physical Review E</em> 66 (6): 065102. <a href="https://doi.org/10.1103/PhysRevE.66.065102">https://doi.org/10.1103/PhysRevE.66.065102</a>.
+</div>
+<div id="ref-newman2003structure" class="csl-entry" role="listitem">
+Newman, M. E. J. 2003. <span>“The Structure and Function of Complex Networks.”</span> <em>SIAM Review</em> 45 (2): 167–256. <a href="https://doi.org/10.1137/S003614450342480">https://doi.org/10.1137/S003614450342480</a>.
+</div>
+<div id="ref-pastor2015epidemic" class="csl-entry" role="listitem">
+Pastor-Satorras, Romualdo, Claudio Castellano, Piet Van Mieghem, and Alessandro Vespignani. 2015. <span>“Epidemic Processes in Complex Networks.”</span> <em>Reviews of Modern Physics</em> 87 (3): 925–79. <a href="https://doi.org/10.1103/RevModPhys.87.925">https://doi.org/10.1103/RevModPhys.87.925</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<button type="button" class="ie-theme-toggle" id="ie-theme-toggle">
+  <svg class="ie-theme-toggle__moon" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+  <svg class="ie-theme-toggle__sun" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+</button>
+<script>
+/* Light/dark switch in the top-right corner (moon in light mode, sun in dark mode).
+   It drives Quarto's own toggle, so the choice is remembered across pages and
+   shared with the interactive pages (they read the same "quarto-color-scheme" key). */
+(function () {
+  var btn = document.getElementById("ie-theme-toggle");
+  if (!btn) return;
+  function sync() {
+    var dark = document.body.classList.contains("quarto-dark");
+    var label = dark ? "Switch to light mode" : "Switch to dark mode";
+    btn.setAttribute("aria-label", label);
+    btn.title = label;
+  }
+  btn.addEventListener("click", function () {
+    if (window.quartoToggleColorScheme) window.quartoToggleColorScheme();
+    sync();
+  });
+  new MutationObserver(sync).observe(document.body, { attributes: true, attributeFilter: ["class"] });
+  sync();
+})();
+</script>
+<script>
+/* Interactive figures loader.
+   Any element  <div class="viz" data-viz="NAME">  (in a .qmd:  ::: {.viz data-viz="NAME"} :::)
+   loads assets/viz/core.js once and then assets/viz/widgets/NAME.js.
+   Paths are resolved from Quarto's quarto:offset meta, so this works at any page depth
+   and under the GitHub Pages sub-path. */
+(function () {
+  var nodes = document.querySelectorAll("[data-viz]");
+  if (!nodes.length) return;
+  var meta = document.querySelector('meta[name="quarto:offset"]');
+  var root = (meta ? meta.getAttribute("content") : "./") + "assets/viz/";
+  function load(src) {
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = src; s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+  var names = Array.from(new Set(Array.from(nodes, function (n) { return n.dataset.viz; })));
+  load(root + "core.js").then(function () {
+    return Promise.all(names.map(function (n) { return load(root + "widgets/" + n + ".js"); }));
+  }).then(function () {
+    nodes.forEach(function (el) { window.VIZ.mount(el); });
+  }).catch(function (e) { console.error("[viz] could not load", e); });
+})();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const toggle = window.document.createElement('button');
+      toggle.type = "button";
+      toggle.setAttribute("role", "switch");
+      toggle.setAttribute("aria-checked", "false");
+      toggle.classList.add('top-right');
+      toggle.classList.add('quarto-color-scheme-toggle');
+      toggle.setAttribute("aria-label", "Toggle dark mode");
+      toggle.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      toggle.appendChild(i);
+      // Put the toggle in a landmark of its own, so that landmark navigation
+      // can reach it.
+      //
+      // The container is always a fresh direct child of body, and the toggle is
+      // never moved into page furniture that the theme or the author controls.
+      // The toggle is positioned against the page, so any ancestor that
+      // establishes a containing block captures it: a positioned element or a
+      // grid for position: absolute, and transform, filter, will-change or
+      // contain for position: fixed. A direct child of body has none of these
+      // to inherit, and the shift when one appears is silent and visual.
+      //
+      // ARIA says a document should have at most one banner, and axe reports a
+      // duplicate whether or not the banners carry distinct labels. So use a
+      // header when the page has no banner yet, and a named region otherwise.
+      //
+      // A header is a banner wherever it sits, unless it is inside sectioning
+      // content, so this cannot just look at the children of body: a custom
+      // page layout wraps the title block header in a plain div. An explicit
+      // role="banner" always counts.
+      const sectioning = 'article, aside, main, nav, section, [role="article"], [role="complementary"], [role="main"], [role="navigation"], [role="region"]';
+      const hasBanner = Array.from(
+        window.document.querySelectorAll('header:not([role]), [role="banner"]')
+      ).some(function(el) {
+        return el.hasAttribute("role") || el.closest(sectioning) === null;
+      });
+      const container = window.document.createElement(hasBanner ? "div" : "header");
+      if (hasBanner) {
+        container.setAttribute("role", "region");
+        container.setAttribute("aria-label", "Toggle dark mode");
+      }
+      container.classList.add('quarto-color-scheme-toggle-container');
+      container.appendChild(toggle);
+      window.document.body.appendChild(container);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const cellDetails = window.document.querySelectorAll(".cell details.code-fold");
+        for (let i=0; i<cellDetails.length; i++) {
+          const details = cellDetails[i];
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell div.sourceCode.cell-code");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/daniprec\.github\.io\/BAM-Applied-Math-Lab");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+      window.quartoDecorateExternalLinks = function (root) {
+     var links = (root || window.document).querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+          if (!link.classList.contains('no-external-icon')) {
+          }
+        }
+      }
+      };
+      window.quartoDecorateExternalLinks(window.document);
+    // Esc closes the popup (WCAG 1.4.13) and focus leaving both trigger and
+    // popup closes it (WCAG 2.4.11); tippy handles neither for interactive popups.
+    const hideOnEscAndFocusOut = {
+      name: 'hideOnEscAndFocusOut',
+      defaultValue: true,
+      fn(instance) {
+        const dismiss = () => {
+          // A show scheduled by the trigger delay would otherwise reopen it
+          instance.clearDelayTimeouts();
+          instance.hide();
+        };
+        const onKeyDown = (event) => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+          // Keep Esc from also reaching page handlers (e.g. reveal.js overview),
+          // except an open reveal.js slide menu, which Esc should close too.
+          // The menu handles keys only when its keyboard option is on.
+          const menuHandlesEsc = window.Reveal?.getPlugin?.('menu')?.isOpen() &&
+            window.Reveal.getConfig().menu?.keyboard !== false;
+          if (!menuHandlesEsc) {
+            event.stopPropagation();
+          }
+          if (instance.popper.contains(window.document.activeElement)) {
+            // Disabled while refocusing so the focus trigger does not reopen it
+            instance.disable();
+            instance.reference.focus();
+            instance.enable();
+          }
+          dismiss();
+        };
+        const onFocusOut = (event) => {
+          const target = event.relatedTarget;
+          if (target && !instance.reference.contains(target) &&
+              !instance.popper.contains(target)) {
+            dismiss();
+          }
+        };
+        // On the trigger too: a click trigger (code-annotations: select) has no
+        // blur handling. Attached for the instance's lifetime so leaving the
+        // trigger also cancels a show still pending on the trigger delay.
+        instance.reference.addEventListener('focusout', onFocusOut);
+        return {
+          onShow() {
+            window.document.addEventListener('keydown', onKeyDown, true);
+            instance.popper.addEventListener('focusout', onFocusOut);
+          },
+          onHide() {
+            window.document.removeEventListener('keydown', onKeyDown, true);
+            instance.popper.removeEventListener('focusout', onFocusOut);
+          },
+          onDestroy() {
+            instance.reference.removeEventListener('focusout', onFocusOut);
+          },
+        };
+      },
+    };
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+        plugins: [hideOnEscAndFocusOut],
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          // Each band is positioned against its own containing block, which is
+          // not the offsetParent of the lines, so place it from client rects.
+          const placeBand = (band, firstEl, lastEl, codeBlock) => {
+            const container = band.offsetParent;
+            if (container === null) {
+              return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            // Reveal.js scales slides with a transform, so convert client
+            // pixels back to the CSS pixels of the container.
+            const scale = containerRect.height / container.offsetHeight || 1;
+            const firstRect = firstEl.getBoundingClientRect();
+            const lastRect = lastEl.getBoundingClientRect();
+            const top = (firstRect.top - containerRect.top) / scale - container.clientTop + container.scrollTop;
+            const height = (lastRect.bottom - firstRect.top) / scale;
+            band.style.top = top - 2 + "px";
+            band.style.height = height + 4 + "px";
+            if (codeBlock) {
+              // Without the copy button wrapper, the containing block is wider
+              // than the code block, so span the code block explicitly.
+              const blockRect = codeBlock.getBoundingClientRect();
+              band.style.left = (blockRect.left - containerRect.left) / scale - container.clientLeft + container.scrollLeft + "px";
+              band.style.width = blockRect.width / scale + "px";
+            }
+          };
+          if (lineIds.length > 0) {
+            const el = window.document.getElementById(lineIds[0]);
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const parent = el.parentElement.parentElement;
+            // cook up a div (if necessary) and position it
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            placeBand(div, el, lastEl, parent.closest("div.sourceCode") || parent);
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            placeBand(gutterDiv, el, lastEl);
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+  <script type="application/javascript">
+  window.quartoScrollableRegionsLabels = {"code":"Scrollable code","output":"Scrollable output"};
+  </script>
+<nav class="page-navigation" aria-label="Page">
+  <div class="nav-page nav-page-previous">
+      <a href="../../modules/networks/triadic-closure.html" class="pagination-link" aria-label="Triadic Closure">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Triadic Closure</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../modules/networks/sir-percolation.html" class="pagination-link" aria-label="SIR and Percolation">
+        <span class="nav-page-text">SIR and Percolation</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Configuration Model"</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Module 5: Complex Networks"</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="fu">## Reading</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Compulsory:** @newman2003structure, Section 4.2 (generalized random graphs and the configuration model), up to the clustering coefficient of Eq. (31).</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Recommended:** @molloy1995critical for the giant component criterion, @motter2002cascade for an example of networks generated from a prescribed degree distribution.</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>The Erdős-Rényi model fixes only the mean degree. Real networks have a degree distribution of their own, and many of the quantities of this module depend on it: the giant component after failures, the epidemic threshold and the cascade size all contain $\langle k^2 \rangle$. To study the effect of the degree distribution **alone**, we need a random graph in which the degrees are exactly those of a given network and everything else is random. This is the **configuration model**, and its sampling by *degree-preserving randomisation* is the standard null model of network science <span class="co">[</span><span class="ot">@newman2003structure, Section 4.2</span><span class="co">]</span>.</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="fu">## Definition</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>Given a degree sequence $(k_1, \dots, k_N)$ with an even sum, give node $i$ exactly $k_i$ "stubs" (half-edges). Pair all the stubs uniformly at random. Every graph with this degree sequence appears with the same probability, as a multigraph, that is, a graph that may contain self-loops and parallel edges <span class="co">[</span><span class="ot">@newman2003structure, Section 4.2</span><span class="co">]</span>. Two consequences are used throughout the module:</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Follow a random edge to the node at its other end. That node has degree $k$ with probability $k p_k / \langle k \rangle$, and so $\langle k^2 \rangle / \langle k \rangle$ neighbours on average, counting the edge we arrived by. Its *excess degree* (the number of other edges) has mean $\kappa - 1$ with $\kappa = \langle k^2 \rangle / \langle k \rangle$.</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>A branching process with mean offspring $\kappa - 1$ grows if $\kappa &gt; 2$, which is the criterion of Molloy and Reed <span class="co">[</span><span class="ot">@molloy1995critical</span><span class="co">]</span> used in <span class="co">[</span><span class="ot">Robustness and Percolation</span><span class="co">](robustness-percolation.qmd)</span>.</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>The function below implements the definition in three lines. NetworkX has the same model as <span class="in">`nx.configuration_model(degree_sequence)`</span>, which returns a <span class="in">`MultiGraph`</span>.</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.sparse.csgraph <span class="im">import</span> shortest_path</span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>SEED <span class="op">=</span> <span class="dv">7</span></span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> stub_matching(degrees, rng):</span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Edge list of the configuration model: shuffle the stubs and pair them."""</span></span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>    stubs <span class="op">=</span> np.repeat(np.arange(<span class="bu">len</span>(degrees)), degrees)</span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>    rng.shuffle(stubs)</span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">list</span>(<span class="bu">zip</span>(stubs[::<span class="dv">2</span>], stubs[<span class="dv">1</span>::<span class="dv">2</span>]))</span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> avg_path_length(G, n_src<span class="op">=</span><span class="dv">600</span>, seed<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Average distance in the largest component, from at most n_src random sources."""</span></span>
+<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a>    H <span class="op">=</span> G.subgraph(<span class="bu">max</span>(nx.connected_components(G), key<span class="op">=</span><span class="bu">len</span>))</span>
+<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a>    nodes <span class="op">=</span> <span class="bu">list</span>(H)</span>
+<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a>    A <span class="op">=</span> nx.to_scipy_sparse_array(H, nodelist<span class="op">=</span>nodes, <span class="bu">format</span><span class="op">=</span><span class="st">"csr"</span>)</span>
+<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a>    <span class="co"># SciPy's csgraph routines require int32 CSR index buffers in this environment.</span></span>
+<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a>    A.indices <span class="op">=</span> A.indices.astype(np.int32)</span>
+<span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a>    A.indptr <span class="op">=</span> A.indptr.astype(np.int32)</span>
+<span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> <span class="bu">len</span>(nodes)</span>
+<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.default_rng(seed)</span>
+<span id="cb12-52"><a href="#cb12-52" aria-hidden="true" tabindex="-1"></a>    src <span class="op">=</span> np.arange(n, dtype<span class="op">=</span>np.int32) <span class="cf">if</span> n <span class="op">&lt;=</span> n_src <span class="cf">else</span> rng.choice(n, n_src, replace<span class="op">=</span><span class="va">False</span>).astype(np.int32)</span>
+<span id="cb12-53"><a href="#cb12-53" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> shortest_path(A, unweighted<span class="op">=</span><span class="va">True</span>, indices<span class="op">=</span>src).<span class="bu">sum</span>() <span class="op">/</span> (<span class="bu">len</span>(src) <span class="op">*</span> (n <span class="op">-</span> <span class="dv">1</span>))</span>
+<span id="cb12-54"><a href="#cb12-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-55"><a href="#cb12-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-56"><a href="#cb12-56" aria-hidden="true" tabindex="-1"></a>enron <span class="op">=</span> nx.Graph(nx.read_edgelist(<span class="st">"data/ia-enron-only/ia-enron-only.edges"</span>))</span>
+<span id="cb12-57"><a href="#cb12-57" aria-hidden="true" tabindex="-1"></a>flights <span class="op">=</span> nx.Graph(nx.read_graphml(<span class="st">"data/openflights/openflights_usa.graphml.gz"</span>))</span>
+<span id="cb12-58"><a href="#cb12-58" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> G <span class="kw">in</span> (enron, flights):</span>
+<span id="cb12-59"><a href="#cb12-59" aria-hidden="true" tabindex="-1"></a>    G.remove_edges_from(nx.selfloop_edges(G))</span>
+<span id="cb12-60"><a href="#cb12-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-61"><a href="#cb12-61" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(SEED)</span>
+<span id="cb12-62"><a href="#cb12-62" aria-hidden="true" tabindex="-1"></a>sequences <span class="op">=</span> {</span>
+<span id="cb12-63"><a href="#cb12-63" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Poisson, &lt;k&gt; = 6 (N = 5000)"</span>: np.random.default_rng(<span class="dv">1</span>).poisson(<span class="dv">6</span>, <span class="dv">5000</span>),</span>
+<span id="cb12-64"><a href="#cb12-64" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Barabási-Albert, m = 3 (N = 5000)"</span>: np.array([d <span class="cf">for</span> _, d <span class="kw">in</span> nx.barabasi_albert_graph(<span class="dv">5000</span>, <span class="dv">3</span>, seed<span class="op">=</span><span class="dv">1</span>).degree()]),</span>
+<span id="cb12-65"><a href="#cb12-65" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Enron e-mail (N = 143)"</span>: np.array([d <span class="cf">for</span> _, d <span class="kw">in</span> enron.degree()]),</span>
+<span id="cb12-66"><a href="#cb12-66" aria-hidden="true" tabindex="-1"></a>    <span class="st">"US flights (N = 546)"</span>: np.array([d <span class="cf">for</span> _, d <span class="kw">in</span> flights.degree()]),</span>
+<span id="cb12-67"><a href="#cb12-67" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb12-68"><a href="#cb12-68" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="st">'degree sequence'</span><span class="sc">:&lt;36}{</span><span class="st">'E'</span><span class="sc">:&gt;7}{</span><span class="st">'loops'</span><span class="sc">:&gt;7}{</span><span class="st">'parallel'</span><span class="sc">:&gt;10}{</span><span class="st">'lost (%)'</span><span class="sc">:&gt;10}</span><span class="ss">"</span>)</span>
+<span id="cb12-69"><a href="#cb12-69" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, degs <span class="kw">in</span> sequences.items():</span>
+<span id="cb12-70"><a href="#cb12-70" aria-hidden="true" tabindex="-1"></a>    degs <span class="op">=</span> degs.copy()</span>
+<span id="cb12-71"><a href="#cb12-71" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> degs.<span class="bu">sum</span>() <span class="op">%</span> <span class="dv">2</span>:</span>
+<span id="cb12-72"><a href="#cb12-72" aria-hidden="true" tabindex="-1"></a>        degs[<span class="dv">0</span>] <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb12-73"><a href="#cb12-73" aria-hidden="true" tabindex="-1"></a>    edges <span class="op">=</span> stub_matching(degs, rng)</span>
+<span id="cb12-74"><a href="#cb12-74" aria-hidden="true" tabindex="-1"></a>    M <span class="op">=</span> nx.MultiGraph()</span>
+<span id="cb12-75"><a href="#cb12-75" aria-hidden="true" tabindex="-1"></a>    M.add_nodes_from(<span class="bu">range</span>(<span class="bu">len</span>(degs)))</span>
+<span id="cb12-76"><a href="#cb12-76" aria-hidden="true" tabindex="-1"></a>    M.add_edges_from(edges)</span>
+<span id="cb12-77"><a href="#cb12-77" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> [M.degree(i) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(degs))] <span class="op">==</span> <span class="bu">list</span>(degs)   <span class="co"># degrees are exact (a loop counts twice)</span></span>
+<span id="cb12-78"><a href="#cb12-78" aria-hidden="true" tabindex="-1"></a>    loops <span class="op">=</span> nx.number_of_selfloops(M)</span>
+<span id="cb12-79"><a href="#cb12-79" aria-hidden="true" tabindex="-1"></a>    S <span class="op">=</span> nx.Graph(M)</span>
+<span id="cb12-80"><a href="#cb12-80" aria-hidden="true" tabindex="-1"></a>    S.remove_edges_from(nx.selfloop_edges(S))</span>
+<span id="cb12-81"><a href="#cb12-81" aria-hidden="true" tabindex="-1"></a>    parallel <span class="op">=</span> M.number_of_edges() <span class="op">-</span> loops <span class="op">-</span> S.number_of_edges()   <span class="co"># edges merged into an existing one</span></span>
+<span id="cb12-82"><a href="#cb12-82" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>name<span class="sc">:&lt;36}{</span><span class="bu">len</span>(edges)<span class="sc">:&gt;7}{</span>loops<span class="sc">:&gt;7}{</span>parallel<span class="sc">:&gt;10}{</span><span class="dv">100</span> <span class="op">*</span> (loops <span class="op">+</span> parallel) <span class="op">/</span> <span class="bu">len</span>(edges)<span class="sc">:&gt;10.1f}</span><span class="ss">"</span>)</span>
+<span id="cb12-83"><a href="#cb12-83" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-84"><a href="#cb12-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-85"><a href="#cb12-85" aria-hidden="true" tabindex="-1"></a>The degrees are exact. Every degree sequence produces some self-loops and parallel edges, and their share grows with the heterogeneity of the sequence: two hubs $i$ and $j$ are expected to be joined by $k_i k_j / 2E$ edges, which is larger than one when both degrees are large. Removing the loops and merging parallel edges ("erasing") gives a simple graph, but it no longer has the original degrees. For a sparse and homogeneous sequence the loss is small; for the flights sequence it is a sizeable fraction of the edges.</span>
+<span id="cb12-86"><a href="#cb12-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-87"><a href="#cb12-87" aria-hidden="true" tabindex="-1"></a><span class="fu">## Degree-preserving randomisation</span></span>
+<span id="cb12-88"><a href="#cb12-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-89"><a href="#cb12-89" aria-hidden="true" tabindex="-1"></a>To sample **simple** graphs with exactly the degrees of an observed network, start from the network and repeat a **double-edge swap**: pick two edges $(u,v)$ and $(x,y)$ and replace them by $(u,x)$ and $(v,y)$, unless one of these edges already exists. Each swap keeps every degree, so after many swaps the graph is a sample of the simple-graph version of the configuration model. In NetworkX the function is <span class="in">`nx.double_edge_swap(G, nswap, max_tries)`</span>. How many swaps are enough? @fig-swap-convergence follows the clustering of the two data networks as a function of the number of swaps in units of $E$.</span>
+<span id="cb12-90"><a href="#cb12-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-93"><a href="#cb12-93" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb12-94"><a href="#cb12-94" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-swap-convergence</span></span>
+<span id="cb12-95"><a href="#cb12-95" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Average clustering coefficient of the Enron and US flights networks during degree-preserving randomisation, against the number of double-edge swaps in units of the number of edges E. Lines are averages over 3 runs; the starting values (plotted at 0.03) are the clustering of the original networks. The Enron curve flattens after about E swaps. The flights curve drops in the first 0.1E swaps, then recovers slowly and is flat from about 2E swaps on."</span></span>
+<span id="cb12-96"><a href="#cb12-96" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">9</span>, <span class="fl">3.5</span>))</span>
+<span id="cb12-97"><a href="#cb12-97" aria-hidden="true" tabindex="-1"></a>swaps_E <span class="op">=</span> np.array([<span class="dv">0</span>, <span class="fl">0.1</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">5</span>, <span class="dv">10</span>])</span>
+<span id="cb12-98"><a href="#cb12-98" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, (name, G) <span class="kw">in</span> <span class="bu">zip</span>(axes, [(<span class="st">"Enron e-mail"</span>, enron), (<span class="st">"US flights"</span>, flights)]):</span>
+<span id="cb12-99"><a href="#cb12-99" aria-hidden="true" tabindex="-1"></a>    E <span class="op">=</span> G.number_of_edges()</span>
+<span id="cb12-100"><a href="#cb12-100" aria-hidden="true" tabindex="-1"></a>    curves <span class="op">=</span> []</span>
+<span id="cb12-101"><a href="#cb12-101" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> r <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>):</span>
+<span id="cb12-102"><a href="#cb12-102" aria-hidden="true" tabindex="-1"></a>        H <span class="op">=</span> G.copy()</span>
+<span id="cb12-103"><a href="#cb12-103" aria-hidden="true" tabindex="-1"></a>        values, done <span class="op">=</span> [], <span class="dv">0</span></span>
+<span id="cb12-104"><a href="#cb12-104" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> s <span class="kw">in</span> swaps_E:</span>
+<span id="cb12-105"><a href="#cb12-105" aria-hidden="true" tabindex="-1"></a>            todo <span class="op">=</span> <span class="bu">int</span>(s <span class="op">*</span> E) <span class="op">-</span> done</span>
+<span id="cb12-106"><a href="#cb12-106" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> todo <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb12-107"><a href="#cb12-107" aria-hidden="true" tabindex="-1"></a>                nx.double_edge_swap(H, nswap<span class="op">=</span>todo, max_tries<span class="op">=</span><span class="dv">100</span> <span class="op">*</span> E, seed<span class="op">=</span>SEED <span class="op">+</span> r <span class="op">+</span> done)</span>
+<span id="cb12-108"><a href="#cb12-108" aria-hidden="true" tabindex="-1"></a>                done <span class="op">+=</span> todo</span>
+<span id="cb12-109"><a href="#cb12-109" aria-hidden="true" tabindex="-1"></a>            values.append(nx.average_clustering(H))</span>
+<span id="cb12-110"><a href="#cb12-110" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> <span class="bu">sorted</span>(d <span class="cf">for</span> _, d <span class="kw">in</span> H.degree()) <span class="op">==</span> <span class="bu">sorted</span>(d <span class="cf">for</span> _, d <span class="kw">in</span> G.degree())</span>
+<span id="cb12-111"><a href="#cb12-111" aria-hidden="true" tabindex="-1"></a>        curves.append(values)</span>
+<span id="cb12-112"><a href="#cb12-112" aria-hidden="true" tabindex="-1"></a>    ax.semilogx(np.maximum(swaps_E, <span class="fl">0.03</span>), np.mean(curves, axis<span class="op">=</span><span class="dv">0</span>), <span class="st">"o-"</span>)</span>
+<span id="cb12-113"><a href="#cb12-113" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">"swaps / E"</span>)</span>
+<span id="cb12-114"><a href="#cb12-114" aria-hidden="true" tabindex="-1"></a>    ax.set_ylabel(<span class="st">"average clustering C"</span>)</span>
+<span id="cb12-115"><a href="#cb12-115" aria-hidden="true" tabindex="-1"></a>    ax.set_title(name)</span>
+<span id="cb12-116"><a href="#cb12-116" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb12-117"><a href="#cb12-117" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb12-118"><a href="#cb12-118" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"the assertion inside the loop checks that the degree sequence never changes"</span>)</span>
+<span id="cb12-119"><a href="#cb12-119" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-120"><a href="#cb12-120" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-121"><a href="#cb12-121" aria-hidden="true" tabindex="-1"></a>The Enron clustering levels off after about $E$ swaps. The flights clustering is not monotone: the first swaps remove the triangles, and then it recovers slowly as the hubs rearrange, to a plateau from about $2E$ swaps on. We use $10E$ swaps below. (The plot checks only one quantity; other properties may need more swaps.)</span>
+<span id="cb12-122"><a href="#cb12-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-123"><a href="#cb12-123" aria-hidden="true" tabindex="-1"></a><span class="fu">## How much of the clustering is explained by the degrees?</span></span>
+<span id="cb12-124"><a href="#cb12-124" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-125"><a href="#cb12-125" aria-hidden="true" tabindex="-1"></a>A standard question compares the clustering of a real network with that of a random graph. The answer depends on which random graph. The table compares each data network with two nulls: the Erdős-Rényi graph $G(N, E)$, which keeps only the number of nodes and edges, and the degree-preserving randomisation, which also keeps every degree. It shows the average of the local clustering coefficients, the *transitivity* (three times the number of triangles divided by the number of connected triples <span class="co">[</span><span class="ot">@newman2003structure, Eq. (3)</span><span class="co">]</span>, <span class="in">`nx.transitivity`</span>), the average path length and the degree assortativity coefficient $r$ (the correlation between the degrees at the two ends of an edge).</span>
+<span id="cb12-126"><a href="#cb12-126" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-129"><a href="#cb12-129" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb12-130"><a href="#cb12-130" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: tbl-null-models</span></span>
+<span id="cb12-131"><a href="#cb12-131" aria-hidden="true" tabindex="-1"></a><span class="co">#| tbl-cap: "Real networks against two null models, averaged over 5 realisations of each null. C is the average local clustering, T the transitivity, L the average path length in the largest component and r the degree assortativity coefficient. Enron: 143 nodes and 623 edges; US flights: 546 nodes and 2781 edges."</span></span>
+<span id="cb12-132"><a href="#cb12-132" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> profile(G):</span>
+<span id="cb12-133"><a href="#cb12-133" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">dict</span>(C<span class="op">=</span>nx.average_clustering(G), T<span class="op">=</span>nx.transitivity(G), L<span class="op">=</span>avg_path_length(G),</span>
+<span id="cb12-134"><a href="#cb12-134" aria-hidden="true" tabindex="-1"></a>                r<span class="op">=</span>nx.degree_assortativity_coefficient(G))</span>
+<span id="cb12-135"><a href="#cb12-135" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-136"><a href="#cb12-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-137"><a href="#cb12-137" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="st">'network / null'</span><span class="sc">:&lt;28}{</span><span class="st">'C'</span><span class="sc">:&gt;8}{</span><span class="st">'T'</span><span class="sc">:&gt;8}{</span><span class="st">'L'</span><span class="sc">:&gt;7}{</span><span class="st">'r'</span><span class="sc">:&gt;8}</span><span class="ss">"</span>)</span>
+<span id="cb12-138"><a href="#cb12-138" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, G <span class="kw">in</span> [(<span class="st">"Enron"</span>, enron), (<span class="st">"US flights"</span>, flights)]:</span>
+<span id="cb12-139"><a href="#cb12-139" aria-hidden="true" tabindex="-1"></a>    N, E <span class="op">=</span> G.number_of_nodes(), G.number_of_edges()</span>
+<span id="cb12-140"><a href="#cb12-140" aria-hidden="true" tabindex="-1"></a>    er <span class="op">=</span> [profile(nx.gnm_random_graph(N, E, seed<span class="op">=</span>SEED <span class="op">+</span> s)) <span class="cf">for</span> s <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">5</span>)]</span>
+<span id="cb12-141"><a href="#cb12-141" aria-hidden="true" tabindex="-1"></a>    sw <span class="op">=</span> []</span>
+<span id="cb12-142"><a href="#cb12-142" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> s <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">5</span>):</span>
+<span id="cb12-143"><a href="#cb12-143" aria-hidden="true" tabindex="-1"></a>        H <span class="op">=</span> G.copy()</span>
+<span id="cb12-144"><a href="#cb12-144" aria-hidden="true" tabindex="-1"></a>        nx.double_edge_swap(H, nswap<span class="op">=</span><span class="dv">10</span> <span class="op">*</span> E, max_tries<span class="op">=</span><span class="dv">100</span> <span class="op">*</span> E, seed<span class="op">=</span>SEED <span class="op">+</span> s)</span>
+<span id="cb12-145"><a href="#cb12-145" aria-hidden="true" tabindex="-1"></a>        sw.append(profile(H))</span>
+<span id="cb12-146"><a href="#cb12-146" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> label, rows <span class="kw">in</span> [(<span class="st">"real"</span>, [profile(G)]), (<span class="st">"G(N, E)"</span>, er), (<span class="st">"degree-preserving"</span>, sw)]:</span>
+<span id="cb12-147"><a href="#cb12-147" aria-hidden="true" tabindex="-1"></a>        m <span class="op">=</span> {key: np.mean([row[key] <span class="cf">for</span> row <span class="kw">in</span> rows]) <span class="cf">for</span> key <span class="kw">in</span> rows[<span class="dv">0</span>]}</span>
+<span id="cb12-148"><a href="#cb12-148" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>name <span class="op">+</span> <span class="st">' '</span> <span class="op">+</span> label<span class="sc">:&lt;28}{</span>m[<span class="st">'C'</span>]<span class="sc">:&gt;8.3f}{</span>m[<span class="st">'T'</span>]<span class="sc">:&gt;8.3f}{</span>m[<span class="st">'L'</span>]<span class="sc">:&gt;7.2f}{</span>m[<span class="st">'r'</span>]<span class="sc">:&gt;8.2f}</span><span class="ss">"</span>)</span>
+<span id="cb12-149"><a href="#cb12-149" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-150"><a href="#cb12-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-151"><a href="#cb12-151" aria-hidden="true" tabindex="-1"></a>Two lessons follow.</span>
+<span id="cb12-152"><a href="#cb12-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-153"><a href="#cb12-153" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**The conclusion depends on the null.** The Enron network has $C = 0.43$ against $0.06$ for $G(N,E)$ and $0.11$ for the degree-preserving null: the clustering is high even after the degrees are taken into account, which is consistent with a triadic-closure mechanism. The flights network has $C = 0.49$ against $0.02$ for $G(N,E)$, but $0.43$ for the degree-preserving null: most of the local clustering comes from the degree sequence. The airports of degree 2 or 3 have a mean local clustering of 0.79 in the data; when such a small node is attached to two large hubs, the hubs are very likely to be linked to each other, even in a random graph with the same degrees. The transitivity tells a more cautious story, with a smaller excess over the null.</span>
+<span id="cb12-154"><a href="#cb12-154" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Simple graphs with hubs are disassortative.** The degree-preserving null of the flights network has $r \approx -0.4$, close to the real value, because hubs cannot have many parallel edges and so are joined mostly to small nodes. The assortativity of the flights network is largely explained by the degree sequence as well.</span>
+<span id="cb12-155"><a href="#cb12-155" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-156"><a href="#cb12-156" aria-hidden="true" tabindex="-1"></a><span class="fu">## A formula for the clustering of the configuration model</span></span>
+<span id="cb12-157"><a href="#cb12-157" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-158"><a href="#cb12-158" aria-hidden="true" tabindex="-1"></a>For the configuration model, the transitivity is</span>
+<span id="cb12-159"><a href="#cb12-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-160"><a href="#cb12-160" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb12-161"><a href="#cb12-161" aria-hidden="true" tabindex="-1"></a>T = \frac{1}{N}\,\frac{\big(\langle k^2 \rangle - \langle k \rangle\big)^2}{\langle k \rangle^3},</span>
+<span id="cb12-162"><a href="#cb12-162" aria-hidden="true" tabindex="-1"></a>$$ {#eq-cm-clustering}</span>
+<span id="cb12-163"><a href="#cb12-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-164"><a href="#cb12-164" aria-hidden="true" tabindex="-1"></a>the value $\langle k \rangle / N$ of the Poisson random graph times a factor that grows with the width of the degree distribution <span class="co">[</span><span class="ot">@newman2003structure, Eq. (31)</span><span class="co">]</span>. It goes to zero as $1/N$ for a fixed distribution, unless $\langle k^2 \rangle$ grows with $N$. The next chunk tests the formula on random power-law sequences ($p_k \propto k^{-\gamma}$, minimum degree $k_{\min}$, maximum degree $\sqrt{3N}$) and on the two data networks.</span>
+<span id="cb12-165"><a href="#cb12-165" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-168"><a href="#cb12-168" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb12-169"><a href="#cb12-169" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> power_law_sequence(N, gamma, kmin, kmax, rng):</span>
+<span id="cb12-170"><a href="#cb12-170" aria-hidden="true" tabindex="-1"></a>    ks <span class="op">=</span> np.arange(kmin, kmax <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb12-171"><a href="#cb12-171" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> ks <span class="op">**</span> (<span class="op">-</span>gamma)</span>
+<span id="cb12-172"><a href="#cb12-172" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> rng.choice(ks, N, p<span class="op">=</span>p <span class="op">/</span> p.<span class="bu">sum</span>())</span>
+<span id="cb12-173"><a href="#cb12-173" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> s.<span class="bu">sum</span>() <span class="op">%</span> <span class="dv">2</span>:</span>
+<span id="cb12-174"><a href="#cb12-174" aria-hidden="true" tabindex="-1"></a>        s[<span class="dv">0</span>] <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb12-175"><a href="#cb12-175" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> s</span>
+<span id="cb12-176"><a href="#cb12-176" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-177"><a href="#cb12-177" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-178"><a href="#cb12-178" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> eq_cm(degs):</span>
+<span id="cb12-179"><a href="#cb12-179" aria-hidden="true" tabindex="-1"></a>    k <span class="op">=</span> np.asarray(degs, dtype<span class="op">=</span><span class="bu">float</span>)</span>
+<span id="cb12-180"><a href="#cb12-180" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ((k<span class="op">**</span><span class="dv">2</span>).mean() <span class="op">-</span> k.mean()) <span class="op">**</span> <span class="dv">2</span> <span class="op">/</span> (<span class="bu">len</span>(k) <span class="op">*</span> k.mean() <span class="op">**</span> <span class="dv">3</span>)</span>
+<span id="cb12-181"><a href="#cb12-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-182"><a href="#cb12-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-183"><a href="#cb12-183" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(SEED)</span>
+<span id="cb12-184"><a href="#cb12-184" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="st">'sequence'</span><span class="sc">:&lt;26}{</span><span class="st">'N'</span><span class="sc">:&gt;7}{</span><span class="st">'k_max'</span><span class="sc">:&gt;7}{</span><span class="st">'formula'</span><span class="sc">:&gt;9}{</span><span class="st">'measured'</span><span class="sc">:&gt;10}</span><span class="ss">"</span>)</span>
+<span id="cb12-185"><a href="#cb12-185" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> gamma, kmin <span class="kw">in</span> [(<span class="fl">3.0</span>, <span class="dv">3</span>), (<span class="fl">2.5</span>, <span class="dv">2</span>)]:</span>
+<span id="cb12-186"><a href="#cb12-186" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> N <span class="kw">in</span> (<span class="dv">2000</span>, <span class="dv">8000</span>, <span class="dv">32000</span>):</span>
+<span id="cb12-187"><a href="#cb12-187" aria-hidden="true" tabindex="-1"></a>        s <span class="op">=</span> power_law_sequence(N, gamma, kmin, <span class="bu">int</span>(np.sqrt(<span class="dv">3</span> <span class="op">*</span> N)), rng)</span>
+<span id="cb12-188"><a href="#cb12-188" aria-hidden="true" tabindex="-1"></a>        T <span class="op">=</span> []</span>
+<span id="cb12-189"><a href="#cb12-189" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> r <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>):</span>
+<span id="cb12-190"><a href="#cb12-190" aria-hidden="true" tabindex="-1"></a>            G <span class="op">=</span> nx.Graph(nx.configuration_model(<span class="bu">list</span>(s), seed<span class="op">=</span>SEED <span class="op">+</span> r))</span>
+<span id="cb12-191"><a href="#cb12-191" aria-hidden="true" tabindex="-1"></a>            G.remove_edges_from(nx.selfloop_edges(G))</span>
+<span id="cb12-192"><a href="#cb12-192" aria-hidden="true" tabindex="-1"></a>            T.append(nx.transitivity(G))</span>
+<span id="cb12-193"><a href="#cb12-193" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="ss">f'gamma = </span><span class="sc">{</span>gamma<span class="sc">}</span><span class="ss">, kmin = </span><span class="sc">{</span>kmin<span class="sc">}</span><span class="ss">'</span><span class="sc">:&lt;26}{</span>N<span class="sc">:&gt;7}{</span>s<span class="sc">.</span><span class="bu">max</span>()<span class="sc">:&gt;7}{</span>eq_cm(s)<span class="sc">:&gt;9.4f}{</span>np<span class="sc">.</span>mean(T)<span class="sc">:&gt;10.4f}</span><span class="ss">"</span>)</span>
+<span id="cb12-194"><a href="#cb12-194" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, G <span class="kw">in</span> [(<span class="st">"Enron e-mail"</span>, enron), (<span class="st">"US flights"</span>, flights)]:</span>
+<span id="cb12-195"><a href="#cb12-195" aria-hidden="true" tabindex="-1"></a>    degs <span class="op">=</span> [d <span class="cf">for</span> _, d <span class="kw">in</span> G.degree()]</span>
+<span id="cb12-196"><a href="#cb12-196" aria-hidden="true" tabindex="-1"></a>    H <span class="op">=</span> G.copy()</span>
+<span id="cb12-197"><a href="#cb12-197" aria-hidden="true" tabindex="-1"></a>    nx.double_edge_swap(H, nswap<span class="op">=</span><span class="dv">10</span> <span class="op">*</span> G.number_of_edges(), max_tries<span class="op">=</span><span class="dv">10</span><span class="op">**</span><span class="dv">7</span>, seed<span class="op">=</span>SEED)</span>
+<span id="cb12-198"><a href="#cb12-198" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>name<span class="sc">:&lt;26}{</span><span class="bu">len</span>(G)<span class="sc">:&gt;7}{</span><span class="bu">max</span>(degs)<span class="sc">:&gt;7}{</span>eq_cm(degs)<span class="sc">:&gt;9.4f}{</span>nx<span class="sc">.</span>transitivity(H)<span class="sc">:&gt;10.4f}</span><span class="ss">"</span></span>
+<span id="cb12-199"><a href="#cb12-199" aria-hidden="true" tabindex="-1"></a>          <span class="ss">f"   (sqrt(2E) = </span><span class="sc">{</span>np<span class="sc">.</span>sqrt(<span class="dv">2</span> <span class="op">*</span> G.number_of_edges())<span class="sc">:.0f}</span><span class="ss">)"</span>)</span>
+<span id="cb12-200"><a href="#cb12-200" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-201"><a href="#cb12-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-202"><a href="#cb12-202" aria-hidden="true" tabindex="-1"></a>For the synthetic sequences the formula is accurate to within about 20%. For the Enron network it agrees closely with the degree-preserving null. For the flights network it overestimates by a factor of more than two. In that network the largest degree (153) is twice $\sqrt{2E} \approx 75$: hubs of that size would need parallel edges, which a simple graph does not allow, so the simple null has fewer triangles around them than the multigraph formula assumes. The formula is a result for $N \to \infty$ with bounded $k_{\max}/\sqrt{N}$; use the numerical null whenever the largest degrees are comparable to $\sqrt{2E}$.</span>
+<span id="cb12-203"><a href="#cb12-203" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-204"><a href="#cb12-204" aria-hidden="true" tabindex="-1"></a><span class="fu">## Does clustering matter for spreading?</span></span>
+<span id="cb12-205"><a href="#cb12-205" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-206"><a href="#cb12-206" aria-hidden="true" tabindex="-1"></a>The heterogeneous mean-field threshold of <span class="co">[</span><span class="ot">Epidemic Threshold</span><span class="co">](epidemic-threshold.qmd)</span> uses only $p_k$. The configuration model lets us test the effect of everything else. Take a clustered scale-free graph from <span class="co">[</span><span class="ot">Triadic Closure</span><span class="co">](triadic-closure.qmd)</span> ($N = 3000$, $m = 3$, $p_t = 0.9$), randomise it with $10E$ double-edge swaps, and run the discrete-time SIR model of <span class="co">[</span><span class="ot">SIR on Networks</span><span class="co">](sir-network.qmd)</span> on both. The swapped graph has the same degrees and almost no triangles; it also loses any degree correlations of the original, so the comparison measures the effect of all the structure beyond the degrees.</span>
+<span id="cb12-207"><a href="#cb12-207" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-210"><a href="#cb12-210" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb12-211"><a href="#cb12-211" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-sir-clustering</span></span>
+<span id="cb12-212"><a href="#cb12-212" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Mean final epidemic size (fraction of nodes ever infected) of the discrete-time SIR model with recovery probability 0.2 and 5 initial infected nodes, on a clustered Holme-Kim graph (N = 3000, m = 3, p_t = 0.9, C = 0.52) and on its degree-preserving randomisation (C = 0.01). 400 runs per point; error bars are one standard error."</span></span>
+<span id="cb12-213"><a href="#cb12-213" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.networks_spreading <span class="im">import</span> run_sir_fast</span>
+<span id="cb12-214"><a href="#cb12-214" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-215"><a href="#cb12-215" aria-hidden="true" tabindex="-1"></a>G_hk <span class="op">=</span> nx.powerlaw_cluster_graph(<span class="dv">3000</span>, <span class="dv">3</span>, <span class="fl">0.9</span>, seed<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb12-216"><a href="#cb12-216" aria-hidden="true" tabindex="-1"></a>G_sw <span class="op">=</span> G_hk.copy()</span>
+<span id="cb12-217"><a href="#cb12-217" aria-hidden="true" tabindex="-1"></a>nx.double_edge_swap(G_sw, nswap<span class="op">=</span><span class="dv">10</span> <span class="op">*</span> G_sw.number_of_edges(), max_tries<span class="op">=</span><span class="dv">10</span><span class="op">**</span><span class="dv">7</span>, seed<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb12-218"><a href="#cb12-218" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"C: clustered = </span><span class="sc">{</span>nx<span class="sc">.</span>average_clustering(G_hk)<span class="sc">:.2f}</span><span class="ss">, randomised = </span><span class="sc">{</span>nx<span class="sc">.</span>average_clustering(G_sw)<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb12-219"><a href="#cb12-219" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-220"><a href="#cb12-220" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">5</span>)</span>
+<span id="cb12-221"><a href="#cb12-221" aria-hidden="true" tabindex="-1"></a>betas <span class="op">=</span> [<span class="fl">0.02</span>, <span class="fl">0.03</span>, <span class="fl">0.04</span>]</span>
+<span id="cb12-222"><a href="#cb12-222" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="fl">5.5</span>, <span class="fl">3.8</span>))</span>
+<span id="cb12-223"><a href="#cb12-223" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> G, label <span class="kw">in</span> [(G_hk, <span class="st">"clustered (Holme-Kim)"</span>), (G_sw, <span class="st">"degree-preserving randomisation"</span>)]:</span>
+<span id="cb12-224"><a href="#cb12-224" aria-hidden="true" tabindex="-1"></a>    means, errs <span class="op">=</span> [], []</span>
+<span id="cb12-225"><a href="#cb12-225" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> beta <span class="kw">in</span> betas:</span>
+<span id="cb12-226"><a href="#cb12-226" aria-hidden="true" tabindex="-1"></a>        sizes <span class="op">=</span> np.array([run_sir_fast(G, beta, <span class="fl">0.2</span>, initial_infected<span class="op">=</span><span class="dv">5</span>, rng<span class="op">=</span>rng) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">400</span>)])</span>
+<span id="cb12-227"><a href="#cb12-227" aria-hidden="true" tabindex="-1"></a>        means.append(sizes.mean())</span>
+<span id="cb12-228"><a href="#cb12-228" aria-hidden="true" tabindex="-1"></a>        errs.append(sizes.std() <span class="op">/</span> np.sqrt(<span class="bu">len</span>(sizes)))</span>
+<span id="cb12-229"><a href="#cb12-229" aria-hidden="true" tabindex="-1"></a>    ax.errorbar(betas, means, yerr<span class="op">=</span>errs, fmt<span class="op">=</span><span class="st">"o-"</span>, capsize<span class="op">=</span><span class="dv">3</span>, label<span class="op">=</span>label)</span>
+<span id="cb12-230"><a href="#cb12-230" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(label, np.<span class="bu">round</span>(means, <span class="dv">3</span>))</span>
+<span id="cb12-231"><a href="#cb12-231" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="vs">r"infection probability </span><span class="dv">$\b</span><span class="vs">eta</span><span class="dv">$</span><span class="vs">"</span>)</span>
+<span id="cb12-232"><a href="#cb12-232" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"final epidemic size"</span>)</span>
+<span id="cb12-233"><a href="#cb12-233" aria-hidden="true" tabindex="-1"></a>ax.legend()</span>
+<span id="cb12-234"><a href="#cb12-234" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb12-235"><a href="#cb12-235" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb12-236"><a href="#cb12-236" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-237"><a href="#cb12-237" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-238"><a href="#cb12-238" aria-hidden="true" tabindex="-1"></a>At $\beta = 0.02$ and $0.03$, close to the threshold, the clustered network has a final size that is 0.4 to 0.5 times that of its degree-preserving randomisation; at $\beta = 0.04$ the ratio is 0.75. Clustering wastes infection attempts: when two neighbours of an infected node are themselves neighbours, one of them may already have been infected through the other. The effect shrinks as the infection probability grows. The mean-field formula for $\lambda_c$ has no term for it <span class="co">[</span><span class="ot">@pastor2015epidemic</span><span class="co">]</span>.</span>
+<span id="cb12-239"><a href="#cb12-239" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-240"><a href="#cb12-240" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb12-241"><a href="#cb12-241" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercise</span></span>
+<span id="cb12-242"><a href="#cb12-242" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-243"><a href="#cb12-243" aria-hidden="true" tabindex="-1"></a>(a) Using the table of this page, compute for each data network the ratio between the real transitivity and the transitivity of the degree-preserving null. (b) A student states that "the flights network is clustered like a social network, so triadic closure must be at work". Evaluate the statement with the two nulls.</span>
+<span id="cb12-244"><a href="#cb12-244" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb12-245"><a href="#cb12-245" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-246"><a href="#cb12-246" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb12-247"><a href="#cb12-247" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solution</span></span>
+<span id="cb12-248"><a href="#cb12-248" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-249"><a href="#cb12-249" aria-hidden="true" tabindex="-1"></a>(a) Enron: $0.359/0.114 \approx 3.1$. Flights: $0.313/0.229 \approx 1.4$. (b) Against $G(N,E)$ the average clustering of the flights network is 27 times larger, which looks like strong evidence. Against the degree-preserving null the local clustering is only 1.15 times larger ($0.49$ against $0.43$) and the transitivity 1.4 times larger. Most of the apparent clustering is a consequence of the hubs, so the evidence for a triadic-closure mechanism is weak; the Enron network, with a factor of 3 in transitivity, is much stronger evidence. The right null for a statement about a mechanism is the one that keeps everything the mechanism is not supposed to explain.</span>
+<span id="cb12-250"><a href="#cb12-250" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb12-251"><a href="#cb12-251" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-252"><a href="#cb12-252" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb12-253"><a href="#cb12-253" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercise</span></span>
+<span id="cb12-254"><a href="#cb12-254" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-255"><a href="#cb12-255" aria-hidden="true" tabindex="-1"></a>Use <span class="in">`nx.configuration_model`</span> on the degree sequence of the flights network and convert the result to a simple graph with <span class="in">`nx.Graph(M)`</span> and <span class="in">`M.remove_edges_from(nx.selfloop_edges(M))`</span>. How many edges are lost? How do the clustering and the largest degree of the simple graph compare with the original?</span>
+<span id="cb12-256"><a href="#cb12-256" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb12-257"><a href="#cb12-257" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-258"><a href="#cb12-258" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb12-259"><a href="#cb12-259" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solution</span></span>
+<span id="cb12-260"><a href="#cb12-260" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-261"><a href="#cb12-261" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb12-262"><a href="#cb12-262" aria-hidden="true" tabindex="-1"></a>degs <span class="op">=</span> [d <span class="cf">for</span> _, d <span class="kw">in</span> flights.degree()]</span>
+<span id="cb12-263"><a href="#cb12-263" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> nx.configuration_model(degs, seed<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb12-264"><a href="#cb12-264" aria-hidden="true" tabindex="-1"></a>S <span class="op">=</span> nx.Graph(M)</span>
+<span id="cb12-265"><a href="#cb12-265" aria-hidden="true" tabindex="-1"></a>S.remove_edges_from(nx.selfloop_edges(S))</span>
+<span id="cb12-266"><a href="#cb12-266" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(flights.number_of_edges(), S.number_of_edges(), <span class="bu">max</span>(d <span class="cf">for</span> _, d <span class="kw">in</span> S.degree()))</span>
+<span id="cb12-267"><a href="#cb12-267" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-268"><a href="#cb12-268" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-269"><a href="#cb12-269" aria-hidden="true" tabindex="-1"></a>With <span class="in">`seed=1`</span> the simple graph keeps 2293 of the 2781 edges (82%), because self-loops and merged parallel edges are lost, its largest degree is 95 instead of 153, and its average clustering is 0.19 against 0.49 for the original. This is why the degree-preserving swap is the better null for heterogeneous sequences.</span>
+<span id="cb12-270"><a href="#cb12-270" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb12-271"><a href="#cb12-271" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-272"><a href="#cb12-272" aria-hidden="true" tabindex="-1"></a><span class="fu">## What's Next?</span></span>
+<span id="cb12-273"><a href="#cb12-273" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-274"><a href="#cb12-274" aria-hidden="true" tabindex="-1"></a>The configuration model is the setting in which the Molloy-Reed criterion and the heterogeneous mean-field threshold hold exactly. <span class="co">[</span><span class="ot">SIR and Percolation</span><span class="co">](sir-percolation.qmd)</span> uses it to connect epidemic outbreaks to the robustness results of <span class="co">[</span><span class="ot">Robustness and Percolation</span><span class="co">](robustness-percolation.qmd)</span>.</span>
+</code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Mathematical Modeling · David Gómez-Ullate and Daniel Precioso · IE University</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/networks/configuration-model.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/daniprec/BAM-Applied-Math-Lab">
+      <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

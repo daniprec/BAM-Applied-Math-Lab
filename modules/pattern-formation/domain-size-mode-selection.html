@@ -1,0 +1,1865 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.11.9">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Domain Size and Mode Selection – Mathematical Modeling</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../modules/pattern-formation/gierer-meinhardt-1d-model.html" rel="next">
+<link href="../../modules/pattern-formation/turing-original-analysis.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/scrollable-regions/scrollable-regions.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-e2b0d26dc907153b9b7d894772c108f8.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-12151da8aa05cf07c534364deb97e4e4.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-e2b0d26dc907153b9b7d894772c108f8.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-8bf4d1fb4905e12d728b14f6d437560a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-b420c83aa8650c36abcd9e9e7016d1f8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-8bf4d1fb4905e12d728b14f6d437560a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&amp;family=PT+Serif:ital,wght@0,400;0,700;1,400&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../theme/ie.css">
+<link rel="stylesheet" href="../../assets/styles.css">
+<link rel="stylesheet" href="../../assets/viz/viz.css">
+</head>
+
+<body class="nav-sidebar docked quarto-light"><a id="quarto-skip-link" class="visually-hidden-focusable" href="#quarto-document-content">Skip to main content</a><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          toggle.setAttribute("aria-checked", alternate ? "true" : "false");
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455).
+    // Not run on load: stylesheets are set before first paint there, and
+    // scrolling would undo the scroll to a URL fragment (#14973).
+    // The one pixel nudge keeps the reader where they were.
+    const refreshSafariScrollbar = () => {
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        const scrollY = window.scrollY;
+        window.scrollTo(0, scrollY > 0 ? scrollY - 1 : 1);
+        setTimeout(() => {
+          window.scrollTo(0, scrollY);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      refreshSafariScrollbar();
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      refreshSafariScrollbar();
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" aria-label="Toolbar">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="Breadcrumbs"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../modules/pattern-formation/index.html">Module 4: Space and Pattern Formation</a></li><li class="breadcrumb-item"><a href="../../modules/pattern-formation/domain-size-mode-selection.html">Domain Size and Mode Selection</a></li></ol></nav>
+        <a class="flex-grow-1" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto" aria-label="Site">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">Mathematical Modeling</a> 
+        <div class="sidebar-tools-main">
+  <button type="button" role="switch" aria-checked="false" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode" aria-label="Toggle dark mode"><i class="bi"></i></button>
+</div>
+    </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <button type="button" class="sidebar-item-text sidebar-item-toggle sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-controls="quarto-sidebar-section-1" aria-expanded="false">
+ <span class="menu-text" id="quarto-sidebar-section-1-label">Getting Started</span><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+      </div>
+      <ul id="quarto-sidebar-section-1" aria-labelledby="quarto-sidebar-section-1-label" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../syllabus.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Syllabus</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/low-dimensional-dynamics/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text" id="quarto-sidebar-section-2-label">Module 1: Low-Dimensional Dynamics</span></a>
+            <button type="button" class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-controls="quarto-sidebar-section-2" aria-expanded="false" aria-label="Toggle section: Module 1: Low-Dimensional Dynamics">
+              <i class="bi bi-chevron-right ms-2" aria-hidden="true"></i>
+            </button> 
+      </div>
+      <ul id="quarto-sidebar-section-2" aria-labelledby="quarto-sidebar-section-2-label" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/what-is-a-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">What Is a Mathematical Model?</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/modeling-workflow.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Modelling Workflow</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/budworm-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Spruce Budworm Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/michaelis-menten.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Michaelis-Menten Kinetics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/compartmental-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Compartmental Models: SIR and SIS</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/sir-extensions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SIR Extensions: Vaccination and Herd Immunity</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/cdima-phase-plane.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">CDIMA: Phase Plane</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/van-der-pol.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Van der Pol Oscillator</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/fitzhugh-nagumo.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FitzHugh-Nagumo Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/low-dimensional-dynamics/lorenz.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Lorenz Attractor</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/collective-behaviour/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text" id="quarto-sidebar-section-3-label">Module 2: Synchronization and Collective Behaviour</span></a>
+            <button type="button" class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-controls="quarto-sidebar-section-3" aria-expanded="false" aria-label="Toggle section: Module 2: Synchronization and Collective Behaviour">
+              <i class="bi bi-chevron-right ms-2" aria-hidden="true"></i>
+            </button> 
+      </div>
+      <ul id="quarto-sidebar-section-3" aria-labelledby="quarto-sidebar-section-3-label" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/synchronization-examples.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Synchronization in Nature</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/kuramoto-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Kuramoto Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/order-parameter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Order Parameter</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/millennium-bridge.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Millennium Bridge</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/vicsek-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Vicsek Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/couzin-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Couzin Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/cucker-smale.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Flocking Without Noise: Cucker-Smale</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/confusion-effect.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Confusion Effect</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/crowd-exit.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Faster Is Slower: Crowds at a Door</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/collective-behaviour/practice-collective-motion.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Practice: Collective Motion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/randomness/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text" id="quarto-sidebar-section-4-label">Module 3: Modelling with Randomness</span></a>
+            <button type="button" class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-controls="quarto-sidebar-section-4" aria-expanded="false" aria-label="Toggle section: Module 3: Modelling with Randomness">
+              <i class="bi bi-chevron-right ms-2" aria-hidden="true"></i>
+            </button> 
+      </div>
+      <ul id="quarto-sidebar-section-4" aria-labelledby="quarto-sidebar-section-4-label" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/random-walk.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Random Walk</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/diffusion-equation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Diffusion Equation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/central-limit-theorem.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Central Limit Theorem</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/power-laws.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Power Laws</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/power-law-fitting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Fitting Power Laws</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/levy-foraging.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Lévy Foraging</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/efficient-markets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Returns and Efficient Markets</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/randomness/returns-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Loading Prices and Computing Returns</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/pattern-formation/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text" id="quarto-sidebar-section-5-label">Module 4: Space and Pattern Formation</span></a>
+            <button type="button" class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-controls="quarto-sidebar-section-5" aria-expanded="true" aria-label="Toggle section: Module 4: Space and Pattern Formation">
+              <i class="bi bi-chevron-right ms-2" aria-hidden="true"></i>
+            </button> 
+      </div>
+      <ul id="quarto-sidebar-section-5" aria-labelledby="quarto-sidebar-section-5-label" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/reaction-diffusion.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reaction-Diffusion Equations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/turing-conditions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Turing Conditions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/turing-original-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Turing’s Original Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/domain-size-mode-selection.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Domain Size and Mode Selection</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/gierer-meinhardt-1d-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gierer-Meinhardt Model in 1D</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/gierer-meinhardt-2d-solver.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gierer-Meinhardt Solver in 2D</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/gray-scott.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gray-Scott Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/reaction-diffusion-evidence.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Evidence for Reaction-Diffusion</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/pattern-formation/assignment-patterns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Assignment: Pattern Formation</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/networks/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text" id="quarto-sidebar-section-6-label">Module 5: Complex Networks</span></a>
+            <button type="button" class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-controls="quarto-sidebar-section-6" aria-expanded="false" aria-label="Toggle section: Module 5: Complex Networks">
+              <i class="bi bi-chevron-right ms-2" aria-hidden="true"></i>
+            </button> 
+      </div>
+      <ul id="quarto-sidebar-section-6" aria-labelledby="quarto-sidebar-section-6-label" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/network-concepts.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Network Concepts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/networkx-basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">NetworkX Basics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/iberian-blackout.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Iberian Blackout</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/erdos-renyi.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Erdos-Renyi Random Graphs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/sis-network-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SIS Model on Networks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/sir-network.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SIR on Networks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/pagerank.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">PageRank</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/model-scaling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model Scaling Laws</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/triadic-closure.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Triadic Closure</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/configuration-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Configuration Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/sir-percolation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SIR and Percolation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/networks/metapopulation-epidemics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Metapopulation Epidemics</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../modules/discrete-models/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text" id="quarto-sidebar-section-7-label">Module 6: Explorables and Discrete Models</span></a>
+            <button type="button" class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-controls="quarto-sidebar-section-7" aria-expanded="false" aria-label="Toggle section: Module 6: Explorables and Discrete Models">
+              <i class="bi bi-chevron-right ms-2" aria-hidden="true"></i>
+            </button> 
+      </div>
+      <ul id="quarto-sidebar-section-7" aria-labelledby="quarto-sidebar-section-7-label" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/explorables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Explorables Presentations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/cellular-automata.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cellular Automata</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/cellular-1d.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1D Cellular Automata</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/game-of-life.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Game of Life</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/nagel-schreckenberg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Nagel-Schreckenberg Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/nagel-paper.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Nagel and Schreckenberg (1992)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/traffic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Traffic Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../modules/discrete-models/traffic-continuum.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Traffic as a Continuum</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../slide-library.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Slide Library</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" aria-labelledby="toc-title" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#what-the-source-says" id="toc-what-the-source-says" class="nav-link active" data-scroll-target="#what-the-source-says">What the Source Says</a></li>
+  <li><a href="#the-bifurcation-values-in-closed-form" id="toc-the-bifurcation-values-in-closed-form" class="nav-link" data-scroll-target="#the-bifurcation-values-in-closed-form">The Bifurcation Values in Closed Form</a></li>
+  <li><a href="#prediction-against-simulation" id="toc-prediction-against-simulation" class="nav-link" data-scroll-target="#prediction-against-simulation">Prediction Against Simulation</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/pattern-formation/domain-size-mode-selection.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content" tabindex="-1">
+
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="Breadcrumbs"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../modules/pattern-formation/index.html">Module 4: Space and Pattern Formation</a></li><li class="breadcrumb-item"><a href="../../modules/pattern-formation/domain-size-mode-selection.html">Domain Size and Mode Selection</a></li></ol></nav>
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">Domain Size and Mode Selection</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+<p class="subtitle lead">Module 4: Space and Pattern Formation</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Reading
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>Compulsory:</strong> <span class="citation" data-cites="britton2003essential">Britton (<a href="#ref-britton2003essential" role="doc-biblioref">2003</a>)</span>, Chapter 7, Sections 7.2 and 7.3 (pp.&nbsp;206 to 214): spatial modes, temporal eigenvalues, the dispersion relation, and the domain size as bifurcation parameter.</li>
+<li><strong>Recommended:</strong> <span class="citation" data-cites="turing1952chemical">Turing (<a href="#ref-turing1952chemical" role="doc-biblioref">1952</a>)</span>, Sections 8 and 9: the number of lobes on a ring is obtained by dividing the circumference by the “chemical wave-length”.</li>
+<li><strong>Technical background:</strong> <span class="citation" data-cites="britton2003essential">Britton (<a href="#ref-britton2003essential" role="doc-biblioref">2003</a>)</span>, Appendix C, Sections C.3 to C.5 (eigenvalues of the Laplacian and separation of variables).</li>
+</ul>
+</div>
+</div>
+<p>The <a href="../../modules/pattern-formation/dispersion-relation.html">Dispersion Relation</a> page fixes <span class="math inline">\(\gamma\)</span> and asks which Neumann modes fall into the unstable band. Britton turns the question around: the Turing conditions say that a band of unstable wavenumbers exists, but a finite domain only offers the discrete wavenumbers <span class="math inline">\(k_n\)</span>. Whether a given mode is unstable then depends on the size of the domain. <span class="citation" data-cites="britton2003essential">Britton (<a href="#ref-britton2003essential" role="doc-biblioref">2003, sec. 7.1</a>)</span> stresses that this is the relevant bifurcation parameter in development, because the embryo grows while the chemistry stays the same.</p>
+<section id="what-the-source-says" class="level2">
+<h2 class="anchored" data-anchor-id="what-the-source-says">What the Source Says</h2>
+<ul>
+<li>With the scaled equation <span class="math inline">\(u_t = \gamma^2 f(u) + D\nabla^2 u\)</span> on a standard domain, increasing the scale factor <span class="math inline">\(\gamma\)</span> is “equivalent to increasing domain size” <span class="citation" data-cites="britton2003essential">(<a href="#ref-britton2003essential" role="doc-biblioref">Britton 2003, sec. 7.2</a>)</span>. (Britton’s <span class="math inline">\(\gamma^2\)</span> is the <span class="math inline">\(\gamma\)</span> of these notes, see <a href="../../modules/pattern-formation/reaction-diffusion.html">Reaction-Diffusion Equations</a>.)</li>
+<li>Define <span class="math inline">\(\rho(\lambda) = \max_i \operatorname{Re}\sigma_i(\lambda)\)</span>, where <span class="math inline">\(\lambda = k^2\)</span> is a spatial eigenvalue. This function is what Britton calls the dispersion relation <span class="citation" data-cites="britton2003essential">(<a href="#ref-britton2003essential" role="doc-biblioref">Britton 2003, sec. 7.3</a>)</span>. The steady state needs <span class="math inline">\(\rho(0) &lt; 0\)</span>.</li>
+<li>On an infinite domain every <span class="math inline">\(\lambda \ge 0\)</span> is allowed, so instability occurs as soon as some <span class="math inline">\(\lambda\)</span> has <span class="math inline">\(\rho(\lambda) &gt; 0\)</span>. On a finite domain the potential instability is realised only if the interval of unstable <span class="math inline">\(\lambda\)</span> contains an eigenvalue <span class="math inline">\(\lambda_n\)</span> (his Figure 7.3).</li>
+<li>The <span class="math inline">\(n\)</span>th mode loses stability at a parameter value where <span class="math inline">\(a_2(\lambda_n) = 0\)</span>, with <span class="math inline">\(a_2\)</span> the determinant of the mode matrix. Britton calls this the mode-<span class="math inline">\(n\)</span> Turing bifurcation <span class="citation" data-cites="britton2003essential">(<a href="#ref-britton2003essential" role="doc-biblioref">Britton 2003</a>, Equations 7.4.31 and 7.4.32)</span>.</li>
+<li>Close to such a bifurcation the linear theory predicts growth of a multiple of the mode <span class="math inline">\(F_n(x)\)</span>, and, under conditions he does not derive, the nonlinear solution tends to a steady state close to that multiple <span class="citation" data-cites="britton2003essential">(<a href="#ref-britton2003essential" role="doc-biblioref">Britton 2003</a>, Example 7.1 and p.&nbsp;214)</span>. If several modes are unstable, the one with the largest growth rate dominates while the linear approximation holds <span class="citation" data-cites="britton2003essential">(<a href="#ref-britton2003essential" role="doc-biblioref">Britton 2003, sec. 7.2</a>)</span>.</li>
+</ul>
+</section>
+<section id="the-bifurcation-values-in-closed-form" class="level2">
+<h2 class="anchored" data-anchor-id="the-bifurcation-values-in-closed-form">The Bifurcation Values in Closed Form</h2>
+<p>Use the notation of the <a href="../../modules/pattern-formation/turing-conditions.html">Turing Conditions</a> page, with <span class="math inline">\(s = d f_u + g_v\)</span> and <span class="math inline">\(\Delta = s^2 - 4d \det J\)</span>. The mode matrix of a mode with <span class="math inline">\(k^2 = \lambda\)</span> has determinant</p>
+<p><span class="math display">\[
+h(\lambda) = d\lambda^2 - \gamma s \lambda + \gamma^2 \det J.
+\]</span></p>
+<p>On the standard interval <span class="math inline">\((0, \pi)\)</span> with Neumann conditions, <span class="math inline">\(\lambda_n = n^2\)</span>. Mode <span class="math inline">\(n\)</span> is unstable when <span class="math inline">\(h(n^2) &lt; 0\)</span>. Read as a quadratic inequality in <span class="math inline">\(\gamma\)</span>,</p>
+<p><span id="eq-dm-gamma-interval"><span class="math display">\[
+\det J\,\gamma^2 - s\,n^2\gamma + d\,n^4 &lt; 0
+\quad\Longleftrightarrow\quad
+n^2\,\gamma_- &lt; \gamma &lt; n^2\,\gamma_+, \qquad
+\gamma_\pm = \frac{s \pm \sqrt{\Delta}}{2\det J}.
+\tag{1}\]</span></span></p>
+<p>On a physical interval of length <span class="math inline">\(L\)</span> with the original scaling, <span class="math inline">\(\gamma = 1\)</span> and the substitution <span class="math inline">\(x = L\xi/\pi\)</span> gives the standard interval with the effective value <span class="math inline">\(\gamma_{\mathrm{eff}} = (L/\pi)^2\)</span>. So mode <span class="math inline">\(n\)</span> is unstable for</p>
+<p><span id="eq-dm-L-interval"><span class="math display">\[
+\pi n \sqrt{\gamma_-} &lt; L &lt; \pi n \sqrt{\gamma_+}.
+\tag{2}\]</span></span></p>
+<p>Two consequences follow without further computation.</p>
+<ul>
+<li>Each mode is unstable on an interval of <span class="math inline">\(\gamma\)</span> (or of <span class="math inline">\(L\)</span>), not only above a threshold. The intervals have the constant ratio <span class="math inline">\(\gamma_+/\gamma_-\)</span> and slide to larger <span class="math inline">\(L\)</span> in proportion to <span class="math inline">\(n\)</span>.</li>
+<li>Modes <span class="math inline">\(n\)</span> and <span class="math inline">\(n+1\)</span> are unstable together for some <span class="math inline">\(L\)</span> exactly when <span class="math inline">\(\left((n+1)/n\right)^2 &lt; \gamma_+/\gamma_-\)</span>. Otherwise there is a window of <span class="math inline">\(L\)</span> in which neither is unstable, and the uniform state is stable even though the Turing conditions hold. As <span class="math inline">\(d \downarrow d_c\)</span> the ratio <span class="math inline">\(\gamma_+/\gamma_-\)</span> tends to <span class="math inline">\(1\)</span> and the intervals shrink to points.</li>
+</ul>
+<div id="cell-fig-dm-gm" class="cell" data-fig-height="4" data-fig-width="7" data-execution_count="1">
+<div class="cell-output cell-output-display">
+<div id="fig-dm-gm" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-dm-gm-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="domain-size-mode-selection_files/figure-html/fig-dm-gm-output-1.png" width="599" height="361" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-dm-gm-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Mode selection for Gierer-Meinhardt with <span class="math inline">\(a = 0.4\)</span>, <span class="math inline">\(b = 1\)</span>, <span class="math inline">\(d = 30\)</span>, <span class="math inline">\(\gamma = 1\)</span>. The shaded band is the unstable interval <span class="math inline">\(k_1 &lt; k &lt; k_2\)</span>. Each curve is the Neumann wavenumber <span class="math inline">\(k_n = n\pi/L\)</span> of mode <span class="math inline">\(n\)</span>, drawn thick where it lies inside the band. Mode <span class="math inline">\(n\)</span> can only be unstable for the lengths <span class="math inline">\(L\)</span> at which its curve crosses the band.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>For Case A the constants are <span class="math inline">\(\gamma_- \approx 3.66\)</span> and <span class="math inline">\(\gamma_+ \approx 8.20\)</span>, so <span class="math inline">\(\gamma_+/\gamma_- \approx 2.24\)</span>. Since <span class="math inline">\(2.24 &lt; 4\)</span> and <span class="math inline">\(2.24 &lt; 9/4\)</span>, modes <span class="math inline">\(1\)</span> and <span class="math inline">\(2\)</span> never grow together and neither do modes <span class="math inline">\(2\)</span> and <span class="math inline">\(3\)</span>, while <span class="math inline">\(2.24 &gt; 16/9\)</span> lets modes <span class="math inline">\(3\)</span> and <span class="math inline">\(4\)</span> overlap. This reproduces the lengths found on the <a href="../../modules/pattern-formation/dispersion-relation.html">Dispersion Relation</a> page: mode <span class="math inline">\(1\)</span> for <span class="math inline">\(6.01 &lt; L &lt; 8.99\)</span>, mode <span class="math inline">\(2\)</span> for <span class="math inline">\(12.02 &lt; L &lt; 17.99\)</span>, mode <span class="math inline">\(3\)</span> for <span class="math inline">\(18.03 &lt; L &lt; 26.98\)</span>.</p>
+</section>
+<section id="prediction-against-simulation" class="level2">
+<h2 class="anchored" data-anchor-id="prediction-against-simulation">Prediction Against Simulation</h2>
+<p>The linear theory predicts the first unstable mode. To see how much of it survives in the nonlinear model, integrate the 1D Gierer-Meinhardt system from the uniform state plus 1% noise for several lengths. The code uses zero-flux boundaries placed exactly at the ends of the domain (a ghost value equal to the edge value, so the length is <span class="math inline">\(N\,dx\)</span>) and counts the sign changes of <span class="math inline">\(u - \bar u\)</span>. A pattern with <span class="math inline">\(n\)</span> half-wavelengths, <span class="math inline">\(\cos(n\pi x/L)\)</span>, has <span class="math inline">\(n\)</span> sign changes.</p>
+<div id="87173890" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.turing <span class="im">import</span> dispersion_relation, gierer_meinhardt_jacobian, unstable_modes_1d</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>a, b, d <span class="op">=</span> <span class="fl">0.40</span>, <span class="fl">1.00</span>, <span class="fl">30.0</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>u_star <span class="op">=</span> (a <span class="op">+</span> <span class="dv">1</span>) <span class="op">/</span> b</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>jac <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> simulate(length, dx<span class="op">=</span><span class="fl">1.0</span>, t_end<span class="op">=</span><span class="fl">400.0</span>, seed<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    n_pts <span class="op">=</span> <span class="bu">int</span>(<span class="bu">round</span>(length <span class="op">/</span> dx))</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    dt <span class="op">=</span> <span class="fl">0.4</span> <span class="op">*</span> dx<span class="op">**</span><span class="dv">2</span> <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> d)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.default_rng(seed)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    uv <span class="op">=</span> np.array([[u_star], [u_star<span class="op">**</span><span class="dv">2</span>]]) <span class="op">*</span> (<span class="dv">1</span> <span class="op">+</span> <span class="fl">0.01</span> <span class="op">*</span> rng.standard_normal((<span class="dv">2</span>, n_pts)))</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    diff <span class="op">=</span> np.array([[<span class="fl">1.0</span>], [d]])</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">int</span>(<span class="bu">round</span>(t_end <span class="op">/</span> dt))):</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>        padded <span class="op">=</span> np.concatenate([uv[:, :<span class="dv">1</span>], uv, uv[:, <span class="op">-</span><span class="dv">1</span>:]], axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>        lap <span class="op">=</span> (padded[:, <span class="dv">2</span>:] <span class="op">-</span> <span class="dv">2</span> <span class="op">*</span> uv <span class="op">+</span> padded[:, :<span class="op">-</span><span class="dv">2</span>]) <span class="op">/</span> dx<span class="op">**</span><span class="dv">2</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>        u, v <span class="op">=</span> uv</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>        uv <span class="op">=</span> uv <span class="op">+</span> dt <span class="op">*</span> (diff <span class="op">*</span> lap <span class="op">+</span> np.array([a <span class="op">-</span> b <span class="op">*</span> u <span class="op">+</span> u<span class="op">**</span><span class="dv">2</span> <span class="op">/</span> v, u<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> v]))</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> uv</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> grid_mode(length, dx<span class="op">=</span><span class="fl">1.0</span>):</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Leading unstable mode for the discrete operator with exact zero flux."""</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    n_pts <span class="op">=</span> <span class="bu">int</span>(<span class="bu">round</span>(length <span class="op">/</span> dx))</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> np.arange(n_pts)</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    k2 <span class="op">=</span> <span class="dv">4</span> <span class="op">/</span> dx<span class="op">**</span><span class="dv">2</span> <span class="op">*</span> np.sin(n <span class="op">*</span> np.pi <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> n_pts)) <span class="op">**</span> <span class="dv">2</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    rates <span class="op">=</span> dispersion_relation(k2, <span class="op">*</span>jac, d)</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">int</span>(n[np.argmax(rates)]) <span class="cf">if</span> rates.<span class="bu">max</span>() <span class="op">&gt;</span> <span class="dv">0</span> <span class="cf">else</span> <span class="dv">0</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">" L   continuum  grid(dx=1)  simulated"</span>)</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> length <span class="kw">in</span> (<span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">10</span>, <span class="dv">15</span>, <span class="dv">22</span>, <span class="dv">30</span>, <span class="dv">40</span>):</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>    modes <span class="op">=</span> unstable_modes_1d(d<span class="op">=</span>d, length<span class="op">=</span>length, num_modes<span class="op">=</span><span class="dv">60</span>)</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>    lead <span class="op">=</span> modes[<span class="dv">0</span>][<span class="dv">0</span>] <span class="cf">if</span> modes <span class="cf">else</span> <span class="dv">0</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>    uv <span class="op">=</span> simulate(length)</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>    amplitude <span class="op">=</span> np.ptp(uv[<span class="dv">0</span>])</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>    signs <span class="op">=</span> np.sign(uv[<span class="dv">0</span>] <span class="op">-</span> uv[<span class="dv">0</span>].mean())</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>    seen <span class="op">=</span> <span class="bu">int</span>(np.<span class="bu">sum</span>(signs[<span class="dv">1</span>:] <span class="op">!=</span> signs[:<span class="op">-</span><span class="dv">1</span>])) <span class="cf">if</span> amplitude <span class="op">&gt;</span> <span class="fl">1e-3</span> <span class="cf">else</span> <span class="dv">0</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>length<span class="sc">:3d}</span><span class="ss">  </span><span class="sc">{</span>lead<span class="sc">:9d}</span><span class="ss">  </span><span class="sc">{</span>grid_mode(length)<span class="sc">:10d}</span><span class="ss">  </span><span class="sc">{</span>seen<span class="sc">:9d}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> L   continuum  grid(dx=1)  simulated
+  4          0           0          0
+  8          1           1          1
+ 10          0           0          0
+ 15          2           2          2
+ 22          3           3          3
+ 30          4           4          4
+ 40          5           6          6</code></pre>
+</div>
+</div>
+<p>The rows for <span class="math inline">\(L = 4\)</span> and <span class="math inline">\(L = 10\)</span> show <span class="math inline">\(0\)</span> in all three columns: nothing grows and the flat state persists, in line with the gaps of <a href="#fig-dm-gm" class="quarto-xref">Figure&nbsp;1</a>. The three columns also agree in every other row except <span class="math inline">\(L = 40\)</span>. There two modes have almost the same growth rate (about <span class="math inline">\(0.0214\)</span> for <span class="math inline">\(n = 5\)</span> and <span class="math inline">\(0.0206\)</span> for <span class="math inline">\(n = 6\)</span>), and the answer depends on the grid. On the grid with <span class="math inline">\(dx = 1\)</span> the discrete operator has <span class="math inline">\(\lambda_n = (4/dx^2)\sin^2(n\pi/2N)\)</span> instead of <span class="math inline">\((n\pi/L)^2\)</span>, which shifts the preferred mode from <span class="math inline">\(5\)</span> to <span class="math inline">\(6\)</span>, and the simulation follows the discrete prediction. With <span class="math inline">\(dx = 0.5\)</span> and four different noise seeds the simulation gave <span class="math inline">\(5, 6, 5, 5\)</span> half-wavelengths. When two modes are this close, the noise and the discretisation decide, and linear theory is only informative to within one mode. This is the same caveat as for the 2D case on <a href="../../modules/pattern-formation/gierer-meinhardt-2d-modes.html">Unstable Modes in 2D</a>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Exercise
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Show that the intervals of modes <span class="math inline">\(n\)</span> and <span class="math inline">\(n+1\)</span> overlap exactly when <span class="math inline">\(\left((n+1)/n\right)^2 &lt; \gamma_+/\gamma_-\)</span>, and find the smallest <span class="math inline">\(d\)</span> for which modes <span class="math inline">\(1\)</span> and <span class="math inline">\(2\)</span> can be unstable together for Gierer-Meinhardt with <span class="math inline">\(a = 0.4\)</span>, <span class="math inline">\(b = 1\)</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The intervals <span class="math inline">\((n^2\gamma_-, n^2\gamma_+)\)</span> and <span class="math inline">\(((n+1)^2\gamma_-, (n+1)^2\gamma_+)\)</span> overlap when the lower end of the second is below the upper end of the first, <span class="math inline">\((n+1)^2\gamma_- &lt; n^2\gamma_+\)</span>. Dividing by <span class="math inline">\(n^2\gamma_-\)</span> gives the condition.</p>
+<p>For <span class="math inline">\(n = 1\)</span> we need <span class="math inline">\(\gamma_+/\gamma_- &gt; 4\)</span>, that is <span class="math inline">\((s + \sqrt\Delta)/(s - \sqrt\Delta) &gt; 4\)</span>, which is equivalent to <span class="math inline">\(\sqrt\Delta &gt; 3s/5\)</span>. Squaring, <span class="math inline">\(s^2 - 4d\det J &gt; 9s^2/25\)</span>, so <span class="math inline">\(16 s^2/25 &gt; 4 d \det J\)</span>. With <span class="math inline">\(b = 1\)</span> (<span class="math inline">\(\det J = 1\)</span>) and <span class="math inline">\(s = d f_u - 1\)</span>, <span class="math inline">\(f_u = 3/7\)</span>, solve <span class="math inline">\(4(3d/7 - 1)^2 = 25 d\)</span>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.turing <span class="im">import</span> gierer_meinhardt_jacobian</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(<span class="fl">0.4</span>, <span class="fl">1.0</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>det <span class="op">=</span> fu <span class="op">*</span> gv <span class="op">-</span> fv <span class="op">*</span> gu</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>d <span class="op">=</span> np.linspace(<span class="dv">27</span>, <span class="dv">200</span>, <span class="dv">200000</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>s <span class="op">=</span> d <span class="op">*</span> fu <span class="op">+</span> gv</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>ratio <span class="op">=</span> (s <span class="op">+</span> np.sqrt(s<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> <span class="dv">4</span> <span class="op">*</span> d <span class="op">*</span> det)) <span class="op">/</span> (s <span class="op">-</span> np.sqrt(s<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> <span class="dv">4</span> <span class="op">*</span> d <span class="op">*</span> det))</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(d[np.argmax(ratio <span class="op">&gt;</span> <span class="dv">4</span>)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Writing <span class="math inline">\(t = \sqrt d\)</span>, the condition is <span class="math inline">\(\tfrac{3}{7}t^2 - \tfrac{5}{2}t - 1 = 0\)</span> at the threshold, so <span class="math inline">\(t = (5/2 + \sqrt{25/4 + 12/7})/(6/7) \approx 6.209\)</span> and <span class="math inline">\(d \approx 38.55\)</span>, which the code confirms. Modes <span class="math inline">\(1\)</span> and <span class="math inline">\(2\)</span> can therefore coexist only for <span class="math inline">\(d &gt; 38.55\)</span>.</p>
+</div>
+</div>
+</div>
+
+
+<!-- -->
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-britton2003essential" class="csl-entry" role="listitem">
+Britton, Nicholas F. 2003. <em>Essential Mathematical Biology</em>. Springer Undergraduate Mathematics Series. Springer. <a href="https://doi.org/10.1007/978-1-4471-0049-2">https://doi.org/10.1007/978-1-4471-0049-2</a>.
+</div>
+<div id="ref-turing1952chemical" class="csl-entry" role="listitem">
+Turing, Alan M. 1952. <span>“The Chemical Basis of Morphogenesis.”</span> <em>Philosophical Transactions of the Royal Society B</em> 237 (641): 37–72. <a href="https://doi.org/10.1098/rstb.1952.0012">https://doi.org/10.1098/rstb.1952.0012</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<button type="button" class="ie-theme-toggle" id="ie-theme-toggle">
+  <svg class="ie-theme-toggle__moon" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+  <svg class="ie-theme-toggle__sun" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+</button>
+<script>
+/* Light/dark switch in the top-right corner (moon in light mode, sun in dark mode).
+   It drives Quarto's own toggle, so the choice is remembered across pages and
+   shared with the interactive pages (they read the same "quarto-color-scheme" key). */
+(function () {
+  var btn = document.getElementById("ie-theme-toggle");
+  if (!btn) return;
+  function sync() {
+    var dark = document.body.classList.contains("quarto-dark");
+    var label = dark ? "Switch to light mode" : "Switch to dark mode";
+    btn.setAttribute("aria-label", label);
+    btn.title = label;
+  }
+  btn.addEventListener("click", function () {
+    if (window.quartoToggleColorScheme) window.quartoToggleColorScheme();
+    sync();
+  });
+  new MutationObserver(sync).observe(document.body, { attributes: true, attributeFilter: ["class"] });
+  sync();
+})();
+</script>
+<script>
+/* Interactive figures loader.
+   Any element  <div class="viz" data-viz="NAME">  (in a .qmd:  ::: {.viz data-viz="NAME"} :::)
+   loads assets/viz/core.js once and then assets/viz/widgets/NAME.js.
+   Paths are resolved from Quarto's quarto:offset meta, so this works at any page depth
+   and under the GitHub Pages sub-path. */
+(function () {
+  var nodes = document.querySelectorAll("[data-viz]");
+  if (!nodes.length) return;
+  var meta = document.querySelector('meta[name="quarto:offset"]');
+  var root = (meta ? meta.getAttribute("content") : "./") + "assets/viz/";
+  function load(src) {
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = src; s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+  var names = Array.from(new Set(Array.from(nodes, function (n) { return n.dataset.viz; })));
+  load(root + "core.js").then(function () {
+    return Promise.all(names.map(function (n) { return load(root + "widgets/" + n + ".js"); }));
+  }).then(function () {
+    nodes.forEach(function (el) { window.VIZ.mount(el); });
+  }).catch(function (e) { console.error("[viz] could not load", e); });
+})();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const toggle = window.document.createElement('button');
+      toggle.type = "button";
+      toggle.setAttribute("role", "switch");
+      toggle.setAttribute("aria-checked", "false");
+      toggle.classList.add('top-right');
+      toggle.classList.add('quarto-color-scheme-toggle');
+      toggle.setAttribute("aria-label", "Toggle dark mode");
+      toggle.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      toggle.appendChild(i);
+      // Put the toggle in a landmark of its own, so that landmark navigation
+      // can reach it.
+      //
+      // The container is always a fresh direct child of body, and the toggle is
+      // never moved into page furniture that the theme or the author controls.
+      // The toggle is positioned against the page, so any ancestor that
+      // establishes a containing block captures it: a positioned element or a
+      // grid for position: absolute, and transform, filter, will-change or
+      // contain for position: fixed. A direct child of body has none of these
+      // to inherit, and the shift when one appears is silent and visual.
+      //
+      // ARIA says a document should have at most one banner, and axe reports a
+      // duplicate whether or not the banners carry distinct labels. So use a
+      // header when the page has no banner yet, and a named region otherwise.
+      //
+      // A header is a banner wherever it sits, unless it is inside sectioning
+      // content, so this cannot just look at the children of body: a custom
+      // page layout wraps the title block header in a plain div. An explicit
+      // role="banner" always counts.
+      const sectioning = 'article, aside, main, nav, section, [role="article"], [role="complementary"], [role="main"], [role="navigation"], [role="region"]';
+      const hasBanner = Array.from(
+        window.document.querySelectorAll('header:not([role]), [role="banner"]')
+      ).some(function(el) {
+        return el.hasAttribute("role") || el.closest(sectioning) === null;
+      });
+      const container = window.document.createElement(hasBanner ? "div" : "header");
+      if (hasBanner) {
+        container.setAttribute("role", "region");
+        container.setAttribute("aria-label", "Toggle dark mode");
+      }
+      container.classList.add('quarto-color-scheme-toggle-container');
+      container.appendChild(toggle);
+      window.document.body.appendChild(container);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const cellDetails = window.document.querySelectorAll(".cell details.code-fold");
+        for (let i=0; i<cellDetails.length; i++) {
+          const details = cellDetails[i];
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell div.sourceCode.cell-code");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/daniprec\.github\.io\/BAM-Applied-Math-Lab");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+      window.quartoDecorateExternalLinks = function (root) {
+     var links = (root || window.document).querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+          if (!link.classList.contains('no-external-icon')) {
+          }
+        }
+      }
+      };
+      window.quartoDecorateExternalLinks(window.document);
+    // Esc closes the popup (WCAG 1.4.13) and focus leaving both trigger and
+    // popup closes it (WCAG 2.4.11); tippy handles neither for interactive popups.
+    const hideOnEscAndFocusOut = {
+      name: 'hideOnEscAndFocusOut',
+      defaultValue: true,
+      fn(instance) {
+        const dismiss = () => {
+          // A show scheduled by the trigger delay would otherwise reopen it
+          instance.clearDelayTimeouts();
+          instance.hide();
+        };
+        const onKeyDown = (event) => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+          // Keep Esc from also reaching page handlers (e.g. reveal.js overview),
+          // except an open reveal.js slide menu, which Esc should close too.
+          // The menu handles keys only when its keyboard option is on.
+          const menuHandlesEsc = window.Reveal?.getPlugin?.('menu')?.isOpen() &&
+            window.Reveal.getConfig().menu?.keyboard !== false;
+          if (!menuHandlesEsc) {
+            event.stopPropagation();
+          }
+          if (instance.popper.contains(window.document.activeElement)) {
+            // Disabled while refocusing so the focus trigger does not reopen it
+            instance.disable();
+            instance.reference.focus();
+            instance.enable();
+          }
+          dismiss();
+        };
+        const onFocusOut = (event) => {
+          const target = event.relatedTarget;
+          if (target && !instance.reference.contains(target) &&
+              !instance.popper.contains(target)) {
+            dismiss();
+          }
+        };
+        // On the trigger too: a click trigger (code-annotations: select) has no
+        // blur handling. Attached for the instance's lifetime so leaving the
+        // trigger also cancels a show still pending on the trigger delay.
+        instance.reference.addEventListener('focusout', onFocusOut);
+        return {
+          onShow() {
+            window.document.addEventListener('keydown', onKeyDown, true);
+            instance.popper.addEventListener('focusout', onFocusOut);
+          },
+          onHide() {
+            window.document.removeEventListener('keydown', onKeyDown, true);
+            instance.popper.removeEventListener('focusout', onFocusOut);
+          },
+          onDestroy() {
+            instance.reference.removeEventListener('focusout', onFocusOut);
+          },
+        };
+      },
+    };
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+        plugins: [hideOnEscAndFocusOut],
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          // Each band is positioned against its own containing block, which is
+          // not the offsetParent of the lines, so place it from client rects.
+          const placeBand = (band, firstEl, lastEl, codeBlock) => {
+            const container = band.offsetParent;
+            if (container === null) {
+              return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            // Reveal.js scales slides with a transform, so convert client
+            // pixels back to the CSS pixels of the container.
+            const scale = containerRect.height / container.offsetHeight || 1;
+            const firstRect = firstEl.getBoundingClientRect();
+            const lastRect = lastEl.getBoundingClientRect();
+            const top = (firstRect.top - containerRect.top) / scale - container.clientTop + container.scrollTop;
+            const height = (lastRect.bottom - firstRect.top) / scale;
+            band.style.top = top - 2 + "px";
+            band.style.height = height + 4 + "px";
+            if (codeBlock) {
+              // Without the copy button wrapper, the containing block is wider
+              // than the code block, so span the code block explicitly.
+              const blockRect = codeBlock.getBoundingClientRect();
+              band.style.left = (blockRect.left - containerRect.left) / scale - container.clientLeft + container.scrollLeft + "px";
+              band.style.width = blockRect.width / scale + "px";
+            }
+          };
+          if (lineIds.length > 0) {
+            const el = window.document.getElementById(lineIds[0]);
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const parent = el.parentElement.parentElement;
+            // cook up a div (if necessary) and position it
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            placeBand(div, el, lastEl, parent.closest("div.sourceCode") || parent);
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            placeBand(gutterDiv, el, lastEl);
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+  <script type="application/javascript">
+  window.quartoScrollableRegionsLabels = {"code":"Scrollable code","output":"Scrollable output"};
+  </script>
+<nav class="page-navigation" aria-label="Page">
+  <div class="nav-page nav-page-previous">
+      <a href="../../modules/pattern-formation/turing-original-analysis.html" class="pagination-link" aria-label="Turing's Original Analysis">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Turing’s Original Analysis</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../modules/pattern-formation/gierer-meinhardt-1d-model.html" class="pagination-link" aria-label="Gierer-Meinhardt Model in 1D">
+        <span class="nav-page-text">Gierer-Meinhardt Model in 1D</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Domain Size and Mode Selection"</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Module 4: Space and Pattern Formation"</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="fu">## Reading</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Compulsory:** @britton2003essential, Chapter 7, Sections 7.2 and 7.3 (pp. 206 to 214): spatial modes, temporal eigenvalues, the dispersion relation, and the domain size as bifurcation parameter.</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Recommended:** @turing1952chemical, Sections 8 and 9: the number of lobes on a ring is obtained by dividing the circumference by the "chemical wave-length".</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Technical background:** @britton2003essential, Appendix C, Sections C.3 to C.5 (eigenvalues of the Laplacian and separation of variables).</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>The <span class="co">[</span><span class="ot">Dispersion Relation</span><span class="co">](dispersion-relation.qmd)</span> page fixes $\gamma$ and asks which Neumann modes fall into the unstable band. Britton turns the question around: the Turing conditions say that a band of unstable wavenumbers exists, but a finite domain only offers the discrete wavenumbers $k_n$. Whether a given mode is unstable then depends on the size of the domain. @britton2003essential <span class="co">[</span><span class="ot">Section 7.1</span><span class="co">]</span> stresses that this is the relevant bifurcation parameter in development, because the embryo grows while the chemistry stays the same.</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="fu">## What the Source Says</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>With the scaled equation $u_t = \gamma^2 f(u) + D\nabla^2 u$ on a standard domain, increasing the scale factor $\gamma$ is "equivalent to increasing domain size" <span class="co">[</span><span class="ot">@britton2003essential, Section 7.2</span><span class="co">]</span>. (Britton's $\gamma^2$ is the $\gamma$ of these notes, see <span class="co">[</span><span class="ot">Reaction-Diffusion Equations</span><span class="co">](reaction-diffusion.qmd)</span>.)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Define $\rho(\lambda) = \max_i \operatorname{Re}\sigma_i(\lambda)$, where $\lambda = k^2$ is a spatial eigenvalue. This function is what Britton calls the dispersion relation <span class="co">[</span><span class="ot">@britton2003essential, Section 7.3</span><span class="co">]</span>. The steady state needs $\rho(0) &lt; 0$.</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>On an infinite domain every $\lambda \ge 0$ is allowed, so instability occurs as soon as some $\lambda$ has $\rho(\lambda) &gt; 0$. On a finite domain the potential instability is realised only if the interval of unstable $\lambda$ contains an eigenvalue $\lambda_n$ (his Figure 7.3).</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The $n$th mode loses stability at a parameter value where $a_2(\lambda_n) = 0$, with $a_2$ the determinant of the mode matrix. Britton calls this the mode-$n$ Turing bifurcation <span class="co">[</span><span class="ot">@britton2003essential, Equations 7.4.31 and 7.4.32</span><span class="co">]</span>.</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Close to such a bifurcation the linear theory predicts growth of a multiple of the mode $F_n(x)$, and, under conditions he does not derive, the nonlinear solution tends to a steady state close to that multiple <span class="co">[</span><span class="ot">@britton2003essential, Example 7.1 and p. 214</span><span class="co">]</span>. If several modes are unstable, the one with the largest growth rate dominates while the linear approximation holds <span class="co">[</span><span class="ot">@britton2003essential, Section 7.2</span><span class="co">]</span>.</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="fu">## The Bifurcation Values in Closed Form</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>Use the notation of the <span class="co">[</span><span class="ot">Turing Conditions</span><span class="co">](turing-conditions.qmd)</span> page, with $s = d f_u + g_v$ and $\Delta = s^2 - 4d \det J$. The mode matrix of a mode with $k^2 = \lambda$ has determinant</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>h(\lambda) = d\lambda^2 - \gamma s \lambda + \gamma^2 \det J.</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>On the standard interval $(0, \pi)$ with Neumann conditions, $\lambda_n = n^2$. Mode $n$ is unstable when $h(n^2) &lt; 0$. Read as a quadratic inequality in $\gamma$,</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>\det J\,\gamma^2 - s\,n^2\gamma + d\,n^4 &lt; 0</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>\quad\Longleftrightarrow\quad</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>n^2\,\gamma_- &lt; \gamma &lt; n^2\,\gamma_+, \qquad</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>\gamma_\pm = \frac{s \pm \sqrt{\Delta}}{2\det J}.</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>$$ {#eq-dm-gamma-interval}</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>On a physical interval of length $L$ with the original scaling, $\gamma = 1$ and the substitution $x = L\xi/\pi$ gives the standard interval with the effective value $\gamma_{\mathrm{eff}} = (L/\pi)^2$. So mode $n$ is unstable for</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>\pi n \sqrt{\gamma_-} &lt; L &lt; \pi n \sqrt{\gamma_+}.</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>$$ {#eq-dm-L-interval}</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>Two consequences follow without further computation.</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Each mode is unstable on an interval of $\gamma$ (or of $L$), not only above a threshold. The intervals have the constant ratio $\gamma_+/\gamma_-$ and slide to larger $L$ in proportion to $n$.</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Modes $n$ and $n+1$ are unstable together for some $L$ exactly when $\left((n+1)/n\right)^2 &lt; \gamma_+/\gamma_-$. Otherwise there is a window of $L$ in which neither is unstable, and the uniform state is stable even though the Turing conditions hold. As $d \downarrow d_c$ the ratio $\gamma_+/\gamma_-$ tends to $1$ and the intervals shrink to points.</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-dm-gm</span></span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: 'Mode selection for Gierer-Meinhardt with $a = 0.4$, $b = 1$, $d = 30$, $\gamma = 1$. The shaded band is the unstable interval $k_1 &lt; k &lt; k_2$. Each curve is the Neumann wavenumber $k_n = n\pi/L$ of mode $n$, drawn thick where it lies inside the band. Mode $n$ can only be unstable for the lengths $L$ at which its curve crosses the band.'</span></span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 7</span></span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 4</span></span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.turing <span class="im">import</span> gierer_meinhardt_jacobian, unstable_band</span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>jac <span class="op">=</span> gierer_meinhardt_jacobian(<span class="fl">0.40</span>, <span class="fl">1.00</span>)</span>
+<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>k1, k2 <span class="op">=</span> np.sqrt(unstable_band(<span class="op">*</span>jac, <span class="fl">30.0</span>))</span>
+<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a>length <span class="op">=</span> np.linspace(<span class="dv">2</span>, <span class="dv">45</span>, <span class="dv">800</span>)</span>
+<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">4</span>))</span>
+<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a>ax.axhspan(k1, k2, color<span class="op">=</span><span class="st">"tab:blue"</span>, alpha<span class="op">=</span><span class="fl">0.2</span>, label<span class="op">=</span><span class="st">"unstable band"</span>)</span>
+<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> n <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">8</span>):</span>
+<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a>    kn <span class="op">=</span> n <span class="op">*</span> np.pi <span class="op">/</span> length</span>
+<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a>    inside <span class="op">=</span> (kn <span class="op">&gt;</span> k1) <span class="op">&amp;</span> (kn <span class="op">&lt;</span> k2)</span>
+<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a>    (line,) <span class="op">=</span> ax.plot(length, kn, lw<span class="op">=</span><span class="fl">0.8</span>, ls<span class="op">=</span><span class="st">"--"</span>, color<span class="op">=</span><span class="st">"0.5"</span>)</span>
+<span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a>    ax.plot(length[inside], kn[inside], lw<span class="op">=</span><span class="fl">2.5</span>, color<span class="op">=</span><span class="st">"tab:red"</span>)</span>
+<span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a>    ax.text(length[np.argmin(np.<span class="bu">abs</span>(kn <span class="op">-</span> <span class="fl">0.6</span>))], <span class="fl">0.6</span>, <span class="ss">f"n = </span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">"</span>, fontsize<span class="op">=</span><span class="dv">8</span>, ha<span class="op">=</span><span class="st">"center"</span>)</span>
+<span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a>ax.set_xlim(<span class="dv">2</span>, <span class="dv">45</span>)</span>
+<span id="cb4-79"><a href="#cb4-79" aria-hidden="true" tabindex="-1"></a>ax.set_ylim(<span class="dv">0</span>, <span class="fl">0.8</span>)</span>
+<span id="cb4-80"><a href="#cb4-80" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"domain length L"</span>)</span>
+<span id="cb4-81"><a href="#cb4-81" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="vs">r"wavenumber </span><span class="dv">$</span><span class="vs">k_n = n</span><span class="er">\</span><span class="vs">pi/L</span><span class="dv">$</span><span class="vs">"</span>)</span>
+<span id="cb4-82"><a href="#cb4-82" aria-hidden="true" tabindex="-1"></a>ax.legend(loc<span class="op">=</span><span class="st">"upper right"</span>)</span>
+<span id="cb4-83"><a href="#cb4-83" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb4-84"><a href="#cb4-84" aria-hidden="true" tabindex="-1"></a>plt.close()</span>
+<span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a>For Case A the constants are $\gamma_- \approx 3.66$ and $\gamma_+ \approx 8.20$, so $\gamma_+/\gamma_- \approx 2.24$. Since $2.24 &lt; 4$ and $2.24 &lt; 9/4$, modes $1$ and $2$ never grow together and neither do modes $2$ and $3$, while $2.24 &gt; 16/9$ lets modes $3$ and $4$ overlap. This reproduces the lengths found on the <span class="co">[</span><span class="ot">Dispersion Relation</span><span class="co">](dispersion-relation.qmd)</span> page: mode $1$ for $6.01 &lt; L &lt; 8.99$, mode $2$ for $12.02 &lt; L &lt; 17.99$, mode $3$ for $18.03 &lt; L &lt; 26.98$.</span>
+<span id="cb4-88"><a href="#cb4-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-89"><a href="#cb4-89" aria-hidden="true" tabindex="-1"></a><span class="fu">## Prediction Against Simulation</span></span>
+<span id="cb4-90"><a href="#cb4-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-91"><a href="#cb4-91" aria-hidden="true" tabindex="-1"></a>The linear theory predicts the first unstable mode. To see how much of it survives in the nonlinear model, integrate the 1D Gierer-Meinhardt system from the uniform state plus 1% noise for several lengths. The code uses zero-flux boundaries placed exactly at the ends of the domain (a ghost value equal to the edge value, so the length is $N\,dx$) and counts the sign changes of $u - \bar u$. A pattern with $n$ half-wavelengths, $\cos(n\pi x/L)$, has $n$ sign changes.</span>
+<span id="cb4-92"><a href="#cb4-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-95"><a href="#cb4-95" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb4-96"><a href="#cb4-96" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb4-97"><a href="#cb4-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-98"><a href="#cb4-98" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.turing <span class="im">import</span> dispersion_relation, gierer_meinhardt_jacobian, unstable_modes_1d</span>
+<span id="cb4-99"><a href="#cb4-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-100"><a href="#cb4-100" aria-hidden="true" tabindex="-1"></a>a, b, d <span class="op">=</span> <span class="fl">0.40</span>, <span class="fl">1.00</span>, <span class="fl">30.0</span></span>
+<span id="cb4-101"><a href="#cb4-101" aria-hidden="true" tabindex="-1"></a>u_star <span class="op">=</span> (a <span class="op">+</span> <span class="dv">1</span>) <span class="op">/</span> b</span>
+<span id="cb4-102"><a href="#cb4-102" aria-hidden="true" tabindex="-1"></a>jac <span class="op">=</span> gierer_meinhardt_jacobian(a, b)</span>
+<span id="cb4-103"><a href="#cb4-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-104"><a href="#cb4-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-105"><a href="#cb4-105" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> simulate(length, dx<span class="op">=</span><span class="fl">1.0</span>, t_end<span class="op">=</span><span class="fl">400.0</span>, seed<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb4-106"><a href="#cb4-106" aria-hidden="true" tabindex="-1"></a>    n_pts <span class="op">=</span> <span class="bu">int</span>(<span class="bu">round</span>(length <span class="op">/</span> dx))</span>
+<span id="cb4-107"><a href="#cb4-107" aria-hidden="true" tabindex="-1"></a>    dt <span class="op">=</span> <span class="fl">0.4</span> <span class="op">*</span> dx<span class="op">**</span><span class="dv">2</span> <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> d)</span>
+<span id="cb4-108"><a href="#cb4-108" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.default_rng(seed)</span>
+<span id="cb4-109"><a href="#cb4-109" aria-hidden="true" tabindex="-1"></a>    uv <span class="op">=</span> np.array([[u_star], [u_star<span class="op">**</span><span class="dv">2</span>]]) <span class="op">*</span> (<span class="dv">1</span> <span class="op">+</span> <span class="fl">0.01</span> <span class="op">*</span> rng.standard_normal((<span class="dv">2</span>, n_pts)))</span>
+<span id="cb4-110"><a href="#cb4-110" aria-hidden="true" tabindex="-1"></a>    diff <span class="op">=</span> np.array([[<span class="fl">1.0</span>], [d]])</span>
+<span id="cb4-111"><a href="#cb4-111" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">int</span>(<span class="bu">round</span>(t_end <span class="op">/</span> dt))):</span>
+<span id="cb4-112"><a href="#cb4-112" aria-hidden="true" tabindex="-1"></a>        padded <span class="op">=</span> np.concatenate([uv[:, :<span class="dv">1</span>], uv, uv[:, <span class="op">-</span><span class="dv">1</span>:]], axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb4-113"><a href="#cb4-113" aria-hidden="true" tabindex="-1"></a>        lap <span class="op">=</span> (padded[:, <span class="dv">2</span>:] <span class="op">-</span> <span class="dv">2</span> <span class="op">*</span> uv <span class="op">+</span> padded[:, :<span class="op">-</span><span class="dv">2</span>]) <span class="op">/</span> dx<span class="op">**</span><span class="dv">2</span></span>
+<span id="cb4-114"><a href="#cb4-114" aria-hidden="true" tabindex="-1"></a>        u, v <span class="op">=</span> uv</span>
+<span id="cb4-115"><a href="#cb4-115" aria-hidden="true" tabindex="-1"></a>        uv <span class="op">=</span> uv <span class="op">+</span> dt <span class="op">*</span> (diff <span class="op">*</span> lap <span class="op">+</span> np.array([a <span class="op">-</span> b <span class="op">*</span> u <span class="op">+</span> u<span class="op">**</span><span class="dv">2</span> <span class="op">/</span> v, u<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> v]))</span>
+<span id="cb4-116"><a href="#cb4-116" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> uv</span>
+<span id="cb4-117"><a href="#cb4-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-118"><a href="#cb4-118" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-119"><a href="#cb4-119" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> grid_mode(length, dx<span class="op">=</span><span class="fl">1.0</span>):</span>
+<span id="cb4-120"><a href="#cb4-120" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Leading unstable mode for the discrete operator with exact zero flux."""</span></span>
+<span id="cb4-121"><a href="#cb4-121" aria-hidden="true" tabindex="-1"></a>    n_pts <span class="op">=</span> <span class="bu">int</span>(<span class="bu">round</span>(length <span class="op">/</span> dx))</span>
+<span id="cb4-122"><a href="#cb4-122" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> np.arange(n_pts)</span>
+<span id="cb4-123"><a href="#cb4-123" aria-hidden="true" tabindex="-1"></a>    k2 <span class="op">=</span> <span class="dv">4</span> <span class="op">/</span> dx<span class="op">**</span><span class="dv">2</span> <span class="op">*</span> np.sin(n <span class="op">*</span> np.pi <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> n_pts)) <span class="op">**</span> <span class="dv">2</span></span>
+<span id="cb4-124"><a href="#cb4-124" aria-hidden="true" tabindex="-1"></a>    rates <span class="op">=</span> dispersion_relation(k2, <span class="op">*</span>jac, d)</span>
+<span id="cb4-125"><a href="#cb4-125" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">int</span>(n[np.argmax(rates)]) <span class="cf">if</span> rates.<span class="bu">max</span>() <span class="op">&gt;</span> <span class="dv">0</span> <span class="cf">else</span> <span class="dv">0</span></span>
+<span id="cb4-126"><a href="#cb4-126" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-127"><a href="#cb4-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-128"><a href="#cb4-128" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">" L   continuum  grid(dx=1)  simulated"</span>)</span>
+<span id="cb4-129"><a href="#cb4-129" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> length <span class="kw">in</span> (<span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">10</span>, <span class="dv">15</span>, <span class="dv">22</span>, <span class="dv">30</span>, <span class="dv">40</span>):</span>
+<span id="cb4-130"><a href="#cb4-130" aria-hidden="true" tabindex="-1"></a>    modes <span class="op">=</span> unstable_modes_1d(d<span class="op">=</span>d, length<span class="op">=</span>length, num_modes<span class="op">=</span><span class="dv">60</span>)</span>
+<span id="cb4-131"><a href="#cb4-131" aria-hidden="true" tabindex="-1"></a>    lead <span class="op">=</span> modes[<span class="dv">0</span>][<span class="dv">0</span>] <span class="cf">if</span> modes <span class="cf">else</span> <span class="dv">0</span></span>
+<span id="cb4-132"><a href="#cb4-132" aria-hidden="true" tabindex="-1"></a>    uv <span class="op">=</span> simulate(length)</span>
+<span id="cb4-133"><a href="#cb4-133" aria-hidden="true" tabindex="-1"></a>    amplitude <span class="op">=</span> np.ptp(uv[<span class="dv">0</span>])</span>
+<span id="cb4-134"><a href="#cb4-134" aria-hidden="true" tabindex="-1"></a>    signs <span class="op">=</span> np.sign(uv[<span class="dv">0</span>] <span class="op">-</span> uv[<span class="dv">0</span>].mean())</span>
+<span id="cb4-135"><a href="#cb4-135" aria-hidden="true" tabindex="-1"></a>    seen <span class="op">=</span> <span class="bu">int</span>(np.<span class="bu">sum</span>(signs[<span class="dv">1</span>:] <span class="op">!=</span> signs[:<span class="op">-</span><span class="dv">1</span>])) <span class="cf">if</span> amplitude <span class="op">&gt;</span> <span class="fl">1e-3</span> <span class="cf">else</span> <span class="dv">0</span></span>
+<span id="cb4-136"><a href="#cb4-136" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>length<span class="sc">:3d}</span><span class="ss">  </span><span class="sc">{</span>lead<span class="sc">:9d}</span><span class="ss">  </span><span class="sc">{</span>grid_mode(length)<span class="sc">:10d}</span><span class="ss">  </span><span class="sc">{</span>seen<span class="sc">:9d}</span><span class="ss">"</span>)</span>
+<span id="cb4-137"><a href="#cb4-137" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb4-138"><a href="#cb4-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-139"><a href="#cb4-139" aria-hidden="true" tabindex="-1"></a>The rows for $L = 4$ and $L = 10$ show $0$ in all three columns: nothing grows and the flat state persists, in line with the gaps of @fig-dm-gm. The three columns also agree in every other row except $L = 40$. There two modes have almost the same growth rate (about $0.0214$ for $n = 5$ and $0.0206$ for $n = 6$), and the answer depends on the grid. On the grid with $dx = 1$ the discrete operator has $\lambda_n = (4/dx^2)\sin^2(n\pi/2N)$ instead of $(n\pi/L)^2$, which shifts the preferred mode from $5$ to $6$, and the simulation follows the discrete prediction. With $dx = 0.5$ and four different noise seeds the simulation gave $5, 6, 5, 5$ half-wavelengths. When two modes are this close, the noise and the discretisation decide, and linear theory is only informative to within one mode. This is the same caveat as for the 2D case on <span class="co">[</span><span class="ot">Unstable Modes in 2D</span><span class="co">](gierer-meinhardt-2d-modes.qmd)</span>.</span>
+<span id="cb4-140"><a href="#cb4-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-141"><a href="#cb4-141" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb4-142"><a href="#cb4-142" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercise</span></span>
+<span id="cb4-143"><a href="#cb4-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-144"><a href="#cb4-144" aria-hidden="true" tabindex="-1"></a>Show that the intervals of modes $n$ and $n+1$ overlap exactly when $\left((n+1)/n\right)^2 &lt; \gamma_+/\gamma_-$, and find the smallest $d$ for which modes $1$ and $2$ can be unstable together for Gierer-Meinhardt with $a = 0.4$, $b = 1$.</span>
+<span id="cb4-145"><a href="#cb4-145" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb4-146"><a href="#cb4-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-147"><a href="#cb4-147" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip collapse="true"}</span>
+<span id="cb4-148"><a href="#cb4-148" aria-hidden="true" tabindex="-1"></a><span class="fu">## Solution</span></span>
+<span id="cb4-149"><a href="#cb4-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-150"><a href="#cb4-150" aria-hidden="true" tabindex="-1"></a>The intervals $(n^2\gamma_-, n^2\gamma_+)$ and $((n+1)^2\gamma_-, (n+1)^2\gamma_+)$ overlap when the lower end of the second is below the upper end of the first, $(n+1)^2\gamma_- &lt; n^2\gamma_+$. Dividing by $n^2\gamma_-$ gives the condition.</span>
+<span id="cb4-151"><a href="#cb4-151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-152"><a href="#cb4-152" aria-hidden="true" tabindex="-1"></a>For $n = 1$ we need $\gamma_+/\gamma_- &gt; 4$, that is $(s + \sqrt\Delta)/(s - \sqrt\Delta) &gt; 4$, which is equivalent to $\sqrt\Delta &gt; 3s/5$. Squaring, $s^2 - 4d\det J &gt; 9s^2/25$, so $16 s^2/25 &gt; 4 d \det J$. With $b = 1$ ($\det J = 1$) and $s = d f_u - 1$, $f_u = 3/7$, solve $4(3d/7 - 1)^2 = 25 d$.</span>
+<span id="cb4-153"><a href="#cb4-153" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-154"><a href="#cb4-154" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb4-155"><a href="#cb4-155" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb4-156"><a href="#cb4-156" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> amlab.turing <span class="im">import</span> gierer_meinhardt_jacobian</span>
+<span id="cb4-157"><a href="#cb4-157" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-158"><a href="#cb4-158" aria-hidden="true" tabindex="-1"></a>fu, fv, gu, gv <span class="op">=</span> gierer_meinhardt_jacobian(<span class="fl">0.4</span>, <span class="fl">1.0</span>)</span>
+<span id="cb4-159"><a href="#cb4-159" aria-hidden="true" tabindex="-1"></a>det <span class="op">=</span> fu <span class="op">*</span> gv <span class="op">-</span> fv <span class="op">*</span> gu</span>
+<span id="cb4-160"><a href="#cb4-160" aria-hidden="true" tabindex="-1"></a>d <span class="op">=</span> np.linspace(<span class="dv">27</span>, <span class="dv">200</span>, <span class="dv">200000</span>)</span>
+<span id="cb4-161"><a href="#cb4-161" aria-hidden="true" tabindex="-1"></a>s <span class="op">=</span> d <span class="op">*</span> fu <span class="op">+</span> gv</span>
+<span id="cb4-162"><a href="#cb4-162" aria-hidden="true" tabindex="-1"></a>ratio <span class="op">=</span> (s <span class="op">+</span> np.sqrt(s<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> <span class="dv">4</span> <span class="op">*</span> d <span class="op">*</span> det)) <span class="op">/</span> (s <span class="op">-</span> np.sqrt(s<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> <span class="dv">4</span> <span class="op">*</span> d <span class="op">*</span> det))</span>
+<span id="cb4-163"><a href="#cb4-163" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(d[np.argmax(ratio <span class="op">&gt;</span> <span class="dv">4</span>)])</span>
+<span id="cb4-164"><a href="#cb4-164" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb4-165"><a href="#cb4-165" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-166"><a href="#cb4-166" aria-hidden="true" tabindex="-1"></a>Writing $t = \sqrt d$, the condition is $\tfrac{3}{7}t^2 - \tfrac{5}{2}t - 1 = 0$ at the threshold, so $t = (5/2 + \sqrt{25/4 + 12/7})/(6/7) \approx 6.209$ and $d \approx 38.55$, which the code confirms. Modes $1$ and $2$ can therefore coexist only for $d &gt; 38.55$.</span>
+<span id="cb4-167"><a href="#cb4-167" aria-hidden="true" tabindex="-1"></a>:::</span>
+</code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Mathematical Modeling · David Gómez-Ullate and Daniel Precioso · IE University</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/edit/main/modules/pattern-formation/domain-size-mode-selection.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/daniprec/BAM-Applied-Math-Lab/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/daniprec/BAM-Applied-Math-Lab">
+      <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
