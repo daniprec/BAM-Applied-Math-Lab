@@ -26,7 +26,7 @@ Lengths are in body lengths (BL) and time in arbitrary time units (t.u.). All an
 
 | Ingredient | Rule |
 |---|---|
-| **Fish** (predators) | Align with neighbours, move toward the school, keep a minimum distance, and **pursue the squid** with a weight that depends on how well they see it. They are noticeably faster than the squid. |
+| **Fish** (predators) | Align with neighbours, move toward the school, keep a minimum distance, and **pursue the squid** with a weight that depends on how well they see it. A fish that loses the squid in the ink **searches**: it heads for the place where it last saw it. They are noticeably faster than the squid. |
 | **Squid** (prey) | Cruises slowly. When the nearest fish comes within 8 BL it turns away and swims faster. If it still has ink and has not inked too recently, it releases a bolus at its position. Each release spends a share of the ink that is left in the sac. |
 | **Ink** | A field $c$ on a $100 \times 100$ grid. In every step it spreads to the neighbouring cells, and cells with very little ink are reset to 0. The sac is **finite**: it starts full, and every release spends a share of what is left, so later clouds are thinner. |
 | **Vision** | The pursuit weight of a fish is multiplied by the **transmission** along the line from the fish to the squid: the more ink on the way, the less it sees. |
@@ -119,7 +119,7 @@ $$
 \mathbf{v}_i = w_\text{a}\,\mathbf{a}_i + w_\text{c}\,\mathbf{c}_i + w_\text{s}\,\mathbf{s}_i + w_\text{p}\,\tau_i\,\hat{\mathbf{p}}_i ,
 $$ {#eq-pursuit}
 
-where $\mathbf{a}_i$, $\mathbf{c}_i$ and $\mathbf{s}_i$ are the alignment, cohesion and separation terms of the school, and $\hat{\mathbf{p}}_i$ is the unit vector toward the squid. A fish that has lost the squid does not stop: it keeps moving with the school, so the school drifts on instead of turning around.
+where $\mathbf{a}_i$, $\mathbf{c}_i$ and $\mathbf{s}_i$ are the alignment, cohesion and separation terms of the school, and $\hat{\mathbf{p}}_i$ is the unit vector toward the squid. A fish that sees the squid (transmission above 0.2) remembers its position. If it loses the squid, it replaces $\hat{\mathbf{p}}_i$ by the direction of that **last-seen place** and uses a fixed weight $w_\text{search} = 0.8$ instead of $\tau_i$, until it gets within 1.5 BL of the place and gives up. Switch this off (`search=False`) and a fish that loses the squid simply drifts on with the school. As an alternative tactic, `decoy=True` makes the fish chase the **densest ink blob** within 10 BL: the ink is then bait and not smoke.
 
 | Parameter | Value | | Parameter | Value |
 |---|---|---|---|---|
@@ -127,10 +127,11 @@ where $\mathbf{a}_i$, $\mathbf{c}_i$ and $\mathbf{s}_i$ are the alignment, cohes
 | turning rate of a fish | 0.20 rad/step | | flight distance | 8 BL |
 | weights $w_\text{a}, w_\text{c}, w_\text{s}, w_\text{p}$ | 1.1, 0.35, 1.4, 1.9 | | minimum time between releases | 5 t.u. |
 | spreading fraction $s$ | 0.5 | | ink threshold $\theta$ | 0.002 |
-| ink steps per time step | 3 | | bolus peak (thickness) | 3 (default) |
-| opacity $\kappa$ | 2.8 (default) | | time step $\Delta t$ | 0.12 |
+| ink steps per time step | 3 | | bolus peak (fixed) | 3 |
+| ink strength (opacity) $\kappa$ | 2.8 (default) | | time step $\Delta t$ | 0.12 |
 | clear-water absorption $a$ | 0.05 | | share of the remaining ink used per release | 0.6 (default) |
-| ink sac is empty below | 5 % of a full sac | | | |
+| ink sac is empty below | 5 % of a full sac | | search weight $w_\text{search}$ | 0.8 |
+| start | random school position and squid heading in every hunt | | | |
 
 ## Explore the hunt
 
@@ -138,10 +139,11 @@ The figure is the same model, ported to JavaScript. The camera follows the squid
 
 ::: {.viz data-viz="squid-ink"}
 1. Press **Ink: off** and watch about ten hunts. How long does the squid survive? Then switch the ink on again and compare the capture probability shown in the readout.
-2. Set the opacity $\kappa$ to 0. Why does a cloud that does not absorb light give no protection, although the squid still releases ink?
+2. Set the **ink strength** $\kappa$ to 0. Why does a cloud that does not absorb light give no protection, although the squid still releases ink?
 3. Set **ink used per release** to 0.2 and then to 0.8. With 0.2 the squid releases many thin clouds, with 0.8 it releases two thick ones and then runs dry. Which survives longer? Then set it to 0 (unlimited ink). Is that realistic? Press **Recharge ink** during a hunt: how much does one refill buy?
-4. Reduce the **thickness** to 1 and then raise it to 8. How does the shape of the cloud change, and how long does it hide the squid?
+4. Raise the **ink strength** from 1 to 8. Does the benefit keep growing, or does it flatten? (The page has one strength dial and not two. Exercise 3 explains why.)
 5. Compare a school of 12 with a school of 40 at the default ink. Does a bigger school find the squid more easily?
+6. Switch **Fish search** off and watch ten hunts, then on again. What does the ink do to a fish that remembers where the squid was? Then try **Decoy: on**: why is bait worse for the squid than smoke?
 :::
 
 ## Run it on your computer
@@ -152,8 +154,8 @@ From the repository root:
 # the animation with sliders (IE dark theme)
 python amlab/collective_motion/squid_ink_animation.py
 
-# options: light theme, a bigger school, thicker ink, a control without ink
-python amlab/collective_motion/squid_ink_animation.py --theme light --fish 40 --thickness 5
+# options: light theme, a bigger school, stronger ink, a control without ink
+python amlab/collective_motion/squid_ink_animation.py --theme light --fish 40 --kappa 5
 python amlab/collective_motion/squid_ink_animation.py --no-ink
 
 # save a GIF or an MP4 instead of opening a window (MP4 needs ffmpeg)
@@ -163,7 +165,7 @@ python amlab/collective_motion/squid_ink_animation.py --save squid-ink.gif --fra
 python amlab/collective_motion/squid_ink.py
 ```
 
-In the window the sliders change the opacity, the thickness and the share of ink used per release live, and the school size restarts the hunt. **Ink on/off** switches the ink off, **Camera** (or **C**) switches between following the squid and a fixed view of the whole sea, **New hunt** starts again and **Space** pauses. The animation redraws only the moving parts, which keeps it smooth; use `--speed 1` on a slow computer.
+In the window the sliders change the ink strength and the share of ink used per release live, and the school size restarts the hunt. **Ink on/off** switches the ink off, **Camera** (or **C**) switches between following the squid and a fixed view of the whole sea, **New hunt** starts again and **Space** pauses. The animation redraws only the moving parts, which keeps it smooth; use `--speed 1` on a slow computer.
 
 ## How the code works
 
@@ -196,7 +198,7 @@ res = sweep("kappa", [0.0, 1.0, 3.0], base=InkParams(), n_seeds=10, t_max=250.0)
 print(res["values"], res["capture_prob"])
 ```
 
-`sweep` runs `n_seeds` independent hunts for every value and returns the fraction in which the squid was caught within `t_max`. The next chunk compares a squid with and without ink on six random schools.
+`sweep` runs `n_seeds` independent hunts for every value and returns the fraction in which the squid was caught within `t_max`. The next chunk compares a squid without ink, with ink and blind fish, and with ink and searching fish on six random hunts.
 
 ```{python}
 #| label: tbl-ink-vs-none
@@ -205,28 +207,42 @@ from dataclasses import replace
 from amlab.collective_motion.squid_ink import InkParams, hunt
 
 base = InkParams()
-for label, par in [("no ink", replace(base, ink=False)), ("with ink", base)]:
+for label, par in [("no ink", replace(base, ink=False)), ("blind fish", replace(base, search=False)), ("searching", base)]:
     res = [hunt(par, seed, t_max=250.0) for seed in range(6)]
     caught = int(sum(r["captured"] for r in res))
-    print(f"{label:9s} caught {caught} of 6 hunts, "
+    print(f"{label:10s} caught {caught} of 6 hunts, "
           f"mean time {np.mean([r['time'] for r in res]):5.1f}, "
           f"mean ink releases {np.mean([r['releases'] for r in res]):4.1f}")
 ```
 
 ## Experiment: how much does the ink help?
 
-`run_experiments.py squid` reproduces the figure below. For each value of one parameter it runs **60 independent hunts** of at most 250 t.u. and records the time at which the squid is caught. The line is the mean, the band is a 95% confidence interval for the mean, and the dashed line is the same hunt without ink.
+`run_experiments.py squid` reproduces the figures below. Every hunt starts from a random position of the school and a random heading of the squid, lasts at most 250 t.u. and ends at the capture. Each setting has **60 independent hunts**. The line is the mean time to capture, the band is a 95% confidence interval for the mean, and the dashed line is the same hunt without ink. Every single hunt is saved in `data/squid_ink_sweeps.csv`.
 
-![Mean time until the squid is caught, against the opacity of the ink, the ink thickness, the share of the remaining ink used per release and the size of the school.](../../img/squid_ink_sweeps.png){#fig-squid-sweeps fig-alt="Four panels sharing one vertical axis, the mean time until capture in time units. A dashed line at about 32 is the squid without ink. Top left: the time rises from 32 at zero opacity to about 67 at opacity 5.6 and then stays flat. Top right: it rises from 39 to 77 as the ink thickness goes from 1 to 10. Bottom left: it falls from 98 to 53 as the share of ink used per release goes from 0.2 to 0.8. Bottom right: it falls slowly from 62 to 46 as the school grows from 8 to 60 fish."}
+![Mean time until the squid is caught. Top left: five tactics. Then the opacity of the ink, the share of the remaining ink used per release and the size of the school.](../../img/squid_ink_sweeps.png){#fig-squid-sweeps fig-alt="Four panels of mean time to capture in time units. Top left, bars: no ink about 30, ink with blind fish about 59, ink with fish that search about 37, decoy about 47, unlimited ink about 203 with only 24 of 60 squid caught. Top right: the time rises slowly from 30 at zero opacity to 44 at opacity 8. Bottom left: it falls from 90 to 35 as the share of ink used per release goes from 0.2 to 0.8. Bottom right: it falls from 50 to 34 as the school grows from 8 to 60."}
 
-What the figure shows:
+![Share of squid not yet caught, against time, for the five tactics.](../../img/squid_ink_survival.png){#fig-squid-survival fig-alt="Five falling step curves. No ink falls first, between 20 and 40 time units. Ink with searching fish follows, finishing by 45. The decoy finishes by 95. Ink with blind fish finishes by 85. Unlimited ink stays high and ends at 0.6: 60 percent of squid are never caught within 250 time units."}
 
-- **The squid is delayed, not saved.** In all 60 hunts of the default setting the squid is caught: after 60 t.u. on average, against 32 t.u. without ink. The ink buys roughly a factor of two in time.
-- **Opacity saturates.** The mean time grows from 32 at $\kappa = 0$ to about 67 at $\kappa = 5.6$ and then stays flat, as Exercise 3 explains.
-- **Thicker ink helps for longer**, because a thicker cloud is wider and lasts longer (39 t.u. at thickness 1, 77 at thickness 10).
-- **Spending the sac in many small clouds is better than in two large ones**: the mean time falls from 98 t.u. when the squid uses 20% of what is left per release to 53 t.u. when it uses 80%. Thin clouds are enough to confuse the fish, and the squid keeps something in reserve.
-- **Bigger schools find the squid sooner** (62 t.u. for 8 fish, 46 for 60), but only moderately: the fish pursue the same squid whatever the school size.
-- **Unlimited ink is a different model.** With an endless supply the squid was caught in only 23 of 60 hunts within 250 t.u. (mean time 198 t.u., which is cut off at 250 t.u. and therefore too low). The limited sac is what turns an escape into a delay.
+What the figures show:
+
+- **Search takes most of the ink's benefit away.** Blind fish need 59 t.u. on average, against 30 without ink. Fish that remember where they saw the squid need only 37.5 t.u. The ink delays the capture by about 7 t.u. in that case, not by 29. The ink works well only against fish that forget.
+- **Bait is worse than smoke.** The decoy tactic (47 t.u.) is faster than blind fish (59 t.u.), because the squid releases ink at its own position, so the fish are led straight to it. A real pseudomorph is released away from the squid while the animal jets off in another direction, which this model does not do.
+- **Opacity gives a slow gain.** With search on, the mean time rises from 30 at $\kappa = 0$ to 44 at $\kappa = 8$. There is no sharp threshold.
+- **Spending the sac in many small clouds is better than in two large ones**: the mean time falls from 90 t.u. when the squid uses 20% of what is left per release (13 releases on average) to 35 t.u. when it uses 80% (2 releases). With the default 60% there are always 4 releases. That number follows from the arithmetic of the sac ($0.4^4 = 0.026$ is below the empty level 0.05) and is not a finding.
+- **Bigger schools find the squid sooner** (50 t.u. for 8 fish, 34 for 60), with diminishing returns.
+- **Unlimited ink is a different model.** With an endless supply (23 releases on average) 36 of 60 squid were never caught within 250 t.u., and the mean of 203 t.u. is cut off at 250, so it is too low. The survival curve is the honest way to show it. The limited sac turns an escape into a delay.
+- **Two dials, one effect.** The ink absorbs through the product of opacity and concentration, and a thicker bolus has a higher concentration. At the same product $\kappa \times$ thickness $= 8.4$ the mean time is 39, 37.5 and 36 t.u. for $\kappa = 1.4$, 2.8 and 8.4. Compare this with the 14 t.u. range of the opacity curve itself.
+
+```{python}
+#| label: tbl-ink-product
+import csv
+import numpy as np
+
+rows = list(csv.DictReader(open("data/squid_ink_sweeps.csv")))
+for kappa in (1.4, 2.8, 8.4):
+    t = np.array([float(r["time"]) for r in rows if r["sweep"] == "product" and float(r["value"]) == kappa])
+    print(f"kappa = {kappa:3.1f}, thickness = {8.4 / kappa:3.1f}: mean time {t.mean():5.1f} +- {1.96 * t.std(ddof=1) / np.sqrt(len(t)):3.1f}")
+```
 
 ::: {.callout-note}
 ## Exercise 1: a cloud that does not absorb
@@ -238,7 +254,7 @@ With $\kappa = 0$ the squid still releases ink, and the cloud spreads exactly as
 ::: {.callout-tip collapse="true"}
 ## Solution
 
-The ink acts only through the transmission $\tau = \exp[-(a + \kappa \bar c) d]$ of @eq-transmission. At $\kappa = 0$ only the weak clear-water term $a$ is left, whatever the concentration, so the fish pursue at full weight and the capture probability equals that of a squid without ink. The bottom-left panel of the figure and the unlimited-ink control show what ink costs in the model: a finite sac. With unlimited ink the squid would be caught in only 23 of 60 hunts; with the realistic sac it is always caught.
+The ink acts only through the transmission $\tau = \exp[-(a + \kappa \bar c) d]$ of @eq-transmission. At $\kappa = 0$ only the weak clear-water term $a$ is left, whatever the concentration, so the fish pursue at full weight and the capture probability equals that of a squid without ink. The bottom-left panel of the figure and the unlimited-ink control show what ink costs in the model: a finite sac. With unlimited ink 36 of 60 squid are never caught within 250 t.u.; with the realistic sac every one is caught.
 :::
 
 ::: {.callout-note}
@@ -255,20 +271,20 @@ A cell gets $\tfrac{s}{4}$ of the ink of each neighbour and keeps $1 - s$, so $c
 :::
 
 ::: {.callout-note}
-## Exercise 3: thick or thin ink
+## Exercise 3: two dials, one effect
 
-A thicker bolus covers a larger area for longer. Why can the benefit of thicker ink still saturate? Think about the transmission of @eq-transmission when $\bar c\, d$ is already large.
+The model has two ways to make the ink stronger: the opacity $\kappa$ and the thickness of the bolus. The output of @tbl-ink-product shows that they give nearly the same capture time when their product is fixed, which is why the page offers a single **ink strength** slider (the opacity; the bolus thickness is fixed at 3). Use @eq-transmission to explain why, and say what small effect still separates the two.
 
 :::
 
 ::: {.callout-tip collapse="true"}
 ## Solution
 
-The transmission depends on the product $\kappa\,\bar c\,d$ in an exponential. Once the optical depth $\kappa\,\bar c\,d$ is a few units, $\tau$ is already close to 0, and more ink only makes a very small number even smaller. The extra ink then helps only through its **extent**: a wider cloud takes more time to cross and to leave. Compare the plateau of the opacity curve in @fig-squid-sweeps with the thickness curve, which keeps rising.
+The transmission depends only on the product $\kappa\,\bar c\,d$. The spreading rule is linear, so a bolus that is $k$ times thicker has $k$ times the concentration everywhere (until the cut-off removes the faint edge), and multiplying $\kappa$ by $k$ does the same to the optical depth. What separates the two dials is the cut-off $\theta$: a thick cloud keeps cells above $\theta$ for longer, so it is a little wider and lasts longer than a thin cloud with a higher opacity.
 :::
 
 ::: {.python-next}
-**Build this in Python.** Use `sweep` to vary the **ink thickness** and the **spreading fraction** `spread` of @eq-spread. Which of the two controls the capture probability, and why? Then add a **decoy**: let fish within 3 BL of the ink maximum steer toward it for a few time units. Does a decoy help more than a smoke screen alone?
+**Build this in Python.** Use `sweep` to vary the **spreading fraction** `spread` of @eq-spread. Does a wider, thinner cloud or a compact, dense one hide the squid better, for the same amount of ink? Then change the code so that the squid releases the decoy away from itself. Does a decoy that is released *away* from the squid (while the squid jets off the other way) help more than a smoke screen alone?
 :::
 
 ## Biological reality check
@@ -277,7 +293,7 @@ How well does the model match what is known about cephalopod inking? The points 
 
 **What matches.**
 
-- *Ink delays, it does not guarantee escape.* Live predators were slowed, not stopped, by ink [@wood2010caribbean; @derby2013ink], and Derby's review lists decoy, smoke screen and chemical effects as complementary roles [@derby2014cephalopod]. Our default squid is delayed by about a factor of two.
+- *Ink delays, it does not guarantee escape.* Live predators were slowed, not stopped, by ink [@wood2010caribbean; @derby2013ink], and Derby's review lists decoy, smoke screen and chemical effects as complementary roles [@derby2014cephalopod]. Against fish that forget, our squid is delayed by about a factor of two; against fish that search, much less.
 - *The ink sac is finite and refills slowly.* In the cuttlefish *Sepia pharaonis* a full sac held about 765 mg of ink, and three inkings in a row released about 498, 178 and 38 mg; refilling took about 30 days [@jiang2019continuous]. Each release therefore spent roughly half or more of what was left, which is the rule of our model with a share of 0.6 per release. The default value is a round number inspired by these data, not a fit.
 - *Spreading and dilution.* A real cloud expands and thins out in seconds to minutes, and a **smoke screen** and a **pseudomorph** (a compact, squid-sized blob of mucus-rich ink) are different tactics [@derby2014cephalopod]. The model has only the first.
 
@@ -303,4 +319,6 @@ This is a better-grounded use of the word **wave** than forcing a chemical Turin
 - The ink supply is finite, but the refill is not modelled (a real sac needs about a month) and the ink has chemical effects (irritation, disruption of smell) that we do not model.
 - The squid does not use the ink strategically. A real squid changes colour, jets away and sometimes releases the ink as a decoy rather than a screen.
 - The fish see the squid through a single number, the transmission of the line between them. Real vision is limited by contrast, by the angle and by the size of the target.
-- The ink spreads by a diffusion-like rule. Real ink is carried by the flow and by the jet of the squid.
+- The ink spreads by a diffusion-like rule with a **constant** coefficient. Real ink is mixed by turbulence and by the jet, and turbulent spreading speeds up as the cloud grows. There is no current. The cut-off also deletes ink (about 78% of it within 30 t.u.), so it acts as a sink and not only as dilution.
+- The fish search is a simple rule (go to the last-seen place and give up on arrival). Real predators use the lateral line, smell and memory in more complicated ways, and the fish here follow Vicsek-type rules, not the zonal rules of the [Couzin model](../collective-behaviour/couzin-model.qmd). A trial with Couzin zones gave a longer delay (about 2.4 times against 1.9 times), but it depended on how the social term was weighted, so it is left open.
+- The **periodic box** removes escape by distance, and the speeds of fish and squid were chosen so that the ink matters. Change them and the numbers change.

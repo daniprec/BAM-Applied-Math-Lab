@@ -240,70 +240,104 @@ def crowd(seeds: int, plot_only: bool) -> None:
 # ---------------------------------------------------------------------------
 # Squid ink
 # ---------------------------------------------------------------------------
+def _squid_hunt(job):
+    sweep, value, params, seed = job
+    r = si.hunt(params, seed, 250.0)
+    return sweep, value, seed, r["time"], r["captured"], r["releases"]
+
+
 def squid(seeds: int, plot_only: bool) -> None:
-    """Time to capture of the squid against opacity, thickness, ink use and school size."""
-    keys = ["values", "k", "n", "capture_prob", "mean_time", "sem_time", "releases"]
-    t_max = 250.0
+    """Squid ink: one long CSV with every hunt, then means, intervals and survival curves."""
+    from dataclasses import replace
+    from multiprocessing import Pool
+
     base = si.InkParams()
     out = DATA / "squid_ink_sweeps.csv"
     if not plot_only:
         runs = {
-            "noink": ("n_fish", [base.n_fish], si.InkParams(ink=False)),
-            "unlimited": ("n_fish", [base.n_fish], si.InkParams(use_fraction=0.0)),
-            "opacity": ("kappa", [0.0, 0.7, 1.4, 2.8, 5.6, 8.0], base),
-            "thickness": ("thickness", [1.0, 2.0, 3.0, 6.0, 10.0], base),
-            "inkuse": ("use_fraction", [0.2, 0.4, 0.6, 0.8], base),
-            "school": ("n_fish", [8, 16, 24, 40, 60], base),
+            "tactic": [  # value = index into TACTICS
+                (0, replace(base, ink=False)),
+                (1, replace(base, search=False)),
+                (2, base),
+                (3, replace(base, decoy=True)),
+                (4, replace(base, use_fraction=0.0)),
+            ],
+            "opacity": [(v, replace(base, kappa=v)) for v in [0.0, 0.7, 1.4, 2.8, 5.6, 8.0]],
+            "inkuse": [(v, replace(base, use_fraction=v)) for v in [0.2, 0.4, 0.6, 0.8]],
+            "school": [(v, replace(base, n_fish=int(v))) for v in [8, 16, 24, 40, 60]],
+            # same product kappa * thickness = 8.4: is the effect one dial or two?
+            "product": [(k, replace(base, kappa=k, thickness=8.4 / k)) for k in [1.4, 2.8, 8.4]],
         }
+        jobs = [(s, v, p, seed) for s, lst in runs.items() for v, p in lst for seed in range(seeds)]
+        print(f"squid: {len(jobs)} hunts")
+        with Pool() as pool:
+            rows = pool.map(_squid_hunt, jobs, chunksize=8)
         DATA.mkdir(exist_ok=True)
         with open(out, "w", newline="") as f:
             w = csv.writer(f)
-            w.writerow(["sweep", *keys])
-            for name, (param, values, b) in runs.items():
-                print(f"squid: {name}")
-                res = si.sweep(param, values, base=b, n_seeds=seeds, t_max=t_max)
-                for row in zip(*[res[k] for k in keys]):
-                    w.writerow([name, *[f"{v:.6g}" for v in row]])
+            w.writerow(["sweep", "value", "seed", "time", "captured", "releases"])
+            w.writerows(rows)
     with open(out) as f:
-        rows = list(csv.DictReader(f))
+        data = list(csv.DictReader(f))
 
-    def load_sweep(name):
-        sel = [r for r in rows if r["sweep"] == name]
-        return {k: np.array([float(r[k]) for r in sel]) for k in keys}
+    def group(sweep):
+        """value -> array of capture times (250 where the squid was not caught)."""
+        g = {}
+        for r in data:
+            if r["sweep"] == sweep:
+                g.setdefault(float(r["value"]), []).append((float(r["time"]), float(r["captured"])))
+        return {v: np.array(x) for v, x in sorted(g.items())}
 
-    r0, ru = load_sweep("noink"), load_sweep("unlimited")
+    def mean_ci(x):
+        t = x[:, 0]
+        return t.mean(), 1.96 * t.std(ddof=1) / np.sqrt(len(t))
 
     P = apply_theme("light")
     IMG.mkdir(exist_ok=True)
-    fig, axs = plt.subplots(2, 2, figsize=(9.5, 6.4), constrained_layout=True, sharey=True)
-    top = 0.0
+    tactics = group("tactic")
+    labels = ["no ink", "ink,\nblind fish", "ink,\nfish search", "decoy", "unlimited\nink"]
+    cols = [P["bad"], "#FF7B31", P["prey"], P["accent"], "#888A8C"]
+    fig, axs = plt.subplots(2, 2, figsize=(9.5, 6.6), constrained_layout=True)
+    ax = axs[0, 0]
+    for k, (v, x) in enumerate(tactics.items()):
+        m, ci = mean_ci(x)
+        ax.bar(k, m, yerr=ci, color=cols[k], capsize=3, alpha=0.9)
+        if x[:, 1].mean() < 1:
+            ax.text(k, m + ci + 6, f"{int(x[:, 1].sum())}/{len(x)}\ncaught", ha="center", fontsize=7.5, color=P["muted"])
+    ax.set_xticks(range(5), labels, fontsize=8)
+    ax.set_ylabel("mean time to capture (t.u.)")
+    ax.set_title("Tactics", loc="left")
+    ref = mean_ci(tactics[0.0])[0]
     for ax, name, xl in [
-        (axs[0, 0], "opacity", "ink opacity \u03ba"),
-        (axs[0, 1], "thickness", "ink thickness (peak of the first bolus)"),
+        (axs[0, 1], "opacity", "ink opacity \u03ba"),
         (axs[1, 0], "inkuse", "share of the remaining ink used per release"),
         (axs[1, 1], "school", "school size"),
     ]:
-        r = load_sweep(name)
-        ax.fill_between(
-            r["values"], r["mean_time"] - 1.96 * r["sem_time"], r["mean_time"] + 1.96 * r["sem_time"],
-            color=P["accent"], alpha=0.18, lw=0,
-        )  # fmt: skip
-        ax.plot(r["values"], r["mean_time"], "o-", color=P["prey"], lw=2.2, ms=6, label="squid with ink")
-        ax.axhline(r0["mean_time"][0], color=P["bad"], lw=1.6, ls="--", label="no ink")
-        top = max(top, float((r["mean_time"] + 1.96 * r["sem_time"]).max()))
+        g = group(name)
+        xs = np.array(list(g))
+        ms, cis = np.array([mean_ci(x) for x in g.values()]).T
+        ax.fill_between(xs, ms - cis, ms + cis, color=P["accent"], alpha=0.18, lw=0)
+        ax.plot(xs, ms, "o-", color=P["prey"], lw=2.2, ms=6)
+        ax.axhline(ref, color=P["bad"], lw=1.6, ls="--", label="no ink")
         ax.set_xlabel(xl)
-    for ax in axs.flat:
-        ax.set_ylim(0, 1.08 * top)
-    for ax in axs[:, 0]:
         ax.set_ylabel("mean time to capture (t.u.)")
-    k_u, n_u = int(ru["k"][0]), int(ru["n"][0])
-    axs[1, 0].text(
-        0.98, 0.04, f"Unlimited ink (not shown): only {k_u} of {n_u} squid\ncaught within 250 t.u.",
-        transform=axs[1, 0].transAxes, ha="right", va="bottom", fontsize=8, color=P["muted"],
-    )  # fmt: skip
-    axs[1, 0].legend(loc="upper right", fontsize=8)
+        ax.set_ylim(bottom=0)
+    axs[0, 1].legend(loc="lower right", fontsize=8)
     fig.savefig(IMG / "squid_ink_sweeps.png", dpi=160)
     print("wrote", IMG / "squid_ink_sweeps.png")
+
+    fig, ax = plt.subplots(figsize=(6.4, 4.0), constrained_layout=True)
+    for k, (v, x) in enumerate(tactics.items()):
+        t = np.sort(x[:, 0][x[:, 1] > 0])
+        steps = np.concatenate(([0.0], t, [250.0]))
+        free = np.concatenate(([1.0], 1 - np.arange(1, len(t) + 1) / len(x), [1 - len(t) / len(x)]))
+        ax.step(steps, free, where="post", color=cols[k], lw=2.2, label=labels[k].replace("\n", " "))
+    ax.set_xlabel("time (t.u.)")
+    ax.set_ylabel("share of squid not yet caught")
+    ax.set_ylim(0, 1.02)
+    ax.legend(fontsize=8)
+    fig.savefig(IMG / "squid_ink_survival.png", dpi=160)
+    print("wrote", IMG / "squid_ink_survival.png")
 
 
 if __name__ == "__main__":

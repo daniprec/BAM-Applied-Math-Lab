@@ -152,16 +152,17 @@ python amlab/collective_motion/squid_ink_animation.py
 | --------------------- | ---------------------------------------------------- | ------- |
 | `--theme dark\|light` | as above                                             | `dark`  |
 | `--fish 40`           | number of fish                                       | 24      |
-| `--kappa 2.8`         | opacity of the ink                                   | 2.8     |
-| `--thickness 5`       | peak amount of ink in a bolus                        | 3       |
+| `--kappa 2.8`         | ink strength (opacity of the ink)                                   | 2.8     |
 | `--ink-use 0.3`       | share of the remaining ink used per release (0 = unlimited) | 0.6 |
 | `--reload 10`         | minimum time between two releases                    | 5       |
 | `--fixed`             | start with a fixed camera on the whole sea           | off     |
+| `--blind`             | fish do not search the last-seen place (key S)       | off     |
+| `--decoy`             | fish chase the densest ink blob (key D)              | off     |
 | `--no-ink`            | control: a squid without ink                         | off     |
 | `--speed 1`           | simulation steps per frame (lower is lighter)        | 2       |
 | `--seed 7`            | random seed                                          | 4       |
 
-In the window: the opacity, thickness and ink-use sliders change live. The school size restarts the hunt. **Ink on/off**, **New hunt** and **Pause** (or the space bar) do what they say. **Camera** (or the C key) switches between following the squid and a fixed view of the whole sea.
+In the window: the ink-strength and ink-use sliders change live. The school size restarts the hunt. **Ink on/off**, **New hunt** and **Pause** (or the space bar) do what they say. **Camera** (or the C key) switches between following the squid and a fixed view of the whole sea. **Recharge ink** (or R) refills the sac, and the squid turns from green to grey as it empties.
 
 **Crowd evacuation**
 
@@ -222,7 +223,7 @@ print(r["evac_time"], r["flow"], r["door_pressure"])
 ```bash
 python amlab/collective_motion/run_experiments.py confusion          # about 2 minutes
 python amlab/collective_motion/run_experiments.py crowd              # about 20 minutes
-python amlab/collective_motion/run_experiments.py squid --seeds 60   # about 15 minutes
+python amlab/collective_motion/run_experiments.py squid --seeds 60   # about 15 minutes; writes data/squid_ink_sweeps.csv and two figures
 python amlab/collective_motion/run_experiments.py all --seeds 3      # a faster draft
 python amlab/collective_motion/run_experiments.py crowd --plot-only  # redraw from data/*.csv
 ```
