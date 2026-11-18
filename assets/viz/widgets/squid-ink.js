@@ -19,6 +19,7 @@
   const K = {
     n: 24, L: 40, G: 100, dt: 0.12,
     spread: 0.5, threshold: 0.002, inkSteps: 3, thickness: 3.0, boWidth: 0.9, kappa: 2.8, water: 0.05, reload: 5.0, useFraction: 0.6, emptyBelow: 0.05, ink: true,
+    search: true, seeThr: 0.2, searchGain: 0.8, searchRadius: 1.5, decoy: false, decoyRange: 10, decoyMin: 0.2, randomStart: true,
     vFish: 0.70, fishTurn: 0.20, fishNoise: 0.035, rSep: 1.15, rSchool: 5.0, wAlign: 1.1, wCohere: 0.35, wSep: 1.4, wPursue: 1.9,
     vCruise: 0.30, vFlee: 0.45, flight: 8.0, squidTurn: 0.33, squidNoise: 0.045, capture: 0.8,
   };
@@ -32,12 +33,20 @@
       p, dx, time: 0, releases: 0, captured: false, captureTime: NaN, cooldown: 0, closest: 0, stock: 1,
       fx: new Float64Array(n), fy: new Float64Array(n), fh: new Float64Array(n), T: new Float64Array(n).fill(1),
       sx: 0.28 * L, sy: 0.42 * L, sh: -0.15,
+      lx: new Float64Array(n), ly: new Float64Array(n), searching: new Uint8Array(n).fill(1),
       ink: new Float32Array(G * G), tmp: new Float32Array(G * G),
     };
+    let cx0 = 0.68 * L, cy0 = 0.52 * L;
+    if (p.randomStart) {
+      m.sx = rng() * L; m.sy = rng() * L; m.sh = (rng() * 2 - 1) * Math.PI;
+      const ang = (rng() * 2 - 1) * Math.PI, dist0 = 11 + 5 * rng();
+      cx0 = m.sx + dist0 * Math.cos(ang); cy0 = m.sy + dist0 * Math.sin(ang);
+    }
     for (let i = 0; i < n; i++) {
-      m.fx[i] = (((0.68 * L + 2.6 * rng.normal()) % L) + L) % L;
-      m.fy[i] = (((0.52 * L + 2.6 * rng.normal()) % L) + L) % L;
+      m.fx[i] = ((((cx0 + 2.6 * rng.normal()) % L) + L) % L);
+      m.fy[i] = ((((cy0 + 2.6 * rng.normal()) % L) + L) % L);
       m.fh[i] = (rng() * 2 - 1) * Math.PI;
+      m.lx[i] = m.sx; m.ly[i] = m.sy;
     }
     const nearest = () => {
       let best = Infinity;
@@ -106,8 +115,17 @@
       }
     };
 
+    // Densest ink cells (decoys): up to 60 cells above the threshold, largest first.
+    m.blobs = function () {
+      const list = [];
+      for (let k = 0; k < m.ink.length; k++) if (m.ink[k] > p.decoyMin) list.push(k);
+      list.sort((u, v) => m.ink[v] - m.ink[u]);
+      return list.slice(0, 60).map((k) => ({ x: (k % G) * dx, y: Math.floor(k / G) * dx, c: m.ink[k] }));
+    };
+
     m.fishUpdate = function () {
       const nh = new Float64Array(n);
+      const blobs = p.decoy ? m.blobs() : [];
       for (let i = 0; i < n; i++) {
         let ax = 0, ay = 0, nS = 0, awx = 0, awy = 0, cx = 0, cy = 0;
         for (let j = 0; j < n; j++) {
@@ -117,10 +135,28 @@
           if (d < p.rSchool) { nS++; cx += dx_; cy += dy_; ax += Math.cos(m.fh[j]); ay += Math.sin(m.fh[j]); }
         }
         const nn = Math.max(nS, 1);
-        let px = wrap(m.sx - m.fx[i]), py = wrap(m.sy - m.fy[i]);
+        // Where does this fish steer, and how strongly? (default: the squid, weight = transmission)
+        let tx = m.sx, ty = m.sy, wt = m.T[i];
+        if (p.search) {
+          const seen = m.T[i] > p.seeThr;
+          if (seen) { m.lx[i] = m.sx; m.ly[i] = m.sy; m.searching[i] = 1; }
+          else {
+            tx = m.lx[i]; ty = m.ly[i];
+            if (Math.hypot(wrap(tx - m.fx[i]), wrap(ty - m.fy[i])) < p.searchRadius) m.searching[i] = 0;
+            wt = m.searching[i] ? p.searchGain : 0;
+          }
+        }
+        if (blobs.length) {
+          let bestC = -1;
+          for (const b of blobs) {
+            if (Math.hypot(wrap(b.x - m.fx[i]), wrap(b.y - m.fy[i])) < p.decoyRange && b.c > bestC) { bestC = b.c; tx = b.x; ty = b.y; }
+          }
+          if (bestC > 0) wt = 1;
+        }
+        let px = wrap(tx - m.fx[i]), py = wrap(ty - m.fy[i]);
         const pn = Math.max(Math.hypot(px, py), 1e-8); px /= pn; py /= pn;
-        const vx = p.wAlign * (ax / nn) + p.wCohere * (cx / nn) + p.wSep * awx + p.wPursue * m.T[i] * px;
-        const vy = p.wAlign * (ay / nn) + p.wCohere * (cy / nn) + p.wSep * awy + p.wPursue * m.T[i] * py;
+        const vx = p.wAlign * (ax / nn) + p.wCohere * (cx / nn) + p.wSep * awx + p.wPursue * wt * px;
+        const vy = p.wAlign * (ay / nn) + p.wCohere * (cy / nn) + p.wSep * awy + p.wPursue * wt * py;
         const turn = clamp(wrapPi(Math.atan2(vy, vx) - m.fh[i]), -p.fishTurn, p.fishTurn) + p.fishNoise * rng.normal();
         nh[i] = mod2pi(m.fh[i] + turn);
       }
@@ -177,10 +213,8 @@
       let m, hist, ended, endFrames, acc = 0;
       const tally = { captured: 0, escaped: 0 };
 
-      const sKappa = VIZ.slider(ui.controls, { label: "Ink opacity κ", min: 0, max: 8, step: 0.2, value: P.kappa,
+      const sKappa = VIZ.slider(ui.controls, { label: "Ink strength κ", min: 0, max: 8, step: 0.2, value: P.kappa,
         fmt: (v) => v.toFixed(1), onInput: (v) => { P.kappa = v; } });
-      const sThick = VIZ.slider(ui.controls, { label: "Ink thickness", min: 0.5, max: 8, step: 0.5, value: P.thickness,
-        fmt: (v) => v.toFixed(1), onInput: (v) => { P.thickness = v; } });
       const sUse = VIZ.slider(ui.controls, { label: "Ink used per release", min: 0, max: 0.9, step: 0.1, value: P.useFraction,
         fmt: (v) => v.toFixed(1), onInput: (v) => { P.useFraction = v; } });
       VIZ.select(ui.controls, { label: "School size", value: "24", options: [["12", "12"], ["24", "24"], ["40", "40"]],
@@ -191,6 +225,8 @@
       const camBtn = VIZ.button(g, "Camera: follows squid", () => {
         follow = !follow; camBtn.textContent = follow ? "Camera: follows squid" : "Camera: fixed"; redraw();
       });
+      const searchBtn = VIZ.button(g, "Fish search: on", () => { P.search = !P.search; searchBtn.textContent = P.search ? "Fish search: on" : "Fish search: off"; resetTally(); });
+      const decoyBtn = VIZ.button(g, "Decoy: off", () => { P.decoy = !P.decoy; decoyBtn.textContent = P.decoy ? "Decoy: on" : "Decoy: off"; resetTally(); });
       VIZ.button(g, "Recharge ink", () => { m.stock = 1; redraw(); });
       VIZ.button(g, "New hunt", () => { S.seed++; reset(); }, { primary: true });
 
@@ -331,7 +367,7 @@
         const n = tally.captured + tally.escaped;
         const pc = n ? Math.round((100 * tally.captured) / n) + " %" : "n/a";
         ui.readout.textContent = `time ${m.time.toFixed(1)} · closest fish ${m.closest.toFixed(1)} BL · mean visibility ${m.meanT().toFixed(2)} · ink releases ${m.releases} · ` +
-          `hunts: captured ${tally.captured}, escaped ${tally.escaped}, capture probability ${pc} · ink ${P.ink ? "on" : "off"}, κ = ${P.kappa.toFixed(1)}, thickness ${P.thickness.toFixed(1)}, ink used per release ${P.useFraction.toFixed(1)}`;
+          `hunts: captured ${tally.captured}, escaped ${tally.escaped}, capture probability ${pc} · ink ${P.ink ? "on" : "off"}, κ = ${P.kappa.toFixed(1)}, ink used per release ${P.useFraction.toFixed(1)}`;
       }
       function redraw() { stage.draw(); plot.draw(); readout(); }
 

@@ -91,6 +91,15 @@ class InkParams:
     squid_noise: float = 0.045
     # outcome
     capture_radius: float = 0.8
+    # ---- how the fish react to the ink, and where the hunt starts ----
+    search: bool = True  # a fish that loses the squid heads for the place where it last saw it
+    see_threshold: float = 0.2  # transmission above which a fish counts as "seeing" the squid
+    search_gain: float = 0.8  # pursuit weight toward the last-known position
+    search_radius: float = 1.5  # a fish gives up once it is this close to that place
+    decoy: bool = False  # fish chase the densest ink blob (a decoy) instead of the squid
+    decoy_range: float = 10.0
+    decoy_min: float = 0.2  # blobs thinner than this are not mistaken for a squid
+    random_start: bool = True  # random school position and squid heading in every hunt
 
 
 class SquidInkSimulation:
@@ -102,11 +111,19 @@ class SquidInkSimulation:
         self.dx = p.domain / p.grid
         if not 0.0 <= p.spread <= 1.0:
             raise ValueError("spread must lie in [0, 1]")
-        centre = np.array([p.domain * 0.68, p.domain * 0.52])
+        if p.random_start:
+            self.squid = self.rng.uniform(0, p.domain, 2)
+            angle = self.rng.uniform(-np.pi, np.pi)
+            centre = self.squid + self.rng.uniform(11.0, 16.0) * np.array([np.cos(angle), np.sin(angle)])
+            self.squid_heading = self.rng.uniform(-np.pi, np.pi)
+        else:
+            centre = np.array([p.domain * 0.68, p.domain * 0.52])
+            self.squid = np.array([p.domain * 0.28, p.domain * 0.42])
+            self.squid_heading = -0.15
         self.fish = (centre + self.rng.normal(0, 2.6, (p.n_fish, 2))) % p.domain
         self.fish_heading = self.rng.uniform(-np.pi, np.pi, p.n_fish)
-        self.squid = np.array([p.domain * 0.28, p.domain * 0.42])
-        self.squid_heading = -0.15
+        self.last_seen = np.tile(self.squid, (p.n_fish, 1))  # place where each fish last saw the squid
+        self.searching = np.ones(p.n_fish, bool)
         self.ink = np.zeros((p.grid, p.grid))
         self.transmission = np.ones(p.n_fish)
         self.cooldown = 0.0
@@ -181,6 +198,41 @@ class SquidInkSimulation:
         return np.exp(-(p.water + p.kappa * mean_c) * distance)
 
     # --------------------------------------------------------------- fish
+    def _targets(self, transmission):
+        """Where each fish steers and with what weight.
+
+        Original rule: toward the squid, with weight equal to the transmission.
+        ``search``: a fish that has lost the squid goes to the place where it last saw it
+        and gives up on arrival. ``decoy``: fish chase the densest ink blob in range.
+        """
+        p = self.p
+        n = p.n_fish
+        target = np.tile(self.squid, (n, 1))
+        weight = transmission.copy()
+        if p.search:
+            seen = transmission > p.see_threshold
+            self.last_seen[seen] = self.squid
+            self.searching |= seen
+            gap = np.linalg.norm(wrap_delta(self.last_seen - self.fish, p.domain), axis=1)
+            self.searching &= ~(~seen & (gap < p.search_radius))
+            target = np.where(seen[:, None], target, self.last_seen)
+            weight = np.where(seen, transmission, np.where(self.searching, p.search_gain, 0.0))
+        if p.decoy and self.ink.max() > p.decoy_min:
+            k = min(60, self.ink.size)
+            idx = np.argpartition(self.ink.ravel(), -k)[-k:]
+            vals = self.ink.ravel()[idx]
+            keep = vals > p.decoy_min
+            idx, vals = idx[keep], vals[keep]
+            by, bx = np.divmod(idx, p.grid)
+            pos = np.column_stack((bx, by)) * self.dx
+            d = np.linalg.norm(wrap_delta(pos[None] - self.fish[:, None], p.domain), axis=2)
+            score = np.where(d < p.decoy_range, vals[None, :], -1.0)
+            j = score.argmax(axis=1)
+            has = score[np.arange(n), j] > 0
+            target = np.where(has[:, None], pos[j], target)
+            weight = np.where(has, 1.0, weight)
+        return target, weight
+
     def _fish_update(self, transmission: np.ndarray) -> None:
         p = self.p
         delta = wrap_delta(self.fish[None, :, :] - self.fish[:, None, :], p.domain)
@@ -194,10 +246,11 @@ class SquidInkSimulation:
         ax = (school * np.cos(self.fish_heading)[None, :]).sum(axis=1)
         ay = (school * np.sin(self.fish_heading)[None, :]).sum(axis=1)
         alignment = np.column_stack((ax, ay)) / n_school
-        pursuit = wrap_delta(self.squid[None, :] - self.fish, p.domain)
+        target, weight = self._targets(transmission)
+        pursuit = wrap_delta(target - self.fish, p.domain)
         pursuit /= np.maximum(np.linalg.norm(pursuit, axis=1)[:, None], 1e-8)
         v = p.w_align * alignment + p.w_cohere * cohesion + p.w_separate * away
-        v += (p.w_pursue * transmission)[:, None] * pursuit
+        v += (p.w_pursue * weight)[:, None] * pursuit
         desired = np.arctan2(v[:, 1], v[:, 0])
         turn = np.clip(wrap_pi(desired - self.fish_heading), -p.fish_turn, p.fish_turn)
         turn += self.rng.normal(0.0, p.fish_noise, p.n_fish)

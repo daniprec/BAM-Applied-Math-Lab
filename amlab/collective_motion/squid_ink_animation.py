@@ -8,19 +8,20 @@ Run from the repository root:
 
 What you see
 ------------
-* Camera: follows the squid by default; the "Camera" button (or the C key) switches to
-  a fixed frame on the whole 40 x 40 body-length sea.
-* The camera follows the squid (the green animal with eight arms and two long
-  tentacles). Small dots on the water mark the world, so you see it move.
-* The ink cloud (blue-violet). It spreads in every step, thins out and
-  vanishes.
-* The school: red arrows. A **filled** arrow can see the squid, a **hollow**
-  arrow has lost it behind the ink (transmission below 0.5).
-* A white ring around the squid means the ink gland is reloading.
+* Camera: follows the squid (the animal with eight arms and two long tentacles) by
+  default. "Camera" (or C) switches to a fixed frame on the whole 40 x 40 body-length sea.
+* The squid turns from green to grey as its ink sac empties. "Recharge ink" (or R)
+  refills it to 100 %. The "ink supply" row shows how much is left.
+* The ink cloud (blue-violet) spreads, thins out and vanishes.
+* The school: red arrows. A **filled** arrow can see the squid, a **hollow** arrow
+  has lost it behind the ink (transmission below 0.5).
+* A white ring around the squid means that it has just inked and must wait.
 * Hunts restart automatically; captures and escapes are tallied on the right.
 
-Controls: sliders for the ink opacity, the ink thickness, the reload time and the
-school size; "Ink on/off", "New hunt", "Pause / play" (or the space bar).
+Controls: sliders for the ink strength, the share of ink used per
+release and the school size; "Ink on/off", "Camera", "New hunt", "Pause". Keys: space
+pauses, S switches the fish search (go to the last place the squid was seen) on or off,
+D switches the decoy tactic (chase the densest ink blob) on or off.
 
 The animation uses blitting: only the moving parts are redrawn, which keeps it
 smooth. Use ``--speed 1`` on a slow computer.
@@ -49,11 +50,12 @@ def _parse_args(argv=None):
     ap.add_argument("--seed", type=int, default=4)
     ap.add_argument("--speed", type=int, default=2, help="simulation steps per frame")
     ap.add_argument("--fish", type=int, default=24, help="number of fish")
-    ap.add_argument("--kappa", type=float, default=2.8, help="ink opacity")
-    ap.add_argument("--thickness", type=float, default=3.0, help="peak ink of a bolus")
+    ap.add_argument("--kappa", type=float, default=2.8, help="ink strength (opacity of the ink)")
     ap.add_argument("--reload", type=float, default=5.0, help="minimum time between releases")
     ap.add_argument("--ink-use", type=float, default=0.6, help="share of the remaining ink used per release (0 = unlimited)")
     ap.add_argument("--fixed", action="store_true", help="start with a fixed camera on the whole sea")
+    ap.add_argument("--blind", action="store_true", help="fish do not search the last-seen place (keys: S)")
+    ap.add_argument("--decoy", action="store_true", help="fish chase the densest ink blob (keys: D)")
     ap.add_argument("--no-ink", action="store_true", help="squid without ink (control)")
     return ap.parse_args(argv)
 
@@ -243,9 +245,8 @@ class InkView:
 
         x0, w = 0.80, 0.17
         p = self.params
-        self.s_kappa = mk([x0, 0.225, w, 0.022], "Ink opacity  ", 0.0, 8.0, p.kappa, 0.2, "%.1f")
-        self.s_thick = mk([x0, 0.190, w, 0.022], "Ink thickness  ", 0.5, 8.0, p.thickness, 0.5, "%.1f")
-        self.s_use = mk([x0, 0.155, w, 0.022], "Ink used/release  ", 0.0, 0.9, p.use_fraction, 0.1, "%.1f")
+        self.s_kappa = mk([x0, 0.205, w, 0.022], "Ink strength  ", 0.0, 8.0, p.kappa, 0.2, "%.1f")
+        self.s_use = mk([x0, 0.170, w, 0.022], "Ink used/release  ", 0.0, 0.9, p.use_fraction, 0.1, "%.1f")
         self.s_n = mk([x0, 0.120, w, 0.022], "School size  ", 8, 60, p.n_fish, 4, "%d")
 
         def btn(rect, text):
@@ -261,7 +262,7 @@ class InkView:
         self.b_cam.on_clicked(lambda _e: self._toggle_camera())
         self.b_fill = btn([0.63, 0.075, 0.18, 0.04], "Recharge ink to 100 %  (R)")
         self.b_fill.on_clicked(lambda _e: self._recharge())
-        for s in (self.s_kappa, self.s_thick, self.s_use):
+        for s in (self.s_kappa, self.s_use):
             s.on_changed(self._on_live)
         self.s_n.on_changed(lambda _v: self._restart())
         self.b_ink.on_clicked(lambda _e: self._toggle_ink())
@@ -269,7 +270,7 @@ class InkView:
         self.b_pause.on_clicked(lambda _e: self._toggle_pause())
         self.fig.canvas.mpl_connect(
             "key_press_event",
-            lambda e: self._toggle_pause() if e.key == " " else self._toggle_camera() if e.key == "c" else self._recharge() if e.key == "r" else None,
+            lambda e: self._toggle_pause() if e.key == " " else self._toggle_camera() if e.key == "c" else self._recharge() if e.key == "r" else self._flip("search") if e.key == "s" else self._flip("decoy") if e.key == "d" else None,
         )
 
     def animated_artists(self):
@@ -284,10 +285,15 @@ class InkView:
         self.params = replace(
             self.params,
             kappa=float(self.s_kappa.val),
-            thickness=float(self.s_thick.val),
             use_fraction=float(self.s_use.val),
         )
         self.sim.p = self.params
+
+    def _flip(self, name: str) -> None:
+        """Switch a fish tactic on or off while the hunt runs ('search' or 'decoy')."""
+        self.params = replace(self.params, **{name: not getattr(self.params, name)})
+        self.sim.p = self.params
+        print(f"{name}: {'on' if getattr(self.params, name) else 'off'}")
 
     def _toggle_ink(self) -> None:
         self.params = replace(self.params, ink=not self.params.ink)
@@ -300,7 +306,6 @@ class InkView:
             self.params,
             n_fish=int(self.s_n.val),
             kappa=float(self.s_kappa.val),
-            thickness=float(self.s_thick.val),
             use_fraction=float(self.s_use.val),
         )
         self.rebuild()
@@ -430,8 +435,8 @@ class InkView:
 def main(args=None) -> None:
     args = args if args is not None else _parse_args()
     params = InkParams(
-        n_fish=args.fish, kappa=args.kappa, thickness=args.thickness,
-        reload_time=args.reload, use_fraction=args.ink_use, ink=not args.no_ink,
+        n_fish=args.fish, kappa=args.kappa,
+        reload_time=args.reload, use_fraction=args.ink_use, ink=not args.no_ink, search=not args.blind, decoy=args.decoy,
     )  # fmt: skip
     view = InkView(params, seed=args.seed, theme=args.theme, steps_per_frame=args.speed)
     if args.fixed:
