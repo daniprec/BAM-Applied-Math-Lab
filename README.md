@@ -94,7 +94,7 @@ or
 quarto render modules/discrete-models/cellular-1d.qmd
 ```
 
-## Collective Motion: Confusion Effect, Crowd Evacuation and Squid Ink
+## Collective Motion: Confusion Effect, Crowd Evacuation, Squid Ink and Dictyostelium
 
 Three extensions of the Module 2 labs (the Couzin model, the social force model and the Vicsek-type school). Each one has a **model** (Python), a **local animation**, an **interactive web figure** and a **lesson page**.
 
@@ -114,6 +114,17 @@ Three extensions of the Module 2 labs (the Couzin model, the social force model 
 | Model           | `amlab/collective_motion/squid_ink.py` (ink spreading rule, vision, capture)  |
 | Local animation | `amlab/collective_motion/squid_ink_animation.py`                              |
 | Web figure      | `assets/viz/widgets/squid-ink.js` (`data-viz="squid-ink"`)                    |
+| Parity test     | `tests/squid_parity.js` and `tests/squid_parity.py` (same settings, compare the means) |
+
+**Dictyostelium** (cells that relay a cAMP signal and walk toward it): _can cells gather without a leader?_
+
+| Item            | File                                                                          |
+| --------------- | ----------------------------------------------------------------------------- |
+| Lesson page     | `modules/combining-ideas/dicty.qmd`                                           |
+| Model           | `amlab/collective_motion/dicty.py` (excitable field, cells, `self_test()`)    |
+| Local animation | `amlab/collective_motion/dicty_animation.py`                                  |
+| Web figure      | `assets/viz/widgets/dicty.js` (`data-viz="dicty"`)                            |
+| Experiments     | `amlab/collective_motion/run_dicty_experiments.py` (writes `data/dicty_*.csv`) |
 
 Shared files: `amlab/collective_motion/ie_style.py` (IE palette and Matplotlib theme), `amlab/collective_motion/run_experiments.py` (parameter sweeps), `data/*.csv` and `img/*.png` (their results).
 
@@ -156,6 +167,8 @@ python amlab/collective_motion/squid_ink_animation.py
 | `--ink-use 0.3`       | share of the remaining ink used per release (0 = unlimited) | 0.6 |
 | `--reload 10`         | minimum time between two releases                    | 5       |
 | `--fixed`             | start with a fixed camera on the whole sea           | off     |
+| `--jet 2`             | speed factor of the squid's jet after a release (1 = none) | 1 |
+| `--escape-angle 90`   | degrees the squid leaves its flight line after inking | 0      |
 | `--blind`             | fish do not search the last-seen place (key S)       | off     |
 | `--decoy`             | fish chase the densest ink blob (key D)              | off     |
 | `--no-ink`            | control: a squid without ink                         | off     |

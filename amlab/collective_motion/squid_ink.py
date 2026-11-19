@@ -27,6 +27,11 @@ The model
   adds ``kappa * c``. In a dense cloud T is close to 0 and the fish loses the
   squid and drifts with the school.
 * **Capture** happens when a fish comes within ``capture_radius`` of the squid.
+* **The squid's decision** (optional, off by default). When it releases ink the squid also
+  commits, for ``jet_time``, to the heading "straight away from the nearest fish, turned by
+  ``escape_angle`` to a random side" and swims ``jet_boost`` times faster than in flight.
+  ``hide_time`` > 0 makes it hold still inside the cloud instead. With the defaults
+  (angle 0, boost 1, no hiding) the squid behaves exactly as in the model without a decision.
 
 Lengths are in body lengths (BL), time in arbitrary time units (t.u.). This is a
 qualitative teaching model, not a fit to squid data.
@@ -100,6 +105,11 @@ class InkParams:
     decoy_range: float = 10.0
     decoy_min: float = 0.2  # blobs thinner than this are not mistaken for a squid
     random_start: bool = True  # random school position and squid heading in every hunt
+    # ---- the squid's decision after a release ----
+    escape_angle: float = 0.0  # degrees: after inking, leave the flight line by this angle (0 = straight away)
+    jet_boost: float = 1.0  # speed factor of the escape jet (1 = no jet)
+    jet_time: float = 2.0  # duration of the jet (t.u.)
+    hide_time: float = 0.0  # t.u. the squid holds still inside its own cloud after a release (0 = never)
 
 
 class SquidInkSimulation:
@@ -130,6 +140,12 @@ class SquidInkSimulation:
         self.stock = 1.0  # share of a full ink sac that is left
         self.time = 0.0
         self.releases = 0
+        self.jet_left = 0.0  # remaining jet time
+        self.hide_left = 0.0  # remaining hiding time
+        self.jet_heading = 0.0
+        # a separate stream for the squid's coin toss, so that the fish noise is identical
+        # in paired runs that differ only in the decision
+        self.rng_squid = np.random.default_rng(seed + 7_000_003)
         self.captured = False
         self.capture_time = np.nan
         self.closest = float(np.linalg.norm(wrap_delta(self.fish - self.squid, p.domain), axis=1).min())
@@ -257,6 +273,21 @@ class SquidInkSimulation:
         self.fish_heading = (self.fish_heading + turn) % (2 * np.pi)
 
     # -------------------------------------------------------------- squid
+    def _start_decision(self, away: float) -> None:
+        """The squid's decision after a release: where to jet, and whether to hide first.
+
+        ``away`` is the heading straight away from the nearest fish. The squid commits to
+        the heading ``away`` +/- ``escape_angle`` (side chosen at random) for ``jet_time``.
+        """
+        p = self.p
+        if p.escape_angle <= 0:
+            side = 0.0
+        else:
+            side = self.rng_squid.choice((-1.0, 1.0))
+        self.jet_heading = away + side * np.radians(p.escape_angle)
+        self.jet_left = p.jet_time if (p.jet_boost > 1.0 or p.escape_angle > 0) else 0.0
+        self.hide_left = p.hide_time
+
     def _squid_update(self) -> None:
         p = self.p
         rel = wrap_delta(self.fish - self.squid, p.domain)
@@ -264,16 +295,26 @@ class SquidInkSimulation:
         k = int(np.argmin(d))
         self.closest = float(d[k])
         threatened = d[k] < p.flight_distance
-        if threatened:
+        speed = p.squid_cruise
+        if self.hide_left > 0:  # inside the cloud: hold still
+            self.hide_left -= p.dt
+            speed = 0.0
+        elif self.jet_left > 0:  # committed escape jet
+            turn = np.clip(wrap_pi(self.jet_heading - self.squid_heading), -p.squid_turn, p.squid_turn)
+            self.squid_heading = (self.squid_heading + turn) % (2 * np.pi)
+            self.jet_left -= p.dt
+            speed = p.squid_flee * p.jet_boost
+        elif threatened:
             desired = np.arctan2(-rel[k, 1], -rel[k, 0])
             turn = np.clip(wrap_pi(desired - self.squid_heading), -p.squid_turn, p.squid_turn)
             self.squid_heading = (self.squid_heading + turn) % (2 * np.pi)
             if p.ink and self.cooldown <= 0 and self.stock >= p.empty_below:
                 self._release_ink()
                 self.cooldown = p.reload_time
+                self._start_decision(desired)
+            speed = p.squid_flee
         else:
             self.squid_heading = (self.squid_heading + self.rng.normal(0, p.squid_noise)) % (2 * np.pi)
-        speed = p.squid_flee if threatened else p.squid_cruise
         self.squid = (
             self.squid + speed * p.dt * np.array([np.cos(self.squid_heading), np.sin(self.squid_heading)])
         ) % p.domain
@@ -431,6 +472,39 @@ def self_test() -> None:
         if s.captured:
             break
     assert s.stock == 1.0, "use_fraction = 0 means unlimited ink"
+
+    # 8. the decision system. Defaults leave the old behaviour untouched; with a jet the squid is
+    #    faster after a release; the escape angle is exact and the side is a fair coin toss
+    a = SquidInkSimulation(InkParams(), seed=6)
+    b = SquidInkSimulation(InkParams(jet_boost=1.0, escape_angle=0.0), seed=6)
+    for _ in range(300):
+        a.step(); b.step()
+    assert np.allclose(a.squid, b.squid) and np.allclose(a.fish, b.fish), "defaults must be the old model"
+    s = SquidInkSimulation(InkParams(jet_boost=2.0, jet_time=2.0, escape_angle=90.0), seed=7)
+    away = 0.3
+    sides = []
+    for _ in range(200):
+        s._start_decision(away)
+        sides.append(np.sign(wrap_pi(s.jet_heading - away)))
+        assert abs(abs(wrap_pi(s.jet_heading - away)) - np.pi / 2) < 1e-9
+    assert 60 < sum(1 for x in sides if x > 0) < 140, "the side must be random"
+    s = SquidInkSimulation(InkParams(jet_boost=2.0, jet_time=2.0), seed=8)
+    steps_jet = 0
+    for _ in range(400):
+        before = s.squid.copy()
+        jetting = s.jet_left > 0
+        s.step()
+        if jetting:
+            steps_jet += 1
+            assert abs(np.linalg.norm(wrap_delta(s.squid - before, s.p.domain)) - s.p.squid_flee * 2.0 * s.p.dt) < 1e-9
+        if s.captured:
+            break
+    assert s.releases == 0 or steps_jet >= 1, "after a release the squid must jet"
+    s = SquidInkSimulation(InkParams(hide_time=3.0), seed=8)
+    s._start_decision(0.0)
+    p0 = s.squid.copy()
+    s._squid_update()
+    assert np.allclose(s.squid, p0), "a hiding squid holds still"
     print("self-test passed")
 
 

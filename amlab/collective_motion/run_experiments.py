@@ -6,7 +6,7 @@ saves the numbers as CSV files in ``data/`` and the figures in ``img/``.
 
     python amlab/collective_motion/run_experiments.py confusion          # about 2 min
     python amlab/collective_motion/run_experiments.py crowd              # about 15 min
-    python amlab/collective_motion/run_experiments.py squid --seeds 40   # about 5 min
+    python amlab/collective_motion/run_experiments.py squid --seeds 60   # about 15 min, 2 processes
     python amlab/collective_motion/run_experiments.py all --seeds 3      # fewer repeats, faster
     python amlab/collective_motion/run_experiments.py crowd --plot-only  # redraw from the saved CSV files
 
@@ -246,6 +246,14 @@ def _squid_hunt(job):
     return sweep, value, seed, r["time"], r["captured"], r["releases"]
 
 
+ANGLES = [0, 30, 60, 90, 120, 150, 180]
+JET = dict(jet_boost=2.0, jet_time=2.0)  # the escape jet used in the decision experiments
+TACTICS = [  # (label, colour key) in the order of the CSV column "value"
+    "no ink", "ink,\nblind fish", "ink,\nfish search", "decoy", "unlimited\nink",
+    "ink + search\n+ jet", "ink + search\n+ jet + turn 90°", "jet, ink\ntransparent", "unlimited ink\n+ jet", "unlimited,\njet, transp.",
+]
+
+
 def squid(seeds: int, plot_only: bool) -> None:
     """Squid ink: one long CSV with every hunt, then means, intervals and survival curves."""
     from dataclasses import replace
@@ -254,6 +262,8 @@ def squid(seeds: int, plot_only: bool) -> None:
     base = si.InkParams()
     out = DATA / "squid_ink_sweeps.csv"
     if not plot_only:
+        jet = replace(base, **JET)
+        k0 = dict(kappa=0.0)  # control: the squid inks and jets, but the ink is transparent
         runs = {
             "tactic": [  # value = index into TACTICS
                 (0, replace(base, ink=False)),
@@ -261,16 +271,39 @@ def squid(seeds: int, plot_only: bool) -> None:
                 (2, base),
                 (3, replace(base, decoy=True)),
                 (4, replace(base, use_fraction=0.0)),
+                (5, jet),
+                (6, replace(jet, escape_angle=90.0)),
+                (7, replace(jet, **k0)),
+                (8, replace(jet, use_fraction=0.0)),
+                (9, replace(jet, use_fraction=0.0, **k0)),
             ],
             "opacity": [(v, replace(base, kappa=v)) for v in [0.0, 0.7, 1.4, 2.8, 5.6, 8.0]],
             "inkuse": [(v, replace(base, use_fraction=v)) for v in [0.2, 0.4, 0.6, 0.8]],
             "school": [(v, replace(base, n_fish=int(v))) for v in [8, 16, 24, 40, 60]],
             # same product kappa * thickness = 8.4: is the effect one dial or two?
             "product": [(k, replace(base, kappa=k, thickness=8.4 / k)) for k in [1.4, 2.8, 8.4]],
+            # the decision: escape angle, with the jet, blind and searching fish
+            "angle_blind": [(a, replace(jet, search=False, escape_angle=float(a))) for a in ANGLES],
+            "angle_search": [(a, replace(jet, escape_angle=float(a))) for a in ANGLES],
+            # robustness of the angle curve (searching fish): fish speed and squid flight speed
+            "angle_fish0.6": [(a, replace(jet, fish_speed=0.6, escape_angle=float(a))) for a in ANGLES],
+            "angle_fish0.8": [(a, replace(jet, fish_speed=0.8, escape_angle=float(a))) for a in ANGLES],
+            "angle_flee0.35": [(a, replace(jet, squid_flee=0.35, escape_angle=float(a))) for a in ANGLES],
+            "angle_flee0.55": [(a, replace(jet, squid_flee=0.55, escape_angle=float(a))) for a in ANGLES],
+            # the jet dials, with an ink-transparent control (kappa = 0) at the same jet
+            "jetboost": [(v, replace(base, jet_boost=v)) for v in [1.0, 1.5, 2.0, 3.0]],
+            "jetboost_k0": [(v, replace(base, jet_boost=v, **k0)) for v in [1.0, 1.5, 2.0, 3.0]],
+            "jettime": [(v, replace(base, jet_boost=2.0, jet_time=v)) for v in [1.0, 2.0, 4.0]],
+            "jettime_k0": [(v, replace(base, jet_boost=2.0, jet_time=v, **k0)) for v in [1.0, 2.0, 4.0]],
+            # hiding: stay put inside the cloud
+            "hide": [(v, replace(base, hide_time=v)) for v in [0.0, 2.0, 4.0, 8.0]],
+            # how big must the sac be? share used per release, with the jet and the transparent control
+            "sacjet": [(v, replace(jet, use_fraction=v)) for v in [0.2, 0.3, 0.4, 0.6, 0.8]],
+            "sacjet_k0": [(v, replace(jet, use_fraction=v, **k0)) for v in [0.2, 0.3, 0.4, 0.6, 0.8]],
         }
         jobs = [(s, v, p, seed) for s, lst in runs.items() for v, p in lst for seed in range(seeds)]
-        print(f"squid: {len(jobs)} hunts")
-        with Pool() as pool:
+        print(f"squid: {len(jobs)} hunts", flush=True)
+        with Pool(2) as pool:
             rows = pool.map(_squid_hunt, jobs, chunksize=8)
         DATA.mkdir(exist_ok=True)
         with open(out, "w", newline="") as f:
@@ -281,7 +314,7 @@ def squid(seeds: int, plot_only: bool) -> None:
         data = list(csv.DictReader(f))
 
     def group(sweep):
-        """value -> array of capture times (250 where the squid was not caught)."""
+        """value -> array of (capture time, captured); the time is 250 where the squid was not caught."""
         g = {}
         for r in data:
             if r["sweep"] == sweep:
@@ -295,21 +328,24 @@ def squid(seeds: int, plot_only: bool) -> None:
     P = apply_theme("light")
     IMG.mkdir(exist_ok=True)
     tactics = group("tactic")
-    labels = ["no ink", "ink,\nblind fish", "ink,\nfish search", "decoy", "unlimited\nink"]
-    cols = [P["bad"], "#FF7B31", P["prey"], P["accent"], "#888A8C"]
-    fig, axs = plt.subplots(2, 2, figsize=(9.5, 6.6), constrained_layout=True)
-    ax = axs[0, 0]
-    for k, (v, x) in enumerate(tactics.items()):
+    cols = [P["bad"], "#FF7B31", P["prey"], P["accent"], "#888A8C", "#1B7F5C", "#8A5CC2", "#B9A15A", "#0B4F3A", "#6E6A52"]
+    shown = [0, 1, 2, 3, 5, 6, 7, 4, 8]  # bars, finite sac first, unlimited last
+    fig = plt.figure(figsize=(10.5, 7.4), constrained_layout=True)
+    gs = fig.add_gridspec(2, 3)
+    ax = fig.add_subplot(gs[0, :])
+    axs = {(0, 1): fig.add_subplot(gs[1, 0]), (1, 0): fig.add_subplot(gs[1, 1]), (1, 1): fig.add_subplot(gs[1, 2])}
+    for pos, k in enumerate(shown):
+        x = tactics[float(k)]
         m, ci = mean_ci(x)
-        ax.bar(k, m, yerr=ci, color=cols[k], capsize=3, alpha=0.9)
+        ax.bar(pos, m, yerr=ci, color=cols[k], capsize=3, alpha=0.9)
         if x[:, 1].mean() < 1:
-            ax.text(k, m + ci + 6, f"{int(x[:, 1].sum())}/{len(x)}\ncaught", ha="center", fontsize=7.5, color=P["muted"])
-    ax.set_xticks(range(5), labels, fontsize=8)
+            ax.text(pos, m + ci + 6, f"{int(x[:, 1].sum())}/{len(x)}\ncaught", ha="center", fontsize=8, color=P["muted"])
+    ax.set_xticks(range(len(shown)), [TACTICS[k] for k in shown], fontsize=8)
     ax.set_ylabel("mean time to capture (t.u.)")
-    ax.set_title("Tactics", loc="left")
+    ax.set_title("Tactics (the last two bars have an unlimited ink sac)", loc="left")
     ref = mean_ci(tactics[0.0])[0]
     for ax, name, xl in [
-        (axs[0, 1], "opacity", "ink opacity \u03ba"),
+        (axs[0, 1], "opacity", "ink opacity κ"),
         (axs[1, 0], "inkuse", "share of the remaining ink used per release"),
         (axs[1, 1], "school", "school size"),
     ]:
@@ -326,18 +362,81 @@ def squid(seeds: int, plot_only: bool) -> None:
     fig.savefig(IMG / "squid_ink_sweeps.png", dpi=160)
     print("wrote", IMG / "squid_ink_sweeps.png")
 
-    fig, ax = plt.subplots(figsize=(6.4, 4.0), constrained_layout=True)
-    for k, (v, x) in enumerate(tactics.items()):
+    # survival curves: finite sac (left) and unlimited sac (right)
+    fig, (axl, axr) = plt.subplots(1, 2, figsize=(10.5, 4.0), constrained_layout=True, sharey=True)
+    for k in [0, 1, 2, 5, 6, 7, 3]:
+        x = tactics[float(k)]
         t = np.sort(x[:, 0][x[:, 1] > 0])
         steps = np.concatenate(([0.0], t, [250.0]))
         free = np.concatenate(([1.0], 1 - np.arange(1, len(t) + 1) / len(x), [1 - len(t) / len(x)]))
-        ax.step(steps, free, where="post", color=cols[k], lw=2.2, label=labels[k].replace("\n", " "))
-    ax.set_xlabel("time (t.u.)")
-    ax.set_ylabel("share of squid not yet caught")
-    ax.set_ylim(0, 1.02)
-    ax.legend(fontsize=8)
+        axl.step(steps, free, where="post", color=cols[k], lw=2.0, label=TACTICS[k].replace("\n", " "))
+    for k in [4, 8, 9]:
+        x = tactics[float(k)]
+        t = np.sort(x[:, 0][x[:, 1] > 0])
+        steps = np.concatenate(([0.0], t, [250.0]))
+        free = np.concatenate(([1.0], 1 - np.arange(1, len(t) + 1) / len(x), [1 - len(t) / len(x)]))
+        axr.step(steps, free, where="post", color=cols[k], lw=2.0, label=TACTICS[k].replace("\n", " "))
+    for ax, ttl in [(axl, "finite ink sac (4 releases)"), (axr, "unlimited ink sac")]:
+        ax.set_xlabel("time (t.u.)")
+        ax.set_title(ttl, loc="left")
+        ax.set_ylim(0, 1.02)
+        ax.legend(fontsize=7.5)
+    axl.set_ylabel("share of squid not yet caught")
     fig.savefig(IMG / "squid_ink_survival.png", dpi=160)
     print("wrote", IMG / "squid_ink_survival.png")
+
+    # the decision: escape angle, robustness, jet dial
+    fig, axs = plt.subplots(1, 3, figsize=(12.0, 3.9), constrained_layout=True)
+    ax = axs[0]
+    for name, lab, c, mk in [("angle_blind", "blind fish", "#FF7B31", "s"), ("angle_search", "searching fish", P["prey"], "o")]:
+        g = group(name)
+        xs = np.array(list(g))
+        ms, cis = np.array([mean_ci(x) for x in g.values()]).T
+        ax.fill_between(xs, ms - cis, ms + cis, color=c, alpha=0.18, lw=0)
+        ax.plot(xs, ms, mk + "-", color=c, lw=2.0, ms=5, label=lab)
+    ax.axhline(ref, color=P["bad"], lw=1.4, ls="--", label="no ink")
+    ax.set_xlabel("escape angle (degrees from the flight line)")
+    ax.set_ylabel("mean time to capture (t.u.)")
+    ax.set_xticks(ANGLES)
+    ax.set_ylim(bottom=0)
+    ax.set_title("Turning away from the flight line", loc="left", fontsize=10)
+    ax.legend(fontsize=8)
+    ax = axs[1]
+    for name, lab, c, ls in [("angle_search", "fish 0.7, flee 0.45 (default)", P["prey"], "-"), ("angle_fish0.6", "fish 0.6", "#1B7F5C", "--"),
+                             ("angle_fish0.8", "fish 0.8", "#8A5CC2", "--"), ("angle_flee0.35", "flee 0.35", "#B9A15A", ":"),
+                             ("angle_flee0.55", "flee 0.55", "#6E6A52", ":")]:
+        g = group(name)
+        xs = np.array(list(g))
+        ms = np.array([mean_ci(x)[0] for x in g.values()])
+        ax.plot(xs, ms, "o" + ls, color=c, lw=1.8, ms=4, label=lab)
+    ax.set_xlabel("escape angle (degrees)")
+    ax.set_xticks(ANGLES)
+    ax.set_ylim(bottom=0)
+    ax.set_title("Robustness (searching fish)", loc="left", fontsize=10)
+    ax.legend(fontsize=7.5)
+    ax = axs[2]
+    for name, lab, c, mk in [("jetboost", "ink", P["prey"], "o"), ("jetboost_k0", "ink transparent (κ = 0)", P["bad"], "^")]:
+        g = group(name)
+        xs = np.array(list(g))
+        ms, cis = np.array([mean_ci(x) for x in g.values()]).T
+        ax.fill_between(xs, ms - cis, ms + cis, color=c, alpha=0.18, lw=0)
+        ax.plot(xs, ms, mk + "-", color=c, lw=2.0, ms=5, label=lab)
+    ax.set_xlabel("jet speed factor (jet time 2 t.u., angle 0)")
+    ax.set_ylim(bottom=0)
+    ax.set_title("The jet, with and without optics", loc="left", fontsize=10)
+    ax.legend(fontsize=8)
+    fig.savefig(IMG / "squid_ink_decision.png", dpi=160)
+    print("wrote", IMG / "squid_ink_decision.png")
+
+    # summary table for the report (paired by seed)
+    def table(name):
+        for v, x in group(name).items():
+            m, ci = mean_ci(x)
+            print(f"  {name:15s} {v:6.2f}  mean {m:6.1f} +- {ci:4.1f}  not caught {int(len(x) - x[:, 1].sum())}/{len(x)}")
+
+    for name in ["tactic", "angle_blind", "angle_search", "angle_fish0.6", "angle_fish0.8", "angle_flee0.35", "angle_flee0.55",
+                 "jetboost", "jetboost_k0", "jettime", "jettime_k0", "hide", "sacjet", "sacjet_k0"]:
+        table(name)
 
 
 if __name__ == "__main__":
