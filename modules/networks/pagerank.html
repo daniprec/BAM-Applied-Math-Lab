@@ -1022,7 +1022,7 @@ P'_{ij} = \alpha P_{ij} + \frac{1-\alpha}{n},
 \boldsymbol{\pi} = (1-\alpha)\sum_{k=0}^{\infty} \alpha^k P^k\,\frac{\mathbf{1}}{n}.
 \tag{5}\]</span></span></p>
 <p>The term <span class="math inline">\(P^k \mathbf{1}/n\)</span> is the distribution of a surfer that has followed <span class="math inline">\(k\)</span> links without teleporting, and the weight <span class="math inline">\((1-\alpha)\alpha^k\)</span> is the probability that the surfer teleported exactly <span class="math inline">\(k\)</span> steps ago. So <span class="math inline">\(\boldsymbol{\pi}\)</span> counts walks of all lengths, and <span class="math inline">\(\alpha^k\)</span> discounts the long ones.</p>
-<div id="54099878" class="cell" data-execution_count="2">
+<div id="4446cfbe" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. eigenvector of P'</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>Pp <span class="op">=</span> alpha <span class="op">*</span> P <span class="op">+</span> (<span class="dv">1</span> <span class="op">-</span> alpha) <span class="op">/</span> n <span class="op">*</span> np.ones((n, n))</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>w, v <span class="op">=</span> np.linalg.eig(Pp)</span>
@@ -1126,7 +1126,7 @@ p^{(1)}_C = \alpha\left(\frac{p^{(0)}_A}{2} + p^{(0)}_B + p^{(0)}_D + \frac{p^{(
 \mathbf{p}^{(k+1)} = P'\,\mathbf{p}^{(k)} = \alpha P\,\mathbf{p}^{(k)} + \frac{1-\alpha}{n}\,\mathbf{1}
 \tag{6}\]</span></span></p>
 <p>until <span class="math inline">\(\lVert \mathbf{p}^{(k+1)} - \mathbf{p}^{(k)} \rVert_1\)</span> is small. The dense matrix <span class="math inline">\(\mathbf{1}\mathbf{1}^{\top}/n\)</span> is never formed: the teleportation term is a constant vector added after one sparse matrix-vector product. The function below also handles dangling nodes: their total probability mass is spread uniformly.</p>
-<div id="2811828c" class="cell" data-execution_count="3">
+<div id="3ceeb045" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> scipy.sparse <span class="im">as</span> sp</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.sparse.linalg <span class="im">import</span> spsolve</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1266,7 +1266,7 @@ Figure&nbsp;2: Distance in the l1 norm between the power iteration and the PageR
 <section id="dangling-nodes-and-the-normalisation-shortcut" class="level2">
 <h2 class="anchored" data-anchor-id="dangling-nodes-and-the-normalisation-shortcut">Dangling nodes and the normalisation shortcut</h2>
 <p>If you drop the dangling nodes’ columns, that is, leave them as zero columns in <a href="#eq-pr-linear" class="quarto-xref">Equation&nbsp;4</a>, the solution is not a probability vector: its entries add up to less than 1. This still gives the right ranking after normalisation. Let <span class="math inline">\(D\)</span> be the set of dangling nodes and <span class="math inline">\(\tilde{\boldsymbol{\pi}}\)</span> the PageRank with the uniform rule for <span class="math inline">\(D\)</span>. Then <span class="math inline">\(\tilde{\boldsymbol{\pi}}\)</span> solves <span class="math inline">\(\tilde{\boldsymbol{\pi}} = \alpha P \tilde{\boldsymbol{\pi}} + c\,\mathbf{1}/n\)</span> with the scalar <span class="math inline">\(c = (1-\alpha) + \alpha \sum_{j \in D}\tilde\pi_j\)</span>, so <span class="math inline">\(\tilde{\boldsymbol{\pi}}\)</span> is proportional to the solution <span class="math inline">\(\mathbf{x}\)</span> of <a href="#eq-pr-linear" class="quarto-xref">Equation&nbsp;4</a>, and <span class="math inline">\(\tilde{\boldsymbol{\pi}} = \mathbf{x}/\sum_i x_i\)</span>. The check below uses a four-page graph in which page <span class="math inline">\(D\)</span> has no outgoing links.</p>
-<div id="3384f549" class="cell" data-execution_count="5">
+<div id="1554759f" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>G_dang <span class="op">=</span> nx.DiGraph([(<span class="st">"A"</span>, <span class="st">"B"</span>), (<span class="st">"B"</span>, <span class="st">"C"</span>), (<span class="st">"C"</span>, <span class="st">"A"</span>), (<span class="st">"C"</span>, <span class="st">"D"</span>)])</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>nodes_d, P_d, dang_d <span class="op">=</span> transition_matrix(G_dang)</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>n_d <span class="op">=</span> <span class="bu">len</span>(nodes_d)</span>
@@ -1323,7 +1323,7 @@ nodes in both top-20 lists: 15 of 20</code></pre>
 <section id="undirected-graphs" class="level3">
 <h3 class="anchored" data-anchor-id="undirected-graphs">Undirected graphs</h3>
 <p>On an undirected graph every edge is traversed in both directions. The random walk without teleportation then has the stationary distribution <span class="math inline">\(\pi_i = k_i / 2E\)</span>: the walker is found on a node in proportion to its degree. PageRank with damping interpolates between this limit (<span class="math inline">\(\alpha \to 1\)</span>) and the uniform distribution (<span class="math inline">\(\alpha \to 0\)</span>), which is why on an undirected network such as the Enron e-mail graph it adds little to degree centrality.</p>
-<div id="62be8992" class="cell" data-execution_count="7">
+<div id="ef1be376" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>H <span class="op">=</span> nx.Graph(nx.read_edgelist(<span class="st">"data/ia-enron-only/ia-enron-only.edges"</span>))</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>H <span class="op">=</span> H.subgraph(<span class="bu">max</span>(nx.connected_components(H), key<span class="op">=</span><span class="bu">len</span>)).copy()</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>nodes_h, P_h, dang_h <span class="op">=</span> transition_matrix(H.to_directed())</span>

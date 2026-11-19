@@ -5,7 +5,10 @@
    when the gland has reloaded. Ink: in every step each cell passes `spread` of its ink to its four
    neighbours (half stays, half goes out), and a cell below `threshold` is reset to 0. Vision: the
    pursuit weight of a fish is multiplied by exp(-kappa * mean ink on the sightline * distance).
-   A fish within the capture radius catches the squid. The stage is drawn on IE Tech black. */
+   A fish within the capture radius catches the squid. Squid decision (optional): after a release the squid
+   commits for `jetTime` to the heading "away from the nearest fish +/- escapeAngle" (side random), at
+   `jetBoost` times its flight speed; `hideTime` > 0 makes it hold still instead. Defaults reproduce the
+   squid without a decision. The stage is drawn on IE Tech black. */
 (function () {
   "use strict";
   const TWO_PI = 2 * Math.PI;
@@ -22,6 +25,7 @@
     search: true, seeThr: 0.2, searchGain: 0.8, searchRadius: 1.5, decoy: false, decoyRange: 10, decoyMin: 0.2, randomStart: true,
     vFish: 0.70, fishTurn: 0.20, fishNoise: 0.035, rSep: 1.15, rSchool: 5.0, wAlign: 1.1, wCohere: 0.35, wSep: 1.4, wPursue: 1.9,
     vCruise: 0.30, vFlee: 0.45, flight: 8.0, squidTurn: 0.33, squidNoise: 0.045, capture: 0.8,
+    escapeAngle: 0, jetBoost: 1.0, jetTime: 2.0, hideTime: 0,
   };
   const VIEW = 15, WINDOW = 60, T_MAX = 250, SQUID_SIZE = 3.0, SEE = 0.5;
 
@@ -30,7 +34,7 @@
     const L = p.L, G = p.G, dx = L / G, n = p.n;
     const wrap = (d) => ((((d + L / 2) % L) + L) % L) - L / 2;
     const m = {
-      p, dx, time: 0, releases: 0, captured: false, captureTime: NaN, cooldown: 0, closest: 0, stock: 1,
+      p, dx, time: 0, releases: 0, captured: false, captureTime: NaN, cooldown: 0, closest: 0, stock: 1, jetLeft: 0, hideLeft: 0, jetHeading: 0,
       fx: new Float64Array(n), fy: new Float64Array(n), fh: new Float64Array(n), T: new Float64Array(n).fill(1),
       sx: 0.28 * L, sy: 0.42 * L, sh: -0.15,
       lx: new Float64Array(n), ly: new Float64Array(n), searching: new Uint8Array(n).fill(1),
@@ -163,6 +167,15 @@
       m.fh = nh;
     };
 
+    // The squid's decision after a release: jet along (away heading +/- escapeAngle, side random) for jetTime
+    // at jetBoost times the flight speed; optionally hold still (hideTime) first.
+    m.startDecision = function (away) {
+      const side = p.escapeAngle > 0 ? (rng() < 0.5 ? -1 : 1) : 0;
+      m.jetHeading = away + side * p.escapeAngle * Math.PI / 180;
+      m.jetLeft = (p.jetBoost > 1 || p.escapeAngle > 0) ? p.jetTime : 0;
+      m.hideLeft = p.hideTime;
+    };
+
     m.squidUpdate = function () {
       let k = 0, best = Infinity, rx = 0, ry = 0;
       for (let i = 0; i < n; i++) {
@@ -170,14 +183,22 @@
         if (d < best) { best = d; k = i; rx = dx_; ry = dy_; }
       }
       const threatened = best < p.flight;
-      if (threatened) {
-        const turn = clamp(wrapPi(Math.atan2(-ry, -rx) - m.sh), -p.squidTurn, p.squidTurn);
+      let v = p.vCruise;
+      if (m.hideLeft > 0) { m.hideLeft -= p.dt; v = 0; }
+      else if (m.jetLeft > 0) {
+        const turn = clamp(wrapPi(m.jetHeading - m.sh), -p.squidTurn, p.squidTurn);
         m.sh = mod2pi(m.sh + turn);
-        if (p.ink && m.cooldown <= 0 && (p.useFraction === 0 || m.stock >= p.emptyBelow)) { m.release(); m.cooldown = p.reload; }
+        m.jetLeft -= p.dt;
+        v = p.vFlee * p.jetBoost;
+      } else if (threatened) {
+        const away = Math.atan2(-ry, -rx);
+        const turn = clamp(wrapPi(away - m.sh), -p.squidTurn, p.squidTurn);
+        m.sh = mod2pi(m.sh + turn);
+        if (p.ink && m.cooldown <= 0 && (p.useFraction === 0 || m.stock >= p.emptyBelow)) { m.release(); m.cooldown = p.reload; m.startDecision(away); }
+        v = p.vFlee;
       } else {
         m.sh = mod2pi(m.sh + p.squidNoise * rng.normal());
       }
-      const v = threatened ? p.vFlee : p.vCruise;
       m.sx = (((m.sx + v * p.dt * Math.cos(m.sh)) % L) + L) % L;
       m.sy = (((m.sy + v * p.dt * Math.sin(m.sh)) % L) + L) % L;
     };
@@ -217,6 +238,8 @@
         fmt: (v) => v.toFixed(1), onInput: (v) => { P.kappa = v; } });
       const sUse = VIZ.slider(ui.controls, { label: "Ink used per release", min: 0, max: 0.9, step: 0.1, value: P.useFraction,
         fmt: (v) => v.toFixed(1), onInput: (v) => { P.useFraction = v; } });
+      const sAngle = VIZ.slider(ui.controls, { label: "Escape angle (degrees)", min: 0, max: 180, step: 15, value: P.escapeAngle,
+        fmt: (v) => String(Math.round(v)), onInput: (v) => { P.escapeAngle = v; resetTally(); } });
       VIZ.select(ui.controls, { label: "School size", value: "24", options: [["12", "12"], ["24", "24"], ["40", "40"]],
         onChange: (v) => { S.n = +v; reset(); } });
       const g = VIZ.group(ui.controls);
@@ -227,6 +250,10 @@
       });
       const searchBtn = VIZ.button(g, "Fish search: on", () => { P.search = !P.search; searchBtn.textContent = P.search ? "Fish search: on" : "Fish search: off"; resetTally(); });
       const decoyBtn = VIZ.button(g, "Decoy: off", () => { P.decoy = !P.decoy; decoyBtn.textContent = P.decoy ? "Decoy: on" : "Decoy: off"; resetTally(); });
+      const JET = 2.0;
+      const jetBtn = VIZ.button(g, "Squid jet: off", () => {
+        P.jetBoost = P.jetBoost > 1 ? 1.0 : JET; jetBtn.textContent = P.jetBoost > 1 ? "Squid jet: on" : "Squid jet: off"; resetTally();
+      });
       VIZ.button(g, "Recharge ink", () => { m.stock = 1; redraw(); });
       VIZ.button(g, "New hunt", () => { S.seed++; reset(); }, { primary: true });
 
@@ -337,7 +364,8 @@
         drawSquid(ctx, X(qx), Y(qy), m.sh, size, P.useFraction === 0 ? 1 : Math.max(0, Math.min(1, m.stock)));
         ctx.font = "700 13px Montserrat, Arial, sans-serif"; ctx.textAlign = "left"; ctx.fillStyle = C.white;
         const supply = P.useFraction === 0 ? "unlimited ink" : `ink left ${Math.round(100 * m.stock)} %`;
-        const label = ended === "captured" ? "✕ CAPTURED" : ended === "escaped" ? "✓ ESCAPED" : (P.ink ? (empty ? "● INK SAC EMPTY" : `${m.cooldown > 0 ? "●" : "○"} ${supply}`) : "○ NO INK");
+        const jetting = m.jetLeft > 0 ? " · JET" : "";
+        const label = ended === "captured" ? "✕ CAPTURED" : ended === "escaped" ? "✓ ESCAPED" : (P.ink ? (empty ? "● INK SAC EMPTY" : `${m.cooldown > 0 ? "●" : "○"} ${supply}${jetting}`) : "○ NO INK");
         ctx.fillText(label, 10, 20);
         ctx.font = "500 11px Montserrat, Arial, sans-serif"; ctx.fillStyle = C.muted;
         ctx.fillText("filled arrow: sees the squid · hollow arrow: lost it in the ink", 10, c.h - 10);
@@ -367,7 +395,8 @@
         const n = tally.captured + tally.escaped;
         const pc = n ? Math.round((100 * tally.captured) / n) + " %" : "n/a";
         ui.readout.textContent = `time ${m.time.toFixed(1)} · closest fish ${m.closest.toFixed(1)} BL · mean visibility ${m.meanT().toFixed(2)} · ink releases ${m.releases} · ` +
-          `hunts: captured ${tally.captured}, escaped ${tally.escaped}, capture probability ${pc} · ink ${P.ink ? "on" : "off"}, κ = ${P.kappa.toFixed(1)}, ink used per release ${P.useFraction.toFixed(1)}`;
+          `hunts: captured ${tally.captured}, escaped ${tally.escaped}, capture probability ${pc} · ink ${P.ink ? "on" : "off"}, κ = ${P.kappa.toFixed(1)}, ink used per release ${P.useFraction.toFixed(1)}, ` +
+          `jet ${P.jetBoost > 1 ? "on" : "off"}, escape angle ${Math.round(P.escapeAngle)}°`;
       }
       function redraw() { stage.draw(); plot.draw(); readout(); }
 

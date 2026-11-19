@@ -22,6 +22,7 @@ Controls: sliders for the ink strength, the share of ink used per
 release and the school size; "Ink on/off", "Camera", "New hunt", "Pause". Keys: space
 pauses, S switches the fish search (go to the last place the squid was seen) on or off,
 D switches the decoy tactic (chase the densest ink blob) on or off.
+Command-line options ``--jet 2`` and ``--escape-angle 90`` give the squid a decision after each release.
 
 The animation uses blitting: only the moving parts are redrawn, which keeps it
 smooth. Use ``--speed 1`` on a slow computer.
@@ -57,6 +58,8 @@ def _parse_args(argv=None):
     ap.add_argument("--blind", action="store_true", help="fish do not search the last-seen place (keys: S)")
     ap.add_argument("--decoy", action="store_true", help="fish chase the densest ink blob (keys: D)")
     ap.add_argument("--no-ink", action="store_true", help="squid without ink (control)")
+    ap.add_argument("--jet", type=float, default=1.0, help="speed factor of the escape jet after a release (1 = no jet, 2 = twice as fast)")
+    ap.add_argument("--escape-angle", type=float, default=0.0, help="degrees the squid leaves the flight line after inking (0 = straight away)")
     return ap.parse_args(argv)
 
 
@@ -437,6 +440,7 @@ def main(args=None) -> None:
     params = InkParams(
         n_fish=args.fish, kappa=args.kappa,
         reload_time=args.reload, use_fraction=args.ink_use, ink=not args.no_ink, search=not args.blind, decoy=args.decoy,
+        jet_boost=args.jet, escape_angle=args.escape_angle,
     )  # fmt: skip
     view = InkView(params, seed=args.seed, theme=args.theme, steps_per_frame=args.speed)
     if args.fixed:
